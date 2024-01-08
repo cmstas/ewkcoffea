@@ -47,18 +47,32 @@ def get_counts(histos_dict):
     return out_dict
 
 
+# Restructure hists so samples are in category axis
+def restructure_hist(in_dict):
+
+    dense_axes = list(list(in_dict.values())[0].keys())
+    restructured_hist = {}
+    for dense_axis in dense_axes:
+        for dataset_name in in_dict.keys():
+            if dense_axis not in restructured_hist:
+                restructured_hist[dense_axis] = in_dict[dataset_name][dense_axis]
+            else:
+                restructured_hist[dense_axis] += in_dict[dataset_name][dense_axis]
+    return restructured_hist
+
+
 def main():
 
     # Set up the command line parser
     parser = argparse.ArgumentParser()
-    parser.add_argument("-f", "--pkl-file-path", default="histos/plotsTopEFT.pkl.gz", help = "The path to the pkl file")
+    parser.add_argument("pkl_file_path", help = "The path to the pkl file")
     parser.add_argument("-o", "--output-path", default=".", help = "The path the output files should be saved to")
     parser.add_argument("-n", "--output-name", default="counts_wwz_sync", help = "A name for the output directory")
     args = parser.parse_args()
 
     # Get the counts from the input hiso
     histo_dict = pickle.load(gzip.open(args.pkl_file_path))
-
+    histo_dict = restructure_hist(histo_dict)
 
     counts_dict = get_counts(histo_dict)
 

@@ -6,10 +6,19 @@ import time
 import cloudpickle
 import gzip
 import os
-from coffea import processor
+import dask
+import dask_awkward as dak
+from distributed import Client
+
 from coffea.nanoevents import NanoAODSchema
+from coffea.nanoevents import NanoEventsFactory
+
+from coffea.dataset_tools import preprocess
+from coffea.dataset_tools import apply_to_fileset
 
 import topcoffea.modules.remote_environment as remote_environment
+
+from ndcctools.taskvine import DaskVine
 
 import wwz4l
 
@@ -165,11 +174,11 @@ if __name__ == '__main__':
                         else:
                             LoadJsonToSampleName(l, prefix)
 
-    flist = {}
+    fdict = {}
     nevts_total = 0
     for sname in samplesdict.keys():
         redirector = samplesdict[sname]['redirector']
-        flist[sname] = [(redirector+f) for f in samplesdict[sname]['files']]
+        fdict[sname] = [(redirector+f) for f in samplesdict[sname]['files']]
         samplesdict[sname]['year'] = samplesdict[sname]['year']
         samplesdict[sname]['xsec'] = float(samplesdict[sname]['xsec'])
         samplesdict[sname]['nEvents'] = int(samplesdict[sname]['nEvents'])
@@ -306,34 +315,96 @@ if __name__ == '__main__':
     # Run the processor and get the output
     tstart = time.time()
 
-    if executor == "futures":
-        exec_instance = processor.FuturesExecutor(workers=nworkers)
-        runner = processor.Runner(exec_instance, schema=NanoAODSchema, chunksize=chunksize, maxchunks=nchunks)
-    elif executor == "iterative":
-        exec_instance = processor.IterativeExecutor()
-        runner = processor.Runner(exec_instance, schema=NanoAODSchema, chunksize=chunksize, maxchunks=nchunks)
-    elif executor ==  "work_queue":
-        executor = processor.WorkQueueExecutor(**executor_args)
-        runner = processor.Runner(executor, schema=NanoAODSchema, chunksize=chunksize, maxchunks=nchunks, skipbadfiles=False, xrootdtimeout=180)
+    ####################################3
+    ### coffea2023 ###
 
-    output = runner(flist, treename, processor_instance)
+    # Get fileset
+    fileset = {}
+    for name, fpaths in fdict.items():
+        fileset[name] = {}
+        fileset[name]["files"] = {}
+        for fpath in fpaths:
+            fileset[name]["files"][fpath] = {"object_path": "Events"}
+            fileset[name]["metadata"] = {"dataset": name}
+    print(fileset)
+    print("Number of datasets:",len(fdict))
+
+
+    #### Try with distributed Client ####
+
+    #with dask.config.set({"scheduler": "sync"}): # Single thread
+    #with Client() as _: # distributed Client scheduler
+    with Client() as client:
+
+        # Run preprocess
+        print("\nRunning preprocess...")
+        dataset_runnable, dataset_updated = preprocess(
+            fileset,
+            maybe_step_size=50_000,
+            align_clusters=False,
+            files_per_batch=1,
+            #skip_bad_files=True,
+            #calculate_form=True,
+        )
+
+        # Run apply_to_fileset
+        print("\nRunning apply_to_fileset...")
+        histos_to_compute, reports = apply_to_fileset(
+            processor_instance,
+            dataset_runnable,
+            uproot_options={"allow_read_errors_with_report": True}
+        )
+
+        # Check columns to be read
+        print("\nRunning necessary_columns...")
+        columns_read = dak.necessary_columns(histos_to_compute[list(histos_to_compute.keys())[0]])
+        print(columns_read)
+
+        # Compute
+        print("\nRunning compute...")
+        output_futures, report_futures = {}, {}
+        for key in histos_to_compute:
+            output_futures[key], report_futures[key] = client.compute((histos_to_compute[key], reports[key],)) # , scheduler=taskvine
+
+        coutputs, creports = client.gather((output_futures, report_futures,))
+
+
+
+    ### Task vine testing ###
+    do_tv = 0
+    if do_tv:
+
+        fdict = {"UL17_WWZJetsTo4L2Nu_forCI": ["/home/k.mohrman/coffea_dir/migrate_to_coffea2023_repo/ewkcoffea/analysis/wwz/output_1.root"]}
+
+        # Create dict of events objects
+        print("Number of datasets:",len(fdict))
+        events_dict = {}
+        for name, fpaths in fdict.items():
+            events_dict[name] = NanoEventsFactory.from_root(
+                {fpath: "/Events" for fpath in fpaths},
+                schemaclass=NanoAODSchema,
+                metadata={"dataset": name},
+            ).events()
+
+        # Get and compute the histograms
+        histos_to_compute = {}
+        for json_name in fdict.keys():
+            print(f"Getting histos for {json_name}")
+            histos_to_compute[json_name] = processor_instance.process(events_dict[json_name])
+
+        m = DaskVine([9123,9128], name=f"coffea-vine-{os.environ['USER']}")
+
+        print("Compute histos")
+        #output = dask.compute(histos_to_compute)[0] # Output of dask.compute is a tuple
+        coutputs = dask.compute(histos_to_compute, scheduler=m.get, resources={"cores": 1}, resources_mode=None, lazy_transfers=True)
+
 
     dt = time.time() - tstart
-
-    if executor == "work_queue":
-        print('Processed {} events in {} seconds ({:.2f} evts/sec).'.format(nevts_total,dt,nevts_total/dt))
-
-    #nbins = sum(sum(arr.size for arr in h._sumw.values()) for h in output.values() if isinstance(h, hist.Hist))
-    #nfilled = sum(sum(np.sum(arr > 0) for arr in h._sumw.values()) for h in output.values() if isinstance(h, hist.Hist))
-    #print("Filled %.0f bins, nonzero bins: %1.1f %%" % (nbins, 100*nfilled/nbins,))
-
-    if executor == "futures":
-        print("Processing time: %1.2f s with %i workers (%.2f s cpu overall)" % (dt, nworkers, dt*nworkers, ))
 
     # Save the output
     if not os.path.isdir(outpath): os.system("mkdir -p %s"%outpath)
     out_pkl_file = os.path.join(outpath,outname+".pkl.gz")
     print(f"\nSaving output in {out_pkl_file}...")
     with gzip.open(out_pkl_file, "wb") as fout:
-        cloudpickle.dump(output, fout)
+        cloudpickle.dump(coutputs, fout)
     print("Done!")

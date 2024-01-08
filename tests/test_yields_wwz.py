@@ -7,7 +7,6 @@ def test_make_yields_after_processor_wwz():
     args = [
         "python",
         "analysis/wwz/get_wwz_counts.py",
-        "-f",
         "analysis/wwz/histos/output_check_yields.pkl.gz",
         "-n",
         "analysis/wwz/output_check_yields"

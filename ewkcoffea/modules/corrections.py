@@ -66,8 +66,8 @@ def AttachMuonSF(muons, year):
     eta = np.abs(muons.eta)
     pt = muons.pt
     if year not in ['2016','2016APV','2017','2018']: raise Exception(f"Error: Unknown year \"{year}\".")
-    reco_sf  = np.where(pt < 20,SFevaluator['MuonRecoSF_{year}'.format(year=year)](eta,pt),1) # sf=1 when pt>20 becuase there is no reco SF available TODO: Remove all reco SFs, they are folded into Kirill's tight SFs
-    reco_err = np.where(pt < 20,SFevaluator['MuonRecoSF_{year}_er'.format(year=year)](eta,pt),0) # sf error =0 when pt>20 becuase there is no reco SF available TODO: Remove all reco SFs, they are folded into Kirill's tight SFs
+    reco_sf  = ak.where(pt < 20,SFevaluator['MuonRecoSF_{year}'.format(year=year)](eta,pt),1) # sf=1 when pt>20 becuase there is no reco SF available TODO: Remove all reco SFs, they are folded into Kirill's tight SFs
+    reco_err = ak.where(pt < 20,SFevaluator['MuonRecoSF_{year}_er'.format(year=year)](eta,pt),0) # sf error =0 when pt>20 becuase there is no reco SF available TODO: Remove all reco SFs, they are folded into Kirill's tight SFs
 
     tight_sf  = SFevaluator[f'MuonTightSF_{year}'](eta,pt)
     #tight_err = SFevaluator[f'MuonTightSF_{year}_er'](eta,pt)
@@ -91,12 +91,12 @@ def AttachElectronSF(electrons, year):
     if year not in ['2016','2016APV','2017','2018']:
         raise Exception(f"Error: Unknown year \"{year}\".")
 
-    reco_sf  = np.where(
+    reco_sf  = ak.where(
         pt < 20,
         SFevaluator['ElecRecoSFBe_{year}'.format(year=year)](eta,pt),
         SFevaluator['ElecRecoSFAb_{year}'.format(year=year)](eta,pt)
     )
-    reco_err = np.where(
+    reco_err = ak.where(
         pt < 20,
         SFevaluator['ElecRecoSFBe_{year}_er'.format(year=year)](eta,pt),
         SFevaluator['ElecRecoSFAb_{year}_er'.format(year=year)](eta,pt)
