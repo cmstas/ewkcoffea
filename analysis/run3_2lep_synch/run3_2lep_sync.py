@@ -347,6 +347,12 @@ class AnalysisProcessor(processor.ProcessorABC):
                         cuts_lst = [sr_name]
                         #if isData: cuts_lst.append("is_good_lumi") # Apply golden json requirements if this is data
                         all_cuts_mask = selections.all(*cuts_lst)
+                        if hist_name == "2l_sf_mumu_nleps":
+                            run = events.run[all_cuts_mask]
+                            lumi = events.luminosityBlock[all_cuts_mask]
+                            event = events.event[all_cuts_mask]
+                            for i in range(len(run)):
+                                print(run[i],",",lumi[i],",",event[i]) 
                         # Fill the histos
                         axes_fill_info_dict = {
                             dense_axis_name : dense_axis_vals[all_cuts_mask],
