@@ -177,15 +177,15 @@ class AnalysisProcessor(processor.ProcessorABC):
         xsec               = self._samples[json_name]["xsec"]
         sow                = self._samples[json_name]["nSumOfWeights"]
 
-        # Set a flag if this is a 2022 year
+        # Set a flag if this is a 2022 or 2023 year
         is2022 = year in ["2022","2022EE"]
+        is2023 = year in ["2023","2023BPix"]
 
         # If this is a 2022 sample, get the era info
         if isData and is2022:
             era = self._samples[json_name]["era"]
         else:
             era = None
-
 
         # Get up down weights from input dict
         if (self._do_systematics and not isData):
@@ -220,7 +220,7 @@ class AnalysisProcessor(processor.ProcessorABC):
         # Get name for MC cases too, since "dataset" is passed to overlap removal function in all cases (though it's not actually used in the MC case)
         dataset = json_name.split('_')[0]
         if isData:
-            datasets = ["SingleMuon", "SingleElectron", "EGamma", "MuonEG", "DoubleMuon", "DoubleElectron", "DoubleEG","Muon"]
+            datasets = ["SingleMuon", "SingleElectron", "EGamma", "MuonEG", "DoubleMuon", "DoubleElectron", "DoubleEG","Muon","Muon0","Muon1","EGamma0","EGamma1"]
             if dataset not in datasets:
                 raise Exception("ERROR: Unexpected dataset name for data file.")
 
@@ -245,6 +245,8 @@ class AnalysisProcessor(processor.ProcessorABC):
             golden_json_path = topcoffea_path("data/goldenJsons/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt")
         elif year == "2022" or year == "2022EE":
             golden_json_path = topcoffea_path("data/goldenJsons/Cert_Collisions2022_355100_362760_Golden.txt")
+        elif year == "2023" or year == "2023BPix":
+            golden_json_path = topcoffea_path("data/goldenJsons/Cert_Collisions2023_366442_370790_Golden.txt")
         else:
             raise ValueError(f"Error: Unknown year \"{year}\".")
         lumi_mask = LumiMask(golden_json_path)(events.run,events.luminosityBlock)
@@ -252,16 +254,16 @@ class AnalysisProcessor(processor.ProcessorABC):
         ################### Lepton selection ####################
 
         # Do the object selection for the WWZ eleectrons
-        ele_presl_mask = os_ec.is_presel_wwz_ele(ele,is2022)
-        if not is2022:
+        ele_presl_mask = os_ec.is_presel_wwz_ele(ele,is2022,is2023)
+        if not (is2022 or is2023):
             ele["topmva"] = os_ec.get_topmva_score_ele(events, year)
             ele["is_tight_lep_for_wwz"] = ((ele.topmva > get_tc_param("topmva_wp_t_e")) & ele_presl_mask)
         else:
             ele["is_tight_lep_for_wwz"] = (ele_presl_mask)
 
         # Do the object selection for the WWZ muons
-        mu_presl_mask = os_ec.is_presel_wwz_mu(mu, is2022)
-        if not is2022:
+        mu_presl_mask = os_ec.is_presel_wwz_mu(mu, is2022, is2023)
+        if not (is2022 or is2023):
             mu["topmva"] = os_ec.get_topmva_score_mu(events, year)
             mu["is_tight_lep_for_wwz"] = ((mu.topmva > get_tc_param("topmva_wp_t_m")) & mu_presl_mask)
         else:
@@ -272,9 +274,9 @@ class AnalysisProcessor(processor.ProcessorABC):
         mu_wwz_t = mu[mu.is_tight_lep_for_wwz]
 
         # Attach the lepton SFs to the electron and muons collections
-        if is2022:
+        if (is2022 or is2023):
             cor_ec.run3_muons_sf_attach(mu_wwz_t,year,"NUM_MediumID_DEN_TrackerMuons","NUM_TightPFIso_DEN_MediumID")
-            cor_ec.run3_electrons_sf_attach(ele_wwz_t,year,"wp80iso")
+            cor_ec.run3_electrons_sf_attach(ele_wwz_t,year,"wp90iso")
         else:
             cor_ec.AttachElectronSF(ele_wwz_t,year=year)
             cor_ec.AttachMuonSF(mu_wwz_t,year=year)
