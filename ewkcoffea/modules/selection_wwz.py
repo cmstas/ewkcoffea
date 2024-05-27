@@ -176,12 +176,12 @@ exclude_dict = {
         "EGamma"         : dataset_dict["2018"]["DoubleMuon"],
         "MuonEG"         : dataset_dict["2018"]["DoubleMuon"] + dataset_dict["2018"]["EGamma"],
     },
-    "B": {
-        "SingleMuon"     : [],
-        "DoubleMuon"     : dataset_dict["2022"]["SingleMuon"],
-        "EGamma"         : dataset_dict["2022"]["SingleMuon"] + dataset_dict["2022"]["DoubleMuon"],
-        "MuonEG"         : dataset_dict["2022"]["SingleMuon"] + dataset_dict["2022"]["DoubleMuon"] + dataset_dict["2022"]["EGamma"],
-    },
+#    "B": {
+#        "SingleMuon"     : [],
+#        "DoubleMuon"     : dataset_dict["2022"]["SingleMuon"],
+#        "EGamma"         : dataset_dict["2022"]["SingleMuon"] + dataset_dict["2022"]["DoubleMuon"],
+#        "MuonEG"         : dataset_dict["2022"]["SingleMuon"] + dataset_dict["2022"]["DoubleMuon"] + dataset_dict["2022"]["EGamma"],
+#    },
     "C": {
         "Muon"           : [],
         "SingleMuon"     : [],

@@ -1,0 +1,27 @@
+{
+    "xsec": 1.0,
+    "year": "2023BPix",
+    "treeName": "Events",
+    "histAxisName": "2023BPix_data",
+    "options": "",
+    "WCnames": [],
+    "files": [
+        "/store/user/t2/users/matthew.dittrich/skims/2023_MC_Loose_v2/MuonEG_Run2023D-22Sep2023_v2-v1_NANOAOD_2023_MC_Loose_v2/output_7.root",
+        "/store/user/t2/users/matthew.dittrich/skims/2023_MC_Loose_v2/MuonEG_Run2023D-22Sep2023_v2-v1_NANOAOD_2023_MC_Loose_v2/output_8.root",
+        "/store/user/t2/users/matthew.dittrich/skims/2023_MC_Loose_v2/MuonEG_Run2023D-22Sep2023_v2-v1_NANOAOD_2023_MC_Loose_v2/output_9.root",
+        "/store/user/t2/users/matthew.dittrich/skims/2023_MC_Loose_v2/MuonEG_Run2023D-22Sep2023_v2-v1_NANOAOD_2023_MC_Loose_v2/output_2.root",
+        "/store/user/t2/users/matthew.dittrich/skims/2023_MC_Loose_v2/MuonEG_Run2023D-22Sep2023_v2-v1_NANOAOD_2023_MC_Loose_v2/output_11.root",
+        "/store/user/t2/users/matthew.dittrich/skims/2023_MC_Loose_v2/MuonEG_Run2023D-22Sep2023_v2-v1_NANOAOD_2023_MC_Loose_v2/output_3.root",
+        "/store/user/t2/users/matthew.dittrich/skims/2023_MC_Loose_v2/MuonEG_Run2023D-22Sep2023_v2-v1_NANOAOD_2023_MC_Loose_v2/output_6.root",
+        "/store/user/t2/users/matthew.dittrich/skims/2023_MC_Loose_v2/MuonEG_Run2023D-22Sep2023_v2-v1_NANOAOD_2023_MC_Loose_v2/output_1.root",
+        "/store/user/t2/users/matthew.dittrich/skims/2023_MC_Loose_v2/MuonEG_Run2023D-22Sep2023_v2-v1_NANOAOD_2023_MC_Loose_v2/output_4.root",
+        "/store/user/t2/users/matthew.dittrich/skims/2023_MC_Loose_v2/MuonEG_Run2023D-22Sep2023_v2-v1_NANOAOD_2023_MC_Loose_v2/output_10.root",
+        "/store/user/t2/users/matthew.dittrich/skims/2023_MC_Loose_v2/MuonEG_Run2023D-22Sep2023_v2-v1_NANOAOD_2023_MC_Loose_v2/output_5.root"
+    ],
+    "nEvents": 27775,
+    "nGenEvents": 27775,
+    "nSumOfWeights": 27775,
+    "isData": true,
+    "path": "/store/user/t2/users/matthew.dittrich/skims/2023_MC_Loose_v2/MuonEG_Run2023D-22Sep2023_v2-v1_NANOAOD_2023_MC_Loose_v2",
+    "nSumOfLheWeights": null
+}

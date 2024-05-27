@@ -1,0 +1,27 @@
+{
+    "xsec": 0.006115,
+    "year": "2023",
+    "treeName": "Events",
+    "histAxisName": "2023_ggToZZTo2e2tau",
+    "options": "",
+    "WCnames": [],
+    "files": [
+        "/store/user/t2/users/matthew.dittrich/skims/2023_MC_Loose_v2/GluGlutoContinto2Zto2E2Tau_TuneCP5_13p6TeV_mcfm701-pythia8_Run3Summer23NanoAODv12-130X_mcRun3_2023_realistic_v15-v3_NANOAODSIM_2023_MC_Loose_v2/output_7.root",
+        "/store/user/t2/users/matthew.dittrich/skims/2023_MC_Loose_v2/GluGlutoContinto2Zto2E2Tau_TuneCP5_13p6TeV_mcfm701-pythia8_Run3Summer23NanoAODv12-130X_mcRun3_2023_realistic_v15-v3_NANOAODSIM_2023_MC_Loose_v2/output_8.root",
+        "/store/user/t2/users/matthew.dittrich/skims/2023_MC_Loose_v2/GluGlutoContinto2Zto2E2Tau_TuneCP5_13p6TeV_mcfm701-pythia8_Run3Summer23NanoAODv12-130X_mcRun3_2023_realistic_v15-v3_NANOAODSIM_2023_MC_Loose_v2/output_9.root",
+        "/store/user/t2/users/matthew.dittrich/skims/2023_MC_Loose_v2/GluGlutoContinto2Zto2E2Tau_TuneCP5_13p6TeV_mcfm701-pythia8_Run3Summer23NanoAODv12-130X_mcRun3_2023_realistic_v15-v3_NANOAODSIM_2023_MC_Loose_v2/output_2.root",
+        "/store/user/t2/users/matthew.dittrich/skims/2023_MC_Loose_v2/GluGlutoContinto2Zto2E2Tau_TuneCP5_13p6TeV_mcfm701-pythia8_Run3Summer23NanoAODv12-130X_mcRun3_2023_realistic_v15-v3_NANOAODSIM_2023_MC_Loose_v2/output_11.root",
+        "/store/user/t2/users/matthew.dittrich/skims/2023_MC_Loose_v2/GluGlutoContinto2Zto2E2Tau_TuneCP5_13p6TeV_mcfm701-pythia8_Run3Summer23NanoAODv12-130X_mcRun3_2023_realistic_v15-v3_NANOAODSIM_2023_MC_Loose_v2/output_3.root",
+        "/store/user/t2/users/matthew.dittrich/skims/2023_MC_Loose_v2/GluGlutoContinto2Zto2E2Tau_TuneCP5_13p6TeV_mcfm701-pythia8_Run3Summer23NanoAODv12-130X_mcRun3_2023_realistic_v15-v3_NANOAODSIM_2023_MC_Loose_v2/output_6.root",
+        "/store/user/t2/users/matthew.dittrich/skims/2023_MC_Loose_v2/GluGlutoContinto2Zto2E2Tau_TuneCP5_13p6TeV_mcfm701-pythia8_Run3Summer23NanoAODv12-130X_mcRun3_2023_realistic_v15-v3_NANOAODSIM_2023_MC_Loose_v2/output_1.root",
+        "/store/user/t2/users/matthew.dittrich/skims/2023_MC_Loose_v2/GluGlutoContinto2Zto2E2Tau_TuneCP5_13p6TeV_mcfm701-pythia8_Run3Summer23NanoAODv12-130X_mcRun3_2023_realistic_v15-v3_NANOAODSIM_2023_MC_Loose_v2/output_4.root",
+        "/store/user/t2/users/matthew.dittrich/skims/2023_MC_Loose_v2/GluGlutoContinto2Zto2E2Tau_TuneCP5_13p6TeV_mcfm701-pythia8_Run3Summer23NanoAODv12-130X_mcRun3_2023_realistic_v15-v3_NANOAODSIM_2023_MC_Loose_v2/output_10.root",
+        "/store/user/t2/users/matthew.dittrich/skims/2023_MC_Loose_v2/GluGlutoContinto2Zto2E2Tau_TuneCP5_13p6TeV_mcfm701-pythia8_Run3Summer23NanoAODv12-130X_mcRun3_2023_realistic_v15-v3_NANOAODSIM_2023_MC_Loose_v2/output_5.root"
+    ],
+    "nEvents": 10242,
+    "nGenEvents": 375000,
+    "nSumOfWeights": 375000.0,
+    "isData": false,
+    "path": "/store/user/t2/users/matthew.dittrich/skims/2023_MC_Loose_v2/GluGlutoContinto2Zto2E2Tau_TuneCP5_13p6TeV_mcfm701-pythia8_Run3Summer23NanoAODv12-130X_mcRun3_2023_realistic_v15-v3_NANOAODSIM_2023_MC_Loose_v2",
+    "nSumOfLheWeights": []
+}

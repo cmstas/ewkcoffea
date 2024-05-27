@@ -1,0 +1,35 @@
+{
+    "xsec": 0.06,
+    "year": "2023BPix",
+    "treeName": "Events",
+    "histAxisName": "2023BPix_WZZ",
+    "options": "",
+    "WCnames": [],
+    "files": [
+        "/store/user/t2/users/matthew.dittrich/skims/2023_MC_Loose_v2/WZZ_TuneCP5_13p6TeV_amcatnlo-pythia8_Run3Summer23BPixNanoAODv12-130X_mcRun3_2023_realistic_postBPix_v2-v2_NANOAODSIM_2023_MC_Loose_v2/output_7.root",
+        "/store/user/t2/users/matthew.dittrich/skims/2023_MC_Loose_v2/WZZ_TuneCP5_13p6TeV_amcatnlo-pythia8_Run3Summer23BPixNanoAODv12-130X_mcRun3_2023_realistic_postBPix_v2-v2_NANOAODSIM_2023_MC_Loose_v2/output_8.root",
+        "/store/user/t2/users/matthew.dittrich/skims/2023_MC_Loose_v2/WZZ_TuneCP5_13p6TeV_amcatnlo-pythia8_Run3Summer23BPixNanoAODv12-130X_mcRun3_2023_realistic_postBPix_v2-v2_NANOAODSIM_2023_MC_Loose_v2/output_9.root",
+        "/store/user/t2/users/matthew.dittrich/skims/2023_MC_Loose_v2/WZZ_TuneCP5_13p6TeV_amcatnlo-pythia8_Run3Summer23BPixNanoAODv12-130X_mcRun3_2023_realistic_postBPix_v2-v2_NANOAODSIM_2023_MC_Loose_v2/output_2.root",
+        "/store/user/t2/users/matthew.dittrich/skims/2023_MC_Loose_v2/WZZ_TuneCP5_13p6TeV_amcatnlo-pythia8_Run3Summer23BPixNanoAODv12-130X_mcRun3_2023_realistic_postBPix_v2-v2_NANOAODSIM_2023_MC_Loose_v2/output_3.root",
+        "/store/user/t2/users/matthew.dittrich/skims/2023_MC_Loose_v2/WZZ_TuneCP5_13p6TeV_amcatnlo-pythia8_Run3Summer23BPixNanoAODv12-130X_mcRun3_2023_realistic_postBPix_v2-v2_NANOAODSIM_2023_MC_Loose_v2/output_6.root",
+        "/store/user/t2/users/matthew.dittrich/skims/2023_MC_Loose_v2/WZZ_TuneCP5_13p6TeV_amcatnlo-pythia8_Run3Summer23BPixNanoAODv12-130X_mcRun3_2023_realistic_postBPix_v2-v2_NANOAODSIM_2023_MC_Loose_v2/output_1.root",
+        "/store/user/t2/users/matthew.dittrich/skims/2023_MC_Loose_v2/WZZ_TuneCP5_13p6TeV_amcatnlo-pythia8_Run3Summer23BPixNanoAODv12-130X_mcRun3_2023_realistic_postBPix_v2-v2_NANOAODSIM_2023_MC_Loose_v2/output_4.root",
+        "/store/user/t2/users/matthew.dittrich/skims/2023_MC_Loose_v2/WZZ_TuneCP5_13p6TeV_amcatnlo-pythia8_Run3Summer23BPixNanoAODv12-130X_mcRun3_2023_realistic_postBPix_v2-v2_NANOAODSIM_2023_MC_Loose_v2/output_5.root"
+    ],
+    "nEvents": 24899,
+    "nGenEvents": 1788000,
+    "nSumOfWeights": 110958.12963803204,
+    "isData": false,
+    "path": "/store/user/t2/users/matthew.dittrich/skims/2023_MC_Loose_v2/WZZ_TuneCP5_13p6TeV_amcatnlo-pythia8_Run3Summer23BPixNanoAODv12-130X_mcRun3_2023_realistic_postBPix_v2-v2_NANOAODSIM_2023_MC_Loose_v2",
+    "nSumOfLheWeights": [
+        118238.39724183166,
+        115778.1496575009,
+        113741.82936171346,
+        113261.55694675633,
+        110958.12963803204,
+        109022.48817987568,
+        109103.24556126512,
+        106931.79934548745,
+        105081.83396634928
+    ]
+}
