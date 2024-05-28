@@ -176,6 +176,49 @@ SAMPLE_DICT_BASE_RUN3 = {
     ],
 }
 
+# The 2023 groupings
+SAMPLE_DICT_BASE_2023 = {
+    "WWZ" : ["WWZJetsTo4L2Nu"],
+    "ZH"  : ["GluGluZHTo2WTo2L2Nu","qqToZHTo2WTo2L2Nu"],
+
+    "ZZ"  : ["ZZTo4l", "ggToZZTo2e2tau", "ggToZZTo2mu2tau", "ggToZZTo4e", "ggToZZTo4mu", "ggToZZTo4tau"],
+
+    "ttZ" : [
+        #"TTZToLL_M_4to50",
+        #"TTZToLL_M_50",
+        #"TTZToQQ",
+    ],
+
+    "tWZ" : [],
+
+    "WZ" : ["WZTo3LNu"],
+
+    "other" : [
+
+        #"DYJetsToLL_M_10to50_MLM",
+        "DYJetsToLL_M_50_MLM",
+        #"SSWW",
+        #"ST_antitop_t-channel",
+        #"ST_top_s-channel",
+        #"ST_top_t-channel",
+        #"tbarW_noFullHad",
+        "ttHnobb",
+        #"TTTo2L2Nu",
+        #"TTWJetsToLNu",
+        #"TTWJetsToQQ",
+        #"tW_noFullHad",
+        #"tZq",
+        #"VHnobb",
+        #"WJetsToLNu",
+        "WWTo2L2Nu",
+        "WZTo3LNu",
+
+        "WWW",
+        "WZZ",
+        #"ZZZ",
+    ],
+}
+
 # Processes indiviudally
 SAMPLE_DICT_BASE_INDIV = {
     "WWZJetsTo4L2Nu":            ["WWZJetsTo4L2Nu"],
@@ -254,6 +297,43 @@ SAMPLE_DICT_BASE_INDIV_RUN3 = {
     #"ZZZ"                     : ["ZZZ"],
 }
 
+SAMPLE_DICT_BASE_INDIV_2023 = {
+    "WWZJetsTo4L2Nu"          : ["WWZJetsTo4L2Nu"],
+    "GluGluZHTo2WTo2L2Nu"     : ["GluGluZHTo2WTo2L2Nu"],
+    "qqToZHTo2WTo2L2Nu"       : ["qqToZHTo2WTo2L2Nu"],
+    "ZZTo4l"                  : ["ZZTo4l"],
+    #"ggToZZTo2e2mu"           : ["ggToZZTo2e2mu"],
+    "ggToZZTo2e2tau"          : ["ggToZZTo2e2tau"],
+    "ggToZZTo2mu2tau"         : ["ggToZZTo2mu2tau"],
+    "ggToZZTo4e"              : ["ggToZZTo4e"],
+    "ggToZZTo4mu"             : ["ggToZZTo4mu"],
+    "ggToZZTo4tau"            : ["ggToZZTo4tau"],
+    #"TTZToLL_M_4to50"         : ["TTZToLL_M_4to50"],
+    #"TTZToLL_M_50"            : ["TTZToLL_M_50"],
+    #"TTZToQQ"                 : ["TTZToQQ"],
+    #"tWZ4l"                   : ["tWZ4l"],
+    "WZTo3LNu"                : ["WZTo3LNu"],
+
+    #"DYJetsToLL_M_10to50_MLM" : ["DYJetsToLL_M_10to50_MLM"],
+    "DYJetsToLL_M_50_MLM"     : ["DYJetsToLL_M_50_MLM"],
+    #"SSWW"                    : ["SSWW"],
+    #"ST_antitop_t-channel"    : ["ST_antitop_t-channel"],
+    #"ST_top_s-channel"        : ["ST_top_s-channel"],
+    #"ST_top_t-channel"        : ["ST_top_t-channel"],
+    #"tbarW_noFullHad"         : ["tbarW_noFullHad"],
+    "ttHnobb"                 : ["ttHnobb"],
+    #"TTTo2L2Nu"               : ["TTTo2L2Nu"],
+    #"TTWJetsToLNu"            : ["TTWJetsToLNu"],
+    #"TTWJetsToQQ"             : ["TTWJetsToQQ"],
+    "tW_noFullHad"            : ["tW_noFullHad"],
+    #"tZq"                     : ["tZq"],
+    #"VHnobb"                  : ["VHnobb"],
+    #"WJetsToLNu"              : ["WJetsToLNu"],
+    "WWTo2L2Nu"               : ["WWTo2L2Nu"],
+    "WWW"                     : ["WWW"],
+    "WZZ"                     : ["WZZ"],
+    #"ZZZ"                     : ["ZZZ"],
+}
 
 ######################## Tools ########################
 
@@ -262,6 +342,7 @@ def create_mc_sample_dict(year):
     out_dict = {}
     r2_years = ["UL16APV","UL16","UL17","UL18"]
     r3_years = ["2022","2022EE"]
+    yr23_years = ["2023","2023BPix"]
     if year == "all":
         raise Exception("ERROR: We are not ready to sum Run2 and Run3.")
     elif year == "run2":
@@ -276,6 +357,8 @@ def create_mc_sample_dict(year):
             sample_dict_base = SAMPLE_DICT_BASE_RUN2
         elif year in r3_years:
             sample_dict_base = SAMPLE_DICT_BASE_RUN3
+        elif year in yr23_years:
+            sample_dict_base = SAMPLE_DICT_BASE_2023
         else:
             raise Exception(f"ERROR: Unrecognized year \"{year}\". Exiting.")
 

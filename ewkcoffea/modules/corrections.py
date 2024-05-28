@@ -115,6 +115,10 @@ def btag_eff_eval(jets,wp,year):
         pname = f"UL18_{pname_base}" #TODO Update with 2022 efficiency when available
     elif year == "2022EE":
         pname = f"UL18_{pname_base}" #TODO Update with 2022EE efficiency when available
+    elif year == "2023":
+        pname = f"UL18_{pname_base}" #TODO Update with 2023 efficiency when available
+    elif year == "2023BPix":
+        pname = f"UL18_{pname_base}" #TODO Update with 2023BPix efficiency when available
     else:
         raise Exception(f"Not a known year: {year}")
 
@@ -197,6 +201,12 @@ def run3_electrons_sf_attach(electrons,year,wp):
     elif year == "2022":
         n_year = "2022Re-recoBCD" # key for accessing the 2022 SFs
         fname = ewkcoffea_path("data/run3_lep_sf/electron_sf/2022_ele/electron.json")
+    elif year == "2023":
+        n_year = "2023PromptC" # key for accessing the 2023 SFs
+        fname = ewkcoffea_path("data/run3_lep_sf/electron_sf/2023_ele/electron.json")
+    elif year == "2023BPix":
+        n_year = "2023PromptD" # key for accessing the 2023BPix SFs
+        fname = ewkcoffea_path("data/run3_lep_sf/electron_sf/2023BPix_ele/electron.json")
     else:
         raise Exception("Trying to apply run3 SF where they shouldn't be!")
 
@@ -249,6 +259,10 @@ def run3_pu_attach(pileup,year,sys):
         fname = ewkcoffea_path("data/run3_pu/pu_2022EE/puWeights.json")
     elif year == "2022":
         fname = ewkcoffea_path("data/run3_pu/pu_2022/puWeights.json")
+    elif year == "2023":
+        fname = ewkcoffea_path("data/run3_pu/pu_2023/puWeights.json")
+    elif year == "2023BPix":
+        fname = ewkcoffea_path("data/run3_pu/pu_2023BPix/puWeights.json")
     else:
         raise Exception("Trying to apply run3 SF where they shouldn't be!")
 
@@ -262,6 +276,14 @@ def run3_pu_attach(pileup,year,sys):
         pu_corr = ceval["Collisions2022_355100_357900_eraBCD_GoldenJson"].evaluate(pileup.nTrueInt,"nominal")
         pu_corr_hi = ceval["Collisions2022_355100_357900_eraBCD_GoldenJson"].evaluate(pileup.nTrueInt,"up")
         pu_corr_lo = ceval["Collisions2022_355100_357900_eraBCD_GoldenJson"].evaluate(pileup.nTrueInt,"down")
+    if year == "2023":
+        pu_corr = ceval["Collisions2023_366403_369802_eraBC_GoldenJson"].evaluate(pileup.nTrueInt,"nominal")
+        pu_corr_hi = ceval["Collisions2023_366403_369802_eraBC_GoldenJson"].evaluate(pileup.nTrueInt,"up")
+        pu_corr_lo = ceval["Collisions2023_366403_369802_eraBC_GoldenJson"].evaluate(pileup.nTrueInt,"down")
+    if year == "2023BPix":
+        pu_corr = ceval["Collisions2023_369803_370790_eraD_GoldenJson"].evaluate(pileup.nTrueInt,"nominal")
+        pu_corr_hi = ceval["Collisions2023_369803_370790_eraD_GoldenJson"].evaluate(pileup.nTrueInt,"up")
+        pu_corr_lo = ceval["Collisions2023_369803_370790_eraD_GoldenJson"].evaluate(pileup.nTrueInt,"down")
     if sys == "nominal":
         return pu_corr
     if sys == "hi":

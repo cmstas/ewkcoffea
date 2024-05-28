@@ -757,7 +757,7 @@ def main():
     #make_jsons_for_dict_of_samples(data_UL18, "/ceph/cms/","2018", out_dir_data_18,on_das=False)
     #make_jsons_for_dict_of_samples(data_2022, "/cmsuf/data/","2022", out_dir_data_22,era_op=1,on_das=False)
     #make_jsons_for_dict_of_samples(data_2022EE, "/cmsuf/data/","2022EE", out_dir_data_22EE,era_op=1,on_das=False)
-    make_jsons_for_dict_of_samples(data_2023, "/cmsuf/data/","2023", out_dir_data_23,on_das=False)
+    #make_jsons_for_dict_of_samples(data_2023, "/cmsuf/data/","2023", out_dir_data_23,on_das=False)
     make_jsons_for_dict_of_samples(data_2023BPix, "/cmsuf/data/","2023BPix", out_dir_data_23BPix,on_das=False)
 
     # Make configs for bkg samples
@@ -775,8 +775,8 @@ def main():
     #make_jsons_for_dict_of_samples(central_UL18_bkg_dict, "/ceph/cms/","2018", out_dir_bkg,on_das=False)
     #make_jsons_for_dict_of_samples(central_2022_bkg_dict, "/cmsuf/data/","2022", out_dir_bkg,on_das=False)
     #make_jsons_for_dict_of_samples(central_2022EE_bkg_dict, "/cmsuf/data/","2022EE", out_dir_bkg,on_das=False)
-    make_jsons_for_dict_of_samples(central_2023_bkg_dict, "/cmsuf/data/","2023", out_dir_bkg,on_das=False)
-    make_jsons_for_dict_of_samples(central_2023BPix_bkg_dict, "/cmsuf/data/","2023BPix", out_dir_bkg,on_das=False)
+    #make_jsons_for_dict_of_samples(central_2023_bkg_dict, "/cmsuf/data/","2023", out_dir_bkg,on_das=False)
+    #make_jsons_for_dict_of_samples(central_2023BPix_bkg_dict, "/cmsuf/data/","2023BPix", out_dir_bkg,on_das=False)
 
     # Make configs for sig samples
     #make_jsons_for_dict_of_samples(central_UL16APV_sig_dict, "/ceph/cms/","2016APV", out_dir_sig,on_das=False)
@@ -785,8 +785,8 @@ def main():
     #make_jsons_for_dict_of_samples(central_UL18_sig_dict, "/ceph/cms/","2018", out_dir_sig,on_das=False)
     #make_jsons_for_dict_of_samples(central_2022_sig_dict, "/cmsuf/data/","2022", out_dir_sig,on_das=False)
     #make_jsons_for_dict_of_samples(central_2022EE_sig_dict, "/cmsuf/data/","2022EE", out_dir_sig,on_das=False)
-    make_jsons_for_dict_of_samples(central_2023_sig_dict, "/cmsuf/data/","2023", out_dir_sig,on_das=False)
-    make_jsons_for_dict_of_samples(central_2023BPix_sig_dict, "/cmsuf/data/","2023BPix", out_dir_sig,on_das=False)
+    #make_jsons_for_dict_of_samples(central_2023_sig_dict, "/cmsuf/data/","2023", out_dir_sig,on_das=False)
+    #make_jsons_for_dict_of_samples(central_2023BPix_sig_dict, "/cmsuf/data/","2023BPix", out_dir_sig,on_das=False)
 
     # Replace xsec numbers
     #replace_xsec_for_dict_of_samples(central_UL16APV_bkg_dict,out_dir_bkg)
