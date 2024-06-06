@@ -28,16 +28,18 @@ def is_presel_wwz_ele(ele,is2022,is2023):
         (ele.tightCharge == get_ec_param("wwz_pres_e_tightCharge")) &
         (ele.convVeto)
     )
-    mask_run2 = (
-        (ele.miniPFRelIso_all < get_ec_param("wwz_pres_e_miniPFRelIso_all")) 
-    )
-    mask_run3 = (
-        (ele.mvaIso_WP90) 
-    )
+
     if (is2022 or is2023):
-        mask_return = (mask & mask_run3)
+        mask_extra = (
+            #(ele.mvaIso_WP80) 
+            (ele.cutBased >= 2) 
+        )
     else:
-        mask_return = (mask & mask_run2)
+        mask_extra = (
+            (ele.miniPFRelIso_all < get_ec_param("wwz_pres_e_miniPFRelIso_all")) 
+        )
+
+    mask_return = (mask & mask_extra)
     return mask_return
 
 
@@ -51,16 +53,17 @@ def is_presel_wwz_mu(mu,is2022,is2023):
         (abs(mu.sip3d)       <  get_ec_param("wwz_pres_m_sip3d")) &
         (mu.mediumId)
     )
-    mask_run2 = (
-        (mu.miniPFRelIso_all < get_ec_param("wwz_pres_m_miniPFRelIso_all"))
-    )
-    mask_run3 = (
-        (mu.pfIsoId >= 4)
-    )
-    if not (is2022 or is2023):
-        mask_return = (mask & mask_run2)
+
+    if (is2022 or is2023):
+        mask_extra = (
+            (mu.pfIsoId >= 4)
+        )
     else:
-        mask_return = (mask & mask_run3)
+        mask_extra = (
+            (mu.miniPFRelIso_all < get_ec_param("wwz_pres_m_miniPFRelIso_all"))
+        )
+
+    mask_return = (mask & mask_extra)
     return mask_return
 
 

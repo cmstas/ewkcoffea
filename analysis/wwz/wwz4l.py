@@ -274,9 +274,9 @@ class AnalysisProcessor(processor.ProcessorABC):
         mu_wwz_t = mu[mu.is_tight_lep_for_wwz]
 
         # Attach the lepton SFs to the electron and muons collections
-        #if (is2022 or is2023):
-            #cor_ec.run3_muons_sf_attach(mu_wwz_t,year,"NUM_MediumID_DEN_TrackerMuons","NUM_TightPFIso_DEN_MediumID")
-            #cor_ec.run3_electrons_sf_attach(ele_wwz_t,year,"wp90iso")
+        if (is2022 or is2023):
+            cor_ec.run3_muons_sf_attach(mu_wwz_t,year,"NUM_MediumID_DEN_TrackerMuons","NUM_TightPFIso_DEN_MediumID")
+            cor_ec.run3_electrons_sf_attach(ele_wwz_t,year,"Loose") #wp80is0
         if not (is2022 or is2023):
             cor_ec.AttachElectronSF(ele_wwz_t,year=year)
             cor_ec.AttachMuonSF(mu_wwz_t,year=year)
@@ -354,8 +354,8 @@ class AnalysisProcessor(processor.ProcessorABC):
                 weights_obj_base.add("PU", cor_ec.run3_pu_attach(events.Pileup,year,"nominal"), cor_ec.run3_pu_attach(events.Pileup,year,"hi"), cor_ec.run3_pu_attach(events.Pileup,year,"lo"))
 
             # Lepton SFs and systs
-            #weights_obj_base.add("lepSF_muon", events.sf_4l_muon, copy.deepcopy(events.sf_4l_hi_muon), copy.deepcopy(events.sf_4l_lo_muon))
-            #weights_obj_base.add("lepSF_elec", events.sf_4l_elec, copy.deepcopy(events.sf_4l_hi_elec), copy.deepcopy(events.sf_4l_lo_elec))
+            weights_obj_base.add("lepSF_muon", events.sf_4l_muon, copy.deepcopy(events.sf_4l_hi_muon), copy.deepcopy(events.sf_4l_lo_muon))
+            weights_obj_base.add("lepSF_elec", events.sf_4l_elec, copy.deepcopy(events.sf_4l_hi_elec), copy.deepcopy(events.sf_4l_lo_elec))
 
 
         # Set up the list of systematics that are handled via event weight variations
