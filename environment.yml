@@ -12,3 +12,6 @@ dependencies:
   - git
   - pyyaml
   - conda-forge::root
+  - mpltern
+  - scikit-learn
+  - conda-forge::correctionlib=2.5.0
