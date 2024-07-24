@@ -25,11 +25,12 @@
     "wwz_pres_m_dz"    : 0.1,
     "wwz_pres_m_sip3d" : 8.0,
     "wwz_pres_m_miniPFRelIso_all" : 0.4,
-    "run3_wwz_pres_m_miniIsoId_Loose" : 1.0,
-    "run3_wwz_pres_m_miniIsoId_Medium" : 2.0,
-    "run3_wwz_pres_m_miniIsoId_Tight" : 3.0,
     "run3_wwz_pres_m_pfIsoId_Loose" : 2.0,
-    "run3_wwz_pres_m_pfIsoId_Tight" : 4.0,
+
+    "wwz_jet_vetomap_pt"     : 15.0,
+    "wwz_jet_vetomap_emfrac" : 0.9,
+    "wwz_jet_vetomap_jetid" : 2.0,
+    "wwz_jet_vetomap_puId" : 0.0,
 
     "run3_2lep_pres_e_pt"    : 10.0,
     "run3_2lep_pres_e_eta"   : 2.5,

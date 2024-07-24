@@ -42,7 +42,6 @@ def is_presel_wwz_ele(ele,is2022,is2023):
     mask_return = mask & mask_year
     return mask_return
 
-
 # WWZ preselection for muons
 def is_presel_wwz_mu(mu,is2022,is2023):
     mask = (
@@ -243,5 +242,26 @@ def is_tight_run3_mu_tnp(mu):
     )
     return mask
 
+####################################################################
 
+def is_jet_vetomap_id(jet,is2022,is2023):
+    mask = (
+        (jet.pt                               >  get_ec_param("wwz_jet_vetomap_pt")) &
+        ((abs(jet.chEmEF) + abs(jet.neEmEF))  <  get_ec_param("wwz_jet_vetomap_emfrac")) &
+        (jet.jetId                            >= get_ec_param("wwz_jet_vetomap_jetid"))
+    )
+
+    if not (is2022 or is2023):
+        mask_run2 = (
+            ((jet.puId > get_ec_param("wwz_jet_vetomap_puId")) & (jet.pt < 50)) | (jet.pt >= 50)
+        )
+    if (is2022 or is2023):
+        return mask
+    else:
+        return mask & mask_run2
+
+# Muons for jet veto maps
+def is_mu_vetomap(mu):
+    mask = (mu.isPFcand)
+    return mask
 

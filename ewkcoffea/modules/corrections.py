@@ -329,3 +329,63 @@ def run3_pu_attach(pileup,year,sys):
         return pu_corr_lo
     if sys not in ["nominal","hi","lo"]:
         raise Exception("ERROR: Not a recognized parameter.")
+
+def wwz_jet_vetomap(jets,year):
+
+    # Get the right sf json for the given campaign
+    if year == "2016":
+        fname = ewkcoffea_path("data/wwz_jerc/2016_jerc/jetvetomaps.json")
+        key = "Summer19UL16_V1"
+    elif year == "2016APV":
+        fname = ewkcoffea_path("data/wwz_jerc/2016APV_jerc/jetvetomaps.json")
+        key = "Summer19UL16_V1" #TODO Check this key (odd it is same as 2016)
+    elif year == "2017":
+        fname = ewkcoffea_path("data/wwz_jerc/2017_jerc/jetvetomaps.json")
+        key = "Summer19UL17_V1"
+    elif year == "2018":
+        fname = ewkcoffea_path("data/wwz_jerc/2018_jerc/jetvetomaps.json")
+        key = "Summer19UL18_V1"
+    elif year == "2022":
+        fname = ewkcoffea_path("data/wwz_jerc/2022_jerc/jetvetomaps.json")
+        key = "Summer22_23Sep2023_RunCD_V1"
+    elif year == "2022EE":
+        fname = ewkcoffea_path("data/wwz_jerc/2022EE_jerc/jetvetomaps.json")
+        key = "Summer22EE_23Sep2023_RunEFG_V1"
+    elif year == "2023":
+        #fname = ewkcoffea_path("")
+        #key = ""
+        raise Warning("2023 Jet Veto Map not available. Will use 2022 for now.")
+        fname = ewkcoffea_path("data/wwz_jerc/2022_jerc/jetvetomaps.json")
+        key = "Summer22_23Sep2023_RunCD_V1"
+    elif year == "2023BPix":
+        #fname = ewkcoffea_path("")
+        #key = ""
+        raise Warning("2023BPix Jet Veto Map not available. Will use 2022 for now.")
+        fname = ewkcoffea_path("data/wwz_jerc/2022_jerc/jetvetomaps.json")
+        key = "Summer22_23Sep2023_RunCD_V1"
+    else:
+        raise Exception("Trying to apply Run3 Muon SF where they shouldn't be!")
+
+    # Grab the json
+    ceval = correctionlib.CorrectionSet.from_file(fname)
+
+    # Flatten the inputs
+    eta_flat = ak.flatten(jets.eta)
+    phi_flat = ak.flatten(jets.phi)
+
+    #Put mins and maxes on the accepted values 
+    eta_flat_bound = ak.where(eta_flat>5.0,5.0,ak.where(eta_flat<-5.0,-5.0,eta_flat))
+    phi_flat_bound = ak.where(phi_flat>3.1415,3.1415,ak.where(phi_flat<-3.1415,-3.1415,phi_flat))
+
+    #Get an array of 0 and 1 for the jet veto map (0 is passing)
+    jet_vetomap_flat = ceval[key].evaluate('jetvetomap',eta_flat_bound,phi_flat_bound)
+
+    #Unflatten the array
+    jet_vetomap_score = ak.unflatten(jet_vetomap_flat,ak.num(jets.phi))
+
+    #Sum the outputs for each event
+    veto_map_event = ak.sum(jet_vetomap_score, axis=-1)
+    #veto_map_event = ak.sum(jet_vetomap_score, axis=1)
+    #print(veto_map_event)
+    #jets['veto_map_scores'] = veto_map_event
+    return veto_map_event

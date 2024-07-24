@@ -317,6 +317,11 @@ class AnalysisProcessor(processor.ProcessorABC):
         else:
             mu["is_tight_lep_for_wwz"] = (mu_presl_mask)
 
+        #Muon selection to be cleaned with jets for jet veto maps
+        mu_jetvetomask = os_ec.is_mu_vetomap(mu)
+        mu["is_mu_for_vetomap"] = (mu_jetvetomask)
+        mu_vetomap = mu[mu.is_mu_for_vetomap]
+
         # Get tight leptons for WWZ selection
         ele_wwz_t = ele[ele.is_tight_lep_for_wwz]
         mu_wwz_t = mu[mu.is_tight_lep_for_wwz]
@@ -439,6 +444,15 @@ class AnalysisProcessor(processor.ProcessorABC):
 
             # Clean with dr (though another option is to use jetIdx)
             cleanedJets = os_ec.get_cleaned_collection(l_wwz_t,jets)
+
+            #Jet Veto Map cleaning and ID
+            cleanedvetoJets = os_ec.get_cleaned_collection(mu_vetomap,jets,drcut=0.2)
+            jet_vetomap_mask = os_ec.is_jet_vetomap_id(cleanedvetoJets,is2022,is2023)
+            cleanedvetoJets["is_vetomap_jet"] = (jet_vetomap_mask)
+            wwz_veto_jets = cleanedvetoJets[cleanedvetoJets.is_vetomap_jet]
+
+            #Get the Veto Map Event Array (0 is pass and > 0 is fail)
+            veto_map_array = cor_ec.wwz_jet_vetomap(wwz_veto_jets,year)
 
             # Selecting jets and cleaning them
             jetptname = "pt_nom" if hasattr(cleanedJets, "pt_nom") else "pt"
@@ -573,6 +587,9 @@ class AnalysisProcessor(processor.ProcessorABC):
             # Pass trigger mask
             pass_trg = es_tc.trg_pass_no_overlap(events,isData,dataset,str(year),dataset_dict=es_ec.dataset_dict,exclude_dict=es_ec.exclude_dict,era=era)
             pass_trg = (pass_trg & es_ec.trg_matching(events,year))
+
+            # Veto Jet Mask
+            pass_veto_mask = (veto_map_array == 0)
 
             # b jet masks
             bmask_atleast1med_atleast2loose = ((nbtagsm>=1)&(nbtagsl>=2)) # Used for 2lss and 4l
@@ -893,36 +910,36 @@ class AnalysisProcessor(processor.ProcessorABC):
             ww_me = ((abs(w_lep0.pdgId) == 13) & (abs(w_lep1.pdgId) == 11))
             lepflav_4e = ((abs(l0.pdgId)==11) & (abs(l1.pdgId)==11) & (abs(l2.pdgId)==11) & (abs(l3.pdgId)==11))
             lepflav_4m = ((abs(l0.pdgId)==13) & (abs(l1.pdgId)==13) & (abs(l2.pdgId)==13) & (abs(l3.pdgId)==13))
-            selections.add("cr_4l_btag_of",            (pass_trg & events.is4lWWZ & bmask_atleast1loose & events.wwz_presel_of))
-            selections.add("cr_4l_btag_sf_offZ_met80", (pass_trg & events.is4lWWZ & bmask_atleast1loose & events.wwz_presel_sf & w_candidates_mll_far_from_z & (met.pt > 80.0)))
-            selections.add("cr_4l_sf", (pass_trg & events.is4lWWZ & bmask_exactly0loose & events.wwz_presel_sf & (~w_candidates_mll_far_from_z)))
+            selections.add("cr_4l_btag_of",            (pass_veto_mask & pass_trg & events.is4lWWZ & bmask_atleast1loose & events.wwz_presel_of))
+            selections.add("cr_4l_btag_sf_offZ_met80", (pass_veto_mask & pass_trg & events.is4lWWZ & bmask_atleast1loose & events.wwz_presel_sf & w_candidates_mll_far_from_z & (met.pt > 80.0)))
+            selections.add("cr_4l_sf", (pass_veto_mask & pass_trg & events.is4lWWZ & bmask_exactly0loose & events.wwz_presel_sf & (~w_candidates_mll_far_from_z)))
             # H->ZZ validation region: note, this is not enforced to be orthogonal to the SR, but it has effectively zero signal in it
-            selections.add("cr_4l_sf_higgs", (pass_trg & events.is4lWWZ & events.wwz_presel_sf & ((mllll > 119) & (mllll < 131))))
+            selections.add("cr_4l_sf_higgs", (pass_veto_mask & pass_trg & events.is4lWWZ & events.wwz_presel_sf & ((mllll > 119) & (mllll < 131))))
 
 
             # For Cut Based SRs
 
-            selections.add("sr_4l_sf_A", (pass_trg & events.is4lWWZ & bmask_exactly0loose & events.wwz_presel_sf & w_candidates_mll_far_from_z & sf_A))
-            selections.add("sr_4l_sf_B", (pass_trg & events.is4lWWZ & bmask_exactly0loose & events.wwz_presel_sf & w_candidates_mll_far_from_z & sf_B))
-            selections.add("sr_4l_sf_C", (pass_trg & events.is4lWWZ & bmask_exactly0loose & events.wwz_presel_sf & w_candidates_mll_far_from_z & sf_C))
-            selections.add("sr_4l_of_1", (pass_trg & events.is4lWWZ & bmask_exactly0loose & events.wwz_presel_of & of_1 & mt2_mask))
-            selections.add("sr_4l_of_2", (pass_trg & events.is4lWWZ & bmask_exactly0loose & events.wwz_presel_of & of_2 & mt2_mask))
-            selections.add("sr_4l_of_3", (pass_trg & events.is4lWWZ & bmask_exactly0loose & events.wwz_presel_of & of_3 & mt2_mask))
-            selections.add("sr_4l_of_4", (pass_trg & events.is4lWWZ & bmask_exactly0loose & events.wwz_presel_of & of_4))
+            selections.add("sr_4l_sf_A", (pass_veto_mask & pass_trg & events.is4lWWZ & bmask_exactly0loose & events.wwz_presel_sf & w_candidates_mll_far_from_z & sf_A))
+            selections.add("sr_4l_sf_B", (pass_veto_mask & pass_trg & events.is4lWWZ & bmask_exactly0loose & events.wwz_presel_sf & w_candidates_mll_far_from_z & sf_B))
+            selections.add("sr_4l_sf_C", (pass_veto_mask & pass_trg & events.is4lWWZ & bmask_exactly0loose & events.wwz_presel_sf & w_candidates_mll_far_from_z & sf_C))
+            selections.add("sr_4l_of_1", (pass_veto_mask & pass_trg & events.is4lWWZ & bmask_exactly0loose & events.wwz_presel_of & of_1 & mt2_mask))
+            selections.add("sr_4l_of_2", (pass_veto_mask & pass_trg & events.is4lWWZ & bmask_exactly0loose & events.wwz_presel_of & of_2 & mt2_mask))
+            selections.add("sr_4l_of_3", (pass_veto_mask & pass_trg & events.is4lWWZ & bmask_exactly0loose & events.wwz_presel_of & of_3 & mt2_mask))
+            selections.add("sr_4l_of_4", (pass_veto_mask & pass_trg & events.is4lWWZ & bmask_exactly0loose & events.wwz_presel_of & of_4))
 
             selections.add("all_events", (events.is4lWWZ | (~events.is4lWWZ))) # All events.. this logic is a bit roundabout to just get an array of True
             selections.add("4l_presel", (events.is4lWWZ)) # This matches the VVV looper selection (object selection and event selection)
 
             selections.add("sr_4l_sf", selections.any("sr_4l_sf_A","sr_4l_sf_B","sr_4l_sf_C"))
             selections.add("sr_4l_of", selections.any("sr_4l_of_1","sr_4l_of_2","sr_4l_of_3","sr_4l_of_4"))
-            selections.add("sr_4l_sf_incl", (pass_trg & events.is4lWWZ & bmask_exactly0loose & events.wwz_presel_sf & w_candidates_mll_far_from_z & (met.pt >= 65.0))) # Inclusive over SF sr (only applying cuts that are applied to all SF SRs), just use for visualization
-            selections.add("sr_4l_of_incl", (pass_trg & events.is4lWWZ & bmask_exactly0loose & events.wwz_presel_of)) # Inclusive over OF sr (only applying cuts that are applied to all OF SRs), just use for visualization
+            selections.add("sr_4l_sf_incl", (pass_veto_mask & pass_trg & events.is4lWWZ & bmask_exactly0loose & events.wwz_presel_sf & w_candidates_mll_far_from_z & (met.pt >= 65.0))) # Inclusive over SF sr (only applying cuts that are applied to all SF SRs), just use for visualization
+            selections.add("sr_4l_of_incl", (pass_veto_mask & pass_trg & events.is4lWWZ & bmask_exactly0loose & events.wwz_presel_of)) # Inclusive over OF sr (only applying cuts that are applied to all OF SRs), just use for visualization
 
             # For BDT SRs
 
-            sr_4l_bdt_sf_presel = (pass_trg & events.is4lWWZ & bmask_exactly0loose & events.wwz_presel_sf & w_candidates_mll_far_from_z)
-            sr_4l_bdt_sf_trn    = (pass_trg & events.is4lWWZ & bmask_exactly0loose & events.wwz_presel_sf & w_candidates_mll_far_from_z & mt2_mask)
-            sr_4l_bdt_of_presel = (pass_trg & events.is4lWWZ & bmask_exactly0loose & events.wwz_presel_of)
+            sr_4l_bdt_sf_presel = (pass_veto_mask & pass_trg & events.is4lWWZ & bmask_exactly0loose & events.wwz_presel_sf & w_candidates_mll_far_from_z)
+            sr_4l_bdt_sf_trn    = (pass_veto_mask & pass_trg & events.is4lWWZ & bmask_exactly0loose & events.wwz_presel_sf & w_candidates_mll_far_from_z & mt2_mask)
+            sr_4l_bdt_of_presel = (pass_veto_mask & pass_trg & events.is4lWWZ & bmask_exactly0loose & events.wwz_presel_of)
             sr_4l_bdt_of_trn    = sr_4l_bdt_of_presel # For OF, presel and trn regions are the same
 
             selections.add("sr_4l_bdt_sf_presel", sr_4l_bdt_sf_presel)
