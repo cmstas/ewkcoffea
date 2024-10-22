@@ -450,11 +450,13 @@ class AnalysisProcessor(processor.ProcessorABC):
                 f"AbsoluteStat_uncorrelated_{year}",f"RelativeJEREC1_uncorrelated_{year}",f"RelativeJEREC2_uncorrelated_{year}",f"RelativePtEC1_uncorrelated_{year}",f"RelativePtEC2_uncorrelated_{year}",
                 f"TimePtEta_uncorrelated_{year}",f"RelativeSample_uncorrelated_{year}",f"RelativeStatEC_uncorrelated_{year}",f"RelativeStatFSR_uncorrelated_{year}",f"RelativeStatHF_uncorrelated_{year}",
                 f"JER_{year}",
+                f"MET_pfunclustered_{year}",
             ]
         else:
             obj_correction_systs = [
                 f"JEC_{year}",
                 f"JER_{year}",
+                f"MET_pfunclustered_{year}",
             ]
         obj_correction_systs = append_up_down_to_sys_base(obj_correction_systs)
 
@@ -476,14 +478,9 @@ class AnalysisProcessor(processor.ProcessorABC):
             cleanedJets = os_ec.get_cleaned_collection(l_wwz_t,jets)
             jetptname = "pt_nom" if hasattr(cleanedJets, "pt_nom") else "pt"
 
-            # Jet Veto Maps
-            # Zero is passing the veto map, so Run 2 will be assigned an array of length events with all zeros
-            veto_map_array = cor_ec.ApplyJetVetoMaps(cleanedJets, year) if (is2022 or is2023) else ak.zeros_like(met.pt)
-            veto_map_mask = (veto_map_array == 0)
-
             ##### JME Stuff #####
-
             cleanedJets["pt_raw"] = (1 - cleanedJets.rawFactor)*cleanedJets.pt
+            cleanedJets["pt_orig"] = cleanedJets.pt
             cleanedJets["mass_raw"] = (1 - cleanedJets.rawFactor)*cleanedJets.mass
 
             if not isData:
@@ -497,7 +494,18 @@ class AnalysisProcessor(processor.ProcessorABC):
             events_cache = events.caches[0] # used for storing intermediary values for corrections
             cleanedJets = cor_ec.ApplyJetCorrections(year,isData, era).build(cleanedJets,lazy_cache=events_cache,isdata=isData)
             cleanedJets = cor_ec.ApplyJetSystematics(year,cleanedJets,obj_corr_syst_var)
-            #met=ApplyJetCorrections(year,isData, era, corr_type='met').build(met, cleanedJets, lazy_cache=events_cache)
+
+            # Jet Veto Maps
+            # Zero is passing the veto map, so Run 2 will be assigned an array of length events with all zeros
+            veto_map_array = cor_ec.ApplyJetVetoMaps(cleanedJets, year) if (is2022 or is2023) else ak.zeros_like(met.pt)
+            veto_map_mask = (veto_map_array == 0)
+
+            # Get Acceptable jets for MET corrections
+            correctionJets = os_ec.get_correctable_jets(cleanedJets)
+
+            # Apply MET Corrections and Uncertainties
+            met["pt_orig"] = met.pt
+            met = cor_ec.CorrectedMETFactory(correctionJets,year,met,obj_corr_syst_var,isData)
 
             ##### End of JERC #####
 
