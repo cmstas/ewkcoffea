@@ -111,7 +111,7 @@ if __name__ == '__main__':
         print(type(dask_write_out))
         dask.compute(
             dask_write_out,
-            #scheduler=m.get,
+            scheduler=m.get,
         )
 
     print("Done!")
