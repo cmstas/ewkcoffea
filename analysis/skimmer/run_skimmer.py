@@ -2,11 +2,15 @@ import yaml
 import json
 import os
 
+import dask
+from ndcctools.taskvine import DaskVine
+
 import uproot
 from coffea.nanoevents import NanoAODSchema
 from coffea.dataset_tools import preprocess, apply_to_fileset
 
-import skimmer_processor as sp
+
+import skimmer_processor as skimming_processor
 
 def read_file(filename):
     with open(filename) as f:
@@ -24,6 +28,7 @@ if __name__ == '__main__':
     json_lst = []
     lines = read_file("samples.cfg")
     for line in lines:
+        if line.startswith("#"): continue
         if line == "": continue
         elif line.startswith("prefix:"):
             prefix = line.split()[1]
@@ -66,21 +71,48 @@ if __name__ == '__main__':
     # Run apply_to_fileset
     print("Computing dask task graph")
     skimmed_dict = apply_to_fileset(
-        sp.make_skimmed_events, dataset_runnable, schemaclass=NanoAODSchema
+        skimming_processor.make_skimmed_events, dataset_runnable, schemaclass=NanoAODSchema
     )
+
+    ### Set up DaskVine stuff ###
+    m = DaskVine(
+        [9123,9128],
+        name=f"coffea-vine-{os.environ['USER']}",
+        run_info_path="/blue/p.chang/k.mohrman/vine-run-info",
+    )
+    #############################
+
 
 
     # Executing task graph and saving
     print("Executing task graph and saving")
     for dataset, skimmed in skimmed_dict.items():
-        skimmed = sp.uproot_writeable(skimmed)
+        print("dataset name:",dataset)
+
+        # What does this do
+        skimmed = skimming_processor.uproot_writeable(
+            skimmed,
+        )
+
+        # Reparititioning so that output file contains ~100_000 eventspartition
         skimmed = skimmed.repartition(
             n_to_one=1_000
-        )  # Reparititioning so that output file contains ~100_000 eventspartition
-        uproot.dask_write(
+        )
+
+        # What does this do
+        dask_write_out = uproot.dask_write(
             skimmed,
             destination="skimtest/",
             prefix=f"{dataset}/skimmed",
+            compute=False,
         )
 
+        # Call compute on the skimmed output
+        print(type(dask_write_out))
+        dask.compute(
+            dask_write_out,
+            #scheduler=m.get,
+        )
+
+    print("Done!")
 

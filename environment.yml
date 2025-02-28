@@ -2,7 +2,7 @@ name: coffea_202X_skimming
 channels:
   - conda-forge
 dependencies:
-  - conda-forge::python=3.9
+  - conda-forge::python
   - numpy
   - coffea
   - ndcctools
