@@ -10,9 +10,30 @@ import shutil
 
 from topcoffea.scripts.make_html import make_html
 
+# Take an array find a cap where 99.5% of vals are below
+def get_cap_val(in_arr):
+
+    cap_val = None
+    min_val = min(in_arr)
+    max_val = max(in_arr)
+    nsteps = 10
+    step_size = abs(max_val-min_val)/nsteps
+    for iterator in range(nsteps):
+        val = min_val + iterator*step_size
+        tot = len(in_arr)
+        sub_tot = len(in_arr[in_arr<val])
+        if sub_tot/tot > 0.999:
+            cap_val = val
+            break
+
+    if cap_val is None: cap_val = max(in_arr)
+
+    return cap_val
+
+
 def main():
 
-    ### Get input data ###
+    ############# Get input data #############
 
     out_dir_name = "outdir_train"
     if not os.path.exists(out_dir_name):
@@ -40,7 +61,62 @@ def main():
     print("w_test_of",w_train_of,len(w_test_of))
 
 
-    ### Define model and fit ###
+    ############# Plot input vars #############
+
+    shutil.copyfile("/home/users/phchang/public_html/dump/forKelci/index.php.txt", os.path.join(out_dir_name,"index.php"))
+
+    nvars = 16
+    sig_key = 0
+    bkg_key = 1
+
+    for i in range(nvars):
+        print(i)
+
+        ### Get the capped arrays ###
+        # Train
+        var_train_i  = X_train_of[:,i]
+        cap_val_train = get_cap_val(var_train_i)
+        # Test
+        var_test_i  = X_test_of[:,i]
+        cap_val_test = get_cap_val(var_test_i)
+        # Cap
+        cap_val = max(cap_val_test,cap_val_train)
+        var_train_i = np.where(var_train_i<cap_val,var_train_i,cap_val)
+        var_test_i  = np.where(var_test_i<cap_val,var_test_i,cap_val)
+
+        # Train
+        wgt_train    = w_train_of
+        var_train_i_sig = var_train_i[y_train_of == sig_key]
+        var_train_i_bkg = var_train_i[y_train_of == bkg_key]
+        wgt_train_sig   = w_train_of[y_train_of == sig_key]
+        wgt_train_bkg   = w_train_of[y_train_of == bkg_key]
+
+        # Test
+        wgt_test    = w_test_of
+        var_test_i_sig = var_test_i[y_test_of == sig_key]
+        var_test_i_bkg = var_test_i[y_test_of == bkg_key]
+        wgt_test_sig   = w_test_of[y_test_of == sig_key]
+        wgt_test_bkg   = w_test_of[y_test_of == bkg_key]
+
+        # Plot the hist
+        fig, ax = plt.subplots(figsize=(5,5))
+        hrange = (min(min(var_test_i),min(var_train_i)),cap_val)
+        plt.hist(var_train_i_sig,weights=wgt_train_sig,bins=60,range=hrange,histtype="step",label="train sig",density=True)
+        plt.hist(var_test_i_sig, weights=wgt_test_sig, bins=60,range=hrange,histtype="step",label="test sig",density=True)
+        plt.hist(var_train_i_bkg,weights=wgt_train_bkg,bins=60,range=hrange,histtype="step",label="train bkg",density=True)
+        plt.hist(var_test_i_bkg, weights=wgt_test_bkg, bins=60,range=hrange,histtype="step",label="test bkg",density=True)
+        plt.legend()
+        plt.xlabel('mystery variable')
+        plt.title(f'Variable {i}, density=T')
+        plt.savefig(f"{out_dir_name}/var_{i}.png")
+        plt.savefig(f"{out_dir_name}/var_{i}.pdf")
+        plt.clf()
+
+        #break
+
+
+    exit()
+    ############# Define model and fit #############
 
     xgb_clf = xgb.XGBClassifier(
         objective='binary:logistic',
@@ -76,7 +152,6 @@ def main():
 
     ############# Make resutls plots #############
 
-    shutil.copyfile("/home/users/phchang/public_html/dump/forKelci/index.php.txt", os.path.join(out_dir_name,"index.php"))
 
     ###  Make hists ###
 
@@ -128,6 +203,9 @@ def main():
     plt.title('GridSearchCV XGBoost logloss')
     plt.savefig(f"{out_dir_name}/logloss.png")
     plt.savefig(f"{out_dir_name}/logloss.pdf")
+    ax.set_yscale('log')
+    plt.savefig(f"{out_dir_name}/logloss_log.png")
+    plt.savefig(f"{out_dir_name}/logloss_log.pdf")
     plt.clf()
 
     # xgboost 'error' plot
