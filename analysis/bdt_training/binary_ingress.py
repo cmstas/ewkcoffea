@@ -276,8 +276,8 @@ def main():
     #label_d["WZZ"] = 1
     #label_d["Bkg"] = 2
 
-    label_d["Sig"] = 0
-    label_d["Bkg"] = 1
+    label_d["Sig"] = 1
+    label_d["Bkg"] = 0
 
     # Remove duplicates and get only unique variable names
     # Since we looped over multiple categories same variable names were put in
