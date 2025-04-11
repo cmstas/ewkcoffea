@@ -12,8 +12,28 @@ _VAR_LST_TMP = [
     "j0pt",
     "nleps",
 ]
-
 VAR_LST_TMP = [
+    "ptl4",
+    "scalarptsum_lepmetjet",
+    "l0pt",
+    "l1pt",
+    "l2pt",
+    "l3pt",
+    "j0pt",
+    "j1pt",
+    "absdphi_zl0_zl1",
+    "absdphi_wl0_wl1",
+    "mll_wl0_wl1",
+    "mll_zl0_zl1",
+    "mll_min_sfos",
+    "met",
+    "njets",
+    "nbtagsl",
+    "mjj_j0j1",
+    "mjj_nearz",
+]
+
+_VAR_LST_TMP = [
     #"absdphi_4l_met",
     #"absdphi_min_afas",
     #"absdphi_min_afos",
@@ -86,6 +106,11 @@ VAR_LST_TMP = [
     #"z_lep1_pt",
 ]
 
+VAR_LST_TMP_FULL = []
+for var_base in VAR_LST_TMP:
+    VAR_LST_TMP_FULL.append("base_bdt_"+var_base)
+
+
 def prepare_bdt_training_data(pklfilepath):
 
     # Open up the pickle file
@@ -104,15 +129,14 @@ def prepare_bdt_training_data(pklfilepath):
 
     # Parse the pickle file and store to myd as numpy arrays
     for list_output_name in list_output_names: 
-            myd[list_output_name] = np.array(d[list_output_name])
+        myd[list_output_name] = np.array(d[list_output_name])
     for var in VAR_LST_TMP: 
-            myd["base_bdt_" + var] = np.array(d["list_base_bdt_" + var])
+        myd["base_bdt_" + var] = np.array(d["list_base_bdt_" + var])
 
     # Sample groupings to split the data into signals, and backgrounds
     sample_dict_mc = sg.create_mc_sample_dict("run2")
 
     # List of categories that will use BDT to label
-    #categories = ["WWZ", "ZH", "Bkg"]
     #categories = ["ZZZ", "WZZ", "Bkg"]
     categories = ["Sig", "Bkg"]
 
@@ -144,9 +168,6 @@ def prepare_bdt_training_data(pklfilepath):
     for proc in sample_dict_mc:
 
         # Grouping handling for background (all backgrounds are grouped as "Bkg")
-        # proc_cat will be either "WWZ", "ZH", or "Bkg"
-        #proc_cat = proc
-        #if proc in ["ZZ", "ttZ", "tWZ", "WZ", "other"]:
         if proc in ["ZZ", "ttZ", "VHnobb", "other"]:
             proc_cat = "Bkg"
         if proc in ["ZZZ", "WZZ"]:
@@ -185,6 +206,7 @@ def prepare_bdt_training_data(pklfilepath):
     # Split the testing and training by event number (even event number vs. odd event number)
     for cat in categories:
         for key in bdt_data[cat]["all"].keys():
+            print("key",key)
             if "base" in key:
                 test = bdt_data[cat]["all"][key][bdt_data[cat]["all"]["base_bdt_event"] % 2 == 1] # Getting events with event number that is even
                 train = bdt_data[cat]["all"][key][bdt_data[cat]["all"]["base_bdt_event"] % 2 == 0] # Getting events with event number that is odd
@@ -275,10 +297,13 @@ def main():
     for var in VAR_LST_TMP : X_test_of.append(np.array([])) # Allocate N variable worth of lists
 
     # Loop over the variables and store
-    print("bdt_data.keys()",bdt_data.keys())
+    final_var_lst = []
+    print(base_variables)
+    print(len(base_variables))
     for cat in bdt_data.keys():
         # Store the variables
-        for ivar, var in enumerate(base_variables):
+        for ivar, var in enumerate(VAR_LST_TMP_FULL):
+            final_var_lst.append(var)
             X_train_of[ivar] = np.concatenate((X_train_of[ivar], bdt_data[cat]["train"][var]))
             X_test_of[ivar] = np.concatenate((X_test_of[ivar], bdt_data[cat]["test"][var]))
         # Take the last variable and get length and create labels
@@ -286,9 +311,6 @@ def main():
         y_test_of = np.concatenate((y_test_of, np.full(len(bdt_data[cat]["test"][var]), label_d[cat])))
         w_train_of = np.concatenate((w_train_of, bdt_data[cat]["train"]["base_bdt_weight"]))
         w_test_of = np.concatenate((w_test_of, bdt_data[cat]["test"]["base_bdt_weight"]))
-        #for ivar, var in enumerate(sf_variables):
-            #X_train_sf[ivar] = np.concatenate((X_train_sf[ivar], bdt_data[cat]["train"][var]))
-            #X_test_sf[ivar] = np.concatenate((X_test_sf[ivar], bdt_data[cat]["test"][var]))
 
     # Turn them into numpy array
     X_train_of = np.array(X_train_of)
@@ -307,37 +329,6 @@ def main():
     print(y_test_of.shape)
     print(w_test_of.shape)
 
-    ##### TMVA
-
-    ## Building TMVA output numpy array (which needs to be in a flat matrix)
-    #y_train_tmva_of = []
-    #y_test_tmva_of = []
-
-    ## Allocate some empty arrays where we will store things (there are 3 scores in tmva)
-    ##tmva_scores_categories = ["wwz", "zh", "bkg"]
-    #tmva_scores_categories = ["zzz", "wzz", "bkg"]
-    #for var in range(len(tmva_scores_categories)): y_train_tmva_of.append(np.array([])) # Allocate N variable worth of lists
-    #for var in range(len(tmva_scores_categories)): y_test_tmva_of.append(np.array([])) # Allocate N variable worth of lists
-
-    ## Loop over the variables and store
-    #for cat in bdt_data.keys():
-    #    # Store the variables
-    #    for ivar, var in enumerate(tmva_scores_categories):
-    #        y_train_tmva_of[ivar] = np.concatenate((y_train_tmva_of[ivar], bdt_data[cat]["train"][f"tmva_bdt_base_{var}"]))
-    #        y_test_tmva_of[ivar]  = np.concatenate((y_test_tmva_of[ivar], bdt_data[cat]["test"][f"tmva_bdt_base_{var}"]))
-    #        #y_train_tmva_sf[ivar] = np.concatenate((y_train_tmva_sf[ivar], bdt_data[cat]["train"][f"tmva_bdt_sf_{var}"]))
-    #        #y_test_tmva_sf[ivar]  = np.concatenate((y_test_tmva_sf[ivar], bdt_data[cat]["test"][f"tmva_bdt_sf_{var}"]))
-
-    #y_train_tmva_of = np.array(y_train_tmva_of)
-    #y_test_tmva_of = np.array(y_test_tmva_of)
-    #y_train_tmva_sf = np.array(y_train_tmva_sf)
-    #y_test_tmva_sf = np.array(y_test_tmva_sf)
-
-    #y_train_tmva_of = y_train_tmva_of.T
-    #y_test_tmva_of = y_test_tmva_of.T
-    #y_train_tmva_sf = y_train_tmva_sf.T
-    #y_test_tmva_sf = y_test_tmva_sf.T
-
     dd = {}
     dd["X_train_of"] = X_train_of
     dd["y_train_of"] = y_train_of
@@ -345,8 +336,8 @@ def main():
     dd["X_test_of"] = X_test_of
     dd["y_test_of"] = y_test_of
     dd["w_test_of"] = w_test_of
-    #dd["y_train_tmva_of"] = y_train_tmva_of
-    #dd["y_test_tmva_of"] = y_test_tmva_of
+
+    dd["var_name_lst"] = VAR_LST_TMP_FULL
 
     with gzip.open("bdt.pkl.gz", "wb") as fout:
         cloudpickle.dump(dd, fout)

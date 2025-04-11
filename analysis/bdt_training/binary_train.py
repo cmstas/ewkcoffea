@@ -39,12 +39,8 @@ def main():
     if not os.path.exists(out_dir_name):
         os.mkdir(out_dir_name)
 
-    #dd = pickle.load(gzip.open("bdt.pkl.gz"))
-    #dd = pickle.load(gzip.open("bdt_v0.pkl.gz"))
-    #dd = pickle.load(gzip.open("bdt_zzz_siphon02.pkl.gz"))
-    #dd = pickle.load(gzip.open("bdt_zzz_siphon02_18vars.pkl.gz"))
-    #dd = pickle.load(gzip.open("bdt_siphon04_18vars_j00.pkl.gz"))
-    dd = pickle.load(gzip.open("bdt_zzz_siphon05_18vars.pkl.gz"))
+    #dd = pickle.load(gzip.open("bdt_zzz_siphon05_16vars_k_ordered.pkl.gz"))
+    dd = pickle.load(gzip.open("bdt_zzz_siphon05_18vars_p_ordered.pkl.gz"))
 
     X_train_of = dd["X_train_of"]
     y_train_of = dd["y_train_of"]
@@ -53,24 +49,27 @@ def main():
     y_test_of = dd["y_test_of"]
     w_test_of = dd["w_test_of"]
 
-    print("X_train_of",X_train_of,len(X_train_of))
-    print("y_train_of",y_train_of,len(y_train_of))
-    print("w_train_of",w_train_of,len(w_train_of))
-    print("X_test_of",X_train_of,len(X_test_of))
-    print("y_test_of",y_train_of,len(y_test_of))
-    print("w_test_of",w_train_of,len(w_test_of))
+    var_name_lst = dd["var_name_lst"]
+
+    print("X_train_of",X_train_of.shape)
+    print("y_train_of",y_train_of.shape)
+    print("w_train_of",w_train_of.shape)
+    print("X_test_of" ,X_test_of.shape)
+    print("y_test_of" ,y_test_of.shape)
+    print("w_test_of" ,w_test_of.shape)
 
 
     ############# Plot input vars #############
 
     shutil.copyfile("/home/users/phchang/public_html/dump/forKelci/index.php.txt", os.path.join(out_dir_name,"index.php"))
 
-    nvars = 16
+    nvars = len(var_name_lst)
     sig_key = 0
     bkg_key = 1
 
-    for i in range(nvars):
-        print(i)
+    print("var_name_lst",var_name_lst)
+    for i,var_name in enumerate(var_name_lst):
+        print(i,var_name)
 
         ### Get the capped arrays ###
         # Train
@@ -106,16 +105,14 @@ def main():
         plt.hist(var_train_i_bkg,weights=wgt_train_bkg,bins=60,range=hrange,histtype="step",label="train bkg",density=True)
         plt.hist(var_test_i_bkg, weights=wgt_test_bkg, bins=60,range=hrange,histtype="step",label="test bkg",density=True)
         plt.legend()
-        plt.xlabel('mystery variable')
-        plt.title(f'Variable {i}, density=T')
-        plt.savefig(f"{out_dir_name}/var_{i}.png")
-        plt.savefig(f"{out_dir_name}/var_{i}.pdf")
+        plt.xlabel(f'{var_name}')
+        plt.title(f'Variable {i} {var_name}, density=T')
+        plt.savefig(f"{out_dir_name}/var_{i}_{var_name}.png")
+        plt.savefig(f"{out_dir_name}/var_{i}_{var_name}.pdf")
         plt.clf()
 
-        #break
+    #exit()
 
-
-    exit()
     ############# Define model and fit #############
 
     xgb_clf = xgb.XGBClassifier(
@@ -125,13 +122,13 @@ def main():
         grow_policy="depthwise",
         #learning_rate=2.0,
         learning_rate=0.5,
-        n_estimators=5,
-        #n_estimators=1000,
+        #n_estimators=100,
+        n_estimators=800,
         eval_metric=['error','logloss'],
         device="cuda",
         seed=42,
-        #n_jobs=32
-        n_jobs=64
+        n_jobs=32
+        #n_jobs=64
     )
     params = xgb_clf.get_params()
     print("XGBoost Classifier Parameters:\n")
@@ -153,7 +150,7 @@ def main():
     ############# Make resutls plots #############
 
 
-    ###  Make hists ###
+    ###  Make prob hist ###
 
     p_test_0 = xgb_clf.predict_proba(X_test_of)[:,0]
     p_test_1 = xgb_clf.predict_proba(X_test_of)[:,1]
@@ -172,7 +169,7 @@ def main():
     print("s",p_test_0[is_sig_test],max(p_test_0[is_sig_test]))
     print("b",p_test_0[is_bkg_test],max(p_test_0[is_bkg_test]))
 
-    fig, ax = plt.subplots(figsize=(9,5))
+    fig, ax = plt.subplots(figsize=(5,5))
     plt.hist(p_train_1[is_sig_train],bins=100,histtype="step",label="train is_sig",density=True)
     plt.hist(p_test_1[is_sig_test],bins=100,histtype="step",label="test is_sig",density=True)
     plt.hist(p_train_0[is_bkg_train],bins=100,histtype="step",label="train is_bkg",density=True)
@@ -195,7 +192,7 @@ def main():
     x_axis = range(0, epochs)
 
     # xgboost 'logloss' plot
-    fig, ax = plt.subplots(figsize=(9,5))
+    fig, ax = plt.subplots(figsize=(5,5))
     ax.plot(x_axis, results['validation_0']['logloss'], label='Train')
     ax.plot(x_axis, results['validation_1']['logloss'], label='Test')
     ax.legend()
@@ -209,7 +206,7 @@ def main():
     plt.clf()
 
     # xgboost 'error' plot
-    fig, ax = plt.subplots(figsize=(9,5))
+    fig, ax = plt.subplots(figsize=(5,5))
     ax.plot(x_axis, results['validation_0']['error'], label='Train')
     ax.plot(x_axis, results['validation_1']['error'], label='Test')
     ax.legend()
@@ -219,7 +216,7 @@ def main():
     plt.savefig(f"{out_dir_name}/error.pdf")
     plt.clf()
 
-    ### Make ROC plots ###
+    ### Make ROC plot ###
 
     y_prob_of = xgb_clf.predict_proba(X_test_of)
     n_classes = len(np.unique(y_test_of))
