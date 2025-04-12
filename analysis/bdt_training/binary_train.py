@@ -3,7 +3,6 @@ import numpy as np
 import pickle
 import gzip
 from sklearn.metrics import roc_curve, auc
-from sklearn.preprocessing import label_binarize
 import xgboost as xgb
 import os
 import shutil
@@ -40,7 +39,8 @@ def main():
         os.mkdir(out_dir_name)
 
     #dd = pickle.load(gzip.open("bdt.pkl.gz"))
-    dd = pickle.load(gzip.open("bdt_zzz_siphon05_18vars_p_ordered_b0s1_2.pkl.gz"))
+    #dd = pickle.load(gzip.open("bdt_zzz_siphon05_18vars_p_ordered_b0s1_2.pkl.gz"))
+    dd = pickle.load(gzip.open("bdt_zzz_siphon06_18vars_p_ordered.pkl.gz"))
 
     X_train_of = dd["X_train_of"]
     y_train_of = dd["y_train_of"]
@@ -51,20 +51,31 @@ def main():
 
     var_name_lst = dd["var_name_lst"]
 
-    print("X_train_of",X_train_of.shape)
-    print("y_train_of",y_train_of.shape)
-    print("w_train_of",w_train_of.shape)
-    print("X_test_of" ,X_test_of.shape)
-    print("y_test_of" ,y_test_of.shape)
-    print("w_test_of" ,w_test_of.shape)
+    # Print out shape info and write to file
+    print("Shapes:")
+    print(f"\tX_train_of: {X_train_of.shape}")
+    print(f"\ty_train_of: {y_train_of.shape}")
+    print(f"\tw_train_of: {w_train_of.shape}")
+    print(f"\tX_test_of: {X_test_of.shape}")
+    print(f"\ty_test_of: {y_test_of.shape}")
+    print(f"\tw_test_of: {w_test_of.shape}")
+    print(f"\tvar_name_lst: {var_name_lst}")
+    fout = open(f"{out_dir_name}/info.txt", "w")
+    fout.write(f"\nShapes:\n")
+    fout.write(f"\tX_train_of: {X_train_of.shape}\n")
+    fout.write(f"\ty_train_of: {y_train_of.shape}\n")
+    fout.write(f"\tw_train_of: {w_train_of.shape}\n")
+    fout.write(f"\tX_test_of: {X_test_of.shape}\n")
+    fout.write(f"\ty_test_of: {y_test_of.shape}\n")
+    fout.write(f"\tw_test_of: {w_test_of.shape}\n")
+    fout.write(f"var_name_lst: {var_name_lst}\n")
+    fout.close()
 
+    shutil.copyfile("/home/users/phchang/public_html/dump/forKelci/index.php.txt", os.path.join(out_dir_name,"index.php"))
 
     ############# Plot input vars #############
 
-    shutil.copyfile("/home/users/phchang/public_html/dump/forKelci/index.php.txt", os.path.join(out_dir_name,"index.php"))
-    print("var_name_lst",var_name_lst)
-
-    make_input_var_plots = 1
+    make_input_var_plots = 0
     if make_input_var_plots:
         nvars = len(var_name_lst)
         sig_key = 1
@@ -119,24 +130,54 @@ def main():
     ############# Define model and fit #############
 
     xgb_clf = xgb.XGBClassifier(
+        #objective='multi:softprob',
+        #objective='multi:softmax',
+        #num_class=2,
+        #objective='reg:squarederror',
+        #objective='reg:logistic',
+
         objective='binary:logistic',
-        #missing=1,
-        booster="gbtree",
-        grow_policy="depthwise",
-        learning_rate=0.05,
-        n_estimators=800,
-        #n_estimators=1500,
+        n_estimators=500,
         eval_metric=['error','logloss'],
-        device="cuda",
+        #eval_metric=['merror','mlogloss'],
         seed=42,
-        #n_jobs=32,
         n_jobs=64,
-        max_depth=6,
+        scale_pos_weight=400,
+
+        #device="cuda",
+        #grow_policy="depthwise",
+        #booster="gbtree",
+
+        learning_rate=0.2,
+        reg_lambda=1.5,
+        reg_alpha=1.5,
+        max_depth=4,
+        min_child_weight=2,
+        #min_split_loss=100, # Does not seem to help
+        #max_delta_step=10, # Seems to not do anything
+
+        subsample=0.5,
     )
+
+    # Print the params and write out for ref
+    fout = open(f"{out_dir_name}/info.txt", "a")
     params = xgb_clf.get_params()
-    print("XGBoost Classifier Parameters:\n")
+    print("\nXGBoost Classifier Parameters:\n")
+    fout.write("\nXGBoost Classifier Parameters:\n")
     for param, value in params.items():
-        print(f"  {param}: {value}")
+        print(f"\t{param}: {value}")
+        fout.write(f"  {param}: {value}\n")
+    fout.close()
+
+
+    #integral_train_of_sig = np.sum(w_train_of[y_train_of==1])
+    #integral_train_of_bkg = np.sum(w_train_of[y_train_of==0])
+    #integral_test_of_sig = np.sum(w_test_of[y_test_of==1])
+    #integral_test_of_bkg = np.sum(w_test_of[y_test_of==0])
+    #w_train_of[y_train_of==1] = w_train_of[y_train_of==1] / integral_train_of_sig
+    #w_train_of[y_train_of==0] = w_train_of[y_train_of==0] / integral_train_of_bkg
+    #w_test_of[y_test_of==1] = w_test_of[y_test_of==1] / integral_test_of_sig
+    #w_test_of[y_test_of==0] = w_test_of[y_test_of==0] / integral_test_of_bkg
 
     # Train
     xgb_clf.fit(
@@ -147,7 +188,9 @@ def main():
         eval_set=[(X_train_of, y_train_of), (X_test_of, y_test_of)]
     )
 
+    # Save  the model
     xgb_clf.save_model(f"{out_dir_name}/bdt.json")
+
 
 
     ############# Make resutls plots #############
@@ -163,16 +206,30 @@ def main():
     p_test_sig = p_test[y_test_of==1]
     p_test_bkg = p_test[y_test_of==0]
 
-    print("test s, len, avg",p_test_sig,len(p_test_sig),sum(p_test_sig)/len(p_test_sig))
-    print("test b, len, avg",p_test_bkg,len(p_test_bkg),sum(p_test_bkg)/len(p_test_bkg))
-    print("train s, len, avg",p_train_sig,len(p_train_sig),sum(p_train_sig)/len(p_train_sig))
-    print("train b, len, avg",p_train_bkg,len(p_train_bkg),sum(p_train_bkg)/len(p_train_bkg))
+    w_train_sig = w_train_of[y_train_of==1]
+    w_train_bkg = w_train_of[y_train_of==0]
+    w_test_sig  = w_test_of[y_test_of==1]
+    w_test_bkg  = w_test_of[y_test_of==0]
+
+    # Print test and train sig and bkg info
+    print(f"Test and train sig and bkg numbers:")
+    print(f"Test sig len, avg -> {len(p_test_sig)}, {sum(p_test_sig)/len(p_test_sig)}")
+    print(f"Test bkg: len, avg -> {len(p_test_bkg)}, {sum(p_test_bkg)/len(p_test_bkg)}")
+    print(f"Train sig: len, avg -> {len(p_train_sig)}, {sum(p_train_sig)/len(p_train_sig)}")
+    print(f"Train bkg: len, avg -> {len(p_train_bkg)} , {sum(p_train_bkg)/len(p_train_bkg)}")
+    fout = open(f"{out_dir_name}/info.txt", "a")
+    fout.write(f"\nTest and train sig and bkg numbers:\n")
+    fout.write(f"\tTest sig len, avg -> {len(p_test_sig)}, {sum(p_test_sig)/len(p_test_sig)}\n")
+    fout.write(f"\tTest bkg: len, avg -> {len(p_test_bkg)}, {sum(p_test_bkg)/len(p_test_bkg)}\n")
+    fout.write(f"\tTrain sig: len, avg -> {len(p_train_sig)}, {sum(p_train_sig)/len(p_train_sig)}\n")
+    fout.write(f"\tTrain bkg: len, avg -> {len(p_train_bkg)} , {sum(p_train_bkg)/len(p_train_bkg)}\n")
+    fout.close()
 
     fig, ax = plt.subplots(figsize=(5,5))
-    plt.hist(p_train_sig,bins=100,histtype="step",label="train is_sig",density=True)
-    plt.hist(p_test_sig,bins=100,histtype="step",label="test is_sig",density=True)
-    plt.hist(p_train_bkg,bins=100,histtype="step",label="train is_bkg",density=True)
-    plt.hist(p_test_bkg,bins=100,histtype="step",label="test is_bkg",density=True)
+    plt.hist(p_train_sig,weights=w_train_sig,bins=100,histtype="step",label="train is_sig",density=True)
+    plt.hist(p_test_sig, weights=w_test_sig, bins=100,histtype="step",label="test is_sig",density=True)
+    plt.hist(p_train_bkg,weights=w_train_bkg,bins=100,histtype="step",label="train is_bkg",density=True)
+    plt.hist(p_test_bkg, weights=w_test_bkg, bins=100,histtype="step",label="test is_bkg",density=True)
 
     plt.legend()
     ax.set_xlim(0,1)
@@ -189,12 +246,15 @@ def main():
     # preparing evaluation metric plots
     results = xgb_clf.evals_result()
     epochs = len(results['validation_0']['logloss'])
+    #epochs = len(results['validation_0']['mlogloss'])
     x_axis = range(0, epochs)
 
     # xgboost 'logloss' plot
     fig, ax = plt.subplots(figsize=(5,5))
     ax.plot(x_axis, results['validation_0']['logloss'], label='Train')
     ax.plot(x_axis, results['validation_1']['logloss'], label='Test')
+    #ax.plot(x_axis, results['validation_0']['mlogloss'], label='Train')
+    #ax.plot(x_axis, results['validation_1']['mlogloss'], label='Test')
     ax.legend()
     plt.ylabel('logloss')
     plt.title('GridSearchCV XGBoost logloss')
@@ -209,6 +269,8 @@ def main():
     fig, ax = plt.subplots(figsize=(5,5))
     ax.plot(x_axis, results['validation_0']['error'], label='Train')
     ax.plot(x_axis, results['validation_1']['error'], label='Test')
+    #ax.plot(x_axis, results['validation_0']['merror'], label='Train')
+    #ax.plot(x_axis, results['validation_1']['merror'], label='Test')
     ax.legend()
     plt.ylabel('error')
     plt.title('GridSearchCV XGBoost error')
