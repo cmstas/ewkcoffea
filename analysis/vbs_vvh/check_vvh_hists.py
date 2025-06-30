@@ -32,7 +32,7 @@ GRP_DICT_FULL = {
         "QCD_HT200to300",
         "QCD_HT300to500",
         "QCD_HT500to700",
-        "QCD_HT50to100", # Has a spike
+        #"QCD_HT50to100", # Has a spike
         "QCD_HT700to1000",
     ],
 
