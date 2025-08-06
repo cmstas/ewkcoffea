@@ -1,5 +1,5 @@
 import json
-import os
+#import os
 import subprocess
 import topcoffea.modules.sample_lst_jsons_tools as sjt
 
