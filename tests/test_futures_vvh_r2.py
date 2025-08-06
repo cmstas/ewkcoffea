@@ -14,7 +14,7 @@ def test_ewkcoffea_vvh():
         "--outpath",
         "analysis/vbs_vvh/histos/",
         "-p",
-        "1lep1jf_nano",
+        "semilep_nano",
     ]
 
     # Run ewkcoffea
