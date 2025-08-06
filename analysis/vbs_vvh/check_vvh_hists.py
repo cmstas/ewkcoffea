@@ -107,18 +107,40 @@ GRP_DICT_FULL = {
 CAT_LST = [
     "all_events",
     #"filter",
+    #"exactly1lep",
+
+    ### 1lep 1FJ ###
     "exactly1lep_exactly1fj",
     "presel",
-
     "preselHFJ",
     "preselHFJTag",
     "preselHFJTag_mjj115",
-
     "preselVFJ",
     "preselVFJTag",
     "preselVFJTag_mjjcent75to150",
     "preselVFJTag_mjjcent75to150_mbb75to150",
     "preselVFJTag_mjjcent75to150_mbb75to150_mvqq75p",
+
+    ### 1lep+2FJ ###
+    "exactly1lep_exactly2fj",
+    "exactly1lep_exactly2fj_lepmet600",
+    "exactly1lep_exactly2fj_lepmet600_VFJ",
+    "exactly1lep_exactly2fj_lepmet600_VFJtag",
+    "exactly1lep_exactly2fj_lepmet600_VFJtag_njcent0",
+    "exactly1lep_exactly2fj_lepmet600_HFJ",
+    "exactly1lep_exactly2fj_lepmet600_HFJtagZ",
+    "exactly1lep_exactly2fj_lepmet600_HFJtagZ_njcent0",
+
+    ### 2lOS 1FJ ###
+    "exactly2lepOS",
+    "exactly2lepOS_exactly1fj",
+    "exactly2lepOS_exactly1fj_HFJ",
+    "exactly2lepOS_exactly1fj_HFJtag",
+    "exactly2lepOS_exactly1fj_HFJtag_lepmetjetf800",
+    #"exactly2lepOS_exactly1fj_VFJ",
+    #"exactly2lepOS_exactly1fj_VFJ_met100",
+    #"exactly2lepOS_exactly1fj_VFJ_met100_lepmetjetf700",
+
 ]
 
 
@@ -295,8 +317,8 @@ def make_vvh_fig(histo_mc,histo_mc_sig,histo_mc_bkg,title="test",axisrangex=None
     ax4.axhline(0.0,linestyle="-",color="k",linewidth=0.5)
     #ax1.grid() # Note: grid does not respect z order :(
     #ax2.grid()
-    #ax3.grid()
-    #ax4.grid()
+    ax3.grid()
+    ax4.grid()
 
     shapes_ymax = max( max(sum(histo_mc_sig_norm.values(flow=True))) , max(sum(histo_mc_bkg_norm.values(flow=True))) )
     significance_max = max(max(metric_cum),max(metric_cum_ud))
@@ -454,7 +476,6 @@ def make_plots(histo_dict,year_name_lst_to_prepend):
         for var in var_lst:
             print("\nVar:",var)
             #if var not in ["njets","njets_counts","scalarptsum_lepmet"]: continue # TMP
-            #if var not in ["fj0_mparticlenet"]: continue
 
             histo = copy.deepcopy(histo_dict[var][{"systematic":"nominal", "category":cat}])
 
@@ -506,9 +527,9 @@ def main():
     histo_dict = pickle.load(gzip.open(args.pkl_file_path))
 
     # Print total raw events
-    tot_raw = sum(sum(histo_dict["njets_counts"][{"systematic":"nominal", "category":"all_events"}].values(flow=True)))
-    print("Tot raw events:",tot_raw)
-    print(histo_dict["njets"])
+    #tot_raw = sum(sum(histo_dict["njets_counts"][{"systematic":"nominal", "category":"all_events"}].values(flow=True)))
+    #print("Tot raw events:",tot_raw)
+    #print(histo_dict["njets"])
 
     # Figure out the proc naming convention
     proc_name = plt_tools.get_axis_cats(histo_dict["njets"],"process")[0]

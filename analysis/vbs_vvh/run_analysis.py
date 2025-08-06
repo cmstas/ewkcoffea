@@ -13,7 +13,7 @@ NanoAODSchema.warn_missing_crossrefs = False
 import topcoffea.modules.remote_environment as remote_environment
 
 LST_OF_KNOWN_EXECUTORS = ["futures","work_queue","iterative"]
-LST_OF_KNOWN_PROCESSORS = ["1lep1jf","1lep1jf_nano"]
+LST_OF_KNOWN_PROCESSORS = ["semilep","semilep_nano"]
 
 
 if __name__ == '__main__':
@@ -36,7 +36,7 @@ if __name__ == '__main__':
     parser.add_argument('--wc-list', action='extend', nargs='+', help = 'Specify a list of Wilson coefficients to use in filling histograms.')
     parser.add_argument('--hist-list', action='extend', nargs='+', help = 'Specify a list of histograms to fill.')
     parser.add_argument('--port', default='9123-9130', help = 'Specify the Work Queue port. An integer PORT or an integer range PORT_MIN-PORT_MAX.')
-    parser.add_argument('--processor', '-p', default='1lep1jf', help = 'Which processor to execute', choices=LST_OF_KNOWN_PROCESSORS)
+    parser.add_argument('--processor', '-p', default='semilep', help = 'Which processor to execute', choices=LST_OF_KNOWN_PROCESSORS)
 
 
     args = parser.parse_args()
@@ -57,10 +57,10 @@ if __name__ == '__main__':
     wc_lst = args.wc_list if args.wc_list is not None else []
 
     # Import the proper processor, based on option specified
-    if args.processor == "1lep1jf":
-        import analysis_processor_1l1fj  as analysis_processor
-    elif args.processor == "1lep1jf_nano":
-        import analysis_processor_1l1fj_fromnano as analysis_processor
+    if args.processor == "semilep":
+        import analysis_processor_semilep as analysis_processor
+    elif args.processor == "semilep_nano":
+        import analysis_processor_semilep_fromnano as analysis_processor
 
     # Check that if on UF login node, we're using WQ
     hostname = socket.gethostname()
