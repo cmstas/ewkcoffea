@@ -23,6 +23,13 @@ dataset_lst_sig_r2 = [
     "VBSZZH_VBSCuts_TuneCP5_RunIISummer20UL17-106X_privateMC_NANOGEN_v2",
     "VBSZZH_VBSCuts_TuneCP5_RunIISummer20UL18-106X_privateMC_NANOGEN_v2",
 ]
+# /ceph/cms/store/user/aaarora/skims/sig/Run3Summer24/private/
+dataset_lst_sig_2024 = [
+    "VBSWWH_OSWW_C2V1p0_13p6TeV_5f_LO_TuneCP5",
+    "VBSWWH_SSWW_C2V1p0_13p6TeV_5f_LO_TuneCP5",
+    "VBSWZH_C2V1p0_13p6TeV_5f_LO_TuneCP5",
+    "VBSZZH_C2V1p0_13p6TeV_5f_LO_TuneCP5",
+]
 
 # Matthew's 1FJ+1lep skims (Jun 13, 2025)
 # /ceph/cms/store/user/mdittric/skim/nanoaodv9_bkg_1FJ1Lep_13Jun2025_v1
@@ -445,14 +452,17 @@ def main():
     #dataset_lst = dataset_lst_sig_r2
     #out_dir = "../../input_samples/sample_jsons/vbs_vvh/sig"
     #path_to_datasets = "/ceph/cms/store/user/mmazza/SignalGeneration/v2_merged/"
+    dataset_lst = dataset_lst_sig_2024
+    out_dir = "../../input_samples/sample_jsons/vbs_vvh/sig"
+    path_to_datasets = "/ceph/cms/store/user/aaarora/skims/sig/Run3Summer24/private/"
 
     # Bkg
     #dataset_lst = dataset_lst_bkg_r2_1fj1lep
     #out_dir = "../../input_samples/sample_jsons/vbs_vvh/bkg"
     #path_to_datasets = "/ceph/cms/store/user/mdittric/skim/nanoaodv9_bkg_1FJ1Lep_13Jun2025_v1/"
-    dataset_lst = dataset_lst_bkg_r2_1lep
-    out_dir = "../../input_samples/sample_jsons/vbs_vvh/bkg/skim_1lep"
-    path_to_datasets = "/ceph/cms/store/user/mdittric/skim/nanoaodv9_bkg_1FJ1Lep_17Jun2025_v1/"
+    #dataset_lst = dataset_lst_bkg_r2_1lep
+    #out_dir = "../../input_samples/sample_jsons/vbs_vvh/bkg/skim_1lep"
+    #path_to_datasets = "/ceph/cms/store/user/mdittric/skim/nanoaodv9_bkg_1FJ1Lep_17Jun2025_v1/"
 
     # Get the meta data for each dataset
     for dataset_name in dataset_lst:
@@ -484,6 +494,9 @@ def main():
         elif "20UL18" in dataset_name:
             year = "2018"
             hist_axis_name = f"UL18_{dataset_name_short}"
+        elif "13p6TeV" in dataset_name:
+            year = "2024"
+            hist_axis_name = f"2024_{dataset_name_short}" # TMP, fix if we need to make more years or Aashay's naming changes
         else:
             raise Exception(f"Unknown year for dataseet: {dataset_name}")
 

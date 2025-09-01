@@ -15,6 +15,7 @@
         "VBSWWH_SSWW_C2V1p0_13p6TeV_5f_LO_TuneCP5/output_24.root",
         "VBSWWH_SSWW_C2V1p0_13p6TeV_5f_LO_TuneCP5/output_33.root",
         "VBSWWH_SSWW_C2V1p0_13p6TeV_5f_LO_TuneCP5/output_19.root",
+        "VBSWWH_SSWW_C2V1p0_13p6TeV_5f_LO_TuneCP5/output_0.root",
         "VBSWWH_SSWW_C2V1p0_13p6TeV_5f_LO_TuneCP5/output_48.root",
         "VBSWWH_SSWW_C2V1p0_13p6TeV_5f_LO_TuneCP5/output_42.root",
         "VBSWWH_SSWW_C2V1p0_13p6TeV_5f_LO_TuneCP5/output_21.root",
@@ -56,20 +57,20 @@
         "VBSWWH_SSWW_C2V1p0_13p6TeV_5f_LO_TuneCP5/output_46.root",
         "VBSWWH_SSWW_C2V1p0_13p6TeV_5f_LO_TuneCP5/output_2.root"
     ],
-    "nEvents": 42205,
-    "nGenEvents": 147000,
-    "nSumOfWeights": 147000.0,
+    "nEvents": 43042,
+    "nGenEvents": 150000,
+    "nSumOfWeights": 150000.0,
     "isData": false,
     "path": "VBSWWH_SSWW_C2V1p0_13p6TeV_5f_LO_TuneCP5",
     "nSumOfLheWeights": [
-        164863.7682516991,
-        147000.0,
-        132507.9757811838,
-        164863.7682516991,
-        147000.0,
-        132507.9757811838,
-        164863.7682516991,
-        147000.0,
-        132507.9757811838
+        168226.04517305584,
+        150000.0,
+        135213.52697634418,
+        168226.04517305584,
+        150000.0,
+        135213.52697634418,
+        168226.04517305584,
+        150000.0,
+        135213.52697634418
     ]
 }
