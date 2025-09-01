@@ -308,7 +308,7 @@ def is_tight_vvh_ele(ele):
 
 def is_good_fatjet(fatjets):
     mask = (
-        (fatjets.pt > 300) & # TODO should be corrected pt
+        (fatjets.pt > 250) & # TODO should be corrected pt
         (abs(fatjets.eta) <= 2.5) &
         (fatjets.msoftdrop > 40) &
         (fatjets.jetId > 0)
@@ -319,17 +319,7 @@ def is_good_vbs_jet(jets,is2016):
     mask = (
         (jets.pt >= 20) &
         (abs(jets.eta) <= 4.7) &
-        ( (jets.pt >= 50) | ( (jets.pt < 50) & (jets.puId != 0) ))
+        (jets.jetId >=2)
     )
-    # If the year is an array per event
-    if isinstance(is2016,ak.Array):
-        jetId_mask = ak.where(is2016,jets.jetId >= 1,jets.jetId >= 2)
-        mask = mask & jetId_mask
-    # If the year is just a value
-    else:
-        if is2016:
-            mask = mask & (jets.jetId >= 1)
-        else:
-            mask = mask & (jets.jetId >= 2)
     return mask
 
