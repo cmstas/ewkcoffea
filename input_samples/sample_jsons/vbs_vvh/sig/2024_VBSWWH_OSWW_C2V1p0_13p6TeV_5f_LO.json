@@ -1,0 +1,32 @@
+{
+    "xsec": "0.00212",
+    "year": "2024",
+    "treeName": "Events",
+    "histAxisName": "2024_VBSWWH_OSWW_C2V1p0_13p6TeV_5f_LO",
+    "options": "",
+    "WCnames": [],
+    "files": [
+        "VBSWWH_OSWW_C2V1p0_13p6TeV_5f_LO_TuneCP5/output_0.root",
+        "VBSWWH_OSWW_C2V1p0_13p6TeV_5f_LO_TuneCP5/output_5.root",
+        "VBSWWH_OSWW_C2V1p0_13p6TeV_5f_LO_TuneCP5/output_1.root",
+        "VBSWWH_OSWW_C2V1p0_13p6TeV_5f_LO_TuneCP5/output_4.root",
+        "VBSWWH_OSWW_C2V1p0_13p6TeV_5f_LO_TuneCP5/output_3.root",
+        "VBSWWH_OSWW_C2V1p0_13p6TeV_5f_LO_TuneCP5/output_2.root"
+    ],
+    "nEvents": 4423,
+    "nGenEvents": 18000,
+    "nSumOfWeights": 18000.0,
+    "isData": false,
+    "path": "VBSWWH_OSWW_C2V1p0_13p6TeV_5f_LO_TuneCP5",
+    "nSumOfLheWeights": [
+        18017.349988139787,
+        18000.0,
+        17825.218289889017,
+        18017.349988139787,
+        18000.0,
+        17825.218289889017,
+        18017.349988139787,
+        18000.0,
+        17825.218289889017
+    ]
+}
