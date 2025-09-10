@@ -13,9 +13,22 @@ import ewkcoffea.modules.plotting_tools as plt_tools
 
 HTML_PC = "/home/users/kmohrman/ref_scripts/html_stuff/index.php"
 
-CLR_LST = ['#d55e00', '#e69f00', '#f0e442', '#009e73', '#0072b2', '#56b4e9', '#cc79a7', '#6e3600', '#a17500'] #, '#a39b2f', '#00664f', '#005d87', '#999999', '#8c5d77']
+#CLR_LST = ['#d55e00', '#e69f00', '#f0e442', '#009e73', '#0072b2', '#56b4e9', '#cc79a7', '#6e3600', '#a17500'] #, '#a39b2f', '#00664f', '#005d87', '#999999', '#8c5d77']
+CLR_LST = ['#d55e00', '#e69f00']
 
-GRP_DICT_FULL = {
+GRP_DICT_FULL_R3 = {
+    "Signal" : [
+        'VBSWWH_OSWW_C2V1p0_13p6TeV_5f_LO',
+        'VBSWWH_SSWW_C2V1p0_13p6TeV_5f_LO',
+        'VBSWZH_C2V1p0_13p6TeV_5f_LO',
+        'VBSZZH_C2V1p0_13p6TeV_5f_LO'
+    ],
+    "ttbar" : [
+        "TTtoLNu2Q",
+    ],
+}
+
+GRP_DICT_FULL_R2 = {
 
     "Signal" : [
         "VBSWWH_OS_VBSCuts",
@@ -159,11 +172,11 @@ def append_years(sample_dict_base,year_lst):
 
 
 # Get sig and bkg yield in all categories
-def get_yields_per_cat(histo_dict,var_name,year_name_lst_to_prepend):
+def get_yields_per_cat(histo_dict,var_name,grp_dict,year_name_lst_to_prepend):
     out_dict = {}
 
     # Get the initial grouping dict
-    grouping_dict = append_years(GRP_DICT_FULL,year_name_lst_to_prepend)
+    grouping_dict = append_years(grp_dict,year_name_lst_to_prepend)
 
     # Get list of all of the backgrounds together
     bkg_lst = []
@@ -391,11 +404,11 @@ def dump_json_simple(histo_dict,out_name="vvh_yields_simple"):
 
 
 ### Get the sig and bkg yields and print or dump to json ###
-def print_yields(histo_dict,years_to_prepend,roundat=None,print_counts=False,dump_to_json=True,quiet=False,out_name="yields"):
+def print_yields(histo_dict,grp_dict,years_to_prepend,roundat=None,print_counts=False,dump_to_json=True,quiet=False,out_name="yields"):
 
     # Get ahold of the yields
-    yld_dict    = get_yields_per_cat(histo_dict,"njets",years_to_prepend)
-    counts_dict = get_yields_per_cat(histo_dict,"njets_counts",years_to_prepend)
+    yld_dict    = get_yields_per_cat(histo_dict,"njets",grp_dict,years_to_prepend)
+    counts_dict = get_yields_per_cat(histo_dict,"njets_counts",grp_dict,years_to_prepend)
     #yld_dict = counts_dict
 
     group_lst_order = ['Signal', 'Background', 'ttbar', 'VV', 'Vjets', 'QCD', 'single-t', 'ttX', 'VH', 'VVV']
@@ -460,11 +473,11 @@ def print_yields(histo_dict,years_to_prepend,roundat=None,print_counts=False,dum
 
 
 ### Make the plots ###
-def make_plots(histo_dict,year_name_lst_to_prepend):
+def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend):
 
     #cat_lst = ["exactly1lep_exactly1fj", "exactly1lep_exactly1fj550", "exactly1lep_exactly1fj550_2j", "exactly1lep_exactly1fj_2j"]
 
-    grouping_dict = append_years(GRP_DICT_FULL,year_name_lst_to_prepend)
+    grouping_dict = append_years(grp_dict,year_name_lst_to_prepend)
 
     cat_lst = CAT_LST
     var_lst = histo_dict.keys()
@@ -521,6 +534,7 @@ def main():
     parser.add_argument('-p', "--make-plots", action='store_true', help = "Make plots from the pkl file")
     parser.add_argument('-j', "--dump-json", action='store_true', help = "Dump some yield numbers into a json file")
     parser.add_argument('-o', "--output-name", default='vvh', help = "What to name the outputs")
+    parser.add_argument('-r', "--run", default='r3', help = "Which year")
     args = parser.parse_args()
 
     # Get the dictionary of histograms from the input pkl file
@@ -532,17 +546,26 @@ def main():
     #print(histo_dict["njets"])
 
     # Figure out the proc naming convention
+    # Assume either fully Run 2 or fully Run 3, hists with both are not supported
     proc_name = plt_tools.get_axis_cats(histo_dict["njets"],"process")[0]
-    if proc_name.startswith("UL"): years_to_prepend = ["UL16APV","UL16","UL17","UL18"] # Looks like ewkcoffea convention
-    else: years_to_prepend = ["2016postVFP","2016preVFP","2017","2018"] # Otherwise from RDF convention
+    if args.run == "r2":
+        grp_dict = GRP_DICT_FULL_R2
+        if proc_name.startswith("UL"):
+            years_to_prepend = ["UL16APV","UL16","UL17","UL18"] # Looks like TOP-22-006 convention
+        else: years_to_prepend = ["2016postVFP","2016preVFP","2017","2018"] # Otherwise from RDF convention
+    elif args.run == "r3":
+        grp_dict = GRP_DICT_FULL_R3
+        years_to_prepend = ["2024"]
+    else:
+        raise Exception(f"Unknown year argument {args.r}")
 
     # Which main functionalities to run
     if args.dump_json:
         dump_json_simple(histo_dict,args.output_name)
     if args.get_yields:
-        print_yields(histo_dict,years_to_prepend,out_name=args.output_name+"_yields_sig_bkg",roundat=4,print_counts=False,dump_to_json=True)
+        print_yields(histo_dict,grp_dict,years_to_prepend,out_name=args.output_name+"_yields_sig_bkg",roundat=4,print_counts=False,dump_to_json=True)
     if args.make_plots:
-        make_plots(histo_dict,years_to_prepend)
+        make_plots(histo_dict,grp_dict,years_to_prepend)
 
 
 main()
