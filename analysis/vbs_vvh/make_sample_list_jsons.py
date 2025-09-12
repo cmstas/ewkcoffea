@@ -3,6 +3,8 @@ import json
 import subprocess
 import topcoffea.modules.sample_lst_jsons_tools as sjt
 
+################################# Signal #################################
+
 # Maria's unskimmed signal (uaf3)
 # /ceph/cms/store/user/mmazza/SignalGeneration/v2_merged/
 dataset_lst_sig_r2 = [
@@ -23,13 +25,98 @@ dataset_lst_sig_r2 = [
     "VBSZZH_VBSCuts_TuneCP5_RunIISummer20UL17-106X_privateMC_NANOGEN_v2",
     "VBSZZH_VBSCuts_TuneCP5_RunIISummer20UL18-106X_privateMC_NANOGEN_v2",
 ]
+# Aashay unskimmed
+# /ceph/cms/store/user/aaarora/run3-vbs-signal-v1/
+dataset_lst_sig_2024_noskim = [
+    "VBSWWH_OSWW_C2V1p0_13p6TeV_5f_LO_TuneCP5",
+    "VBSWWH_OSWW_C2V1p5_13p6TeV_5f_LO_TuneCP5",
+    "VBSWWH_OSWW_C2V2p0_13p6TeV_5f_LO_TuneCP5",
+    "VBSWWH_SSWW_C2V1p0_13p6TeV_5f_LO_TuneCP5",
+    "VBSWWH_SSWW_C2V1p5_13p6TeV_5f_LO_TuneCP5",
+    "VBSWWH_SSWW_C2V2p0_13p6TeV_5f_LO_TuneCP5",
+    "VBSWZH_C2V1p0_13p6TeV_5f_LO_TuneCP5",
+    "VBSWZH_C2V1p5_13p6TeV_5f_LO_TuneCP5",
+    "VBSWZH_C2V2p0_13p6TeV_5f_LO_TuneCP5",
+    "VBSZZH_C2V1p0_13p6TeV_5f_LO_TuneCP5",
+    "VBSZZH_C2V1p5_13p6TeV_5f_LO_TuneCP5",
+    "VBSZZH_C2V2p0_13p6TeV_5f_LO_TuneCP5",
+]
+
+# Aashay skimmed
 # /ceph/cms/store/user/aaarora/skims/sig/Run3Summer24/private/
 dataset_lst_sig_2024 = [
-    "VBSWWH_OSWW_C2V1p0_13p6TeV_5f_LO_TuneCP5",
-    "VBSWWH_SSWW_C2V1p0_13p6TeV_5f_LO_TuneCP5",
-    "VBSWZH_C2V1p0_13p6TeV_5f_LO_TuneCP5",
-    "VBSZZH_C2V1p0_13p6TeV_5f_LO_TuneCP5",
+    #"VBSWWH_OSWW_C2V1p0_13p6TeV_5f_LO_TuneCP5",
+    #"VBSWWH_SSWW_C2V1p0_13p6TeV_5f_LO_TuneCP5",
+    #"VBSWZH_C2V1p0_13p6TeV_5f_LO_TuneCP5",
+    #"VBSZZH_C2V1p0_13p6TeV_5f_LO_TuneCP5",
+    #"VBSWWH_OSWW_C2V2p0_13p6TeV_5f_LO_TuneCP5",
+    #"VBSWWH_SSWW_C2V2p0_13p6TeV_5f_LO_TuneCP5",
+    #"VBSWZH_C2V2p0_13p6TeV_5f_LO_TuneCP5",
+    #"VBSZZH_C2V2p0_13p6TeV_5f_LO_TuneCP5",
+    "VBSWWH_OSWW_C2V1p5_13p6TeV_5f_LO_TuneCP5",
+    "VBSWWH_SSWW_C2V1p5_13p6TeV_5f_LO_TuneCP5",
+    "VBSWZH_C2V1p5_13p6TeV_5f_LO_TuneCP5",
+    "VBSZZH_C2V1p5_13p6TeV_5f_LO_TuneCP5",
 ]
+
+################################# Background #################################
+
+# Aashay's skims (Aug 5 2025)
+# /ceph/cms/store/user/aaarora/skims_v1/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/
+dataset_lst_bkg_r3_aashay_v2v2 = [
+    "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-100to200_TuneCP5_13p6TeV_amcatnloFXFX-pythia8",
+    "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-200to400_TuneCP5_13p6TeV_amcatnloFXFX-pythia8",
+    "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-400to600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8",
+    "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8",
+    "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-100to200_TuneCP5_13p6TeV_amcatnloFXFX-pythia8",
+    "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-200to400_TuneCP5_13p6TeV_amcatnloFXFX-pythia8",
+    "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-400to600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8",
+    "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8",
+    "QCD_Bin-PT-1000to1500_TuneCP5_13p6TeV_pythia8",
+    "QCD_Bin-PT-1500to2000_TuneCP5_13p6TeV_pythia8",
+    "QCD_Bin-PT-2000to2500_TuneCP5_13p6TeV_pythia8",
+    "QCD_Bin-PT-2500to3000_TuneCP5_13p6TeV_pythia8",
+    "QCD_Bin-PT-300to470_TuneCP5_13p6TeV_pythia8",
+    "QCD_Bin-PT-470to600_TuneCP5_13p6TeV_pythia8",
+    "QCD_Bin-PT-600to800_TuneCP5_13p6TeV_pythia8",
+    "QCD_Bin-PT-800to1000_TuneCP5_13p6TeV_pythia8",
+    "TTto4Q_TuneCP5_13p6TeV_powheg-pythia8",
+    "TTtoLNu2Q_TuneCP5_13p6TeV_powheg-pythia8",
+    "WtoLNu-2Jets_Bin-1J-PTLNu-200to400_TuneCP5_13p6TeV_amcatnloFXFX-pythia8",
+    "WtoLNu-2Jets_Bin-1J-PTLNu-400to600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8",
+    "WtoLNu-2Jets_Bin-1J-PTLNu-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8",
+    "WtoLNu-2Jets_Bin-2J-PTLNu-200to400_TuneCP5_13p6TeV_amcatnloFXFX-pythia8",
+    "WtoLNu-2Jets_Bin-2J-PTLNu-400to600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8",
+    "WtoLNu-2Jets_Bin-2J-PTLNu-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8",
+    "WtoLNu-4Jets_Bin-1J_TuneCP5_13p6TeV_madgraphMLM-pythia8",
+    "WtoLNu-4Jets_Bin-2J_TuneCP5_13p6TeV_madgraphMLM-pythia8",
+    "WtoLNu-4Jets_Bin-3J_TuneCP5_13p6TeV_madgraphMLM-pythia8",
+    "WtoLNu-4Jets_Bin-4J_TuneCP5_13p6TeV_madgraphMLM-pythia8",
+    "WWto2L2Nu_TuneCP5_13p6TeV_powheg-pythia8",
+    "WWto4Q_TuneCP5_13p6TeV_powheg-pythia8",
+    "WWtoLNu2Q_TuneCP5_13p6TeV_powheg-pythia8",
+    "WZto2L2Q_TuneCP5_13p6TeV_powheg-pythia8",
+    "WZto3LNu_TuneCP5_13p6TeV_powheg-pythia8",
+    "WZto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8",
+    "WZtoLNu2Q_TuneCP5_13p6TeV_powheg-pythia8",
+    "ZZto2L2Nu_TuneCP5_13p6TeV_powheg-pythia8",
+    "ZZto2L2Q_TuneCP5_13p6TeV_powheg-pythia8",
+    "ZZto2Nu2Q_TuneCP5_13p6TeV_powheg-pythia8",
+    #"ZZto4Q-1Jets_TuneCP5_13p6TeV_amcatnloFXFX-pythia8", # No xsec
+]
+# /ceph/cms/store/user/aaarora/skims_v1/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v3/
+dataset_lst_bkg_r3_aashay_v2v3 = [
+    "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-40to100_TuneCP5_13p6TeV_amcatnloFXFX-pythia8",
+    "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-40to100_TuneCP5_13p6TeV_amcatnloFXFX-pythia8",
+    "TTto2L2Nu_TuneCP5_13p6TeV_powheg-pythia8",
+    "WtoLNu-2Jets_Bin-1J-PTLNu-100to200_TuneCP5_13p6TeV_amcatnloFXFX-pythia8",
+    "WtoLNu-2Jets_Bin-1J-PTLNu-40to100_TuneCP5_13p6TeV_amcatnloFXFX-pythia8",
+    "WtoLNu-2Jets_Bin-2J-PTLNu-100to200_TuneCP5_13p6TeV_amcatnloFXFX-pythia8",
+    "WtoLNu-2Jets_Bin-2J-PTLNu-40to100_TuneCP5_13p6TeV_amcatnloFXFX-pythia8",
+]
+
+
+
 
 # Matthew's 1FJ+1lep skims (Jun 13, 2025)
 # /ceph/cms/store/user/mdittric/skim/nanoaodv9_bkg_1FJ1Lep_13Jun2025_v1
@@ -445,16 +532,24 @@ dataset_lst_bkg_r2_1lep = [
 
 def main():
 
-    with open('xsec_rdf.json', 'r') as file:
+    #with open('xsec_rdf.json', 'r') as file:
+    with open('xsec_rdf_r3.json', 'r') as file:
         xsec_dict = json.load(file)
 
     # Sig
     #dataset_lst = dataset_lst_sig_r2
     #out_dir = "../../input_samples/sample_jsons/vbs_vvh/sig"
     #path_to_datasets = "/ceph/cms/store/user/mmazza/SignalGeneration/v2_merged/"
-    dataset_lst = dataset_lst_sig_2024
-    out_dir = "../../input_samples/sample_jsons/vbs_vvh/sig"
-    path_to_datasets = "/ceph/cms/store/user/aaarora/skims/sig/Run3Summer24/private/"
+    #dataset_lst = dataset_lst_sig_2024
+    #out_dir = "../../input_samples/sample_jsons/vbs_vvh/sig_noskim_v0"
+    #path_to_datasets = "/ceph/cms/store/user/aaarora/skims/sig/Run3Summer24/private/"
+    #path_to_datasets = "/ceph/cms/store/user/aaarora/run3-vbs-signal-v0/"
+    #out_dir = "../../input_samples/sample_jsons/vbs_vvh/sig_noskim_v1"
+    #path_to_datasets = "/ceph/cms/store/user/aaarora/run3-vbs-signal/"
+
+    #dataset_lst = dataset_lst_sig_2024_noskim
+    #out_dir = "../../input_samples/sample_jsons/vbs_vvh/sig/noskim"
+    #path_to_datasets = "/ceph/cms/store/user/aaarora/run3-vbs-signal-v1/"
 
     # Bkg
     #dataset_lst = dataset_lst_bkg_r2_1fj1lep
@@ -463,6 +558,10 @@ def main():
     #dataset_lst = dataset_lst_bkg_r2_1lep
     #out_dir = "../../input_samples/sample_jsons/vbs_vvh/bkg/skim_1lep"
     #path_to_datasets = "/ceph/cms/store/user/mdittric/skim/nanoaodv9_bkg_1FJ1Lep_17Jun2025_v1/"
+
+    dataset_lst = dataset_lst_bkg_r3_aashay_v2v2
+    out_dir = "../../input_samples/sample_jsons/vbs_vvh/bkg/skim_aa_v01"
+    path_to_datasets = "/ceph/cms/store/user/aaarora/skims_v1/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/"
 
     # Get the meta data for each dataset
     for dataset_name in dataset_lst:
