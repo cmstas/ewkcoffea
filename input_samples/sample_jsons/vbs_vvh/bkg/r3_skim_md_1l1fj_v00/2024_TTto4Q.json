@@ -1,0 +1,17 @@
+{
+    "xsec": "431.5",
+    "year": "2024",
+    "treeName": "Events",
+    "histAxisName": "2024_TTto4Q",
+    "options": "",
+    "WCnames": [],
+    "files": [
+        "TTto4Q_TuneCP5_13p6TeV_powheg-pythia8/merged/merged.root"
+    ],
+    "nEvents": 3530934,
+    "nGenEvents": 468033362,
+    "nSumOfWeights": 162562981729.57986,
+    "isData": false,
+    "path": "TTto4Q_TuneCP5_13p6TeV_powheg-pythia8/merged",
+    "nSumOfLheWeights": 0
+}
