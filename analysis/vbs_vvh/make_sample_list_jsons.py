@@ -25,6 +25,28 @@ dataset_lst_sig_r2 = [
     "VBSZZH_VBSCuts_TuneCP5_RunIISummer20UL17-106X_privateMC_NANOGEN_v2",
     "VBSZZH_VBSCuts_TuneCP5_RunIISummer20UL18-106X_privateMC_NANOGEN_v2",
 ]
+# Maria's SM samples (Sep 17, 2025)
+# /ceph/cms/store/user/mmazza/SignalGeneration/run2_c2W_1p0_c2Z_1p0_15Sep2025
+dataset_lst_sig_sm_r2 = [
+    "VBSWWH_OS_VBSCuts_TuneCP5_RunIISummer20UL16APV_NANOGEN",
+    "VBSWWH_OS_VBSCuts_TuneCP5_RunIISummer20UL16_NANOGEN",
+    "VBSWWH_OS_VBSCuts_TuneCP5_RunIISummer20UL17_NANOGEN",
+    "VBSWWH_OS_VBSCuts_TuneCP5_RunIISummer20UL18_NANOGEN",
+    "VBSWWH_SS_VBSCuts_TuneCP5_RunIISummer20UL16APV_NANOGEN",
+    "VBSWWH_SS_VBSCuts_TuneCP5_RunIISummer20UL16_NANOGEN",
+    "VBSWWH_SS_VBSCuts_TuneCP5_RunIISummer20UL17_NANOGEN",
+    "VBSWWH_SS_VBSCuts_TuneCP5_RunIISummer20UL18_NANOGEN",
+    "VBSWZH_VBSCuts_TuneCP5_RunIISummer20UL16APV_NANOGEN",
+    "VBSWZH_VBSCuts_TuneCP5_RunIISummer20UL16_NANOGEN",
+    "VBSWZH_VBSCuts_TuneCP5_RunIISummer20UL17_NANOGEN",
+    "VBSWZH_VBSCuts_TuneCP5_RunIISummer20UL18_NANOGEN",
+    "VBSZZH_VBSCuts_TuneCP5_RunIISummer20UL16APV_NANOGEN",
+    "VBSZZH_VBSCuts_TuneCP5_RunIISummer20UL16_NANOGEN",
+    "VBSZZH_VBSCuts_TuneCP5_RunIISummer20UL17_NANOGEN",
+    "VBSZZH_VBSCuts_TuneCP5_RunIISummer20UL18_NANOGEN",
+]
+
+
 # Aashay unskimmed
 # /ceph/cms/store/user/aaarora/run3-vbs-signal-v1/
 dataset_lst_sig_2024_noskim = [
@@ -63,56 +85,61 @@ dataset_lst_sig_2024 = [
 
 # Aashay's skims (Aug 5 2025)
 # /ceph/cms/store/user/aaarora/skims_v1/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/
+# Matthew's skims (Sep 24 2025)
+# /ceph/cms/store/user/mdittric/skims_1FJ_1LEP_v0_09212025/150X_mcRun3_2024_realistic_v2-v2/
 dataset_lst_bkg_r3_aashay_v2v2 = [
-    "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-100to200_TuneCP5_13p6TeV_amcatnloFXFX-pythia8",
-    "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-200to400_TuneCP5_13p6TeV_amcatnloFXFX-pythia8",
-    "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-400to600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8",
-    "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8",
-    "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-100to200_TuneCP5_13p6TeV_amcatnloFXFX-pythia8",
-    "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-200to400_TuneCP5_13p6TeV_amcatnloFXFX-pythia8",
-    "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-400to600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8",
-    "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8",
-    "QCD_Bin-PT-1000to1500_TuneCP5_13p6TeV_pythia8",
-    "QCD_Bin-PT-1500to2000_TuneCP5_13p6TeV_pythia8",
-    "QCD_Bin-PT-2000to2500_TuneCP5_13p6TeV_pythia8",
-    "QCD_Bin-PT-2500to3000_TuneCP5_13p6TeV_pythia8",
-    "QCD_Bin-PT-300to470_TuneCP5_13p6TeV_pythia8",
-    "QCD_Bin-PT-470to600_TuneCP5_13p6TeV_pythia8",
-    "QCD_Bin-PT-600to800_TuneCP5_13p6TeV_pythia8",
-    "QCD_Bin-PT-800to1000_TuneCP5_13p6TeV_pythia8",
-    "TTto4Q_TuneCP5_13p6TeV_powheg-pythia8",
-    "TTtoLNu2Q_TuneCP5_13p6TeV_powheg-pythia8",
-    "WtoLNu-2Jets_Bin-1J-PTLNu-200to400_TuneCP5_13p6TeV_amcatnloFXFX-pythia8",
-    "WtoLNu-2Jets_Bin-1J-PTLNu-400to600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8",
-    "WtoLNu-2Jets_Bin-1J-PTLNu-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8",
-    "WtoLNu-2Jets_Bin-2J-PTLNu-200to400_TuneCP5_13p6TeV_amcatnloFXFX-pythia8",
-    "WtoLNu-2Jets_Bin-2J-PTLNu-400to600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8",
-    "WtoLNu-2Jets_Bin-2J-PTLNu-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8",
-    "WtoLNu-4Jets_Bin-1J_TuneCP5_13p6TeV_madgraphMLM-pythia8",
-    "WtoLNu-4Jets_Bin-2J_TuneCP5_13p6TeV_madgraphMLM-pythia8",
-    "WtoLNu-4Jets_Bin-3J_TuneCP5_13p6TeV_madgraphMLM-pythia8",
-    "WtoLNu-4Jets_Bin-4J_TuneCP5_13p6TeV_madgraphMLM-pythia8",
-    "WWto2L2Nu_TuneCP5_13p6TeV_powheg-pythia8",
-    "WWto4Q_TuneCP5_13p6TeV_powheg-pythia8",
-    "WWtoLNu2Q_TuneCP5_13p6TeV_powheg-pythia8",
-    "WZto2L2Q_TuneCP5_13p6TeV_powheg-pythia8",
-    "WZto3LNu_TuneCP5_13p6TeV_powheg-pythia8",
-    "WZto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8",
-    "WZtoLNu2Q_TuneCP5_13p6TeV_powheg-pythia8",
-    "ZZto2L2Nu_TuneCP5_13p6TeV_powheg-pythia8",
-    "ZZto2L2Q_TuneCP5_13p6TeV_powheg-pythia8",
-    "ZZto2Nu2Q_TuneCP5_13p6TeV_powheg-pythia8",
-    #"ZZto4Q-1Jets_TuneCP5_13p6TeV_amcatnloFXFX-pythia8", # No xsec
+    "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-100to200_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/merged",
+    "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-200to400_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/merged",
+    "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-400to600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/merged",
+    "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/merged",
+    "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-100to200_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/merged",
+    "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-200to400_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/merged",
+    "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-400to600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/merged",
+    "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/merged",
+    "QCD_Bin-PT-1000to1500_TuneCP5_13p6TeV_pythia8/merged",
+    "QCD_Bin-PT-1500to2000_TuneCP5_13p6TeV_pythia8/merged",
+    "QCD_Bin-PT-2000to2500_TuneCP5_13p6TeV_pythia8/merged",
+    "QCD_Bin-PT-2500to3000_TuneCP5_13p6TeV_pythia8/merged",
+    "QCD_Bin-PT-300to470_TuneCP5_13p6TeV_pythia8/merged",
+    "QCD_Bin-PT-470to600_TuneCP5_13p6TeV_pythia8/merged",
+    "QCD_Bin-PT-600to800_TuneCP5_13p6TeV_pythia8/merged",
+    "QCD_Bin-PT-800to1000_TuneCP5_13p6TeV_pythia8/merged",
+    "TTto4Q_TuneCP5_13p6TeV_powheg-pythia8/merged",
+    "TTtoLNu2Q_TuneCP5_13p6TeV_powheg-pythia8/merged",
+    "WtoLNu-2Jets_Bin-1J-PTLNu-200to400_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/merged",
+    "WtoLNu-2Jets_Bin-1J-PTLNu-400to600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/merged",
+    "WtoLNu-2Jets_Bin-1J-PTLNu-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/merged",
+    "WtoLNu-2Jets_Bin-2J-PTLNu-200to400_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/merged",
+    "WtoLNu-2Jets_Bin-2J-PTLNu-400to600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/merged",
+    "WtoLNu-2Jets_Bin-2J-PTLNu-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/merged",
+    "WtoLNu-4Jets_Bin-1J_TuneCP5_13p6TeV_madgraphMLM-pythia8/merged",
+    "WtoLNu-4Jets_Bin-2J_TuneCP5_13p6TeV_madgraphMLM-pythia8/merged",
+    "WtoLNu-4Jets_Bin-3J_TuneCP5_13p6TeV_madgraphMLM-pythia8/merged",
+    "WtoLNu-4Jets_Bin-4J_TuneCP5_13p6TeV_madgraphMLM-pythia8/merged",
+    "WWto2L2Nu_TuneCP5_13p6TeV_powheg-pythia8/merged",
+    "WWto4Q_TuneCP5_13p6TeV_powheg-pythia8/merged",
+    "WWtoLNu2Q_TuneCP5_13p6TeV_powheg-pythia8/merged",
+    "WZto2L2Q_TuneCP5_13p6TeV_powheg-pythia8/merged",
+    "WZto3LNu_TuneCP5_13p6TeV_powheg-pythia8/merged",
+    "WZto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/merged",
+    "WZtoLNu2Q_TuneCP5_13p6TeV_powheg-pythia8/merged",
+    "ZZto2L2Nu_TuneCP5_13p6TeV_powheg-pythia8/merged",
+    "ZZto2L2Q_TuneCP5_13p6TeV_powheg-pythia8/merged",
+    "ZZto2Nu2Q_TuneCP5_13p6TeV_powheg-pythia8/merged",
+    #"ZZto4Q-1Jets_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/merged", # No xsec
 ]
+# Aashay's skims (Aug 5 2025)
 # /ceph/cms/store/user/aaarora/skims_v1/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v3/
+# Matthew's skims (Sep 24 2025)
+# /ceph/cms/store/user/mdittric/skims_1FJ_1LEP_v0_09212025/150X_mcRun3_2024_realistic_v2-v3/
 dataset_lst_bkg_r3_aashay_v2v3 = [
-    "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-40to100_TuneCP5_13p6TeV_amcatnloFXFX-pythia8",
-    "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-40to100_TuneCP5_13p6TeV_amcatnloFXFX-pythia8",
-    "TTto2L2Nu_TuneCP5_13p6TeV_powheg-pythia8",
-    "WtoLNu-2Jets_Bin-1J-PTLNu-100to200_TuneCP5_13p6TeV_amcatnloFXFX-pythia8",
-    "WtoLNu-2Jets_Bin-1J-PTLNu-40to100_TuneCP5_13p6TeV_amcatnloFXFX-pythia8",
-    "WtoLNu-2Jets_Bin-2J-PTLNu-100to200_TuneCP5_13p6TeV_amcatnloFXFX-pythia8",
-    "WtoLNu-2Jets_Bin-2J-PTLNu-40to100_TuneCP5_13p6TeV_amcatnloFXFX-pythia8",
+    "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-40to100_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/merged",
+    "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-40to100_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/merged",
+    "TTto2L2Nu_TuneCP5_13p6TeV_powheg-pythia8/merged",
+    "WtoLNu-2Jets_Bin-1J-PTLNu-100to200_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/merged",
+    "WtoLNu-2Jets_Bin-1J-PTLNu-40to100_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/merged",
+    "WtoLNu-2Jets_Bin-2J-PTLNu-100to200_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/merged",
+    "WtoLNu-2Jets_Bin-2J-PTLNu-40to100_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/merged",
 ]
 
 
@@ -533,6 +560,7 @@ dataset_lst_bkg_r2_1lep = [
 def main():
 
     #with open('xsec_rdf.json', 'r') as file:
+    #with open('xsec_maria_sm.json', 'r') as file:
     with open('xsec_rdf_r3.json', 'r') as file:
         xsec_dict = json.load(file)
 
@@ -547,6 +575,10 @@ def main():
     #out_dir = "../../input_samples/sample_jsons/vbs_vvh/sig_noskim_v1"
     #path_to_datasets = "/ceph/cms/store/user/aaarora/run3-vbs-signal/"
 
+    #dataset_lst = dataset_lst_sig_sm_r2
+    #out_dir = "../../input_samples/sample_jsons/vbs_vvh/sig/gen_sm"
+    #path_to_datasets = "/ceph/cms/store/user/mmazza/SignalGeneration/run2_c2W_1p0_c2Z_1p0_15Sep2025/"
+
     #dataset_lst = dataset_lst_sig_2024_noskim
     #out_dir = "../../input_samples/sample_jsons/vbs_vvh/sig/noskim"
     #path_to_datasets = "/ceph/cms/store/user/aaarora/run3-vbs-signal-v1/"
@@ -559,9 +591,13 @@ def main():
     #out_dir = "../../input_samples/sample_jsons/vbs_vvh/bkg/skim_1lep"
     #path_to_datasets = "/ceph/cms/store/user/mdittric/skim/nanoaodv9_bkg_1FJ1Lep_17Jun2025_v1/"
 
+    #dataset_lst = dataset_lst_bkg_r3_aashay_v2v3
+    #out_dir = "../../input_samples/sample_jsons/vbs_vvh/bkg/skim_aa_v01"
+    #path_to_datasets = "/ceph/cms/store/user/aaarora/skims_v1/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v3/"
+
     dataset_lst = dataset_lst_bkg_r3_aashay_v2v2
-    out_dir = "../../input_samples/sample_jsons/vbs_vvh/bkg/skim_aa_v01"
-    path_to_datasets = "/ceph/cms/store/user/aaarora/skims_v1/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/"
+    out_dir = "../../input_samples/sample_jsons/vbs_vvh/bkg/r3_skim_md_1l1fj_v00/"
+    path_to_datasets = "/ceph/cms/store/user/mdittric/skims_1FJ_1LEP_v0_09212025/150X_mcRun3_2024_realistic_v2-v2/"
 
     # Get the meta data for each dataset
     for dataset_name in dataset_lst:
