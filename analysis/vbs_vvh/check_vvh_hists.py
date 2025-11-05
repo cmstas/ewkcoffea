@@ -120,35 +120,35 @@ GRP_DICT_FULL_R2 = {
 CAT_LST = [
     "all_events",
     #"filter",
-    #"exactly1lep",
+    "exactly1lep",
 
     ### 1lep 1FJ ###
-    "exactly1lep_exactly1fj",
-    "presel",
-    "preselHFJ",
-    "preselHFJTag",
+    #"exactly1lep_exactly1fj",
+    #"presel",
+    #"preselHFJ",
+    #"preselHFJTag",
     "preselHFJTag_mjj115",
-    "preselVFJ",
-    "preselVFJTag",
-    "preselVFJTag_mjjcent75to150",
-    "preselVFJTag_mjjcent75to150_mbb75to150",
+    #"preselVFJ",
+    #"preselVFJTag",
+    #"preselVFJTag_mjjcent75to150",
+    #"preselVFJTag_mjjcent75to150_mbb75to150",
     "preselVFJTag_mjjcent75to150_mbb75to150_mvqq75p",
 
     ### 1lep+2FJ ###
-    "exactly1lep_exactly2fj",
-    "exactly1lep_exactly2fj_lepmet600",
-    "exactly1lep_exactly2fj_lepmet600_VFJ",
-    "exactly1lep_exactly2fj_lepmet600_VFJtag",
+    #"exactly1lep_exactly2fj",
+    #"exactly1lep_exactly2fj_lepmet600",
+    #"exactly1lep_exactly2fj_lepmet600_VFJ",
+    #"exactly1lep_exactly2fj_lepmet600_VFJtag",
     "exactly1lep_exactly2fj_lepmet600_VFJtag_njcent0",
-    "exactly1lep_exactly2fj_lepmet600_HFJ",
-    "exactly1lep_exactly2fj_lepmet600_HFJtagZ",
+    #"exactly1lep_exactly2fj_lepmet600_HFJ",
+    #"exactly1lep_exactly2fj_lepmet600_HFJtagZ",
     "exactly1lep_exactly2fj_lepmet600_HFJtagZ_njcent0",
 
     ### 2lOS 1FJ ###
-    "exactly2lepOS",
-    "exactly2lepOS_exactly1fj",
-    "exactly2lepOS_exactly1fj_HFJ",
-    "exactly2lepOS_exactly1fj_HFJtag",
+    #"exactly2lepOS",
+    #"exactly2lepOS_exactly1fj",
+    #"exactly2lepOS_exactly1fj_HFJ",
+    #"exactly2lepOS_exactly1fj_HFJtag",
     "exactly2lepOS_exactly1fj_HFJtag_lepmetjetf800",
     #"exactly2lepOS_exactly1fj_VFJ",
     #"exactly2lepOS_exactly1fj_VFJ_met100",
@@ -426,9 +426,9 @@ def print_yields(histo_dict,grp_dict,years_to_prepend,roundat=None,print_counts=
                 yld, err = yld_dict[cat][group_name]
                 perr = 100*(err/yld)
                 print(f"    {group_name}:  {np.round(yld,roundat)} +- {np.round(perr,2)}%")
-            print(f"    -> Metric: {np.round(yld_dict[cat]['metric'][0],3)}")
-            print(f"    -> For copy pasting: python dump_toy_card.py {yld_dict[cat]['Signal'][0]} {yld_dict[cat]['Background'][0]}")
-        #exit()
+            #print(f"    -> Metric: {np.round(yld_dict[cat]['metric'][0],3)}")
+            #print(f"    -> For copy pasting: python dump_toy_card.py {yld_dict[cat]['Signal'][0]} {yld_dict[cat]['Background'][0]}")
+        exit()
 
 
         ### Print csv, build op as an out string ###
@@ -541,9 +541,10 @@ def main():
     histo_dict = pickle.load(gzip.open(args.pkl_file_path))
 
     # Print total raw events
-    #tot_raw = sum(sum(histo_dict["njets_counts"][{"systematic":"nominal", "category":"all_events"}].values(flow=True)))
-    #print("Tot raw events:",tot_raw)
+    tot_raw = sum(sum(histo_dict["njets_counts"][{"systematic":"nominal", "category":"all_events"}].values(flow=True)))
+    print("Tot raw events:",tot_raw)
     #print(histo_dict["njets"])
+    #exit()
 
     # Figure out the proc naming convention
     # Assume either fully Run 2 or fully Run 3, hists with both are not supported
