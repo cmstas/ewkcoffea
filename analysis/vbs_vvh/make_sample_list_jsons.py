@@ -25,26 +25,28 @@ dataset_lst_sig_r2 = [
     "VBSZZH_VBSCuts_TuneCP5_RunIISummer20UL17-106X_privateMC_NANOGEN_v2",
     "VBSZZH_VBSCuts_TuneCP5_RunIISummer20UL18-106X_privateMC_NANOGEN_v2",
 ]
-# Maria's SM samples (Sep 17, 2025)
-# /ceph/cms/store/user/mmazza/SignalGeneration/run2_c2W_1p0_c2Z_1p0_15Sep2025
-dataset_lst_sig_sm_r2 = [
-    "VBSWWH_OS_VBSCuts_TuneCP5_RunIISummer20UL16APV_NANOGEN",
-    "VBSWWH_OS_VBSCuts_TuneCP5_RunIISummer20UL16_NANOGEN",
-    "VBSWWH_OS_VBSCuts_TuneCP5_RunIISummer20UL17_NANOGEN",
-    "VBSWWH_OS_VBSCuts_TuneCP5_RunIISummer20UL18_NANOGEN",
-    "VBSWWH_SS_VBSCuts_TuneCP5_RunIISummer20UL16APV_NANOGEN",
-    "VBSWWH_SS_VBSCuts_TuneCP5_RunIISummer20UL16_NANOGEN",
-    "VBSWWH_SS_VBSCuts_TuneCP5_RunIISummer20UL17_NANOGEN",
-    "VBSWWH_SS_VBSCuts_TuneCP5_RunIISummer20UL18_NANOGEN",
-    "VBSWZH_VBSCuts_TuneCP5_RunIISummer20UL16APV_NANOGEN",
-    "VBSWZH_VBSCuts_TuneCP5_RunIISummer20UL16_NANOGEN",
-    "VBSWZH_VBSCuts_TuneCP5_RunIISummer20UL17_NANOGEN",
-    "VBSWZH_VBSCuts_TuneCP5_RunIISummer20UL18_NANOGEN",
-    "VBSZZH_VBSCuts_TuneCP5_RunIISummer20UL16APV_NANOGEN",
-    "VBSZZH_VBSCuts_TuneCP5_RunIISummer20UL16_NANOGEN",
-    "VBSZZH_VBSCuts_TuneCP5_RunIISummer20UL17_NANOGEN",
-    "VBSZZH_VBSCuts_TuneCP5_RunIISummer20UL18_NANOGEN",
+
+# Maria's SM samples (Oct 2025, with new MG version with t-chan prop width 0)
+# /ceph/cms/store/user/mmazza/SignalGeneration/VBSVVH_VBSCuts_13TeV_4f_LO_MG_2_9_18_c2v_1p0_c3_1p0_c2Vc3scan_slc7_amd64_gcc10_CMSSW_12_4_8
+dataset_lst_sig_sm_r2_newMG = [
+    "VBSWWH_OS_VBSCuts_13TeV_TuneCP5_RunIISummer20UL16APV_NANOGEN",
+    "VBSWWH_OS_VBSCuts_13TeV_TuneCP5_RunIISummer20UL16_NANOGEN",
+    "VBSWWH_OS_VBSCuts_13TeV_TuneCP5_RunIISummer20UL17_NANOGEN",
+    "VBSWWH_OS_VBSCuts_13TeV_TuneCP5_RunIISummer20UL18_NANOGEN",
+    "VBSWWH_SS_VBSCuts_13TeV_TuneCP5_RunIISummer20UL16APV_NANOGEN",
+    "VBSWWH_SS_VBSCuts_13TeV_TuneCP5_RunIISummer20UL16_NANOGEN",
+    "VBSWWH_SS_VBSCuts_13TeV_TuneCP5_RunIISummer20UL17_NANOGEN",
+    "VBSWWH_SS_VBSCuts_13TeV_TuneCP5_RunIISummer20UL18_NANOGEN",
+    "VBSWZH_VBSCuts_13TeV_TuneCP5_RunIISummer20UL16APV_NANOGEN",
+    "VBSWZH_VBSCuts_13TeV_TuneCP5_RunIISummer20UL16_NANOGEN",
+    "VBSWZH_VBSCuts_13TeV_TuneCP5_RunIISummer20UL17_NANOGEN",
+    "VBSWZH_VBSCuts_13TeV_TuneCP5_RunIISummer20UL18_NANOGEN",
+    "VBSZZH_VBSCuts_13TeV_TuneCP5_RunIISummer20UL16APV_NANOGEN",
+    "VBSZZH_VBSCuts_13TeV_TuneCP5_RunIISummer20UL16_NANOGEN",
+    "VBSZZH_VBSCuts_13TeV_TuneCP5_RunIISummer20UL17_NANOGEN",
+    "VBSZZH_VBSCuts_13TeV_TuneCP5_RunIISummer20UL18_NANOGEN",
 ]
+
 
 
 # Aashay unskimmed
@@ -64,22 +66,7 @@ dataset_lst_sig_2024_noskim = [
     "VBSZZH_C2V2p0_13p6TeV_5f_LO_TuneCP5",
 ]
 
-# Aashay skimmed
-# /ceph/cms/store/user/aaarora/skims/sig/Run3Summer24/private/
-dataset_lst_sig_2024 = [
-    #"VBSWWH_OSWW_C2V1p0_13p6TeV_5f_LO_TuneCP5",
-    #"VBSWWH_SSWW_C2V1p0_13p6TeV_5f_LO_TuneCP5",
-    #"VBSWZH_C2V1p0_13p6TeV_5f_LO_TuneCP5",
-    #"VBSZZH_C2V1p0_13p6TeV_5f_LO_TuneCP5",
-    #"VBSWWH_OSWW_C2V2p0_13p6TeV_5f_LO_TuneCP5",
-    #"VBSWWH_SSWW_C2V2p0_13p6TeV_5f_LO_TuneCP5",
-    #"VBSWZH_C2V2p0_13p6TeV_5f_LO_TuneCP5",
-    #"VBSZZH_C2V2p0_13p6TeV_5f_LO_TuneCP5",
-    "VBSWWH_OSWW_C2V1p5_13p6TeV_5f_LO_TuneCP5",
-    "VBSWWH_SSWW_C2V1p5_13p6TeV_5f_LO_TuneCP5",
-    "VBSWZH_C2V1p5_13p6TeV_5f_LO_TuneCP5",
-    "VBSZZH_C2V1p5_13p6TeV_5f_LO_TuneCP5",
-]
+
 
 ################################# Background #################################
 
@@ -559,29 +546,14 @@ dataset_lst_bkg_r2_1lep = [
 
 def main():
 
-    #with open('xsec_rdf.json', 'r') as file:
-    #with open('xsec_maria_sm.json', 'r') as file:
-    with open('xsec_rdf_r3.json', 'r') as file:
+    with open('xsec_rdf.json', 'r') as file:
+    #with open('xsec_rdf_r3.json', 'r') as file:
         xsec_dict = json.load(file)
 
     # Sig
-    #dataset_lst = dataset_lst_sig_r2
-    #out_dir = "../../input_samples/sample_jsons/vbs_vvh/sig"
-    #path_to_datasets = "/ceph/cms/store/user/mmazza/SignalGeneration/v2_merged/"
-    #dataset_lst = dataset_lst_sig_2024
-    #out_dir = "../../input_samples/sample_jsons/vbs_vvh/sig_noskim_v0"
-    #path_to_datasets = "/ceph/cms/store/user/aaarora/skims/sig/Run3Summer24/private/"
-    #path_to_datasets = "/ceph/cms/store/user/aaarora/run3-vbs-signal-v0/"
-    #out_dir = "../../input_samples/sample_jsons/vbs_vvh/sig_noskim_v1"
-    #path_to_datasets = "/ceph/cms/store/user/aaarora/run3-vbs-signal/"
-
-    #dataset_lst = dataset_lst_sig_sm_r2
-    #out_dir = "../../input_samples/sample_jsons/vbs_vvh/sig/gen_sm"
-    #path_to_datasets = "/ceph/cms/store/user/mmazza/SignalGeneration/run2_c2W_1p0_c2Z_1p0_15Sep2025/"
-
-    #dataset_lst = dataset_lst_sig_2024_noskim
-    #out_dir = "../../input_samples/sample_jsons/vbs_vvh/sig/noskim"
-    #path_to_datasets = "/ceph/cms/store/user/aaarora/run3-vbs-signal-v1/"
+    dataset_lst = dataset_lst_sig_sm_r2_newMG
+    out_dir = "../../input_samples/sample_jsons/vbs_vvh/sig/gen_sm_newMG/"
+    path_to_datasets = "/ceph/cms/store/user/mmazza/SignalGeneration/VBSVVH_VBSCuts_13TeV_4f_LO_MG_2_9_18_c2v_1p0_c3_1p0_c2Vc3scan_slc7_amd64_gcc10_CMSSW_12_4_8/"
 
     # Bkg
     #dataset_lst = dataset_lst_bkg_r2_1fj1lep
@@ -594,10 +566,9 @@ def main():
     #dataset_lst = dataset_lst_bkg_r3_aashay_v2v3
     #out_dir = "../../input_samples/sample_jsons/vbs_vvh/bkg/skim_aa_v01"
     #path_to_datasets = "/ceph/cms/store/user/aaarora/skims_v1/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v3/"
-
-    dataset_lst = dataset_lst_bkg_r3_aashay_v2v2
-    out_dir = "../../input_samples/sample_jsons/vbs_vvh/bkg/r3_skim_md_1l1fj_v00/"
-    path_to_datasets = "/ceph/cms/store/user/mdittric/skims_1FJ_1LEP_v0_09212025/150X_mcRun3_2024_realistic_v2-v2/"
+    #dataset_lst = dataset_lst_bkg_r3_aashay_v2v2
+    #out_dir = "../../input_samples/sample_jsons/vbs_vvh/bkg/r3_skim_md_1l1fj_v00/"
+    #path_to_datasets = "/ceph/cms/store/user/mdittric/skims_1FJ_1LEP_v0_09212025/150X_mcRun3_2024_realistic_v2-v2/"
 
     # Get the meta data for each dataset
     for dataset_name in dataset_lst:

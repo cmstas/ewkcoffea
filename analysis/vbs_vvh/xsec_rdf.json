@@ -5,6 +5,11 @@
     "VBSWZH_C2V1p0_13p6TeV_5f_LO": 0.0007805,
     "VBSZZH_C2V1p0_13p6TeV_5f_LO": 0.0001308,
 
+    "VBSWWH_OS_VBSCuts_13TeV": 0.0006445,
+    "VBSWWH_SS_VBSCuts_13TeV": 0.0003202,
+    "VBSWZH_VBSCuts_13TeV": 0.0004212,
+    "VBSZZH_VBSCuts_13TeV": 0.0001095,
+
     "VBFWH_HToBB_WToLNu_M-125_dipoleRecoilOn": 0.01285968,
     "VBSWH_Inclusive": 0.075,
     "VBSWH_mkW_Inclusive": 0.433,
