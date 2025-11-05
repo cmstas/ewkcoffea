@@ -5,28 +5,9 @@ import topcoffea.modules.sample_lst_jsons_tools as sjt
 
 ################################# Signal #################################
 
-# Maria's unskimmed signal (uaf3)
-# /ceph/cms/store/user/mmazza/SignalGeneration/v2_merged/
-dataset_lst_sig_r2 = [
-    "VBSWWH_OS_VBSCuts_TuneCP5_RunIISummer20UL16-106X_privateMC_NANOGEN_v2",
-    "VBSWWH_OS_VBSCuts_TuneCP5_RunIISummer20UL16APV-106X_privateMC_NANOGEN_v2",
-    "VBSWWH_OS_VBSCuts_TuneCP5_RunIISummer20UL17-106X_privateMC_NANOGEN_v2",
-    "VBSWWH_OS_VBSCuts_TuneCP5_RunIISummer20UL18-106X_privateMC_NANOGEN_v2",
-    "VBSWWH_SS_VBSCuts_TuneCP5_RunIISummer20UL16-106X_privateMC_NANOGEN_v2",
-    "VBSWWH_SS_VBSCuts_TuneCP5_RunIISummer20UL16APV-106X_privateMC_NANOGEN_v2",
-    "VBSWWH_SS_VBSCuts_TuneCP5_RunIISummer20UL17-106X_privateMC_NANOGEN_v2",
-    "VBSWWH_SS_VBSCuts_TuneCP5_RunIISummer20UL18-106X_privateMC_NANOGEN_v2",
-    "VBSWZH_VBSCuts_TuneCP5_RunIISummer20UL16-106X_privateMC_NANOGEN_v2",
-    "VBSWZH_VBSCuts_TuneCP5_RunIISummer20UL16APV-106X_privateMC_NANOGEN_v2",
-    "VBSWZH_VBSCuts_TuneCP5_RunIISummer20UL17-106X_privateMC_NANOGEN_v2",
-    "VBSWZH_VBSCuts_TuneCP5_RunIISummer20UL18-106X_privateMC_NANOGEN_v2",
-    "VBSZZH_VBSCuts_TuneCP5_RunIISummer20UL16-106X_privateMC_NANOGEN_v2",
-    "VBSZZH_VBSCuts_TuneCP5_RunIISummer20UL16APV-106X_privateMC_NANOGEN_v2",
-    "VBSZZH_VBSCuts_TuneCP5_RunIISummer20UL17-106X_privateMC_NANOGEN_v2",
-    "VBSZZH_VBSCuts_TuneCP5_RunIISummer20UL18-106X_privateMC_NANOGEN_v2",
-]
 
 # Maria's SM samples (Oct 2025, with new MG version with t-chan prop width 0)
+# Note there are merged files in these dir, so be careful to just grab those
 # /ceph/cms/store/user/mmazza/SignalGeneration/VBSVVH_VBSCuts_13TeV_4f_LO_MG_2_9_18_c2v_1p0_c3_1p0_c2Vc3scan_slc7_amd64_gcc10_CMSSW_12_4_8
 dataset_lst_sig_sm_r2_newMG = [
     "VBSWWH_OS_VBSCuts_13TeV_TuneCP5_RunIISummer20UL16APV_NANOGEN",
@@ -45,25 +26,6 @@ dataset_lst_sig_sm_r2_newMG = [
     "VBSZZH_VBSCuts_13TeV_TuneCP5_RunIISummer20UL16_NANOGEN",
     "VBSZZH_VBSCuts_13TeV_TuneCP5_RunIISummer20UL17_NANOGEN",
     "VBSZZH_VBSCuts_13TeV_TuneCP5_RunIISummer20UL18_NANOGEN",
-]
-
-
-
-# Aashay unskimmed
-# /ceph/cms/store/user/aaarora/run3-vbs-signal-v1/
-dataset_lst_sig_2024_noskim = [
-    "VBSWWH_OSWW_C2V1p0_13p6TeV_5f_LO_TuneCP5",
-    "VBSWWH_OSWW_C2V1p5_13p6TeV_5f_LO_TuneCP5",
-    "VBSWWH_OSWW_C2V2p0_13p6TeV_5f_LO_TuneCP5",
-    "VBSWWH_SSWW_C2V1p0_13p6TeV_5f_LO_TuneCP5",
-    "VBSWWH_SSWW_C2V1p5_13p6TeV_5f_LO_TuneCP5",
-    "VBSWWH_SSWW_C2V2p0_13p6TeV_5f_LO_TuneCP5",
-    "VBSWZH_C2V1p0_13p6TeV_5f_LO_TuneCP5",
-    "VBSWZH_C2V1p5_13p6TeV_5f_LO_TuneCP5",
-    "VBSWZH_C2V2p0_13p6TeV_5f_LO_TuneCP5",
-    "VBSZZH_C2V1p0_13p6TeV_5f_LO_TuneCP5",
-    "VBSZZH_C2V1p5_13p6TeV_5f_LO_TuneCP5",
-    "VBSZZH_C2V2p0_13p6TeV_5f_LO_TuneCP5",
 ]
 
 
@@ -552,7 +514,7 @@ def main():
 
     # Sig
     dataset_lst = dataset_lst_sig_sm_r2_newMG
-    out_dir = "../../input_samples/sample_jsons/vbs_vvh/sig/gen_sm_newMG/"
+    out_dir = "../../input_samples/sample_jsons/vbs_vvh/sig/run2_mg2918_genSM/"
     path_to_datasets = "/ceph/cms/store/user/mmazza/SignalGeneration/VBSVVH_VBSCuts_13TeV_4f_LO_MG_2_9_18_c2v_1p0_c3_1p0_c2Vc3scan_slc7_amd64_gcc10_CMSSW_12_4_8/"
 
     # Bkg
