@@ -534,7 +534,7 @@ def main():
     parser.add_argument('-p', "--make-plots", action='store_true', help = "Make plots from the pkl file")
     parser.add_argument('-j', "--dump-json", action='store_true', help = "Dump some yield numbers into a json file")
     parser.add_argument('-o', "--output-name", default='vvh', help = "What to name the outputs")
-    parser.add_argument('-r', "--run", default='r3', help = "Which year")
+    parser.add_argument('-r', "--run", default='r2', help = "Which year")
     args = parser.parse_args()
 
     # Get the dictionary of histograms from the input pkl file

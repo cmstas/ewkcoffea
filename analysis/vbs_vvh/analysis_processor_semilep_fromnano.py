@@ -346,12 +346,11 @@ class AnalysisProcessor(processor.ProcessorABC):
         # Note: Here we will to the weights object the SFs that do not depend on any of the forthcoming loops
         weights_obj_base = coffea.analysis_tools.Weights(len(events),storeIndividual=True)
         if not isData:
-            ##if ak.any(events["LHEReweightingWeight"]) and self._rwgt_to_sm:
-            ##    genw = events["LHEReweightingWeight"][:,60]
-            ##else:
-            ##    genw = events["genWeight"]
-            # Only use samples at start point for now
-            genw = events["genWeight"]
+            if ak.any(events["LHEReweightingWeight"]) and self._rwgt_to_sm:
+                # Note this assumes 60 is the SM point
+                genw = events["LHEReweightingWeight"][:,60]
+            else:
+                genw = events["genWeight"]
 
             # If it's an EFT sample, just take SM piece
             sm_wgt = 1.0
