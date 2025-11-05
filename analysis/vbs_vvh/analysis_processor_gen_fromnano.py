@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import coffea
 import numpy as np
 import awkward as ak
 np.seterr(divide='ignore', invalid='ignore', over='ignore')
