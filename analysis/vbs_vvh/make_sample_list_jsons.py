@@ -508,8 +508,8 @@ dataset_lst_bkg_r2_1lep = [
 
 def main():
 
-    with open('xsec_rdf.json', 'r') as file:
     #with open('xsec_rdf_r3.json', 'r') as file:
+    with open('xsec_rdf.json', 'r') as file:
         xsec_dict = json.load(file)
 
     # Sig

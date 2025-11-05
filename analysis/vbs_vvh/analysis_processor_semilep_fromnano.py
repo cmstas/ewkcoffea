@@ -13,7 +13,7 @@ from coffea.lumi_tools import LumiMask
 
 from topcoffea.modules.paths import topcoffea_path
 #import topcoffea.modules.event_selection as es_tc
-import topcoffea.modules.corrections as cor_tc
+#import topcoffea.modules.corrections as cor_tc
 
 from ewkcoffea.modules.paths import ewkcoffea_path as ewkcoffea_path
 import ewkcoffea.modules.selection_wwz as es_ec
@@ -224,7 +224,7 @@ class AnalysisProcessor(processor.ProcessorABC):
         sow                = self._samples[json_name]["nSumOfWeights"]
 
         # For now, exit if this is data, not ready for it yet
-        if isData: raise Exception(f"Not ready to run on data. E.g., golden json for 2024 is using a standin")
+        if isData: raise Exception("Not ready to run on data. E.g., golden json for 2024 is using a standin")
 
         # Set a flag for Run3 years
         is2022 = year in ["2022","2022EE"]
