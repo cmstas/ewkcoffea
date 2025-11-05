@@ -27,7 +27,7 @@ get_ec_param = GetParam(ewkcoffea_path("params/params.json"))
 
 class AnalysisProcessor(processor.ProcessorABC):
 
-    def __init__(self, samples, wc_names_lst=[], hist_lst=None, do_systematics=False, skip_obj_systematics=False, skip_signal_regions=False, skip_control_regions=False, muonSyst='nominal', dtype=np.float32, siphon_bdt_data=False):
+    def __init__(self, samples, wc_names_lst=[], hist_lst=None, do_systematics=False, skip_obj_systematics=False, skip_signal_regions=False, skip_control_regions=False, muonSyst='nominal', dtype=np.float32, siphon_bdt_data=False, rwgt_to_sm=False):
 
         self._samples = samples
         self._wc_names_lst = wc_names_lst
@@ -158,6 +158,9 @@ class AnalysisProcessor(processor.ProcessorABC):
             "mljjjjany" : axis.Regular(180, 0, 4000, name="mljjjjany", label="mljjjj of leading (in pt) lep and four central or fwd jets"),
             "mljjjjcnt" : axis.Regular(180, 0, 4000, name="mljjjjcnt", label="mljjjj of leading (in pt) lep and four central jets"),
 
+            #"ghiggs0_pt" : axis.Regular(180, 0, 1500, name="ghiggs0_pt", label="Gen higgs pt"),
+            #"gvectorboson0_pt" : axis.Regular(180, 0, 1500, name="gvectorboson0_pt", label="Gen V pt"),
+
         }
 
         # Add histograms to dictionary that will be passed on to dict_accumulator
@@ -198,6 +201,7 @@ class AnalysisProcessor(processor.ProcessorABC):
         self._skip_signal_regions = skip_signal_regions # Whether to skip the SR categories
         self._skip_control_regions = skip_control_regions # Whether to skip the CR categories
         self._siphon_bdt_data = siphon_bdt_data # Whether to write out bdt data or not
+        self._rwgt_to_sm = rwgt_to_sm
 
     @property
     def accumulator(self):
@@ -261,6 +265,16 @@ class AnalysisProcessor(processor.ProcessorABC):
         #    rho = events.Rho.fixedGridRhoFastjetAll
         #else:
         #    rho = events.fixedGridRhoFastjetAll
+
+        '''
+        # Gen objects
+        genpart = events.GenPart
+        ghiggs = genpart[genpart.pdgId==25]
+        gvectorboson = genpart[(abs(genpart.pdgId)==23) | (abs(genpart.pdgId)==24)]
+        # Just take the leading one since multiple copies in history and we're not dealing with it
+        ghiggs0 = (ghiggs[ak.argsort(ghiggs.pt, axis=-1,ascending=False)])[:,0]
+        gvectorboson0 = (gvectorboson[ak.argsort(gvectorboson.pt, axis=-1,ascending=False)])[:,0]
+        '''
 
         # Assigns some original values that will be changed via kinematic corrections
         met["pt_original"] = met.pt
@@ -332,11 +346,12 @@ class AnalysisProcessor(processor.ProcessorABC):
         # Note: Here we will to the weights object the SFs that do not depend on any of the forthcoming loops
         weights_obj_base = coffea.analysis_tools.Weights(len(events),storeIndividual=True)
         if not isData:
-            #if ak.any(events["LHEReweightingWeight"]):
-            #    genw = events["LHEReweightingWeight"][:,60]
-            #else:
-            #    genw = events["genWeight"]
-            genw = events["genWeight"] # Reweighting not validated, only use samples at start point for now
+            ##if ak.any(events["LHEReweightingWeight"]) and self._rwgt_to_sm:
+            ##    genw = events["LHEReweightingWeight"][:,60]
+            ##else:
+            ##    genw = events["genWeight"]
+            # Only use samples at start point for now
+            genw = events["genWeight"]
 
             # If it's an EFT sample, just take SM piece
             sm_wgt = 1.0
@@ -745,59 +760,44 @@ class AnalysisProcessor(processor.ProcessorABC):
             jjFwd_pairs = ak.combinations(goodJets_forward_ptordered_padded, 2, fields=["j0", "j1"] )
             mjj_max_fwd = ak.fill_none(ak.max((jjFwd_pairs.j0 + jjFwd_pairs.j1).mass,axis=-1),0)
 
-            ### TMP!!! These are not in R3, so just use particleNet_QCD for all for now so we don't crash ###
-            #fj0_pNetH4qvsQCD = fj0.particleNet_QCD
-            #fj0_pNetHbbvsQCD = fj0.particleNet_QCD
-            #fj0_pNetHccvsQCD = fj0.particleNet_QCD
-            #fj0_pNetQCD      = fj0.particleNet_QCD
-            #fj0_pNetTvsQCD   = fj0.particleNet_QCD
-            #fj0_pNetWvsQCD   = fj0.particleNet_QCD
-            #fj0_pNetZvsQCD   = fj0.particleNet_QCD
-            #fj0_mparticlenet = fj0.particleNet_QCD
-            #fj1_pNetH4qvsQCD = fj1.particleNet_QCD
-            #fj1_pNetHbbvsQCD = fj1.particleNet_QCD
-            #fj1_pNetHccvsQCD = fj1.particleNet_QCD
-            #fj1_pNetQCD      = fj1.particleNet_QCD
-            #fj1_pNetTvsQCD   = fj1.particleNet_QCD
-            #fj1_pNetWvsQCD   = fj1.particleNet_QCD
-            #fj1_pNetZvsQCD   = fj1.particleNet_QCD
-            #fj1_mparticlenet = fj1.particleNet_QCD
-
-            # Only for R2
-            #fj0_pNetH4qvsQCD = fj0.particleNet_H4qvsQCD
-            #fj0_pNetHbbvsQCD = fj0.particleNet_HbbvsQCD
-            #fj0_pNetHccvsQCD = fj0.particleNet_HccvsQCD
-            #fj0_pNetQCD      = fj0.particleNet_QCD
-            #fj0_pNetTvsQCD   = fj0.particleNet_TvsQCD
-            #fj0_pNetWvsQCD   = fj0.particleNet_WvsQCD
-            #fj0_pNetZvsQCD   = fj0.particleNet_ZvsQCD
-            #fj0_mparticlenet = fj0.particleNet_mass
-            #fj1_pNetH4qvsQCD = fj1.particleNet_H4qvsQCD
-            #fj1_pNetHbbvsQCD = fj1.particleNet_HbbvsQCD
-            #fj1_pNetHccvsQCD = fj1.particleNet_HccvsQCD
-            #fj1_pNetQCD      = fj1.particleNet_QCD
-            #fj1_pNetTvsQCD   = fj1.particleNet_TvsQCD
-            #fj1_pNetWvsQCD   = fj1.particleNet_WvsQCD
-            #fj1_pNetZvsQCD   = fj1.particleNet_ZvsQCD
-            #fj1_mparticlenet = fj1.particleNet_mass
             ###
-            # Only for R3
-            fj0_pNetH4qvsQCD = fj0.particleNetWithMass_H4qvsQCD
-            fj0_pNetHbbvsQCD = fj0.particleNetWithMass_HbbvsQCD
-            fj0_pNetHccvsQCD = fj0.particleNetWithMass_HccvsQCD
-            fj0_pNetQCD      = fj0.particleNetWithMass_QCD
-            fj0_pNetTvsQCD   = fj0.particleNetWithMass_TvsQCD
-            fj0_pNetWvsQCD   = fj0.particleNetWithMass_WvsQCD
-            fj0_pNetZvsQCD   = fj0.particleNetWithMass_ZvsQCD
-            fj0_mparticlenet = fj0.particleNetLegacy_mass
-            fj1_pNetH4qvsQCD = fj1.particleNetWithMass_H4qvsQCD
-            fj1_pNetHbbvsQCD = fj1.particleNetWithMass_HbbvsQCD
-            fj1_pNetHccvsQCD = fj1.particleNetWithMass_HccvsQCD
-            fj1_pNetQCD      = fj1.particleNetWithMass_QCD
-            fj1_pNetTvsQCD   = fj1.particleNetWithMass_TvsQCD
-            fj1_pNetWvsQCD   = fj1.particleNetWithMass_WvsQCD
-            fj1_pNetZvsQCD   = fj1.particleNetWithMass_ZvsQCD
-            fj1_mparticlenet = fj1.particleNetLegacy_mass
+            if year == "2024":
+                # Only for R3
+                fj0_pNetH4qvsQCD = fj0.particleNetWithMass_H4qvsQCD
+                fj0_pNetHbbvsQCD = fj0.particleNetWithMass_HbbvsQCD
+                fj0_pNetHccvsQCD = fj0.particleNetWithMass_HccvsQCD
+                fj0_pNetQCD      = fj0.particleNetWithMass_QCD
+                fj0_pNetTvsQCD   = fj0.particleNetWithMass_TvsQCD
+                fj0_pNetWvsQCD   = fj0.particleNetWithMass_WvsQCD
+                fj0_pNetZvsQCD   = fj0.particleNetWithMass_ZvsQCD
+                fj0_mparticlenet = fj0.particleNetLegacy_mass
+                fj1_pNetH4qvsQCD = fj1.particleNetWithMass_H4qvsQCD
+                fj1_pNetHbbvsQCD = fj1.particleNetWithMass_HbbvsQCD
+                fj1_pNetHccvsQCD = fj1.particleNetWithMass_HccvsQCD
+                fj1_pNetQCD      = fj1.particleNetWithMass_QCD
+                fj1_pNetTvsQCD   = fj1.particleNetWithMass_TvsQCD
+                fj1_pNetWvsQCD   = fj1.particleNetWithMass_WvsQCD
+                fj1_pNetZvsQCD   = fj1.particleNetWithMass_ZvsQCD
+                fj1_mparticlenet = fj1.particleNetLegacy_mass
+            else:
+                # Only for R2
+                fj0_pNetH4qvsQCD = fj0.particleNet_H4qvsQCD
+                fj0_pNetHbbvsQCD = fj0.particleNet_HbbvsQCD
+                fj0_pNetHccvsQCD = fj0.particleNet_HccvsQCD
+                fj0_pNetQCD      = fj0.particleNet_QCD
+                fj0_pNetTvsQCD   = fj0.particleNet_TvsQCD
+                fj0_pNetWvsQCD   = fj0.particleNet_WvsQCD
+                fj0_pNetZvsQCD   = fj0.particleNet_ZvsQCD
+                fj0_mparticlenet = fj0.particleNet_mass
+                fj1_pNetH4qvsQCD = fj1.particleNet_H4qvsQCD
+                fj1_pNetHbbvsQCD = fj1.particleNet_HbbvsQCD
+                fj1_pNetHccvsQCD = fj1.particleNet_HccvsQCD
+                fj1_pNetQCD      = fj1.particleNet_QCD
+                fj1_pNetTvsQCD   = fj1.particleNet_TvsQCD
+                fj1_pNetWvsQCD   = fj1.particleNet_WvsQCD
+                fj1_pNetZvsQCD   = fj1.particleNet_ZvsQCD
+                fj1_mparticlenet = fj1.particleNet_mass
+
 
             # Put the variables we'll plot into a dictionary for easy access later
             dense_variables_dict = {
@@ -924,6 +924,9 @@ class AnalysisProcessor(processor.ProcessorABC):
                 "mljjjjany" : mljjjjany,
                 "mljjjjcnt" : mljjjjcnt,
 
+                #"ghiggs0_pt" : ghiggs0.pt,
+                #"gvectorboson0_pt" : gvectorboson0.pt,
+
             }
 
 
@@ -939,6 +942,7 @@ class AnalysisProcessor(processor.ProcessorABC):
 
             # Form some other useful masks for SRs
 
+            mask_exactly1lep            = veto_map_mask & filter_mask & (nleps==1)
             mask_exactly1lep_exactly2fj = veto_map_mask & filter_mask & (nleps==1) & (nfatjets==2)
             mask_exactly1lep_exactly1fj = veto_map_mask & filter_mask & (nleps==1) & (nfatjets==1)
             mask_presel = mask_exactly1lep_exactly1fj & (scalarptsum_lepmet > 775)
@@ -957,6 +961,7 @@ class AnalysisProcessor(processor.ProcessorABC):
             ### Pre selections ###
             selections.add("all_events", (veto_map_mask | (~veto_map_mask))) # All events.. this logic is a bit roundabout to just get an array of True
             selections.add("filter", filter_mask)
+            selections.add("exactly1lep", mask_exactly1lep)
 
             ### 1lep + 1FJ ###
             selections.add("exactly1lep_exactly1fj" , mask_exactly1lep_exactly1fj)
@@ -1007,6 +1012,8 @@ class AnalysisProcessor(processor.ProcessorABC):
 
                     "all_events",
                     "filter",
+
+                    "exactly1lep",
 
                     ### 1lep 1FJ ###
                     "exactly1lep_exactly1fj",
