@@ -12,7 +12,7 @@ from coffea.analysis_tools import PackedSelection
 from coffea.lumi_tools import LumiMask
 
 from topcoffea.modules.paths import topcoffea_path
-import topcoffea.modules.event_selection as es_tc
+#import topcoffea.modules.event_selection as es_tc
 import topcoffea.modules.corrections as cor_tc
 
 from ewkcoffea.modules.paths import ewkcoffea_path as ewkcoffea_path
@@ -365,7 +365,7 @@ class AnalysisProcessor(processor.ProcessorABC):
 
 
             # Scale weights
-            #''' # COMMENT this block if disabling corrections
+            ''' # COMMENT this block if disabling corrections
             cor_tc.AttachPSWeights(events)
             cor_tc.AttachScaleWeights(events)
             # FSR/ISR weights
@@ -385,7 +385,7 @@ class AnalysisProcessor(processor.ProcessorABC):
             # Lepton SFs and systs
             #weights_obj_base.add(f"CMS_eff_m_{com_tag}", events.sf_4l_muon, copy.deepcopy(events.sf_4l_hi_muon), copy.deepcopy(events.sf_4l_lo_muon))
             #weights_obj_base.add(f"CMS_eff_e_{com_tag}", events.sf_4l_elec, copy.deepcopy(events.sf_4l_hi_elec), copy.deepcopy(events.sf_4l_lo_elec))
-            #'''
+            '''
 
 
         # Set up the list of systematics that are handled via event weight variations
@@ -434,7 +434,7 @@ class AnalysisProcessor(processor.ProcessorABC):
 
             ##### JME Stuff #####
 
-            #''' # COMMENT this block if disabling corrections
+            ''' # COMMENT this block if disabling corrections
             # Getting the raw pT and raw mass for jets
             cleanedJets["pt_raw"] = (1 - cleanedJets.rawFactor)*cleanedJets.pt_original
             cleanedJets["mass_raw"] = (1 - cleanedJets.rawFactor)*cleanedJets.mass_original
@@ -457,7 +457,7 @@ class AnalysisProcessor(processor.ProcessorABC):
             correctionJets = os_ec.get_correctable_jets(cleanedJets)
 
             met = cor_ec.CorrectedMETFactory(correctionJets,year,met,obj_corr_syst_var,isData)
-            #'''
+            '''
             ##### End of JME #####
 
 
@@ -559,7 +559,7 @@ class AnalysisProcessor(processor.ProcessorABC):
 
             ######### Apply SFs #########
 
-            #''' # COMMENT this block if disabling corrections
+            ''' # COMMENT this block if disabling corrections
             if not isData:
 
                 ### Evaluate btag weights ###
@@ -629,7 +629,7 @@ class AnalysisProcessor(processor.ProcessorABC):
                             # Note, up and down weights scaled by 1/wgt_btag_nom so that don't double count the central btag correction (i.e. don't apply it also in the case of up and down variations)
                             ##weights_obj_base_for_kinematic_syst.add(f"CMS_btag_fixedWP_incl_light_{corr_str}{year_tag}", events.nom, wgt_light_up*wgt_bc/wgt_btag_nom, wgt_light_down*wgt_bc/wgt_btag_nom)
                             ##weights_obj_base_for_kinematic_syst.add(f"CMS_btag_fixedWP_comb_bc_{corr_str}{year_tag}",    events.nom, wgt_light*wgt_bc_up/wgt_btag_nom, wgt_light*wgt_bc_down/wgt_btag_nom)
-            #'''
+            '''
 
 
             ######### Masks we need for the selection ##########
@@ -941,31 +941,32 @@ class AnalysisProcessor(processor.ProcessorABC):
 
             # Form some other useful masks for SRs
 
-            mask_exactly1lep            = veto_map_mask & filter_mask & (nleps==1)
-            mask_exactly1lep_exactly2fj = veto_map_mask & filter_mask & (nleps==1) & (nfatjets==2)
-            mask_exactly1lep_exactly1fj = veto_map_mask & filter_mask & (nleps==1) & (nfatjets==1)
-            mask_presel = mask_exactly1lep_exactly1fj & (scalarptsum_lepmet > 775)
+            os_mask = l0.pdgId*l1.pdgId<0
+            ss_mask = l0.pdgId*l1.pdgId>0
+            mask_exactly1lep   = veto_map_mask & filter_mask & (nleps==1)
+            mask_exactly2lepOS = veto_map_mask & filter_mask & (nleps==2) & os_mask
+            mask_exactly2lepSS = veto_map_mask & filter_mask & (nleps==2) & ss_mask
 
-            mask_preselHFJ = mask_presel & (fj0_mparticlenet >  100.) & (fj0_mparticlenet <= 150.)
-            mask_preselVFJ = mask_presel & (fj0_mparticlenet <= 100.) & (fj0_mparticlenet > 65)
+            mask_exactly1lep_exactly1fj   = mask_exactly1lep   & (nfatjets==1)
+            mask_exactly1lep_exactly2fj   = mask_exactly1lep   & (nfatjets==2)
+            mask_exactly2lepSS_exactly1fj = mask_exactly2lepSS & (nfatjets==1)
+            mask_exactly2lepOS_exactly1fj = mask_exactly2lepOS & (nfatjets==1)
+
+            mask_VFJ  = (fj0_mparticlenet <= 100.) & (fj0_mparticlenet > 65)
             mask_HFJ  = (fj0_mparticlenet >  100.) & (fj0_mparticlenet <= 150.)
             mask_HFJ1 = (fj1_mparticlenet >  100.) & (fj1_mparticlenet <= 150.)
-            mask_VFJ = (fj0_mparticlenet <= 100.) & (fj0_mparticlenet > 65)
 
-            mask_preselHFJTag = mask_preselHFJ & (fj0_pNetHbbvsQCD > 0.98) & (fj0_pNetTvsQCD < 0.5) & (fj0_pNetWvsQCD < 0.5)
-            mask_preselVFJTag = mask_preselVFJ & (fj0_pNetWvsQCD > 0.95) & (fj0_pNetTvsQCD < 0.5)
-            mask_HFJTagHbb = (fj0_pNetHbbvsQCD > 0.98) #& (fj0_pNetTvsQCD < 0.5) & (fj0_pNetWvsQCD < 0.5)
-            mask_HFJtag = (fj0_pNetHbbvsQCD > 0.98) & (fj0_pNetTvsQCD < 0.5) & (fj0_pNetWvsQCD < 0.5)
-            mask_VFJtag = (fj0_pNetWvsQCD > 0.95) & (fj0_pNetTvsQCD < 0.5)
+            mask_HFJTagHbb = (fj0_pNetHbbvsQCD > 0.98)
+            mask_HFJtag    = (fj0_pNetHbbvsQCD > 0.98) & (fj0_pNetTvsQCD < 0.5) & (fj0_pNetWvsQCD < 0.5)
+            mask_VFJtag    = (fj0_pNetWvsQCD   > 0.95) & (fj0_pNetTvsQCD < 0.5)
 
-            ### Pre selections ###
+            ### Inclusive selections ###
             selections.add("all_events", (veto_map_mask | (~veto_map_mask))) # All events.. this logic is a bit roundabout to just get an array of True
             selections.add("filter", filter_mask)
             selections.add("exactly1lep", mask_exactly1lep)
 
             ### 1lep + 1FJ ###
-            selections.add("exactly1lep_exactly1fj" , mask_exactly1lep_exactly1fj)
-            #
+            selections.add("exactly1lep_exactly1fj" ,                         mask_exactly1lep_exactly1fj)
             selections.add("exactly1lep_exactly1fj_HFJ" ,                     mask_exactly1lep_exactly1fj & mask_HFJ)
             selections.add("exactly1lep_exactly1fj_HFJ_mjj1000" ,             mask_exactly1lep_exactly1fj & mask_HFJ & (mjj_max_any>1000))
             selections.add("exactly1lep_exactly1fj_HFJ_mjj1000_bsc0p6" ,      mask_exactly1lep_exactly1fj & mask_HFJ & (mjj_max_any>1000) & (bbscore0_bscore<0.06))
@@ -973,112 +974,57 @@ class AnalysisProcessor(processor.ProcessorABC):
             selections.add("exactly1lep_exactly1fj_VFJ" ,                     mask_exactly1lep_exactly1fj & mask_VFJ)
             selections.add("exactly1lep_exactly1fj_VFJ_mjj1000" ,             mask_exactly1lep_exactly1fj & mask_VFJ & (mjj_max_any>1000))
             selections.add("exactly1lep_exactly1fj_VFJ_mjj1000_bsc0p6" ,      mask_exactly1lep_exactly1fj & mask_VFJ & (mjj_max_any>1000) & (bbscore0_bscore<0.06))
-            #
-            selections.add("presel", mask_presel)
-            # HFJ selections
-            selections.add("preselHFJ", mask_preselHFJ)
-            selections.add("preselHFJTag",mask_preselHFJTag)
-            selections.add("preselHFJTag_mjj115", mask_preselHFJTag & (mass_j0centj1cent < 115))
-            # VFJ selections
-            selections.add("preselVFJ", mask_preselVFJ)
-            selections.add("preselVFJTag",                                  mask_preselVFJTag)
-            selections.add("preselVFJTag_mjjcent75to150",                   mask_preselVFJTag & (mass_j0centj1cent>75) & (mass_j0centj1cent<150))
-            selections.add("preselVFJTag_mjjcent75to150_mbb75to150",        mask_preselVFJTag & (mass_j0centj1cent>75) & (mass_j0centj1cent<150) & (mass_b0b1>75) & (mass_b0b1<150))
-            selections.add("preselVFJTag_mjjcent75to150_mbb75to150_mvqq75p",mask_preselVFJTag & (mass_j0centj1cent>75) & (mass_j0centj1cent<150) & (mass_b0b1>75) & (mass_b0b1<150) & (jj_pairs_atmindr_mjj > 75))
 
             ### 1lep + 2FJ ###
-            selections.add("exactly1lep_exactly2fj" ,                          mask_exactly1lep_exactly2fj)
-            selections.add("exactly1lep_exactly2fj_lepmet600" ,                mask_exactly1lep_exactly2fj & (scalarptsum_lepmet>600))
-            selections.add("exactly1lep_exactly2fj_lepmet600_VFJ" ,            mask_exactly1lep_exactly2fj & (scalarptsum_lepmet>600) & mask_VFJ)
-            selections.add("exactly1lep_exactly2fj_lepmet600_VFJtag" ,         mask_exactly1lep_exactly2fj & (scalarptsum_lepmet>600) & mask_VFJ & mask_VFJtag)
-            selections.add("exactly1lep_exactly2fj_lepmet600_VFJtag_njcent0" , mask_exactly1lep_exactly2fj & (scalarptsum_lepmet>600) & mask_VFJ & mask_VFJtag & (njets==0))
-            selections.add("exactly1lep_exactly2fj_lepmet600_HFJ" ,            mask_exactly1lep_exactly2fj & (scalarptsum_lepmet>600) & mask_HFJ)
-            selections.add("exactly1lep_exactly2fj_lepmet600_HFJtagZ" ,        mask_exactly1lep_exactly2fj & (scalarptsum_lepmet>600) & mask_HFJ & (fj0_pNetZvsQCD>0.5))
-            selections.add("exactly1lep_exactly2fj_lepmet600_HFJtagZ_njcent0" ,mask_exactly1lep_exactly2fj & (scalarptsum_lepmet>600) & mask_HFJ & (fj0_pNetZvsQCD>0.5) & (njets==0))
-            #
-            selections.add("exactly1lep_exactly2fj_VFJ" ,                       mask_exactly1lep_exactly2fj & mask_VFJ)
-            selections.add("exactly1lep_exactly2fj_HFJ" ,                       mask_exactly1lep_exactly2fj & mask_HFJ)
-            selections.add("exactly1lep_exactly2fj_VFJ_HFJ" ,                   mask_exactly1lep_exactly2fj & mask_VFJ & mask_HFJ1)
-            selections.add("exactly1lep_exactly2fj_VFJ_HFJ_mjj9800" ,           mask_exactly1lep_exactly2fj & mask_VFJ & mask_HFJ1 & (jj_pairs_atmindr_mjj>980))
-            selections.add("exactly1lep_exactly2fj_VFJ_HFJ_mjjdr1200" ,         mask_exactly1lep_exactly2fj & mask_VFJ & mask_HFJ1 & (mass_j0anyj1any>1200))
-            selections.add("exactly1lep_exactly2fj_HFJ_nbm0" ,                  mask_exactly1lep_exactly2fj & mask_HFJ & bmask_exactly0med)
-            selections.add("exactly1lep_exactly2fj_HFJ_nbm0_Htag" ,             mask_exactly1lep_exactly2fj & mask_HFJ & mask_HFJTagHbb)
-            selections.add("exactly1lep_exactly2fj_HFJ_nbm0_Htag_mjj1000" ,           mask_exactly1lep_exactly2fj & mask_HFJ & mask_HFJTagHbb & (mass_j0anyj1any>1000))
-            selections.add("exactly1lep_exactly2fj_HFJ_nbm0_Htag_mjj1000_Wtag" ,      mask_exactly1lep_exactly2fj & mask_HFJ & mask_HFJTagHbb & (mass_j0anyj1any>1000) & (fj1_pNetWvsQCD>0.8))
-            selections.add("exactly1lep_exactly2fj_HFJ_nbm0_Htag_mjj1000_Wtag_njc01", mask_exactly1lep_exactly2fj & mask_HFJ & mask_HFJTagHbb & (mass_j0anyj1any>1000) & (fj1_pNetWvsQCD>0.8) & (njets<2))
-            selections.add("exactly1lep_exactly2fj_HFJ_nbm0_Htag_mjj1000_Wtag_njc0",  mask_exactly1lep_exactly2fj & mask_HFJ & mask_HFJTagHbb & (mass_j0anyj1any>1000) & (fj1_pNetWvsQCD>0.8) & (njets==0))
+            selections.add("exactly1lep_exactly2fj" ,                                 mask_exactly1lep_exactly2fj)
+            selections.add("exactly1lep_exactly2fj_HFJ" ,                             mask_exactly1lep_exactly2fj & mask_HFJ)
+            selections.add("exactly1lep_exactly2fj_HFJ_nbm0" ,                        mask_exactly1lep_exactly2fj & mask_HFJ & bmask_exactly0med)
+            selections.add("exactly1lep_exactly2fj_HFJ_nbm0_Htag" ,                   mask_exactly1lep_exactly2fj & mask_HFJ & bmask_exactly0med & mask_HFJTagHbb)
+            selections.add("exactly1lep_exactly2fj_HFJ_nbm0_Htag_mjj1000" ,           mask_exactly1lep_exactly2fj & mask_HFJ & bmask_exactly0med & mask_HFJTagHbb & (mass_j0anyj1any>1000))
+            selections.add("exactly1lep_exactly2fj_HFJ_nbm0_Htag_mjj1000_Wtag" ,      mask_exactly1lep_exactly2fj & mask_HFJ & bmask_exactly0med & mask_HFJTagHbb & (mass_j0anyj1any>1000) & (fj1_pNetWvsQCD>0.8))
+            selections.add("exactly1lep_exactly2fj_HFJ_nbm0_Htag_mjj1000_Wtag_njc01", mask_exactly1lep_exactly2fj & mask_HFJ & bmask_exactly0med & mask_HFJTagHbb & (mass_j0anyj1any>1000) & (fj1_pNetWvsQCD>0.8) & (njets<2))
+            selections.add("exactly1lep_exactly2fj_VFJ" ,                             mask_exactly1lep_exactly2fj & mask_VFJ)
+            selections.add("exactly1lep_exactly2fj_VFJ_HFJ" ,                         mask_exactly1lep_exactly2fj & mask_VFJ & mask_HFJ1)
+            selections.add("exactly1lep_exactly2fj_VFJ_HFJ_mjj9800" ,                 mask_exactly1lep_exactly2fj & mask_VFJ & mask_HFJ1 & (jj_pairs_atmindr_mjj>980))
             # Aashay 1l+2FJ region
-            selections.add("exactly1lep_exactly2fj_l40"  , veto_map_mask & filter_mask & (nleps==1) & (nfatjets==2) & (l0.pt>40))
-            selections.add("exactly1lep_exactly2fj_l40_noloosel"  , veto_map_mask & filter_mask & (nleps==1) & (nfatjets==2) & (l0.pt>40) & (nleps_l_not_t==0))
+            selections.add("exactly1lep_exactly2fj_l40",          veto_map_mask & filter_mask & (nleps==1) & (nfatjets==2) & (l0.pt>40))
+            selections.add("exactly1lep_exactly2fj_l40_noloosel", veto_map_mask & filter_mask & (nleps==1) & (nfatjets==2) & (l0.pt>40) & (nleps_l_not_t==0))
 
             ### 2lOS + 1FJ ###
-            os_mask = l0.pdgId*l1.pdgId<0
-            ss_mask = l0.pdgId*l1.pdgId>0
-            mask_exactly2lepOS = veto_map_mask & filter_mask & (nleps==2) & os_mask
-            mask_exactly2lepSS = veto_map_mask & filter_mask & (nleps==2) & ss_mask
-            mask_exactly2lepSS_exactly1fj = mask_exactly2lepSS & (nfatjets==1)
-            mask_exactly2lepOS_exactly1fj = mask_exactly2lepOS & (nfatjets==1)
-            mask_exactly2lepOS_exactly2fj = mask_exactly2lepOS & (nfatjets==2)
-            selections.add("exactly2lepOS"                                    , mask_exactly2lepOS)
-            selections.add("exactly2lepOS_exactly1fj"                         , mask_exactly2lepOS_exactly1fj)
-            selections.add("exactly2lepOS_exactly1fj_HFJ"                     , mask_exactly2lepOS_exactly1fj & mask_HFJ)
-            selections.add("exactly2lepOS_exactly1fj_HFJtag"                  , mask_exactly2lepOS_exactly1fj & mask_HFJ & mask_HFJTagHbb)
-            selections.add("exactly2lepOS_exactly1fj_HFJtag_mjj1000"          , mask_exactly2lepOS_exactly1fj & mask_HFJ & mask_HFJTagHbb & (mjj_max_any>1000))
-            selections.add("exactly2lepOS_exactly1fj_HFJtag_lepmetjetf800"    , mask_exactly2lepOS_exactly1fj & mask_HFJ & mask_HFJTagHbb & (scalarptsum_lepmetfwdjets>800))
-            selections.add("exactly2lepOS_exactly1fj_VFJ"                     , mask_exactly2lepOS_exactly1fj & mask_VFJ)
-            selections.add("exactly2lepOS_exactly1fj_VFJ_met100"              , mask_exactly2lepOS_exactly1fj & mask_VFJ & (met.pt>100))
-            selections.add("exactly2lepOS_exactly1fj_VFJ_met100_lepmetjetf700", mask_exactly2lepOS_exactly1fj & mask_VFJ & (met.pt>100) & (scalarptsum_lepmetfwdjets>700))
+            selections.add("exactly2lepOS",                           mask_exactly2lepOS)
+            selections.add("exactly2lepOS_exactly1fj",                mask_exactly2lepOS_exactly1fj)
+            selections.add("exactly2lepOS_exactly1fj_HFJ",            mask_exactly2lepOS_exactly1fj & mask_HFJ)
+            selections.add("exactly2lepOS_exactly1fj_HFJtag",         mask_exactly2lepOS_exactly1fj & mask_HFJ & mask_HFJTagHbb)
+            selections.add("exactly2lepOS_exactly1fj_HFJtag_mjj1000", mask_exactly2lepOS_exactly1fj & mask_HFJ & mask_HFJTagHbb & (mjj_max_any>1000))
 
             cat_dict = {
                 "lep_chan_lst" : [
 
                     "all_events",
                     "filter",
-
                     "exactly1lep",
 
                     ### 1lep 1FJ ###
                     "exactly1lep_exactly1fj",
-                    #
                     "exactly1lep_exactly1fj_HFJ",
                     "exactly1lep_exactly1fj_HFJ_mjj1000",
-                    "exactly1lep_exactly1fj_VFJ",
                     "exactly1lep_exactly1fj_HFJ_mjj1000_bsc0p6",
                     "exactly1lep_exactly1fj_HFJ_mjj1000_bsc0p6_Htag",
+                    "exactly1lep_exactly1fj_VFJ",
                     "exactly1lep_exactly1fj_VFJ_mjj1000",
                     "exactly1lep_exactly1fj_VFJ_mjj1000_bsc0p6",
-                    #
-                    "presel",
-                    "preselHFJ",
-                    "preselHFJTag",
-                    "preselHFJTag_mjj115",
-                    "preselVFJ",
-                    "preselVFJTag",
-                    "preselVFJTag_mjjcent75to150",
-                    "preselVFJTag_mjjcent75to150_mbb75to150",
-                    "preselVFJTag_mjjcent75to150_mbb75to150_mvqq75p",
 
                     ### 1lep+2FJ ###
                     "exactly1lep_exactly2fj",
-                    "exactly1lep_exactly2fj_lepmet600",
-                    "exactly1lep_exactly2fj_lepmet600_VFJ",
-                    "exactly1lep_exactly2fj_lepmet600_VFJtag",
-                    "exactly1lep_exactly2fj_lepmet600_VFJtag_njcent0",
-                    "exactly1lep_exactly2fj_lepmet600_HFJ",
-                    "exactly1lep_exactly2fj_lepmet600_HFJtagZ",
-                    "exactly1lep_exactly2fj_lepmet600_HFJtagZ_njcent0",
-                    #
                     "exactly1lep_exactly2fj_HFJ",
-                    "exactly1lep_exactly2fj_VFJ",
                     "exactly1lep_exactly2fj_HFJ_nbm0",
                     "exactly1lep_exactly2fj_HFJ_nbm0_Htag",
-                    "exactly1lep_exactly2fj_VFJ_HFJ",
-                    "exactly1lep_exactly2fj_VFJ_HFJ_mjj9800",
-                    "exactly1lep_exactly2fj_VFJ_HFJ_mjjdr1200",
                     "exactly1lep_exactly2fj_HFJ_nbm0_Htag_mjj1000",
                     "exactly1lep_exactly2fj_HFJ_nbm0_Htag_mjj1000_Wtag",
                     "exactly1lep_exactly2fj_HFJ_nbm0_Htag_mjj1000_Wtag_njc01",
-                    "exactly1lep_exactly2fj_HFJ_nbm0_Htag_mjj1000_Wtag_njc0",
+                    "exactly1lep_exactly2fj_VFJ",
+                    "exactly1lep_exactly2fj_VFJ_HFJ",
+                    "exactly1lep_exactly2fj_VFJ_HFJ_mjj9800",
                     # Aashay
                     "exactly1lep_exactly2fj_l40",
                     "exactly1lep_exactly2fj_l40_noloosel"  ,
@@ -1088,11 +1034,7 @@ class AnalysisProcessor(processor.ProcessorABC):
                     "exactly2lepOS_exactly1fj",
                     "exactly2lepOS_exactly1fj_HFJ",
                     "exactly2lepOS_exactly1fj_HFJtag",
-                    "exactly2lepOS_exactly1fj_HFJtag_lepmetjetf800",
                     "exactly2lepOS_exactly1fj_HFJtag_mjj1000",
-                    #"exactly2lepOS_exactly1fj_VFJ",
-                    #"exactly2lepOS_exactly1fj_VFJ_met100",
-                    #"exactly2lepOS_exactly1fj_VFJ_met100_lepmetjetf700",
 
 
                 ]
