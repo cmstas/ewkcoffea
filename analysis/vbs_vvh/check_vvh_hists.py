@@ -31,10 +31,16 @@ GRP_DICT_FULL_R3 = {
 GRP_DICT_FULL_R2 = {
 
     "Signal" : [
-        "VBSWWH_OS_VBSCuts",
-        "VBSWWH_SS_VBSCuts",
-        "VBSWZH_VBSCuts",
-        "VBSZZH_VBSCuts",
+        # Naming in Run 2 legacy samples
+        #"VBSWWH_OS_VBSCuts",
+        #"VBSWWH_SS_VBSCuts",
+        #"VBSWZH_VBSCuts",
+        #"VBSZZH_VBSCuts",
+        # Naming in new Run 2 samples
+        "VBSWWH_OS_VBSCuts_13TeV",
+        "VBSWWH_SS_VBSCuts_13TeV",
+        "VBSWZH_VBSCuts_13TeV",
+        "VBSZZH_VBSCuts_13TeV",
     ],
 
     "QCD" : [
@@ -118,41 +124,38 @@ GRP_DICT_FULL_R2 = {
 
 
 CAT_LST = [
-    "all_events",
+    #"all_events",
     #"filter",
-    "exactly1lep",
+    #"exactly1lep",
+    #"exactly2lepOS",
 
     ### 1lep 1FJ ###
-    #"exactly1lep_exactly1fj",
-    #"presel",
-    #"preselHFJ",
-    #"preselHFJTag",
-    "preselHFJTag_mjj115",
-    #"preselVFJ",
-    #"preselVFJTag",
-    #"preselVFJTag_mjjcent75to150",
-    #"preselVFJTag_mjjcent75to150_mbb75to150",
-    "preselVFJTag_mjjcent75to150_mbb75to150_mvqq75p",
+    "exactly1lep_exactly1fj",
+    "exactly1lep_exactly1fj_HFJ",
+    "exactly1lep_exactly1fj_HFJ_mjj1000",
+    "exactly1lep_exactly1fj_HFJ_mjj1000_bsc0p6",
+    "exactly1lep_exactly1fj_HFJ_mjj1000_bsc0p6_Htag",
+    "exactly1lep_exactly1fj_VFJ",
+    "exactly1lep_exactly1fj_VFJ_mjj1000",
+    "exactly1lep_exactly1fj_VFJ_mjj1000_bsc0p6",
 
-    ### 1lep+2FJ ###
-    #"exactly1lep_exactly2fj",
-    #"exactly1lep_exactly2fj_lepmet600",
-    #"exactly1lep_exactly2fj_lepmet600_VFJ",
-    #"exactly1lep_exactly2fj_lepmet600_VFJtag",
-    "exactly1lep_exactly2fj_lepmet600_VFJtag_njcent0",
-    #"exactly1lep_exactly2fj_lepmet600_HFJ",
-    #"exactly1lep_exactly2fj_lepmet600_HFJtagZ",
-    "exactly1lep_exactly2fj_lepmet600_HFJtagZ_njcent0",
+    #### 1lep+2FJ ###
+    "exactly1lep_exactly2fj",
+    "exactly1lep_exactly2fj_HFJ" ,
+    "exactly1lep_exactly2fj_HFJ_nbm0" ,
+    "exactly1lep_exactly2fj_HFJ_nbm0_Htag" ,
+    "exactly1lep_exactly2fj_HFJ_nbm0_Htag_mjj1000",
+    "exactly1lep_exactly2fj_HFJ_nbm0_Htag_mjj1000_Wtag",
+    "exactly1lep_exactly2fj_HFJ_nbm0_Htag_mjj1000_Wtag_njc01",
+    "exactly1lep_exactly2fj_VFJ" ,
+    "exactly1lep_exactly2fj_VFJ_HFJ" ,
+    "exactly1lep_exactly2fj_VFJ_HFJ_mjj9800",
 
-    ### 2lOS 1FJ ###
-    #"exactly2lepOS",
-    #"exactly2lepOS_exactly1fj",
-    #"exactly2lepOS_exactly1fj_HFJ",
-    #"exactly2lepOS_exactly1fj_HFJtag",
-    "exactly2lepOS_exactly1fj_HFJtag_lepmetjetf800",
-    #"exactly2lepOS_exactly1fj_VFJ",
-    #"exactly2lepOS_exactly1fj_VFJ_met100",
-    #"exactly2lepOS_exactly1fj_VFJ_met100_lepmetjetf700",
+    #### 2lOS 1FJ ###
+    "exactly2lepOS_exactly1fj",
+    "exactly2lepOS_exactly1fj_HFJ",
+    "exactly2lepOS_exactly1fj_HFJtag",
+    "exactly2lepOS_exactly1fj_HFJtag_mjj1000",
 
 ]
 
@@ -389,7 +392,7 @@ def check_rwgt(histo_dict):
 def dump_json_simple(histo_dict,out_name="vvh_yields_simple"):
     out_dict = {}
     hist_to_use = "njets"
-    cats_to_check = ["all_events", "exactly1lep_exactly1fj", "presel", "preselHFJ", "preselVFJ"]
+    cats_to_check = ["all_events", "exactly1lep_exactly1fj", "exactly1lep_exactly2fj", "exactly2lepOS_exactly1fj"]
     for proc_name in histo_dict[hist_to_use].axes["process"]:
         out_dict[proc_name] = {}
         for cat_name in cats_to_check:
@@ -426,9 +429,9 @@ def print_yields(histo_dict,grp_dict,years_to_prepend,roundat=None,print_counts=
                 yld, err = yld_dict[cat][group_name]
                 perr = 100*(err/yld)
                 print(f"    {group_name}:  {np.round(yld,roundat)} +- {np.round(perr,2)}%")
-            #print(f"    -> Metric: {np.round(yld_dict[cat]['metric'][0],3)}")
-            #print(f"    -> For copy pasting: python dump_toy_card.py {yld_dict[cat]['Signal'][0]} {yld_dict[cat]['Background'][0]}")
-        exit()
+            print(f"    -> Metric: {np.round(yld_dict[cat]['metric'][0],3)}")
+            print(f"    -> For copy pasting: python dump_toy_card.py {yld_dict[cat]['Signal'][0]} {yld_dict[cat]['Background'][0]}")
+        #exit()
 
 
         ### Print csv, build op as an out string ###
