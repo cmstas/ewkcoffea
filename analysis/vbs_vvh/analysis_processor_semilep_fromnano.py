@@ -12,8 +12,8 @@ from coffea.analysis_tools import PackedSelection
 from coffea.lumi_tools import LumiMask
 
 from topcoffea.modules.paths import topcoffea_path
-#import topcoffea.modules.event_selection as es_tc
-#import topcoffea.modules.corrections as cor_tc
+import topcoffea.modules.event_selection as es_tc
+import topcoffea.modules.corrections as cor_tc
 
 from ewkcoffea.modules.paths import ewkcoffea_path as ewkcoffea_path
 import ewkcoffea.modules.selection_wwz as es_ec
@@ -261,10 +261,10 @@ class AnalysisProcessor(processor.ProcessorABC):
         mu   = events.Muon
         jets = events.Jet
         fatjets = events.FatJet
-        #if (is2022 or is2023):
-        #    rho = events.Rho.fixedGridRhoFastjetAll
-        #else:
-        #    rho = events.fixedGridRhoFastjetAll
+        if (is2022 or is2023):
+            rho = events.Rho.fixedGridRhoFastjetAll
+        else:
+            rho = events.fixedGridRhoFastjetAll
 
         '''
         # Gen objects
@@ -365,7 +365,7 @@ class AnalysisProcessor(processor.ProcessorABC):
 
 
             # Scale weights
-            '''
+            #''' # COMMENT this block if disabling corrections
             cor_tc.AttachPSWeights(events)
             cor_tc.AttachScaleWeights(events)
             # FSR/ISR weights
@@ -385,7 +385,7 @@ class AnalysisProcessor(processor.ProcessorABC):
             # Lepton SFs and systs
             #weights_obj_base.add(f"CMS_eff_m_{com_tag}", events.sf_4l_muon, copy.deepcopy(events.sf_4l_hi_muon), copy.deepcopy(events.sf_4l_lo_muon))
             #weights_obj_base.add(f"CMS_eff_e_{com_tag}", events.sf_4l_elec, copy.deepcopy(events.sf_4l_hi_elec), copy.deepcopy(events.sf_4l_lo_elec))
-            '''
+            #'''
 
 
         # Set up the list of systematics that are handled via event weight variations
@@ -434,7 +434,7 @@ class AnalysisProcessor(processor.ProcessorABC):
 
             ##### JME Stuff #####
 
-            '''
+            #''' # COMMENT this block if disabling corrections
             # Getting the raw pT and raw mass for jets
             cleanedJets["pt_raw"] = (1 - cleanedJets.rawFactor)*cleanedJets.pt_original
             cleanedJets["mass_raw"] = (1 - cleanedJets.rawFactor)*cleanedJets.mass_original
@@ -457,7 +457,7 @@ class AnalysisProcessor(processor.ProcessorABC):
             correctionJets = os_ec.get_correctable_jets(cleanedJets)
 
             met = cor_ec.CorrectedMETFactory(correctionJets,year,met,obj_corr_syst_var,isData)
-            '''
+            #'''
             ##### End of JME #####
 
 
@@ -559,7 +559,7 @@ class AnalysisProcessor(processor.ProcessorABC):
 
             ######### Apply SFs #########
 
-            '''
+            #''' # COMMENT this block if disabling corrections
             if not isData:
 
                 ### Evaluate btag weights ###
@@ -629,7 +629,7 @@ class AnalysisProcessor(processor.ProcessorABC):
                             # Note, up and down weights scaled by 1/wgt_btag_nom so that don't double count the central btag correction (i.e. don't apply it also in the case of up and down variations)
                             ##weights_obj_base_for_kinematic_syst.add(f"CMS_btag_fixedWP_incl_light_{corr_str}{year_tag}", events.nom, wgt_light_up*wgt_bc/wgt_btag_nom, wgt_light_down*wgt_bc/wgt_btag_nom)
                             ##weights_obj_base_for_kinematic_syst.add(f"CMS_btag_fixedWP_comb_bc_{corr_str}{year_tag}",    events.nom, wgt_light*wgt_bc_up/wgt_btag_nom, wgt_light*wgt_bc_down/wgt_btag_nom)
-            '''
+            #'''
 
 
             ######### Masks we need for the selection ##########
