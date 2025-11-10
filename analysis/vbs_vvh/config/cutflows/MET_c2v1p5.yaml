@@ -1,0 +1,119 @@
+#limiting met_pt cut to 300GeV, test at c2v=1.5
+objsel:
+  all_events: '(events.Pass_MetTriggers == 1) | ~(events.Pass_MetTriggers == 1)'
+  MET_trigger: '(events.Pass_MetTriggers == 1)'
+  nGoodAK8geq2: '(events.nGoodAK8 >= 2)'
+  has_vbs_pair: 'ak.all(events.vbs_idx_max_Mjj > -1, axis=1)'
+  MET_pt_loose: '(events.Met_pt > 100)'
+  H_score_loose:  '(events.HiggsScore > 0.1)'
+  V1_score_loose: '(events.V1Score > 0.1)'
+  AK4_Bveto: '(events.Pass_NoAK4BJet == 1)'
+
+c2v1p5_met300:
+  objsel: '(events.Pass_MetTriggers == 1) & (events.Met_pt > 100) & (events.Pass_NoAK4BJet == 1) & (events.HiggsScore > 0.1) & (events.V1Score > 0.1) & ak.all(events.vbs_idx_max_Mjj > -1, axis=1) & (events.nGoodAK8 >= 2)'
+  MET_pt_300: '(events.Met_pt > 300)'
+
+#using met 250 instead
+c2v1p5_met250:
+  objsel: '(events.Pass_MetTriggers == 1) & (events.Met_pt > 100) & (events.Pass_NoAK4BJet == 1) & (events.HiggsScore > 0.1) & (events.V1Score > 0.1) & ak.all(events.vbs_idx_max_Mjj > -1, axis=1) & (events.nGoodAK8 >= 2)'
+  MET_pt_250: '(events.Met_pt > 250)'
+
+c2v1p5_vbsj_Mjj:
+  objsel: '(events.Pass_MetTriggers == 1) & (events.Met_pt > 100) & (events.Pass_NoAK4BJet == 1) & (events.HiggsScore > 0.1) & (events.V1Score > 0.1) & ak.all(events.vbs_idx_max_Mjj > -1, axis=1) & (events.nGoodAK8 >= 2)'
+  MET_pt_250: '(events.Met_pt > 250)'
+  vbsj_Mjj_500: 'var["vbsj_Mjj"]>500'
+
+c2v1p5_vbsj_deta:
+  objsel: '(events.Pass_MetTriggers == 1) & (events.Met_pt > 100) & (events.Pass_NoAK4BJet == 1) & (events.HiggsScore > 0.1) & (events.V1Score > 0.1) & ak.all(events.vbs_idx_max_Mjj > -1, axis=1) & (events.nGoodAK8 >= 2)'
+  MET_pt_250: '(events.Met_pt > 250)'
+  vbsj_Mjj_500: 'var["vbsj_Mjj"]>500'
+  vbsj_deta_2: 'var["vbsj_deta"]>2'
+
+#want to try this later (nak4)
+c2v1p5_nAK4:
+  objsel: '(events.Pass_MetTriggers == 1) & (events.Met_pt > 100) & (events.Pass_NoAK4BJet == 1) & (events.HiggsScore > 0.1) & (events.V1Score > 0.1) & ak.all(events.vbs_idx_max_Mjj > -1, axis=1) & (events.nGoodAK8 >= 2)'
+  MET_pt_250: '(events.Met_pt > 250)'
+  vbsj_Mjj_500: 'var["vbsj_Mjj"]>500'
+  vbsj_deta_2: 'var["vbsj_deta"]>2'
+  vbsj_nAK4: 'var["nAK4"]<=15'
+
+c2v1p5_leadAK8_dphi:
+  objsel: '(events.Pass_MetTriggers == 1) & (events.Met_pt > 100) & (events.Pass_NoAK4BJet == 1) & (events.HiggsScore > 0.1) & (events.V1Score > 0.1) & ak.all(events.vbs_idx_max_Mjj > -1, axis=1) & (events.nGoodAK8 >= 2)'
+  MET_pt_250: '(events.Met_pt > 250)'
+  vbsj_Mjj_500: 'var["vbsj_Mjj"]>500'
+  vbsj_deta_2: 'var["vbsj_deta"]>2'
+  leadAK8_met_dphi: 'var["leadAK8_MET_dphi"]>1.5'
+
+c2v1p5_V1MidScore:
+  objsel: '(events.Pass_MetTriggers == 1) & (events.Met_pt > 100) & (events.Pass_NoAK4BJet == 1) & (events.HiggsScore > 0.1) & (events.V1Score > 0.1) & ak.all(events.vbs_idx_max_Mjj > -1, axis=1) & (events.nGoodAK8 >= 2)'
+  MET_pt_250: '(events.Met_pt > 250)'
+  vbsj_Mjj_500: 'var["vbsj_Mjj"]>500'
+  vbsj_deta_2: 'var["vbsj_deta"]>2'
+  leadAK8_met_dphi: 'var["leadAK8_MET_dphi"]>1.5'
+  cut_V1: 'events.V1Score > 0.6'
+  
+c2v1p5_nAK4:
+  objsel: '(events.Pass_MetTriggers == 1) & (events.Met_pt > 100) & (events.Pass_NoAK4BJet == 1) & (events.HiggsScore > 0.1) & (events.V1Score > 0.1) & ak.all(events.vbs_idx_max_Mjj > -1, axis=1) & (events.nGoodAK8 >= 2)'
+  MET_pt_250: '(events.Met_pt > 250)'
+  vbsj_Mjj_500: 'var["vbsj_Mjj"]>500'
+  vbsj_deta_2: 'var["vbsj_deta"]>2'
+  leadAK8_met_dphi: 'var["leadAK8_MET_dphi"]>1.5'
+  cut_V1: 'events.V1Score > 0.6'
+  vbsj_nAK4: 'var["nAK4"]<12'
+
+  
+c2v1p5_HMET_dphi:
+  objsel: '(events.Pass_MetTriggers == 1) & (events.Met_pt > 100) & (events.Pass_NoAK4BJet == 1) & (events.HiggsScore > 0.1) & (events.V1Score > 0.1) & ak.all(events.vbs_idx_max_Mjj > -1, axis=1) & (events.nGoodAK8 >= 2)'
+  MET_pt_250: '(events.Met_pt > 250)'
+  vbsj_Mjj_500: 'var["vbsj_Mjj"]>500'
+  vbsj_deta_2: 'var["vbsj_deta"]>2'
+  leadAK8_met_dphi: 'var["leadAK8_MET_dphi"]>1.5'
+  cut_V1: 'events.V1Score > 0.6'
+  vbsj_nAK4: 'var["nAK4"]<12'
+  H_MET_dphi: 'var["HMET_dphi"] > 0.3'
+
+c2v1p5_V1MET_dphi:
+  objsel: '(events.Pass_MetTriggers == 1) & (events.Met_pt > 100) & (events.Pass_NoAK4BJet == 1) & (events.HiggsScore > 0.1) & (events.V1Score > 0.1) & ak.all(events.vbs_idx_max_Mjj > -1, axis=1) & (events.nGoodAK8 >= 2)'
+  MET_pt_250: '(events.Met_pt > 250)'
+  vbsj_Mjj_500: 'var["vbsj_Mjj"]>500'
+  vbsj_deta_2: 'var["vbsj_deta"]>2'
+  leadAK8_met_dphi: 'var["leadAK8_MET_dphi"]>1.5'
+  cut_V1: 'events.V1Score > 0.6'
+  vbsj_nAK4: 'var["nAK4"]<12'
+  H_MET_dphi: 'var["HMET_dphi"] > 0.3'
+  V1_MET_dphi: 'var["V1MET_dphi"] > 0.3'
+
+  
+c2v1p5_Higgs_PNet_TvsQCD:
+  objsel: '(events.Pass_MetTriggers == 1) & (events.Met_pt > 100) & (events.Pass_NoAK4BJet == 1) & (events.HiggsScore > 0.1) & (events.V1Score > 0.1) & ak.all(events.vbs_idx_max_Mjj > -1, axis=1) & (events.nGoodAK8 >= 2)'
+  MET_pt_250: '(events.Met_pt > 250)'
+  vbsj_Mjj_500: 'var["vbsj_Mjj"]>500'
+  vbsj_deta_2: 'var["vbsj_deta"]>2'
+  leadAK8_met_dphi: 'var["leadAK8_MET_dphi"]>1.5'
+  cut_V1: 'events.V1Score > 0.6'
+  nAK4_l12: 'var["nAK4"]<12'
+  H_MET_dphi: 'var["HMET_dphi"] > 0.3'
+  V1_MET_dphi: 'var["V1MET_dphi"] > 0.3'
+  Higgs_PNet_TvsQCD: 'var["Higgs_particleNet_TvsQCD"]<0.5'
+
+  
+c2v1p5_mid:
+  objsel: '(events.Pass_MetTriggers == 1) & (events.Met_pt > 100) & (events.Pass_NoAK4BJet == 1) & (events.HiggsScore > 0.1) & (events.V1Score > 0.1) & ak.all(events.vbs_idx_max_Mjj > -1, axis=1) & (events.nGoodAK8 >= 2)'
+  MET_pt_200: '(events.Met_pt > 200)'
+  vbsj_Mjj_500: 'var["vbsj_Mjj"]>500'
+  vbsj_deta_2: 'var["vbsj_deta"]>2'
+  leadAK8_met_dphi: 'var["leadAK8_MET_dphi"]>1.5'
+  cut_V1: 'events.V1Score > 0.6'
+  nAK4_l12: 'var["nAK4"]<12'
+  Higgs_PNet_TvsQCD: 'var["Higgs_particleNet_TvsQCD"]<0.5'
+
+  
+c2v1p5_mid_v2:
+  objsel: '(events.Pass_MetTriggers == 1) & (events.Met_pt > 100) & (events.Pass_NoAK4BJet == 1) & (events.HiggsScore > 0.1) & (events.V1Score > 0.1) & ak.all(events.vbs_idx_max_Mjj > -1, axis=1) & (events.nGoodAK8 >= 2)'
+  MET_pt_200: '(events.Met_pt > 200)'
+  vbsj_Mjj_500: 'var["vbsj_Mjj"]>500'
+  vbsj_deta_2: 'var["vbsj_deta"]>2'
+  cut_V1: 'events.V1Score > 0.6'
+  nAK4_l12: 'var["nAK4"]<12'
+  Higgs_PNet_TvsQCD: 'var["Higgs_particleNet_TvsQCD"]<0.5'
+  dphi_diff_2p7: 'var["dphi_diff"]<2.7'
