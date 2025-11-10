@@ -215,13 +215,10 @@ class AnalysisProcessor(processor.ProcessorABC):
         histAxisName = events.namewithyear
         year         = events.year
         xsec         = events.xsec
-        sow          = events.sumws
 
         # FIXME Temp fix since only R2, maybe should specify in the input cfg
         is2022 = False
         is2023 = False
-        run_tag = "run2"
-        com_tag = "13TeV"
 
         # Era Needed for all samples
         if isData:
@@ -256,10 +253,9 @@ class AnalysisProcessor(processor.ProcessorABC):
         ################### Lepton selection ####################
 
         # Get tight leptons for VVH selection, using mask from RDF
-        mask_vvhTightEl = ak.values_astype(events.vvhTightLepMaskElectron,bool)
-        mask_vvhTightMu = ak.values_astype(events.vvhTightLepMaskMuon,bool)
-        ele_vvh_t = ele[mask_vvhTightEl]
-        mu_vvh_t  = mu[mask_vvhTightMu]
+        # These now come from RDF output
+        ele_vvh_t = ele
+        mu_vvh_t  = mu
 
         l_vvh_t = ak.with_name(ak.concatenate([ele_vvh_t,mu_vvh_t],axis=1),'PtEtaPhiMCandidate')
         l_vvh_t = l_vvh_t[ak.argsort(l_vvh_t.pt, axis=-1,ascending=False)] # Sort by pt
@@ -328,10 +324,9 @@ class AnalysisProcessor(processor.ProcessorABC):
             veto_map_array = cor_ec.ApplyJetVetoMaps(cleanedJets, year) if (is2022 or is2023) else ak.zeros_like(met.pt)
             veto_map_mask = (veto_map_array == 0)
 
-            # Selecting jets and cleaning them
-            cleanedJets["is_good"] = os_ec.is_good_vbs_jet(cleanedJets,events.is2016)
-            goodJets = cleanedJets[cleanedJets.is_good & (abs(cleanedJets.eta) <= 2.4)]
-            goodJets_forward = cleanedJets[cleanedJets.is_good & (abs(cleanedJets.eta) > 2.4)]
+            # Selecting jets and cleaning them (already in RDF)
+            goodJets = cleanedJets[(abs(cleanedJets.eta) <= 2.4)]
+            goodJets_forward = cleanedJets[(abs(cleanedJets.eta) > 2.4)]
 
             # Count jets
             njets = ak.num(goodJets)
@@ -531,6 +526,44 @@ class AnalysisProcessor(processor.ProcessorABC):
             jjFwd_pairs = ak.combinations(goodJets_forward_ptordered_padded, 2, fields=["j0", "j1"] )
             mjj_max_fwd = ak.fill_none(ak.max((jjFwd_pairs.j0 + jjFwd_pairs.j1).mass,axis=-1),0)
 
+            ### TMP!!! These are not in R3, so just use particleNet_QCD for all for now so we don't crash ###
+            fj0_pNetH4qvsQCD = fj0.particleNet_QCD
+            fj0_pNetHbbvsQCD = fj0.particleNet_QCD
+            fj0_pNetHccvsQCD = fj0.particleNet_QCD
+            fj0_pNetQCD      = fj0.particleNet_QCD
+            fj0_pNetTvsQCD   = fj0.particleNet_QCD
+            fj0_pNetWvsQCD   = fj0.particleNet_QCD
+            fj0_pNetZvsQCD   = fj0.particleNet_QCD
+            fj0_mparticlenet = fj0.particleNet_QCD
+
+            fj1_pNetH4qvsQCD = fj1.particleNet_QCD
+            fj1_pNetHbbvsQCD = fj1.particleNet_QCD
+            fj1_pNetHccvsQCD = fj1.particleNet_QCD
+            fj1_pNetQCD      = fj1.particleNet_QCD
+            fj1_pNetTvsQCD   = fj1.particleNet_QCD
+            fj1_pNetWvsQCD   = fj1.particleNet_QCD
+            fj1_pNetZvsQCD   = fj1.particleNet_QCD
+            fj1_mparticlenet = fj1.particleNet_QCD
+
+            # Only for R2
+            #fj0_pNetH4qvsQCD = fj0.particleNet_H4qvsQCD
+            #fj0_pNetHbbvsQCD = fj0.particleNet_HbbvsQCD
+            #fj0_pNetHccvsQCD = fj0.particleNet_HccvsQCD
+            #fj0_pNetQCD      = fj0.particleNet_QCD
+            #fj0_pNetTvsQCD   = fj0.particleNet_TvsQCD
+            #fj0_pNetWvsQCD   = fj0.particleNet_WvsQCD
+            #fj0_pNetZvsQCD   = fj0.particleNet_ZvsQCD
+            #fj0_mparticlenet = fj0.particleNet_mass
+            #fj1_pNetH4qvsQCD = fj1.particleNet_H4qvsQCD
+            #fj1_pNetHbbvsQCD = fj1.particleNet_HbbvsQCD
+            #fj1_pNetHccvsQCD = fj1.particleNet_HccvsQCD
+            #fj1_pNetQCD      = fj1.particleNet_QCD
+            #fj1_pNetTvsQCD   = fj1.particleNet_TvsQCD
+            #fj1_pNetWvsQCD   = fj1.particleNet_WvsQCD
+            #fj1_pNetZvsQCD   = fj1.particleNet_ZvsQCD
+            #fj1_mparticlenet = fj1.particleNet_mass
+            ###
+
 
             ### Put the variables we'll plot into a dictionary for easy access later ###
             dense_variables_dict = {
@@ -611,23 +644,23 @@ class AnalysisProcessor(processor.ProcessorABC):
 
                 "mass_b0b1" : mass_b0b1,
 
-                "fj0_pNetH4qvsQCD" : fj0.particleNet_H4qvsQCD,
-                "fj0_pNetHbbvsQCD" : fj0.particleNet_HbbvsQCD,
-                "fj0_pNetHccvsQCD" : fj0.particleNet_HccvsQCD,
-                "fj0_pNetQCD" : fj0.particleNet_QCD,
-                "fj0_pNetTvsQCD" : fj0.particleNet_TvsQCD,
-                "fj0_pNetWvsQCD" : fj0.particleNet_WvsQCD,
-                "fj0_pNetZvsQCD" : fj0.particleNet_ZvsQCD,
-                "fj0_mparticlenet" : fj0.particleNet_mass,
+                "fj0_pNetH4qvsQCD" : fj0_pNetH4qvsQCD,
+                "fj0_pNetHbbvsQCD" : fj0_pNetHbbvsQCD,
+                "fj0_pNetHccvsQCD" : fj0_pNetHccvsQCD,
+                "fj0_pNetQCD"      : fj0_pNetQCD,
+                "fj0_pNetTvsQCD"   : fj0_pNetTvsQCD,
+                "fj0_pNetWvsQCD"   : fj0_pNetWvsQCD,
+                "fj0_pNetZvsQCD"   : fj0_pNetZvsQCD,
+                "fj0_mparticlenet" : fj0_mparticlenet,
 
-                "fj1_pNetH4qvsQCD" : fj1.particleNet_H4qvsQCD,
-                "fj1_pNetHbbvsQCD" : fj1.particleNet_HbbvsQCD,
-                "fj1_pNetHccvsQCD" : fj1.particleNet_HccvsQCD,
-                "fj1_pNetQCD" : fj1.particleNet_QCD,
-                "fj1_pNetTvsQCD" : fj1.particleNet_TvsQCD,
-                "fj1_pNetWvsQCD" : fj1.particleNet_WvsQCD,
-                "fj1_pNetZvsQCD" : fj1.particleNet_ZvsQCD,
-                "fj1_mparticlenet" : fj1.particleNet_mass,
+                "fj1_pNetH4qvsQCD" : fj1_pNetH4qvsQCD,
+                "fj1_pNetHbbvsQCD" : fj1_pNetHbbvsQCD,
+                "fj1_pNetHccvsQCD" : fj1_pNetHccvsQCD,
+                "fj1_pNetQCD"      : fj1_pNetQCD,
+                "fj1_pNetTvsQCD"   : fj1_pNetTvsQCD,
+                "fj1_pNetWvsQCD"   : fj1_pNetWvsQCD,
+                "fj1_pNetZvsQCD"   : fj1_pNetZvsQCD,
+                "fj1_mparticlenet" : fj1_mparticlenet,
 
                 "jj_pairs_atmindr_mjj" : jj_pairs_atmindr_mjj,
 
@@ -670,16 +703,16 @@ class AnalysisProcessor(processor.ProcessorABC):
             mask_exactly1lep_exactly1fj = (nleps==1) & (nfatjets==1)
             mask_presel = mask_exactly1lep_exactly1fj & (scalarptsum_lepmet > 775)
 
-            mask_preselHFJ = mask_presel & (fj0.particleNet_mass >  100.) & (fj0.particleNet_mass <= 150.)
-            mask_preselVFJ = mask_presel & (fj0.particleNet_mass <= 100.) & (fj0.particleNet_mass > 65)
-            mask_HFJ = (fj0.particleNet_mass >  100.) & (fj0.particleNet_mass <= 150.)
-            mask_VFJ = (fj0.particleNet_mass <= 100.) & (fj0.particleNet_mass > 65)
+            mask_preselHFJ = mask_presel & (fj0_mparticlenet >  100.) & (fj0_mparticlenet <= 150.)
+            mask_preselVFJ = mask_presel & (fj0_mparticlenet <= 100.) & (fj0_mparticlenet > 65)
+            mask_HFJ = (fj0_mparticlenet >  100.) & (fj0_mparticlenet <= 150.)
+            mask_VFJ = (fj0_mparticlenet <= 100.) & (fj0_mparticlenet > 65)
 
-            mask_preselHFJTag = mask_preselHFJ & (fj0.particleNet_HbbvsQCD > 0.98) & (fj0.particleNet_TvsQCD < 0.5) & (fj0.particleNet_WvsQCD < 0.5)
-            mask_preselVFJTag = mask_preselVFJ & (fj0.particleNet_WvsQCD > 0.95) & (fj0.particleNet_TvsQCD < 0.5)
-            mask_HFJTagHbb = (fj0.particleNet_HbbvsQCD > 0.98) #& (fj0.particleNet_TvsQCD < 0.5) & (fj0.particleNet_WvsQCD < 0.5)
-            mask_HFJtag = (fj0.particleNet_HbbvsQCD > 0.98) & (fj0.particleNet_TvsQCD < 0.5) & (fj0.particleNet_WvsQCD < 0.5)
-            mask_VFJtag = (fj0.particleNet_WvsQCD > 0.95) & (fj0.particleNet_TvsQCD < 0.5)
+            mask_preselHFJTag = mask_preselHFJ & (fj0_pNetHbbvsQCD > 0.98) & (fj0_pNetTvsQCD < 0.5) & (fj0_pNetWvsQCD < 0.5)
+            mask_preselVFJTag = mask_preselVFJ & (fj0_pNetWvsQCD > 0.95) & (fj0_pNetTvsQCD < 0.5)
+            mask_HFJTagHbb = (fj0_pNetHbbvsQCD > 0.98)
+            mask_HFJtag = (fj0_pNetHbbvsQCD > 0.98) & (fj0_pNetTvsQCD < 0.5) & (fj0_pNetWvsQCD < 0.5)
+            mask_VFJtag = (fj0_pNetWvsQCD > 0.95) & (fj0_pNetTvsQCD < 0.5)
 
             ### Pre selections ###
             selections.add("all_events", (veto_map_mask | (~veto_map_mask))) # All events.. this logic is a bit roundabout to just get an array of True
@@ -705,8 +738,15 @@ class AnalysisProcessor(processor.ProcessorABC):
             selections.add("exactly1lep_exactly2fj_lepmet600_VFJtag" ,         mask_exactly1lep_exactly2fj & (scalarptsum_lepmet>600) & mask_VFJ & mask_VFJtag)
             selections.add("exactly1lep_exactly2fj_lepmet600_VFJtag_njcent0" , mask_exactly1lep_exactly2fj & (scalarptsum_lepmet>600) & mask_VFJ & mask_VFJtag & (njets==0))
             selections.add("exactly1lep_exactly2fj_lepmet600_HFJ" ,            mask_exactly1lep_exactly2fj & (scalarptsum_lepmet>600) & mask_HFJ)
-            selections.add("exactly1lep_exactly2fj_lepmet600_HFJtagZ" ,        mask_exactly1lep_exactly2fj & (scalarptsum_lepmet>600) & mask_HFJ & (fj0.particleNet_ZvsQCD>0.5))
-            selections.add("exactly1lep_exactly2fj_lepmet600_HFJtagZ_njcent0" ,mask_exactly1lep_exactly2fj & (scalarptsum_lepmet>600) & mask_HFJ & (fj0.particleNet_ZvsQCD>0.5) & (njets==0))
+            selections.add("exactly1lep_exactly2fj_lepmet600_HFJtagZ" ,        mask_exactly1lep_exactly2fj & (scalarptsum_lepmet>600) & mask_HFJ & (fj0_pNetZvsQCD>0.5))
+            selections.add("exactly1lep_exactly2fj_lepmet600_HFJtagZ_njcent0" ,mask_exactly1lep_exactly2fj & (scalarptsum_lepmet>600) & mask_HFJ & (fj0_pNetZvsQCD>0.5) & (njets==0))
+
+            selections.add("exactly1lep_l40_noloosel" , (nleps==1)    & (l0.pt>40))
+            ## Test
+            selections.add("exactly2fj_l40_noloosel"  , (nfatjets==2) & (l0.pt>40))
+            selections.add("exactly1lep_l40_noloosel" , (nleps==1)    & (l0.pt>40))
+            selections.add("exactly1lep_exactly2fj_l40_noloosel"  , (nleps==1) & (nfatjets==2) & (l0.pt>40))
+            ##
 
             ### 2lOS + 1FJ ###
             os_mask = l0.pdgId*l1.pdgId<0
@@ -754,6 +794,11 @@ class AnalysisProcessor(processor.ProcessorABC):
                     "exactly1lep_exactly2fj_lepmet600_HFJ",
                     "exactly1lep_exactly2fj_lepmet600_HFJtagZ",
                     "exactly1lep_exactly2fj_lepmet600_HFJtagZ_njcent0",
+                    ## Test
+                    "exactly2fj_l40_noloosel",
+                    "exactly1lep_l40_noloosel",
+                    "exactly1lep_exactly2fj_l40_noloosel",
+                    ##
 
                     ### 2lOS 1FJ ###
                     "exactly2lepOS",

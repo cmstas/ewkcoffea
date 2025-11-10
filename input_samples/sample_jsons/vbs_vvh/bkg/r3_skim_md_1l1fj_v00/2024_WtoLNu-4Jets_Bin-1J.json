@@ -1,0 +1,17 @@
+{
+    "xsec": "9084",
+    "year": "2024",
+    "treeName": "Events",
+    "histAxisName": "2024_WtoLNu-4Jets_Bin-1J",
+    "options": "",
+    "WCnames": [],
+    "files": [
+        "WtoLNu-4Jets_Bin-1J_TuneCP5_13p6TeV_madgraphMLM-pythia8/merged/merged.root"
+    ],
+    "nEvents": 52985,
+    "nGenEvents": 345705274,
+    "nSumOfWeights": 10928087619611.562,
+    "isData": false,
+    "path": "WtoLNu-4Jets_Bin-1J_TuneCP5_13p6TeV_madgraphMLM-pythia8/merged",
+    "nSumOfLheWeights": 0
+}

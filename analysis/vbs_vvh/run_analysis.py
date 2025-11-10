@@ -13,7 +13,7 @@ NanoAODSchema.warn_missing_crossrefs = False
 import topcoffea.modules.remote_environment as remote_environment
 
 LST_OF_KNOWN_EXECUTORS = ["futures","work_queue","iterative"]
-LST_OF_KNOWN_PROCESSORS = ["semilep","semilep_nano"]
+LST_OF_KNOWN_PROCESSORS = ["semilep","semilep_nano","simple_gen"]
 
 
 if __name__ == '__main__':
@@ -37,6 +37,7 @@ if __name__ == '__main__':
     parser.add_argument('--hist-list', action='extend', nargs='+', help = 'Specify a list of histograms to fill.')
     parser.add_argument('--port', default='9123-9130', help = 'Specify the Work Queue port. An integer PORT or an integer range PORT_MIN-PORT_MAX.')
     parser.add_argument('--processor', '-p', default='semilep', help = 'Which processor to execute', choices=LST_OF_KNOWN_PROCESSORS)
+    parser.add_argument('--rwgt-to-sm', action='store_true', help = '')
 
 
     args = parser.parse_args()
@@ -54,6 +55,7 @@ if __name__ == '__main__':
     siphon     = args.siphon
     skip_sr    = args.skip_sr
     skip_cr    = args.skip_cr
+    rwgt_to_sm = args.rwgt_to_sm
     wc_lst = args.wc_list if args.wc_list is not None else []
 
     # Import the proper processor, based on option specified
@@ -61,6 +63,8 @@ if __name__ == '__main__':
         import analysis_processor_semilep as analysis_processor
     elif args.processor == "semilep_nano":
         import analysis_processor_semilep_fromnano as analysis_processor
+    elif args.processor == "simple_gen":
+        import analysis_processor_gen_fromnano as analysis_processor
 
     # Check that if on UF login node, we're using WQ
     hostname = socket.gethostname()
@@ -198,7 +202,7 @@ if __name__ == '__main__':
     else:
         print('No Wilson coefficients specified')
 
-    processor_instance = analysis_processor.AnalysisProcessor(samplesdict,wc_lst,hist_lst,do_systs,skip_obj_systs,skip_sr,skip_cr,siphon_bdt_data=siphon)
+    processor_instance = analysis_processor.AnalysisProcessor(samplesdict,wc_lst,hist_lst,do_systs,skip_obj_systs,skip_sr,skip_cr,siphon_bdt_data=siphon,rwgt_to_sm=rwgt_to_sm)
 
     if executor == "work_queue":
         executor_args = {

@@ -1,0 +1,17 @@
+{
+    "xsec": "0.5015",
+    "year": "2024",
+    "treeName": "Events",
+    "histAxisName": "2024_QCD_Bin-PT-1500to2000_TuneCP5_13p6TeV_pythia8",
+    "options": "",
+    "WCnames": [],
+    "files": [
+        "QCD_Bin-PT-1500to2000_TuneCP5_13p6TeV_pythia8/merged/merged.root"
+    ],
+    "nEvents": 360818,
+    "nGenEvents": 18830999,
+    "nSumOfWeights": 18830999.0,
+    "isData": false,
+    "path": "QCD_Bin-PT-1500to2000_TuneCP5_13p6TeV_pythia8/merged",
+    "nSumOfLheWeights": 0
+}

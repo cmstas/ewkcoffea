@@ -308,7 +308,7 @@ def is_tight_vvh_ele(ele):
 
 def is_good_fatjet(fatjets):
     mask = (
-        (fatjets.pt > 300) & # TODO should be corrected pt
+        (fatjets.pt > 250) & # TODO should be corrected pt
         (abs(fatjets.eta) <= 2.5) &
         (fatjets.msoftdrop > 40) &
         (fatjets.jetId > 0)
@@ -319,6 +319,7 @@ def is_good_vbs_jet(jets,is2016):
     mask = (
         (jets.pt >= 20) &
         (abs(jets.eta) <= 4.7) &
+        #(jets.jetId >=2) # For some Run 3 studies
         ( (jets.pt >= 50) | ( (jets.pt < 50) & (jets.puId != 0) ))
     )
     # If the year is an array per event

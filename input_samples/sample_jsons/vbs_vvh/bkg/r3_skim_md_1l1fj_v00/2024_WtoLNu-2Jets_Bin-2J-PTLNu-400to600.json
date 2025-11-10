@@ -1,0 +1,17 @@
+{
+    "xsec": "3.119",
+    "year": "2024",
+    "treeName": "Events",
+    "histAxisName": "2024_WtoLNu-2Jets_Bin-2J-PTLNu-400to600",
+    "options": "",
+    "WCnames": [],
+    "files": [
+        "WtoLNu-2Jets_Bin-2J-PTLNu-400to600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/merged/merged.root"
+    ],
+    "nEvents": 4508579,
+    "nGenEvents": 13789226,
+    "nSumOfWeights": 102492666.49752,
+    "isData": false,
+    "path": "WtoLNu-2Jets_Bin-2J-PTLNu-400to600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/merged",
+    "nSumOfLheWeights": 0
+}

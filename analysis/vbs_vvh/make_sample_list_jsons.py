@@ -3,26 +3,96 @@ import json
 import subprocess
 import topcoffea.modules.sample_lst_jsons_tools as sjt
 
-# Maria's unskimmed signal (uaf3)
-# /ceph/cms/store/user/mmazza/SignalGeneration/v2_merged/
-dataset_lst_sig_r2 = [
-    "VBSWWH_OS_VBSCuts_TuneCP5_RunIISummer20UL16-106X_privateMC_NANOGEN_v2",
-    "VBSWWH_OS_VBSCuts_TuneCP5_RunIISummer20UL16APV-106X_privateMC_NANOGEN_v2",
-    "VBSWWH_OS_VBSCuts_TuneCP5_RunIISummer20UL17-106X_privateMC_NANOGEN_v2",
-    "VBSWWH_OS_VBSCuts_TuneCP5_RunIISummer20UL18-106X_privateMC_NANOGEN_v2",
-    "VBSWWH_SS_VBSCuts_TuneCP5_RunIISummer20UL16-106X_privateMC_NANOGEN_v2",
-    "VBSWWH_SS_VBSCuts_TuneCP5_RunIISummer20UL16APV-106X_privateMC_NANOGEN_v2",
-    "VBSWWH_SS_VBSCuts_TuneCP5_RunIISummer20UL17-106X_privateMC_NANOGEN_v2",
-    "VBSWWH_SS_VBSCuts_TuneCP5_RunIISummer20UL18-106X_privateMC_NANOGEN_v2",
-    "VBSWZH_VBSCuts_TuneCP5_RunIISummer20UL16-106X_privateMC_NANOGEN_v2",
-    "VBSWZH_VBSCuts_TuneCP5_RunIISummer20UL16APV-106X_privateMC_NANOGEN_v2",
-    "VBSWZH_VBSCuts_TuneCP5_RunIISummer20UL17-106X_privateMC_NANOGEN_v2",
-    "VBSWZH_VBSCuts_TuneCP5_RunIISummer20UL18-106X_privateMC_NANOGEN_v2",
-    "VBSZZH_VBSCuts_TuneCP5_RunIISummer20UL16-106X_privateMC_NANOGEN_v2",
-    "VBSZZH_VBSCuts_TuneCP5_RunIISummer20UL16APV-106X_privateMC_NANOGEN_v2",
-    "VBSZZH_VBSCuts_TuneCP5_RunIISummer20UL17-106X_privateMC_NANOGEN_v2",
-    "VBSZZH_VBSCuts_TuneCP5_RunIISummer20UL18-106X_privateMC_NANOGEN_v2",
+################################# Signal #################################
+
+
+# Maria's SM samples (Oct 2025, with new MG version with t-chan prop width 0)
+# Note there are merged files in these dir, so be careful to just grab those
+# /ceph/cms/store/user/mmazza/SignalGeneration/VBSVVH_VBSCuts_13TeV_4f_LO_MG_2_9_18_c2v_1p0_c3_1p0_c2Vc3scan_slc7_amd64_gcc10_CMSSW_12_4_8
+dataset_lst_sig_sm_r2_newMG = [
+    "VBSWWH_OS_VBSCuts_13TeV_TuneCP5_RunIISummer20UL16APV_NANOGEN",
+    "VBSWWH_OS_VBSCuts_13TeV_TuneCP5_RunIISummer20UL16_NANOGEN",
+    "VBSWWH_OS_VBSCuts_13TeV_TuneCP5_RunIISummer20UL17_NANOGEN",
+    "VBSWWH_OS_VBSCuts_13TeV_TuneCP5_RunIISummer20UL18_NANOGEN",
+    "VBSWWH_SS_VBSCuts_13TeV_TuneCP5_RunIISummer20UL16APV_NANOGEN",
+    "VBSWWH_SS_VBSCuts_13TeV_TuneCP5_RunIISummer20UL16_NANOGEN",
+    "VBSWWH_SS_VBSCuts_13TeV_TuneCP5_RunIISummer20UL17_NANOGEN",
+    "VBSWWH_SS_VBSCuts_13TeV_TuneCP5_RunIISummer20UL18_NANOGEN",
+    "VBSWZH_VBSCuts_13TeV_TuneCP5_RunIISummer20UL16APV_NANOGEN",
+    "VBSWZH_VBSCuts_13TeV_TuneCP5_RunIISummer20UL16_NANOGEN",
+    "VBSWZH_VBSCuts_13TeV_TuneCP5_RunIISummer20UL17_NANOGEN",
+    "VBSWZH_VBSCuts_13TeV_TuneCP5_RunIISummer20UL18_NANOGEN",
+    "VBSZZH_VBSCuts_13TeV_TuneCP5_RunIISummer20UL16APV_NANOGEN",
+    "VBSZZH_VBSCuts_13TeV_TuneCP5_RunIISummer20UL16_NANOGEN",
+    "VBSZZH_VBSCuts_13TeV_TuneCP5_RunIISummer20UL17_NANOGEN",
+    "VBSZZH_VBSCuts_13TeV_TuneCP5_RunIISummer20UL18_NANOGEN",
 ]
+
+
+
+################################# Background #################################
+
+# Aashay's skims (Aug 5 2025)
+# /ceph/cms/store/user/aaarora/skims_v1/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v2/
+# Matthew's skims (Sep 24 2025)
+# /ceph/cms/store/user/mdittric/skims_1FJ_1LEP_v0_09212025/150X_mcRun3_2024_realistic_v2-v2/
+dataset_lst_bkg_r3_aashay_v2v2 = [
+    "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-100to200_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/merged",
+    "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-200to400_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/merged",
+    "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-400to600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/merged",
+    "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/merged",
+    "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-100to200_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/merged",
+    "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-200to400_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/merged",
+    "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-400to600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/merged",
+    "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/merged",
+    "QCD_Bin-PT-1000to1500_TuneCP5_13p6TeV_pythia8/merged",
+    "QCD_Bin-PT-1500to2000_TuneCP5_13p6TeV_pythia8/merged",
+    "QCD_Bin-PT-2000to2500_TuneCP5_13p6TeV_pythia8/merged",
+    "QCD_Bin-PT-2500to3000_TuneCP5_13p6TeV_pythia8/merged",
+    "QCD_Bin-PT-300to470_TuneCP5_13p6TeV_pythia8/merged",
+    "QCD_Bin-PT-470to600_TuneCP5_13p6TeV_pythia8/merged",
+    "QCD_Bin-PT-600to800_TuneCP5_13p6TeV_pythia8/merged",
+    "QCD_Bin-PT-800to1000_TuneCP5_13p6TeV_pythia8/merged",
+    "TTto4Q_TuneCP5_13p6TeV_powheg-pythia8/merged",
+    "TTtoLNu2Q_TuneCP5_13p6TeV_powheg-pythia8/merged",
+    "WtoLNu-2Jets_Bin-1J-PTLNu-200to400_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/merged",
+    "WtoLNu-2Jets_Bin-1J-PTLNu-400to600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/merged",
+    "WtoLNu-2Jets_Bin-1J-PTLNu-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/merged",
+    "WtoLNu-2Jets_Bin-2J-PTLNu-200to400_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/merged",
+    "WtoLNu-2Jets_Bin-2J-PTLNu-400to600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/merged",
+    "WtoLNu-2Jets_Bin-2J-PTLNu-600_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/merged",
+    "WtoLNu-4Jets_Bin-1J_TuneCP5_13p6TeV_madgraphMLM-pythia8/merged",
+    "WtoLNu-4Jets_Bin-2J_TuneCP5_13p6TeV_madgraphMLM-pythia8/merged",
+    "WtoLNu-4Jets_Bin-3J_TuneCP5_13p6TeV_madgraphMLM-pythia8/merged",
+    "WtoLNu-4Jets_Bin-4J_TuneCP5_13p6TeV_madgraphMLM-pythia8/merged",
+    "WWto2L2Nu_TuneCP5_13p6TeV_powheg-pythia8/merged",
+    "WWto4Q_TuneCP5_13p6TeV_powheg-pythia8/merged",
+    "WWtoLNu2Q_TuneCP5_13p6TeV_powheg-pythia8/merged",
+    "WZto2L2Q_TuneCP5_13p6TeV_powheg-pythia8/merged",
+    "WZto3LNu_TuneCP5_13p6TeV_powheg-pythia8/merged",
+    "WZto4Q-1Jets-4FS_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/merged",
+    "WZtoLNu2Q_TuneCP5_13p6TeV_powheg-pythia8/merged",
+    "ZZto2L2Nu_TuneCP5_13p6TeV_powheg-pythia8/merged",
+    "ZZto2L2Q_TuneCP5_13p6TeV_powheg-pythia8/merged",
+    "ZZto2Nu2Q_TuneCP5_13p6TeV_powheg-pythia8/merged",
+    #"ZZto4Q-1Jets_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/merged", # No xsec
+]
+# Aashay's skims (Aug 5 2025)
+# /ceph/cms/store/user/aaarora/skims_v1/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v3/
+# Matthew's skims (Sep 24 2025)
+# /ceph/cms/store/user/mdittric/skims_1FJ_1LEP_v0_09212025/150X_mcRun3_2024_realistic_v2-v3/
+dataset_lst_bkg_r3_aashay_v2v3 = [
+    "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-40to100_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/merged",
+    "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-40to100_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/merged",
+    "TTto2L2Nu_TuneCP5_13p6TeV_powheg-pythia8/merged",
+    "WtoLNu-2Jets_Bin-1J-PTLNu-100to200_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/merged",
+    "WtoLNu-2Jets_Bin-1J-PTLNu-40to100_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/merged",
+    "WtoLNu-2Jets_Bin-2J-PTLNu-100to200_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/merged",
+    "WtoLNu-2Jets_Bin-2J-PTLNu-40to100_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/merged",
+]
+
+
+
 
 # Matthew's 1FJ+1lep skims (Jun 13, 2025)
 # /ceph/cms/store/user/mdittric/skim/nanoaodv9_bkg_1FJ1Lep_13Jun2025_v1
@@ -438,21 +508,29 @@ dataset_lst_bkg_r2_1lep = [
 
 def main():
 
+    #with open('xsec_rdf_r3.json', 'r') as file:
     with open('xsec_rdf.json', 'r') as file:
         xsec_dict = json.load(file)
 
     # Sig
-    #dataset_lst = dataset_lst_sig_r2
-    #out_dir = "../../input_samples/sample_jsons/vbs_vvh/sig"
-    #path_to_datasets = "/ceph/cms/store/user/mmazza/SignalGeneration/v2_merged/"
+    dataset_lst = dataset_lst_sig_sm_r2_newMG
+    out_dir = "../../input_samples/sample_jsons/vbs_vvh/sig/run2_mg2918_genSM/"
+    path_to_datasets = "/ceph/cms/store/user/mmazza/SignalGeneration/VBSVVH_VBSCuts_13TeV_4f_LO_MG_2_9_18_c2v_1p0_c3_1p0_c2Vc3scan_slc7_amd64_gcc10_CMSSW_12_4_8/"
 
     # Bkg
     #dataset_lst = dataset_lst_bkg_r2_1fj1lep
     #out_dir = "../../input_samples/sample_jsons/vbs_vvh/bkg"
     #path_to_datasets = "/ceph/cms/store/user/mdittric/skim/nanoaodv9_bkg_1FJ1Lep_13Jun2025_v1/"
-    dataset_lst = dataset_lst_bkg_r2_1lep
-    out_dir = "../../input_samples/sample_jsons/vbs_vvh/bkg/skim_1lep"
-    path_to_datasets = "/ceph/cms/store/user/mdittric/skim/nanoaodv9_bkg_1FJ1Lep_17Jun2025_v1/"
+    #dataset_lst = dataset_lst_bkg_r2_1lep
+    #out_dir = "../../input_samples/sample_jsons/vbs_vvh/bkg/skim_1lep"
+    #path_to_datasets = "/ceph/cms/store/user/mdittric/skim/nanoaodv9_bkg_1FJ1Lep_17Jun2025_v1/"
+
+    #dataset_lst = dataset_lst_bkg_r3_aashay_v2v3
+    #out_dir = "../../input_samples/sample_jsons/vbs_vvh/bkg/skim_aa_v01"
+    #path_to_datasets = "/ceph/cms/store/user/aaarora/skims_v1/bkg/RunIII2024Summer24NanoAODv15/150X_mcRun3_2024_realistic_v2-v3/"
+    #dataset_lst = dataset_lst_bkg_r3_aashay_v2v2
+    #out_dir = "../../input_samples/sample_jsons/vbs_vvh/bkg/r3_skim_md_1l1fj_v00/"
+    #path_to_datasets = "/ceph/cms/store/user/mdittric/skims_1FJ_1LEP_v0_09212025/150X_mcRun3_2024_realistic_v2-v2/"
 
     # Get the meta data for each dataset
     for dataset_name in dataset_lst:
@@ -484,6 +562,9 @@ def main():
         elif "20UL18" in dataset_name:
             year = "2018"
             hist_axis_name = f"UL18_{dataset_name_short}"
+        elif "13p6TeV" in dataset_name:
+            year = "2024"
+            hist_axis_name = f"2024_{dataset_name_short}" # TMP, fix if we need to make more years or Aashay's naming changes
         else:
             raise Exception(f"Unknown year for dataseet: {dataset_name}")
 

@@ -1,0 +1,17 @@
+{
+    "xsec": "3.382",
+    "year": "2024",
+    "treeName": "Events",
+    "histAxisName": "2024_DYto2L-2Jets_Bin-1J-MLL-50-PTLL-200to400",
+    "options": "",
+    "WCnames": [],
+    "files": [
+        "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-200to400_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/merged/merged.root"
+    ],
+    "nEvents": 1452552,
+    "nGenEvents": 4564956,
+    "nSumOfWeights": 90165596.08773598,
+    "isData": false,
+    "path": "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-200to400_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/merged",
+    "nSumOfLheWeights": 0
+}
