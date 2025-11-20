@@ -1,0 +1,17 @@
+{
+    "xsec": "0.001587",
+    "year": "2018",
+    "treeName": "Events",
+    "histAxisName": "UL18_VBSWWH_OS_VBSCuts_13TeV",
+    "options": "",
+    "WCnames": [],
+    "files": [
+        "VBSWWH_OS_VBSCuts_13TeV_TuneCP5_RunIISummer20UL18_NANOGEN/merged.root"
+    ],
+    "nEvents": 100000,
+    "nGenEvents": 100000,
+    "nSumOfWeights": 100000.0,
+    "isData": false,
+    "path": "VBSWWH_OS_VBSCuts_13TeV_TuneCP5_RunIISummer20UL18_NANOGEN",
+    "nSumOfLheWeights": 0
+}
