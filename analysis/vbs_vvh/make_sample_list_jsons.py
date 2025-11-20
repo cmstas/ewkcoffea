@@ -513,14 +513,16 @@ def main():
         xsec_dict = json.load(file)
 
     # Sig SM
-    #dataset_lst = dataset_lst_sig_r2_newMG
-    #out_dir = "../../input_samples/sample_jsons/vbs_vvh/sig/run2_mg2918_genSM/"
-    #path_to_datasets = "/ceph/cms/store/user/mmazza/SignalGeneration/VBSVVH_VBSCuts_13TeV_4f_LO_MG_2_9_18_c2v_1p0_c3_1p0_c2Vc3scan_slc7_amd64_gcc10_CMSSW_12_4_8/"
+    xsec_dict = xsec_dict["sig_sm"]
+    dataset_lst = dataset_lst_sig_r2_newMG
+    out_dir = "../../input_samples/sample_jsons/vbs_vvh/sig/run2_mg2918_genSM/"
+    path_to_datasets = "/ceph/cms/store/user/mmazza/SignalGeneration/VBSVVH_VBSCuts_13TeV_4f_LO_MG_2_9_18_c2v_1p0_c3_1p0_c2Vc3scan_slc7_amd64_gcc10_CMSSW_12_4_8/"
 
     # Sig k lambda
-    dataset_lst = dataset_lst_sig_r2_newMG
-    out_dir = "../../input_samples/sample_jsons/vbs_vvh/sig/run2_mg2918_genKappaLambda10/"
-    path_to_datasets = "/ceph/cms/store/user/mmazza/SignalGeneration/VBSVVH_VBSCuts_13TeV_4f_LO_MG_2_9_18_c2v_1p0_c3_10p0_c2Vc3scan_slc7_amd64_gcc10_CMSSW_12_4_8/"
+    #xsec_dict = xsec_dict["sig_kl10"]
+    #dataset_lst = dataset_lst_sig_r2_newMG
+    #out_dir = "../../input_samples/sample_jsons/vbs_vvh/sig/run2_mg2918_genKappaLambda10/"
+    #path_to_datasets = "/ceph/cms/store/user/mmazza/SignalGeneration/VBSVVH_VBSCuts_13TeV_4f_LO_MG_2_9_18_c2v_1p0_c3_10p0_c2Vc3scan_slc7_amd64_gcc10_CMSSW_12_4_8/"
 
     # Bkg
     #dataset_lst = dataset_lst_bkg_r2_1fj1lep
