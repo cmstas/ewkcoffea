@@ -6,10 +6,11 @@ import topcoffea.modules.sample_lst_jsons_tools as sjt
 ################################# Signal #################################
 
 
-# Maria's SM samples (Oct 2025, with new MG version with t-chan prop width 0)
+# Maria's SM and kappa lambda samples (Oct 2025, with new MG version with t-chan prop width 0)
 # Note there are merged files in these dir, so be careful to just grab those
 # /ceph/cms/store/user/mmazza/SignalGeneration/VBSVVH_VBSCuts_13TeV_4f_LO_MG_2_9_18_c2v_1p0_c3_1p0_c2Vc3scan_slc7_amd64_gcc10_CMSSW_12_4_8
-dataset_lst_sig_sm_r2_newMG = [
+# /ceph/cms/store/user/mmazza/SignalGeneration/VBSVVH_VBSCuts_13TeV_4f_LO_MG_2_9_18_c2v_1p0_c3_10p0_c2Vc3scan_slc7_amd64_gcc10_CMSSW_12_4_8/
+dataset_lst_sig_r2_newMG = [
     "VBSWWH_OS_VBSCuts_13TeV_TuneCP5_RunIISummer20UL16APV_NANOGEN",
     "VBSWWH_OS_VBSCuts_13TeV_TuneCP5_RunIISummer20UL16_NANOGEN",
     "VBSWWH_OS_VBSCuts_13TeV_TuneCP5_RunIISummer20UL17_NANOGEN",
@@ -27,7 +28,6 @@ dataset_lst_sig_sm_r2_newMG = [
     "VBSZZH_VBSCuts_13TeV_TuneCP5_RunIISummer20UL17_NANOGEN",
     "VBSZZH_VBSCuts_13TeV_TuneCP5_RunIISummer20UL18_NANOGEN",
 ]
-
 
 
 ################################# Background #################################
@@ -512,10 +512,17 @@ def main():
     with open('xsec_rdf.json', 'r') as file:
         xsec_dict = json.load(file)
 
-    # Sig
-    dataset_lst = dataset_lst_sig_sm_r2_newMG
+    # Sig SM
+    xsec_dict = xsec_dict["sig_sm"]
+    dataset_lst = dataset_lst_sig_r2_newMG
     out_dir = "../../input_samples/sample_jsons/vbs_vvh/sig/run2_mg2918_genSM/"
     path_to_datasets = "/ceph/cms/store/user/mmazza/SignalGeneration/VBSVVH_VBSCuts_13TeV_4f_LO_MG_2_9_18_c2v_1p0_c3_1p0_c2Vc3scan_slc7_amd64_gcc10_CMSSW_12_4_8/"
+
+    # Sig k lambda
+    #xsec_dict = xsec_dict["sig_kl10"]
+    #dataset_lst = dataset_lst_sig_r2_newMG
+    #out_dir = "../../input_samples/sample_jsons/vbs_vvh/sig/run2_mg2918_genKappaLambda10/"
+    #path_to_datasets = "/ceph/cms/store/user/mmazza/SignalGeneration/VBSVVH_VBSCuts_13TeV_4f_LO_MG_2_9_18_c2v_1p0_c3_10p0_c2Vc3scan_slc7_amd64_gcc10_CMSSW_12_4_8/"
 
     # Bkg
     #dataset_lst = dataset_lst_bkg_r2_1fj1lep

@@ -1,5 +1,5 @@
 {
-    "xsec": "0.000108",
+    "xsec": "0.000416",
     "year": "2016APV",
     "treeName": "Events",
     "histAxisName": "UL16APV_VBSZZH_VBSCuts_13TeV",
@@ -8,9 +8,9 @@
     "files": [
         "VBSZZH_VBSCuts_13TeV_TuneCP5_RunIISummer20UL16APV_NANOGEN/merged.root"
     ],
-    "nEvents": 100000,
-    "nGenEvents": 100000,
-    "nSumOfWeights": 100000.0,
+    "nEvents": 99800,
+    "nGenEvents": 99800,
+    "nSumOfWeights": 99800.0,
     "isData": false,
     "path": "VBSZZH_VBSCuts_13TeV_TuneCP5_RunIISummer20UL16APV_NANOGEN",
     "nSumOfLheWeights": 0

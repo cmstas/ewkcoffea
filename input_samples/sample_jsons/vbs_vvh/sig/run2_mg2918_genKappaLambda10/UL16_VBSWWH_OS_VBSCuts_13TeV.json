@@ -1,17 +1,17 @@
 {
-    "xsec": "0.000418",
+    "xsec": "0.001587",
     "year": "2016",
     "treeName": "Events",
-    "histAxisName": "UL16_VBSWZH_VBSCuts_13TeV",
+    "histAxisName": "UL16_VBSWWH_OS_VBSCuts_13TeV",
     "options": "",
     "WCnames": [],
     "files": [
-        "VBSWZH_VBSCuts_13TeV_TuneCP5_RunIISummer20UL16_NANOGEN/merged.root"
+        "VBSWWH_OS_VBSCuts_13TeV_TuneCP5_RunIISummer20UL16_NANOGEN/merged.root"
     ],
     "nEvents": 99900,
     "nGenEvents": 99900,
     "nSumOfWeights": 99900.0,
     "isData": false,
-    "path": "VBSWZH_VBSCuts_13TeV_TuneCP5_RunIISummer20UL16_NANOGEN",
+    "path": "VBSWWH_OS_VBSCuts_13TeV_TuneCP5_RunIISummer20UL16_NANOGEN",
     "nSumOfLheWeights": 0
 }

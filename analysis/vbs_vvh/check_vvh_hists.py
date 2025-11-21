@@ -572,5 +572,6 @@ def main():
         make_plots(histo_dict,grp_dict,years_to_prepend)
 
 
-main()
+if __name__ == '__main__':
+    main()
 

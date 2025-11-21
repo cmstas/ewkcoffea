@@ -142,6 +142,8 @@ class AnalysisProcessor(processor.ProcessorABC):
             "mjj_max_cent" : axis.Regular(180, 0, 250, name="mjj_max_cent", label="Leading mjj of pair of non-forward jets"),
             "mjj_max_fwd" : axis.Regular(180, 0, 2500, name="mjj_max_fwd", label="Leading mjj of pair of forward jets"),
             "mjj_max_any" : axis.Regular(180, 0, 1500, name="mjj_max_any", label="Leading mjj of pair of any (central or fwd) jets"),
+            "absdeta_max_fwd" : axis.Regular(180, 0, 5, name="absdeta_max_fwd", label="Largest abs(delta eta) of pair of forward jets"),
+            "absdeta_max_any" : axis.Regular(180, 0, 5, name="absdeta_max_any", label="Largest abs(delta eta) of pair of any (central or fwd) jets"),
 
             "jj_pairs_atmindr_mjj" : axis.Regular(180, 0, 1000, name="jj_pairs_atmindr_mjj", label="jj_pairs_atmindr_mjj"),
 
@@ -749,7 +751,8 @@ class AnalysisProcessor(processor.ProcessorABC):
 
             # Mjj max from any jets
             jjCentFwd_pairs = ak.combinations( goodJetsCentFwd_ptordered_padded, 2, fields=["j0", "j1"] )
-            mjj_max_any  = ak.fill_none(ak.max((jjCentFwd_pairs.j0 + jjCentFwd_pairs.j1).mass,axis=-1),0)
+            mjj_max_any     = ak.fill_none(ak.max((jjCentFwd_pairs.j0 + jjCentFwd_pairs.j1).mass,axis=-1),0)
+            absdeta_max_any = ak.fill_none(ak.max(abs(jjCentFwd_pairs.j0.eta - jjCentFwd_pairs.j1.eta),axis=-1),0)
 
             # Mjj max from cent jets
             jjCent_pairs = ak.combinations(goodJets_ptordered_padded, 2, fields=["j0", "j1"] )
@@ -758,6 +761,7 @@ class AnalysisProcessor(processor.ProcessorABC):
             # Mjj max from forward jets
             jjFwd_pairs = ak.combinations(goodJets_forward_ptordered_padded, 2, fields=["j0", "j1"] )
             mjj_max_fwd = ak.fill_none(ak.max((jjFwd_pairs.j0 + jjFwd_pairs.j1).mass,axis=-1),0)
+            absdeta_max_fwd = ak.fill_none(ak.max(abs(jjFwd_pairs.j0.eta - jjFwd_pairs.j1.eta),axis=-1),0)
 
             ###
             if year == "2024":
@@ -909,6 +913,9 @@ class AnalysisProcessor(processor.ProcessorABC):
                 "mjj_max_any" : mjj_max_any,
                 "mjj_max_cent" : mjj_max_cent,
                 "mjj_max_fwd" : mjj_max_fwd,
+
+                "absdeta_max_fwd" : absdeta_max_fwd,
+                "absdeta_max_any" : absdeta_max_any,
 
                 "mjjjall_nearest_t": mjjjall_nearest_t,
                 "mjjjcnt_nearest_t": mjjjcnt_nearest_t,
