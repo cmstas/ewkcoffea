@@ -1,0 +1,10 @@
+#basic cuts
+MET_objsel:
+  all_events: "(events.Pass_MetTriggers == 1) | ~(events.Pass_MetTriggers == 1)"
+  Met_trigger: "events.Pass_MetTriggers == 1"
+  MET_pt: "events.Met_pt > 100"
+  MET_significance: "events.Met_significance > 20"
+  ak4_bveto: "events.Pass_NoAK4BJet == 1"
+  loose_H: "events.HiggsScore > 0.1"
+  loose_V1: "events.V1Score > 0.1"
+  has_vbs: "ak.all(events.vbs_idx_max_Mjj > -1, axis=1)"
