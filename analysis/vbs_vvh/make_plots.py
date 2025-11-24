@@ -17,7 +17,7 @@ from collections import defaultdict
 #import scripts.utils.plotting_tools as plt_tools
 
 import ewkcoffea.modules.plotting_tools as plt_tools
-from config.variables.cutflow_config import cutflow_dict
+#from config.variables.cutflow_config import cutflow_dict
 from config.paths import objsel_cf,get_cutflow,cutflow_yamls_dir,default_cutflow_yaml,default_output_dir
 from utils.tools import save_array_to_csv
 #from scripts.plot_stuffs import plot_datamc
