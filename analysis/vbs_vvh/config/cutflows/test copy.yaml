@@ -5,9 +5,3 @@ test1:
     > 100) & (events.Met_significance > 20) & (events.Pass_NoAK4BJet == 1) & (events.HiggsScore
     > 0.1) & (events.V1Score > 0.1) & ak.all(events.vbs_idx_max_Mjj > -1, axis=1)'
   tight_cut: '(events.Met_pt > 500) & (var["vbsj_deta"]>2.5) & (events.HiggsScore > 0.6) & (events.V1Score > 0.6)'
-
-test2:
-  objsel: '(events.Pass_MetTriggers == 1) & (events.Met_pt
-    > 100) & (events.Met_significance > 20) & (events.Pass_NoAK4BJet == 1) & (events.HiggsScore
-    > 0.1) & (events.V1Score > 0.1) & ak.all(events.vbs_idx_max_Mjj > -1, axis=1)'
-  tight_cut: '(events.Met_pt > 500) & (var["vbsj_deta"]>2.5) & (events.HiggsScore > 0.6) & (events.V1Score > 0.6)'
