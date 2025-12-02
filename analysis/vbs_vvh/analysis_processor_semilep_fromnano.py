@@ -367,7 +367,7 @@ class AnalysisProcessor(processor.ProcessorABC):
 
 
             # Scale weights
-            #''' # COMMENT this block if disabling corrections
+            ''' # COMMENT this block if disabling corrections
             cor_tc.AttachPSWeights(events)
             cor_tc.AttachScaleWeights(events)
             # FSR/ISR weights
@@ -387,7 +387,7 @@ class AnalysisProcessor(processor.ProcessorABC):
             # Lepton SFs and systs
             #weights_obj_base.add(f"CMS_eff_m_{com_tag}", events.sf_4l_muon, copy.deepcopy(events.sf_4l_hi_muon), copy.deepcopy(events.sf_4l_lo_muon))
             #weights_obj_base.add(f"CMS_eff_e_{com_tag}", events.sf_4l_elec, copy.deepcopy(events.sf_4l_hi_elec), copy.deepcopy(events.sf_4l_lo_elec))
-            #'''
+            '''
 
 
         # Set up the list of systematics that are handled via event weight variations
@@ -436,7 +436,7 @@ class AnalysisProcessor(processor.ProcessorABC):
 
             ##### JME Stuff #####
 
-            #''' # COMMENT this block if disabling corrections
+            ''' # COMMENT this block if disabling corrections
             # Getting the raw pT and raw mass for jets
             cleanedJets["pt_raw"] = (1 - cleanedJets.rawFactor)*cleanedJets.pt_original
             cleanedJets["mass_raw"] = (1 - cleanedJets.rawFactor)*cleanedJets.mass_original
@@ -459,7 +459,7 @@ class AnalysisProcessor(processor.ProcessorABC):
             correctionJets = os_ec.get_correctable_jets(cleanedJets)
 
             met = cor_ec.CorrectedMETFactory(correctionJets,year,met,obj_corr_syst_var,isData)
-            #'''
+            '''
             ##### End of JME #####
 
 
@@ -561,7 +561,7 @@ class AnalysisProcessor(processor.ProcessorABC):
 
             ######### Apply SFs #########
 
-            #''' # COMMENT this block if disabling corrections
+            ''' # COMMENT this block if disabling corrections
             if not isData:
 
                 ### Evaluate btag weights ###
@@ -631,7 +631,7 @@ class AnalysisProcessor(processor.ProcessorABC):
                             # Note, up and down weights scaled by 1/wgt_btag_nom so that don't double count the central btag correction (i.e. don't apply it also in the case of up and down variations)
                             ##weights_obj_base_for_kinematic_syst.add(f"CMS_btag_fixedWP_incl_light_{corr_str}{year_tag}", events.nom, wgt_light_up*wgt_bc/wgt_btag_nom, wgt_light_down*wgt_bc/wgt_btag_nom)
                             ##weights_obj_base_for_kinematic_syst.add(f"CMS_btag_fixedWP_comb_bc_{corr_str}{year_tag}",    events.nom, wgt_light*wgt_bc_up/wgt_btag_nom, wgt_light*wgt_bc_down/wgt_btag_nom)
-            #'''
+            '''
 
 
             ######### Masks we need for the selection ##########
@@ -973,36 +973,41 @@ class AnalysisProcessor(processor.ProcessorABC):
             selections.add("exactly1lep", mask_exactly1lep)
 
             ### 1lep + 1FJ ###
-            selections.add("exactly1lep_exactly1fj" ,                         mask_exactly1lep_exactly1fj)
-            selections.add("exactly1lep_exactly1fj_HFJ" ,                     mask_exactly1lep_exactly1fj & mask_HFJ)
-            selections.add("exactly1lep_exactly1fj_HFJ_mjj1000" ,             mask_exactly1lep_exactly1fj & mask_HFJ & (mjj_max_any>1000))
-            selections.add("exactly1lep_exactly1fj_HFJ_mjj1000_bsc0p6" ,      mask_exactly1lep_exactly1fj & mask_HFJ & (mjj_max_any>1000) & (bbscore0_bscore<0.06))
-            selections.add("exactly1lep_exactly1fj_HFJ_mjj1000_bsc0p6_Htag" , mask_exactly1lep_exactly1fj & mask_HFJ & (mjj_max_any>1000) & (bbscore0_bscore<0.06) & mask_HFJTagHbb)
-            selections.add("exactly1lep_exactly1fj_VFJ" ,                     mask_exactly1lep_exactly1fj & mask_VFJ)
-            selections.add("exactly1lep_exactly1fj_VFJ_mjj1000" ,             mask_exactly1lep_exactly1fj & mask_VFJ & (mjj_max_any>1000))
-            selections.add("exactly1lep_exactly1fj_VFJ_mjj1000_bsc0p6" ,      mask_exactly1lep_exactly1fj & mask_VFJ & (mjj_max_any>1000) & (bbscore0_bscore<0.06))
+            selections.add("exactly1lep_exactly1fj",                            mask_exactly1lep_exactly1fj)
+            selections.add("exactly1lep_exactly1fj_HFJ",                        mask_exactly1lep_exactly1fj & mask_HFJ)
+            selections.add("exactly1lep_exactly1fj_HFJ_Htag",                   mask_exactly1lep_exactly1fj & mask_HFJ & mask_HFJTagHbb)
+            selections.add("exactly1lep_exactly1fj_HFJ_Htag_njt2",              mask_exactly1lep_exactly1fj & mask_HFJ & mask_HFJTagHbb & (njets_tot>=2))
+            selections.add("exactly1lep_exactly1fj_HFJ_Htag_njt2_mjj1000",      mask_exactly1lep_exactly1fj & mask_HFJ & mask_HFJTagHbb & (njets_tot>=2) & (mjj_max_any>1000))
+            selections.add("exactly1lep_exactly1fj_HFJ_Htag_njt2_mjj1000_nbm0", mask_exactly1lep_exactly1fj & mask_HFJ & mask_HFJTagHbb & (njets_tot>=2) & (mjj_max_any>1000) & bmask_exactly0med)
+            selections.add("exactly1lep_exactly1fj_VFJ" ,                       mask_exactly1lep_exactly1fj & mask_VFJ)
+            selections.add("exactly1lep_exactly1fj_VFJ_njt2" ,                  mask_exactly1lep_exactly1fj & mask_VFJ & (njets_tot>=2))
+            selections.add("exactly1lep_exactly1fj_VFJ_njt2_mjj1000" ,          mask_exactly1lep_exactly1fj & mask_VFJ & (njets_tot>=2) & (mjj_max_any>1000))
+            selections.add("exactly1lep_exactly1fj_VFJ_njt2_mjj1000_nbm0" ,     mask_exactly1lep_exactly1fj & mask_VFJ & (njets_tot>=2) & (mjj_max_any>1000) & bmask_exactly0med)
 
             ### 1lep + 2FJ ###
-            selections.add("exactly1lep_exactly2fj" ,                                 mask_exactly1lep_exactly2fj)
-            selections.add("exactly1lep_exactly2fj_HFJ" ,                             mask_exactly1lep_exactly2fj & mask_HFJ)
-            selections.add("exactly1lep_exactly2fj_HFJ_nbm0" ,                        mask_exactly1lep_exactly2fj & mask_HFJ & bmask_exactly0med)
-            selections.add("exactly1lep_exactly2fj_HFJ_nbm0_Htag" ,                   mask_exactly1lep_exactly2fj & mask_HFJ & bmask_exactly0med & mask_HFJTagHbb)
-            selections.add("exactly1lep_exactly2fj_HFJ_nbm0_Htag_mjj1000" ,           mask_exactly1lep_exactly2fj & mask_HFJ & bmask_exactly0med & mask_HFJTagHbb & (mass_j0anyj1any>1000))
-            selections.add("exactly1lep_exactly2fj_HFJ_nbm0_Htag_mjj1000_Wtag" ,      mask_exactly1lep_exactly2fj & mask_HFJ & bmask_exactly0med & mask_HFJTagHbb & (mass_j0anyj1any>1000) & (fj1_pNetWvsQCD>0.8))
-            selections.add("exactly1lep_exactly2fj_HFJ_nbm0_Htag_mjj1000_Wtag_njc01", mask_exactly1lep_exactly2fj & mask_HFJ & bmask_exactly0med & mask_HFJTagHbb & (mass_j0anyj1any>1000) & (fj1_pNetWvsQCD>0.8) & (njets<2))
-            selections.add("exactly1lep_exactly2fj_VFJ" ,                             mask_exactly1lep_exactly2fj & mask_VFJ)
-            selections.add("exactly1lep_exactly2fj_VFJ_HFJ" ,                         mask_exactly1lep_exactly2fj & mask_VFJ & mask_HFJ1)
-            selections.add("exactly1lep_exactly2fj_VFJ_HFJ_mjj9800" ,                 mask_exactly1lep_exactly2fj & mask_VFJ & mask_HFJ1 & (jj_pairs_atmindr_mjj>980))
+            selections.add("exactly1lep_exactly2fj" ,                                     mask_exactly1lep_exactly2fj)
+            selections.add("exactly1lep_exactly2fj_HFJ" ,                                 mask_exactly1lep_exactly2fj & mask_HFJ)
+            selections.add("exactly1lep_exactly2fj_HFJ_nbm0" ,                            mask_exactly1lep_exactly2fj & mask_HFJ & bmask_exactly0med)
+            selections.add("exactly1lep_exactly2fj_HFJ_nbm0_HtagWtag" ,                   mask_exactly1lep_exactly2fj & mask_HFJ & bmask_exactly0med & mask_HFJTagHbb & (fj1_pNetWvsQCD>0.8))
+            selections.add("exactly1lep_exactly2fj_HFJ_nbm0_HtagWtag_njt2" ,              mask_exactly1lep_exactly2fj & mask_HFJ & bmask_exactly0med & mask_HFJTagHbb & (fj1_pNetWvsQCD>0.8) & (njets_tot>=2))
+            selections.add("exactly1lep_exactly2fj_HFJ_nbm0_HtagWtag_njt2_mjj1000" ,      mask_exactly1lep_exactly2fj & mask_HFJ & bmask_exactly0med & mask_HFJTagHbb & (fj1_pNetWvsQCD>0.8) & (njets_tot>=2) & (mass_j0anyj1any>1000))
+            selections.add("exactly1lep_exactly2fj_HFJ_nbm0_HtagWtag_njt2_mjj1000_njc01", mask_exactly1lep_exactly2fj & mask_HFJ & bmask_exactly0med & mask_HFJTagHbb & (fj1_pNetWvsQCD>0.8) & (njets_tot>=2) & (mass_j0anyj1any>1000) & (njets<2))
+            selections.add("exactly1lep_exactly2fj_VFJ" ,                                 mask_exactly1lep_exactly2fj & mask_VFJ)
+            selections.add("exactly1lep_exactly2fj_VFJ_HFJ" ,                             mask_exactly1lep_exactly2fj & mask_VFJ & mask_HFJ1)
+            selections.add("exactly1lep_exactly2fj_VFJ_HFJ_njt2" ,                        mask_exactly1lep_exactly2fj & mask_VFJ & mask_HFJ1 & (njets_tot>=2))
+            selections.add("exactly1lep_exactly2fj_VFJ_HFJ_njt2_mjj1000" ,                mask_exactly1lep_exactly2fj & mask_VFJ & mask_HFJ1 & (njets_tot>=2) & (mjj_max_any>1000))
+            selections.add("exactly1lep_exactly2fj_VFJ_HFJ_njt2_mjj1000_mjj980" ,         mask_exactly1lep_exactly2fj & mask_VFJ & mask_HFJ1 & (njets_tot>=2) & (mjj_max_any>1000) & (jj_pairs_atmindr_mjj>980))
             # Aashay 1l+2FJ region
             selections.add("exactly1lep_exactly2fj_l40",          veto_map_mask & filter_mask & (nleps==1) & (nfatjets==2) & (l0.pt>40))
             selections.add("exactly1lep_exactly2fj_l40_noloosel", veto_map_mask & filter_mask & (nleps==1) & (nfatjets==2) & (l0.pt>40) & (nleps_l_not_t==0))
 
             ### 2lOS + 1FJ ###
-            selections.add("exactly2lepOS",                           mask_exactly2lepOS)
-            selections.add("exactly2lepOS_exactly1fj",                mask_exactly2lepOS_exactly1fj)
-            selections.add("exactly2lepOS_exactly1fj_HFJ",            mask_exactly2lepOS_exactly1fj & mask_HFJ)
-            selections.add("exactly2lepOS_exactly1fj_HFJtag",         mask_exactly2lepOS_exactly1fj & mask_HFJ & mask_HFJTagHbb)
-            selections.add("exactly2lepOS_exactly1fj_HFJtag_mjj1000", mask_exactly2lepOS_exactly1fj & mask_HFJ & mask_HFJTagHbb & (mjj_max_any>1000))
+            selections.add("exactly2lepOS",                                mask_exactly2lepOS)
+            selections.add("exactly2lepOS_exactly1fj",                     mask_exactly2lepOS_exactly1fj)
+            selections.add("exactly2lepOS_exactly1fj_HFJ",                 mask_exactly2lepOS_exactly1fj & mask_HFJ)
+            selections.add("exactly2lepOS_exactly1fj_HFJtag",              mask_exactly2lepOS_exactly1fj & mask_HFJ & mask_HFJTagHbb)
+            selections.add("exactly2lepOS_exactly1fj_HFJtag_njt2",         mask_exactly2lepOS_exactly1fj & mask_HFJ & mask_HFJTagHbb & (njets_tot>=2))
+            selections.add("exactly2lepOS_exactly1fj_HFJtag_njt2_mjj1000", mask_exactly2lepOS_exactly1fj & mask_HFJ & mask_HFJTagHbb & (njets_tot>=2) & (mjj_max_any>1000))
 
             cat_dict = {
                 "lep_chan_lst" : [
@@ -1014,24 +1019,28 @@ class AnalysisProcessor(processor.ProcessorABC):
                     ### 1lep 1FJ ###
                     "exactly1lep_exactly1fj",
                     "exactly1lep_exactly1fj_HFJ",
-                    "exactly1lep_exactly1fj_HFJ_mjj1000",
-                    "exactly1lep_exactly1fj_HFJ_mjj1000_bsc0p6",
-                    "exactly1lep_exactly1fj_HFJ_mjj1000_bsc0p6_Htag",
+                    "exactly1lep_exactly1fj_HFJ_Htag",
+                    "exactly1lep_exactly1fj_HFJ_Htag_njt2",
+                    "exactly1lep_exactly1fj_HFJ_Htag_njt2_mjj1000",
+                    "exactly1lep_exactly1fj_HFJ_Htag_njt2_mjj1000_nbm0",
                     "exactly1lep_exactly1fj_VFJ",
-                    "exactly1lep_exactly1fj_VFJ_mjj1000",
-                    "exactly1lep_exactly1fj_VFJ_mjj1000_bsc0p6",
+                    "exactly1lep_exactly1fj_VFJ_njt2",
+                    "exactly1lep_exactly1fj_VFJ_njt2_mjj1000",
+                    "exactly1lep_exactly1fj_VFJ_njt2_mjj1000_nbm0",
 
                     ### 1lep+2FJ ###
                     "exactly1lep_exactly2fj",
                     "exactly1lep_exactly2fj_HFJ",
                     "exactly1lep_exactly2fj_HFJ_nbm0",
-                    "exactly1lep_exactly2fj_HFJ_nbm0_Htag",
-                    "exactly1lep_exactly2fj_HFJ_nbm0_Htag_mjj1000",
-                    "exactly1lep_exactly2fj_HFJ_nbm0_Htag_mjj1000_Wtag",
-                    "exactly1lep_exactly2fj_HFJ_nbm0_Htag_mjj1000_Wtag_njc01",
+                    "exactly1lep_exactly2fj_HFJ_nbm0_HtagWtag",
+                    "exactly1lep_exactly2fj_HFJ_nbm0_HtagWtag_njt2",
+                    "exactly1lep_exactly2fj_HFJ_nbm0_HtagWtag_njt2_mjj1000",
+                    "exactly1lep_exactly2fj_HFJ_nbm0_HtagWtag_njt2_mjj1000_njc01",
                     "exactly1lep_exactly2fj_VFJ",
                     "exactly1lep_exactly2fj_VFJ_HFJ",
-                    "exactly1lep_exactly2fj_VFJ_HFJ_mjj9800",
+                    "exactly1lep_exactly2fj_VFJ_HFJ_njt2",
+                    "exactly1lep_exactly2fj_VFJ_HFJ_njt2_mjj1000",
+                    "exactly1lep_exactly2fj_VFJ_HFJ_njt2_mjj1000_mjj980",
                     # Aashay
                     "exactly1lep_exactly2fj_l40",
                     "exactly1lep_exactly2fj_l40_noloosel"  ,
@@ -1041,9 +1050,8 @@ class AnalysisProcessor(processor.ProcessorABC):
                     "exactly2lepOS_exactly1fj",
                     "exactly2lepOS_exactly1fj_HFJ",
                     "exactly2lepOS_exactly1fj_HFJtag",
-                    "exactly2lepOS_exactly1fj_HFJtag_mjj1000",
-
-
+                    "exactly2lepOS_exactly1fj_HFJtag_njt2",
+                    "exactly2lepOS_exactly1fj_HFJtag_njt2_mjj1000",
                 ]
             }
 

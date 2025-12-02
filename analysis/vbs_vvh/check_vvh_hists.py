@@ -130,32 +130,41 @@ CAT_LST = [
     #"exactly2lepOS",
 
     ### 1lep 1FJ ###
-    "exactly1lep_exactly1fj",
-    "exactly1lep_exactly1fj_HFJ",
-    "exactly1lep_exactly1fj_HFJ_mjj1000",
-    "exactly1lep_exactly1fj_HFJ_mjj1000_bsc0p6",
-    "exactly1lep_exactly1fj_HFJ_mjj1000_bsc0p6_Htag",
-    "exactly1lep_exactly1fj_VFJ",
-    "exactly1lep_exactly1fj_VFJ_mjj1000",
-    "exactly1lep_exactly1fj_VFJ_mjj1000_bsc0p6",
+    #"exactly1lep_exactly1fj",
+    #"exactly1lep_exactly1fj_HFJ",
+    #"exactly1lep_exactly1fj_HFJ_Htag",
+    #"exactly1lep_exactly1fj_HFJ_Htag_njt2",
+    #"exactly1lep_exactly1fj_HFJ_Htag_njt2_mjj1000",
+    "exactly1lep_exactly1fj_HFJ_Htag_njt2_mjj1000_nbm0",
+    #"exactly1lep_exactly1fj_VFJ",
+    #"exactly1lep_exactly1fj_VFJ_njt2",
+    #"exactly1lep_exactly1fj_VFJ_njt2_mjj1000",
+    "exactly1lep_exactly1fj_VFJ_njt2_mjj1000_nbm0",
 
-    #### 1lep+2FJ ###
-    "exactly1lep_exactly2fj",
-    "exactly1lep_exactly2fj_HFJ" ,
-    "exactly1lep_exactly2fj_HFJ_nbm0" ,
-    "exactly1lep_exactly2fj_HFJ_nbm0_Htag" ,
-    "exactly1lep_exactly2fj_HFJ_nbm0_Htag_mjj1000",
-    "exactly1lep_exactly2fj_HFJ_nbm0_Htag_mjj1000_Wtag",
-    "exactly1lep_exactly2fj_HFJ_nbm0_Htag_mjj1000_Wtag_njc01",
-    "exactly1lep_exactly2fj_VFJ" ,
-    "exactly1lep_exactly2fj_VFJ_HFJ" ,
-    "exactly1lep_exactly2fj_VFJ_HFJ_mjj9800",
+    ### 1lep+2FJ ###
+    #"exactly1lep_exactly2fj",
+    #"exactly1lep_exactly2fj_HFJ",
+    #"exactly1lep_exactly2fj_HFJ_nbm0",
+    #"exactly1lep_exactly2fj_HFJ_nbm0_HtagWtag",
+    #"exactly1lep_exactly2fj_HFJ_nbm0_HtagWtag_njt2",
+    #"exactly1lep_exactly2fj_HFJ_nbm0_HtagWtag_njt2_mjj1000",
+    "exactly1lep_exactly2fj_HFJ_nbm0_HtagWtag_njt2_mjj1000_njc01",
+    #"exactly1lep_exactly2fj_VFJ",
+    #"exactly1lep_exactly2fj_VFJ_HFJ",
+    #"exactly1lep_exactly2fj_VFJ_HFJ_njt2",
+    #"exactly1lep_exactly2fj_VFJ_HFJ_njt2_mjj1000",
+    "exactly1lep_exactly2fj_VFJ_HFJ_njt2_mjj1000_mjj980",
+    # Aashay
+    #"exactly1lep_exactly2fj_l40",
+    #"exactly1lep_exactly2fj_l40_noloosel"  ,
 
-    #### 2lOS 1FJ ###
-    "exactly2lepOS_exactly1fj",
-    "exactly2lepOS_exactly1fj_HFJ",
-    "exactly2lepOS_exactly1fj_HFJtag",
-    "exactly2lepOS_exactly1fj_HFJtag_mjj1000",
+    ### 2lOS 1FJ ###
+    #"exactly2lepOS",
+    #"exactly2lepOS_exactly1fj",
+    #"exactly2lepOS_exactly1fj_HFJ",
+    #"exactly2lepOS_exactly1fj_HFJtag",
+    #"exactly2lepOS_exactly1fj_HFJtag_njt2",
+    "exactly2lepOS_exactly1fj_HFJtag_njt2_mjj1000",
 
 ]
 
@@ -429,8 +438,8 @@ def print_yields(histo_dict,grp_dict,years_to_prepend,roundat=None,print_counts=
                 yld, err = yld_dict[cat][group_name]
                 perr = 100*(err/yld)
                 print(f"    {group_name}:  {np.round(yld,roundat)} +- {np.round(perr,2)}%")
-            print(f"    -> Metric: {np.round(yld_dict[cat]['metric'][0],3)}")
-            print(f"    -> For copy pasting: python dump_toy_card.py {yld_dict[cat]['Signal'][0]} {yld_dict[cat]['Background'][0]}")
+            #print(f"    -> Metric: {np.round(yld_dict[cat]['metric'][0],3)}")
+            #print(f"    -> For copy pasting: python dump_toy_card.py {yld_dict[cat]['Signal'][0]} {yld_dict[cat]['Background'][0]}")
         #exit()
 
 
