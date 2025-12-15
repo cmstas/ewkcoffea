@@ -8,7 +8,8 @@
     "files": [
         "/home/users/pyli/VVHjj/ntuples_AK8PT250/2016preVFP_bkg.root",
         "/home/users/pyli/VVHjj/ntuples_AK8PT250/2016postVFP_bkg.root",
-        "/home/users/pyli/VVHjj/ntuples_AK8PT250/2017_bkg.root"
+        "/home/users/pyli/VVHjj/ntuples_AK8PT250/2017_bkg.root",
+        "/home/users/pyli/VVHjj/ntuples_AK8PT250/2018_bkg.root"
     ],
     "nEvents": 0,
     "nGenEvents": 11197186,

@@ -715,7 +715,7 @@ def main():
             histo_dict = pickle.load(gzip.open(args.pkl_file_path))
         except:
             try:
-                file_path = f'{default_output_dir}/{args.project}/histos/{try_file_name}'
+                file_path = f'{default_output_dir}/histos/{args.project}/histos/{try_file_name}'
                 histo_dict = pickle.load(gzip.open(file_path))
                 print("reading file",file_path)
             except:
