@@ -1,0 +1,239 @@
+#loader.py
+# this gets the histo dict from a list of files (filename.pkl.gz)
+# only read the file, get the required cut, and determine the list of var, sig,bkg,data but not doing any transformation on the histos
+# check same list of year for sig, bkg, data 
+# get list of var for sig_only, mc_only = sig+bkg, all
+# verbose show list of var. also print if any variable is not sig_only/mc_only/all
+
+import gzip
+import pickle
+from collections import defaultdict
+
+from .histcollection import HistCollection
+
+import logging
+logger = logging.getLogger(__name__)
+
+def _load_one_file(filename):
+    """
+    Return loaded histogram dict from a .pkl.gz file
+    """
+    logging.info(f"Reading file: {filename}")
+    histo_dict = pickle.load(gzip.open(filename))
+    return histo_dict
+
+
+def _get_years(hist):
+    """
+    for checking years list consistency over sig/bkg/data
+    """
+    if hist is None:
+        return None
+    return set(hist.axes["year"])
+
+
+def load_hist_collection(pkl_paths,proc_map,cutname=None):
+    """
+    Load one or more coffea output pkl.gz files and separate variables into signal, background, and data.
+    Checks that sig/bkg/data have the same list of years for each variable.
+
+    Parameters
+    ----------
+    pkl_paths : list[str]
+        List of .pkl.gz files
+    proc_map : ProcessMap object as defined in sample_info
+    cutname : str
+        'category' axis which is the cutname. Use None only when this axis does not exist
+    """
+
+    # ---- load & merge ----
+    hist_dicts = [_load_one_file(p) for p in pkl_paths]
+    #hists = _merge_hist_dicts(hist_dicts)
+
+    views = {}
+    vars_sig_only = []
+    vars_mc_only = [] # sig&bkg but not data
+    vars_all = []
+
+    # ---- inspect each variable ----
+    
+    for hists in hist_dicts:
+        for var, hist_precut in hists.items():
+            if cutname is not None:
+                hist=hist_precut[{"category":cutname}]
+            else:
+                hist = hist_precut
+            sig = None
+            bkg = None
+            data = None
+
+            processes = set(hist.axes["process"])
+            if var not in views:
+                views[var] = {"signal": None, "background": None, "data": None, "years": []}
+
+            processes = set(hist.axes["process"])
+            if processes & set(proc_map.signal):
+                views[var]["signal"] = hist[{"process": proc_map.signal}]
+            if processes & set(proc_map.background):
+
+                available_processes = list(set(proc_map.background) & set(processes))
+
+                views[var]["background"] = hist[{"process": available_processes}]
+            if processes & set(proc_map.data):
+                views[var]["data"] = hist[{"process": proc_map.data}]
+
+    # ---- check year consistency, classify var ----
+    for var, vdict in views.items():
+        year_sets = [ys for ys in [_get_years(vdict["signal"]),
+                                   _get_years(vdict["background"]),
+                                   _get_years(vdict["data"])] if ys is not None]
+        if len(year_sets) > 1 and not all(ys == year_sets[0] for ys in year_sets):
+            logging.error(f"sig: {_get_years(vdict['signal'])}\n"\
+                          f"bkg: {_get_years(vdict['background'])}\n"\
+                          f"data: {_get_years(vdict['data'])}\n")
+            raise RuntimeError(f"[{var}] Year mismatch across sig/bkg/data")
+
+        vdict["years"] = sorted(year_sets[0]) if year_sets else []
+
+        if vdict["signal"] and not vdict["background"]:
+            vars_sig_only.append(var)
+        elif vdict["signal"] and vdict["background"] and not vdict["data"]:
+            vars_mc_only.append(var)
+        elif vdict["signal"] and vdict["background"] and vdict["data"]:
+            vars_all.append(var)
+
+    # ---- print summary ----
+    logging.info("=== HistCollection summary ===")
+    logging.info(f"Total variables: {len(views)}")
+    logging.info(f"sig-only vars         :({len(vars_sig_only)}) {vars_sig_only}")
+    logging.info(f"sig + bkg vars        :({len(vars_mc_only)}) {vars_mc_only}")
+    logging.info(f"sig + bkg + data vars :({len(vars_all)}) {vars_all}")
+
+    others = set(views) - set(vars_all) - set(vars_mc_only) - set(vars_sig_only)
+    if others:
+        logging.debug(f"variables with unexpected content: {others}")
+
+    return HistCollection(
+        views=views,
+        variables_sig_only=vars_sig_only,
+        variables_mc_only=vars_mc_only,
+        variables_all=vars_all,
+        proc_map=proc_map
+    )
+
+#histcollection.py
+# variable view ( sig+bkg+data per var )
+
+from dataclasses import dataclass
+from typing import Dict, List, Mapping
+
+
+@dataclass
+class HistCollection:
+    views: Dict[str, Dict[str, object]]
+
+    variables_sig_only: List[str]
+    variables_mc_only: List[str]
+    variables_all: List[str]
+    proc_map: Mapping
+
+    def has_data(self, var):
+        return self.views[var]["data"] is not None
+
+#sample_info.py
+# from sample_name.csv group sample_name into sig/bkg/data and get plotting colors
+
+import csv
+from dataclasses import dataclass
+from collections import defaultdict
+from typing import Dict, List, Set, Optional
+
+
+DEFAULT_SAMPLE_CSV = "/home/users/pyli/projects/analysis_VVH/coffea/ewkcoffea/analysis/vbs_vvh/config/sample_names.csv"
+
+#get list of years
+def get_all_years(csv_path=None):
+    """
+    get set of year in the sample_name.csv
+    (should be 2016preVFP,... for run2)
+    since years are usually summed, order is not considered
+    """
+    if csv_path is None:
+        csv_path = DEFAULT_SAMPLE_CSV
+    
+    all_years = set()
+    with open(csv_path, newline="") as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            sample_year = row["sample_year"].strip()
+            all_years.add(sample_year)
+    return all_years
+
+@dataclass
+class ProcessMap:
+    """
+    From sample_name.csv, get 
+    - the list of processes (sample_name) for signal, bkg, data
+    - the list of bkg groups and process name under each group
+    - color for plotting
+    
+    :var csv_path: Description
+    :vartype csv_path: str
+    """
+    signal: List[str]
+    background: List[str]
+    data: List[str]
+
+    # extra, useful metadata
+    background_groups: Dict[str, List[str]]
+    background_colors: Dict[str, str]
+
+    @classmethod
+    def from_csv(
+        cls,
+        csv_path: Optional[str] = None
+    ):
+        """
+        Build ProcessMap from sample CSV.
+
+        Parameters
+        ----------
+        csv_path : str, optional
+            Path to sample CSV (uses default if None)
+        """
+        if csv_path is None:
+            csv_path = DEFAULT_SAMPLE_CSV
+
+        grp_dict = defaultdict(set) 
+        bkg_color_map = {}
+
+        with open(csv_path, newline="") as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                cat = row["sample_category"].strip().lower()
+                sample_type = row["sample_type"].strip()
+                sample_name = row["sample_name"].strip()
+                color = row["plotting_colour"].strip()
+
+                if cat == "sig":
+                    grp_dict["Signal"].add(sample_name)
+
+                elif cat == "bkg":
+                    grp_dict[sample_type].add(sample_name)
+                    bkg_color_map.setdefault(sample_type, color)
+
+                elif cat == "data":
+                    grp_dict["Data"].add(sample_name)
+
+        signal = list(grp_dict.get("Signal"))
+        data = list(grp_dict.get("Data"))
+        background_groups = {k: list(v) for k, v in grp_dict.items() if k not in ("Signal", "Data")}
+        background = list(p for procs in background_groups.values() for p in procs)
+
+        return cls(
+            signal=signal,
+            background=background,
+            data=data,
+            background_groups=background_groups,
+            background_colors=bkg_color_map,
+        )
