@@ -1,6 +1,6 @@
 from plotter_utils.histo_objects.base import BaseHist
-from plotter_utils.helpers.funcs import combine
-import ewkcoffea.modules.plotting_tools as plt_tools
+import ewkcoffea.modules.plotting_tools as plt_tools # type: ignore
+import numpy as np # type: ignore
 
 
 class BackgroundHist(BaseHist):
@@ -37,16 +37,7 @@ class BackgroundHist(BaseHist):
 
         # Nominal only
         h = h[{"systematic": "nominal"}]
-
-        # # Safe merge overflow **per process_grp**
-        # hist_slices = {}
-        # for proc in h.axes["process_grp"]:
-        #     print(f'doing {proc}')
-        #     hist_slices[proc] = self._safe_merge_overflow(h, {"process_grp": [proc]})
-        # # Combine back
-        # print(h)
         h = plt_tools.merge_overflow(h)
-        #h = combine(hist_slices)
         return h
 
     def _make_total_background(self, h):
@@ -80,3 +71,53 @@ class BackgroundHist(BaseHist):
         Cumulative per-process background yield (stacked)
         """
         return self.values(flow=False).cumsum()
+
+    def get_yield_per_type(self):
+        """
+        Yield per background group (process_grp).
+        """
+        out = {}
+        for grp in self.hist.axes["process_grp"]:
+            h_grp = self.hist[{"process_grp": [grp]}]
+            out[grp] = self._yield_from_hist(h_grp)
+        return out
+
+    def get_yield_per_process(self):
+        """
+        Yield per process, nested under background group.
+        """
+        out = {}
+
+        # Loop over background groups (EWK, QCD, ...)
+        for grp, proc_list in self.process_grouping.items():
+            out[grp] = {}
+            for proc in proc_list:
+                # regroup THIS process alone
+                h_proc = plt_tools.group(
+                    self._raw_hist,
+                    "process",
+                    "process_grp",
+                    {proc: [proc]},
+                )
+                # apply same pipeline steps
+                h_proc = self._sum_years(h_proc)
+                h_proc = h_proc[{"systematic": "nominal"}]
+                h_proc = self._safe_merge_overflow(h_proc)
+
+                out[grp][proc] = self._yield_from_hist(h_proc)
+
+        return out
+
+    def get_variance_per_type(self):
+        out = {}
+        for grp in self.hist.axes["process_grp"]:
+            h_grp = self.hist[{"process_grp": [grp]}]
+            out[grp] = self._variance_from_hist(h_grp)
+        return out
+    
+    def get_uncertainty_per_type(self):
+        out = {}
+        for grp in self.hist.axes["process_grp"]:
+            h_grp = self.hist[{"process_grp": [grp]}]
+            out[grp] = np.sqrt(self._variance_from_hist(h_grp))
+        return out

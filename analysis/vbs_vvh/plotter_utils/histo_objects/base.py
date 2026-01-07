@@ -22,9 +22,9 @@ class BaseHist:
         years,
         process_grouping,
     ):
-        self._raw_hist = hist
+        self._raw_hist = copy.deepcopy(hist) # freeze input
         self.years = years
-        self.process_grouping = process_grouping
+        self.process_grouping = copy.deepcopy(process_grouping)
 
         # Prepare the final histogram immediately
         self._hist = self._prepare_hist()
@@ -85,6 +85,12 @@ class BaseHist:
             "process_grp",
             self.process_grouping,
         )
+    
+    def _yield_from_hist(self, h):
+        return float(h.values(flow=True).sum())
+        
+    def _variance_from_hist(self, h):
+        return float(h.variances(flow=True).sum())
 
     # ------------------------------------------------------------------
     # Public accessors (used by plotting & metrics)
@@ -101,10 +107,38 @@ class BaseHist:
         return self._hist.variances(flow=flow)
 
     def total_yield(self):
-        return float(np.sum(self.values(flow=True)))
+        #return float(np.sum(self.values(flow=True)))
+        return self._yield_from_hist(self._hist)
+    
+    def total_variance(self):
+        return float(np.sum(self.variances(flow=True)))
+    
+    def uncertainty(self):
+        return float(np.sqrt(self.total_variance()))
+    
+    def uncertainty_per_type(self):
+        pass
 
     def bin_edges(self):
         return self._hist.axes[0].edges
 
     def bin_centers(self):
         return self._hist.axes[0].centers
+    
+    def get_yield_per_type(self):
+        """
+        Return yields grouped by 'type'.
+        Must be implemented by subclasses.
+        """
+        raise NotImplementedError
+
+    def get_yield_per_process(self):
+        """
+        Return yields grouped by type -> process.
+        Must be implemented by subclasses.
+        """
+        raise NotImplementedError
+
+    def get_variance_per_type(self):
+        """Return yields grouped by 'type'."""
+        raise NotImplementedError

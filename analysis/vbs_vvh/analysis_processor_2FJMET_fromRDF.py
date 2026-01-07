@@ -18,6 +18,7 @@ from config.variables.extra_definitions import VV_ndaughters, Higgs_final_state
 class AnalysisProcessor(processor.ProcessorABC):
 
     def __init__(self, samples, wc_names_lst=[], n_minus_1=False,project=None, cutflow_name=None):
+        print('debug',project,cutflow_name)
         
         if cutflow_name is None:
             print(f"default cutflow is used.")

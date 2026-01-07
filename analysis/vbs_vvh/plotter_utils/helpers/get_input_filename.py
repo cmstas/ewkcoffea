@@ -27,7 +27,7 @@ def get_all_pkl_in_folder(dirpath):
         raise ValueError(f"Not a directory: {dirpath}")
 
     return [
-        fname
+        os.path.join(dirpath,fname)
         for fname in os.listdir(dirpath)
         if fname.endswith(".pkl.gz")
         and os.path.isfile(os.path.join(dirpath, fname))

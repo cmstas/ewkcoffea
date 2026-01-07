@@ -1,3 +1,6 @@
+# for producing process map (sample_name.csv) that links process to bkg type 
+# use for plotting
+
 import os
 import json
 import csv

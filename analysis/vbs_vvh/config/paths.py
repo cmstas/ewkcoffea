@@ -8,7 +8,7 @@ cutflow_yamls_dir =  os.path.join(base_dir,'config','cutflows')
 
 #var stuffs
 basic_cutflow = f'{cutflow_yamls_dir}/test.yaml'
-from config.config_handling import get_cutflow
+from config.cutflow_config_handling import get_cutflow
 objsel_cf = get_cutflow(basic_cutflow,'test1')
 default_cutflow_yaml = f'{cutflow_yamls_dir}/all.yaml'
 default_output_dir = './'

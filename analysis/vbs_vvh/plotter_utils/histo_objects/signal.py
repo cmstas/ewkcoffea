@@ -42,3 +42,17 @@ class SignalHist(BaseHist):
 
     def cumulative(self):
         return self.values(flow=False).cumsum()
+    
+    def get_yield_per_type(self):
+        # No type layer → alias to per_process
+        return self.get_yield_per_process()['Signal']
+
+    def get_yield_per_process(self):
+        out = {"Signal": {}}
+        for proc in self._raw_hist.axes["process"]:
+            h_proc = self._raw_hist[{"process": [proc]}]
+            out["Signal"][proc] = self._yield_from_hist(h_proc)
+        return out
+
+    def get_variance_per_type(self):
+        return {"Signal":self.total_variance()}
