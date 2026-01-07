@@ -44,7 +44,7 @@ if __name__ == '__main__':
     parser.add_argument('--rwgt-to-sm', action='store_true', help = '')
 
     # make output easier
-    parser.add_argument('--project', default=None, help = 'useful when building cutflow')
+    parser.add_argument('--project', default=None, help = 'useful when trying combinations of cutflow (name of cutflows(.yaml) file)')
     parser.add_argument('--cutflow', default=None, help = "Specify which cutflow to use")
     parser.add_argument('--minus', action='store_true', help = "Use this to plot n-1 plots instead of cutflow")
 
@@ -82,7 +82,7 @@ if __name__ == '__main__':
         import analysis_processor_gen_fromnano as analysis_processor
         defaultSchema = NanoAODSchema
     elif args. processor == "2FJMET":
-        import analysis_processor_2FJMET_fromNano as analysis_processor
+        import analysis_processor_2FJMET_fromRDF as analysis_processor
         defaultSchema = BaseSchema
 
     # Check that if on UF login node, we're using WQ
@@ -222,12 +222,7 @@ if __name__ == '__main__':
         print('No Wilson coefficients specified')
 
     if args.processor == "2FJMET":
-
         processor_instance = analysis_processor.AnalysisProcessor(samplesdict,wc_lst,n_minus_1,project,cutflow_name)
-        print('debug')
-        print("ProcessorABC from analysis_processor:", analysis_processor.processor.ProcessorABC)
-        print("ProcessorABC from coffea.processor:", processor.ProcessorABC)
-        print("Same object?", analysis_processor.processor.ProcessorABC is processor.ProcessorABC)
     else:
         processor_instance = analysis_processor.AnalysisProcessor(samplesdict,wc_lst,hist_lst,do_systs,skip_obj_systs,skip_sr,skip_cr,siphon_bdt_data=siphon,rwgt_to_sm=rwgt_to_sm)
 
@@ -343,28 +338,38 @@ if __name__ == '__main__':
     if executor == "futures":
         print("Processing time: %1.2f s with %i workers (%.2f s cpu overall)" % (dt, nworkers, dt*nworkers, ))
 
-    #add project and cutflow to name
-    if project is not None: #add a subdir 
-        outpath = outpath+f'/{project}/histos/'
-    else:
-        outpath = outpath+'/histos/'
+    if args.processor == "2FJMET":
+        #add project and cutflow to name
+        if project is not None: #add a subdir 
+            outpath = outpath+f'/{project}'
+            if cutflow_name is not None:
+                outpath = outpath+f'/{cutflow_name}'
+        else:
+            outpath = outpath
 
-    if args.cutflow is not None:
-        outname = f'{args.cutflow}_{outname}'
-    elif args.project is not None:
-        outname = f'{args.project}_{outname}'
-    else:
-        outname = outname+'hists'
+        if outname != 'plotsTopEFT':
+            if args.cutflow is not None:
+                outname = f'{args.cutflow}_{outname}'
+            elif args.project is not None:
+                outname = f'{args.project}_{outname}'
+            else:
+                outname = 'hists_'+outname
+        else:
+            if args.cutflow is not None:
+                outname = f'{args.cutflow}_hists'
 
-    if n_minus_1:
-        # Save the output
-        if not os.path.isdir(outpath): os.system("mkdir -p %s"%outpath)
-        out_pkl_file = os.path.join(outpath,outname+"_m.pkl.gz")
-        
 
+            
     # Save the output
     if not os.path.isdir(outpath): os.system("mkdir -p %s"%outpath)
     out_pkl_file = os.path.join(outpath,outname+".pkl.gz")
+
+
+    if args.processor == "2FJMET":
+        if n_minus_1:
+            # Save the output
+            out_pkl_file = os.path.join(outpath,outname+"_m.pkl.gz")
+
     print(f"\nSaving output in {out_pkl_file}...")
     with gzip.open(out_pkl_file, "wb") as fout:
         cloudpickle.dump(output, fout)
