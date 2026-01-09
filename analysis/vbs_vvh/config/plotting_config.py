@@ -1,6 +1,10 @@
 # config/plotting_config.py
 
-PROC_MAP_CSV = "config/sample_names.csv"
+import os
+script_dir = os.path.dirname(os.path.abspath(__file__))
+base_dir = os.path.dirname(script_dir)
+
+PROC_MAP_CSV = os.path.join(base_dir,"config/sample_names.csv")
 REF_VAR = 'nGoodAK8' # var for getting yield and stuff
 
 SIG_COLOR = "red"
@@ -16,10 +20,4 @@ FIGURE_STYLE = {
     "dpi": 120,
 }
 
-SUBPLOTS = ("dataMC", "significance")
-
-FIG_RATIO = {
-    "main": 4,
-    "dataMC": 1,
-    "significance": 1,
-}
+DEFAULT_PLOTTING_PRESET = "default"

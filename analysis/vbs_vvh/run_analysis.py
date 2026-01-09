@@ -17,8 +17,6 @@ import topcoffea.modules.remote_environment as remote_environment
 LST_OF_KNOWN_EXECUTORS = ["futures","work_queue","iterative"]
 LST_OF_KNOWN_PROCESSORS = ["semilep","semilep_nano","simple_gen",'2FJMET']
 
-import warnings
-warnings.filterwarnings("ignore", message=".*as it is not interpretable by Uproot.*")
 #NanoAODSchema.error_missing_event_ids = False
 if __name__ == '__main__':
 
