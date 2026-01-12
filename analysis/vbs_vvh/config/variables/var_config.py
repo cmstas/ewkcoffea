@@ -292,7 +292,7 @@ dense_variables_config = { #name of axis must be same as key
     },
     
     "goodAK4Jets_maxAbsDeltaEta":{
-        "axis": axis.Regular(50, 0, 10, name="goodAK4Jets_maxAbsDeltaEta", label="goodAK4Jets_maxAbsDeltaEta"),
+        "axis": axis.Regular(50, 0, 10, name="goodAK4Jets_maxAbsDeltaEta", label="goodAK4Jets maxAbsDeltaEta"),
         "expr": lambda events, objects: events.goodAK4Jets_maxAbsDeltaEta,
     },
     "leadAK8_MET_dphi":{
