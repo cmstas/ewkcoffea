@@ -46,6 +46,15 @@ PLOT_PRESETS = {
         },
         line_colors=DEFAULT_COLORS
     ),
+
+    "trigger_study": PlotConfig(
+        subplots=("efficiency",),
+        fig_ratio={
+            "main": 3,
+            "efficiency": 1,
+        },
+        line_colors=DEFAULT_COLORS
+    ),
 }
 preset_list = PLOT_PRESETS.keys()
 

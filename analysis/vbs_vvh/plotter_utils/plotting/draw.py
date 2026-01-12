@@ -5,6 +5,7 @@ from plotter_utils.metrics.significance import SignificanceMetric
 from plotter_utils.metrics.dataMC import DataMCMetric
 from plotter_utils.metrics.pass_rate import PassRateMetric
 from plotter_utils.metrics.shape_plot import ShapePlotMetric
+from plotter_utils.metrics.efficiency import EfficiencyMetric
 from .main_plot import draw_main_plot
 from .subplots import draw_metric_subplot
 from plotter_utils.plotting.plot_settings import PLOT_SETTINGS, rel_fontsize_calc
@@ -19,6 +20,7 @@ METRIC_REGISTRY = {
     "dataMC": DataMCMetric,
     "pass_rate": PassRateMetric,
     "shape_plot": ShapePlotMetric,
+    "efficiency": EfficiencyMetric,
 }
 
 
