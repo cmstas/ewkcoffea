@@ -3,14 +3,21 @@
 import matplotlib.pyplot as plt
 from plotter_utils.metrics.significance import SignificanceMetric
 from plotter_utils.metrics.dataMC import DataMCMetric
+from plotter_utils.metrics.pass_rate import PassRateMetric
+from plotter_utils.metrics.shape_plot import ShapePlotMetric
 from .main_plot import draw_main_plot
 from .subplots import draw_metric_subplot
+
+import logging
+logger = logging.getLogger(__name__)
 
 
 
 METRIC_REGISTRY = {
     "significance": SignificanceMetric,
     "dataMC": DataMCMetric,
+    "pass_rate": PassRateMetric,
+    "shape_plot": ShapePlotMetric,
 }
 
 
@@ -23,8 +30,10 @@ def draw(
     config=None,
     title=None,
 ):
-    subplots = config["SUBPLOTS"]
-    ratios = config["FIG_RATIO"]
+    subplots = config.subplots
+    ratios = config.fig_ratio
+    line_colors = config.line_colors
+    logger.debug(f'subplots is {subplots}')
 
     heights = [ratios["main"]] + [ratios[s] for s in subplots]
     nrows = 1 + len(subplots)
@@ -44,6 +53,6 @@ def draw(
     for ax, name in zip(axes[1:], subplots):
         metric_cls = METRIC_REGISTRY[name]
         metric = metric_cls(sig=sig, bkg=bkg, data=data)
-        draw_metric_subplot(ax, metric, name)
+        draw_metric_subplot(ax, metric, name,line_colors=line_colors)
 
     return fig

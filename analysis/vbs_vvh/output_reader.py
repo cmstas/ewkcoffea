@@ -8,6 +8,8 @@ from plotter_utils.histo_reader.loader import load_hist_collection,unpack_hist,c
 from plotter_utils.histo_reader.sample_info import ProcessMap
 from plotter_utils.plotting.draw import draw
 
+from plotter_utils.plotting.plot_presets import PLOT_PRESETS,preset_list
+
 import warnings
 warnings.filterwarnings("ignore", message="List indexing selection is experimental.*")
 
@@ -47,12 +49,49 @@ def parse_args():
         default=None,
         help="choose which cut (selection) to draw, default will draw all",
     )
+    parser.add_argument(
+        "--plot_preset",
+        default=None,
+        help="use one of the preset plotting style to draw the plots",
+        choices=preset_list
+    )
+    parser.add_argument(
+        "--test_style",
+        default=False,
+        action="store_true",
+        help="to plot only one plot for testing plotting style"
+    )
 
     return parser.parse_args()
 
-def make_all_plots(all_hist_collection, proc_map, outdir):
+def make_all_plots(all_hist_collection, proc_map, outdir,plot_preset,test_style=False):
     for cut,hist_collection in all_hist_collection.items():
         subdir = os.path.join(outdir, cut) if cut is not None else os.path.join(outdir, 'no_category')
+        subdir = os.path.join(subdir, plot_preset) if plot_preset is not None else os.path.join(subdir, CONFIG.DEFAULT_PLOTTING_PRESET)
+
+
+        if plot_preset is not None: 
+            plot_config = PLOT_PRESETS[plot_preset]
+        else:
+            plot_config = PLOT_PRESETS[CONFIG.DEFAULT_PLOTTING_PRESET]
+
+
+        if test_style:
+            logger.info(f'testing plot style: only saving one plot')
+            var = hist_collection.variables_all[0]
+            sig,bkg,data = unpack_hist(hist_collection,var,proc_map)
+            fig = draw( 
+                sig=sig,
+                bkg=bkg,
+                data=data,
+                proc_map=proc_map,
+                #config={"SUBPLOTS": CONFIG.SUBPLOTS,"FIG_RATIO": CONFIG.FIG_RATIO},
+                config=plot_config,
+                title=var,
+            )
+            fig.savefig(f"test_{var}.png", bbox_inches="tight")
+            logger.info(f"    - Saved test_{var}.png")
+
 
         os.makedirs(subdir, exist_ok=True)
         logger.info(f'start producing plots for cut: {cut}')
@@ -65,7 +104,8 @@ def make_all_plots(all_hist_collection, proc_map, outdir):
                 bkg=bkg,
                 data=data,
                 proc_map=proc_map,
-                config={"SUBPLOTS": CONFIG.SUBPLOTS,"FIG_RATIO": CONFIG.FIG_RATIO},
+                #config={"SUBPLOTS": CONFIG.SUBPLOTS,"FIG_RATIO": CONFIG.FIG_RATIO},
+                config=plot_config,
                 title=var,
             )
             fig.savefig(os.path.join(subdir,f"{var}.png"), bbox_inches="tight")
@@ -124,7 +164,7 @@ def main(args):
     )
 
     if args.plots:
-        make_all_plots(all_hist_collection, proc_map, outdir)
+        make_all_plots(all_hist_collection, proc_map, outdir, args.plot_preset)
     if args.yields:
         output_json_name = os.path.join(outdir,'yield.json') 
         save_yield_json(all_hist_collection, proc_map, output_json_name)
