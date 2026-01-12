@@ -49,3 +49,20 @@ PLOT_PRESETS = {
 }
 preset_list = PLOT_PRESETS.keys()
 
+def font_size(fig, frac):
+    return frac * fig.get_figwidth() * 72
+
+PLOT_SETTINGS = {
+    "xsize": 7,
+    "main_ysize":3,
+    "sub_ysize":2,
+
+    "show_title": False, #default to false because title is predefned to be the same as x-axis. change if necessary
+    "rel_xfontsize": 3, #somehow looks good
+    "rel_yfontsize": 2, #somehow looks good
+    "rel_label_fontsize": 2,
+    "title_fontsize": 12 #will be changed to use rel size. 
+}
+
+def rel_fontsize_calc(ratio,x_size):
+    return ratio * x_size* 0.8

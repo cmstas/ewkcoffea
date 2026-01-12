@@ -14,3 +14,14 @@ def snap_to_decade(factor):
     a = int(np.clip(np.round(a), 1, 9))
 
     return a * (10 ** n)
+
+
+def plt_scientific_notation(ax,limit=4):
+    """ set scientific notation if y-axis size >= 10e(limit) """
+    import matplotlib.ticker as mticker
+
+    formatter = mticker.ScalarFormatter(useMathText=True)
+    formatter.set_powerlimits((limit, limit))  # switch at 10^4
+
+    ax.yaxis.set_major_formatter(formatter)
+    return ax

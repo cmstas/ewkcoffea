@@ -12,9 +12,4 @@ DEFAULT_OUTPUT_DIRNAME = "plots"
 LOG_LEVEL = "INFO"
 LOG_FORMAT = "%(message)s"
 
-FIGURE_STYLE = {
-    "figsize": (6, 5),
-    "dpi": 120,
-}
-
 DEFAULT_PLOTTING_PRESET = "default"

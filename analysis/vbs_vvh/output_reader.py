@@ -8,7 +8,7 @@ from plotter_utils.histo_reader.loader import load_hist_collection,unpack_hist,c
 from plotter_utils.histo_reader.sample_info import ProcessMap
 from plotter_utils.plotting.draw import draw
 
-from plotter_utils.plotting.plot_presets import PLOT_PRESETS,preset_list
+from plotter_utils.plotting.plot_settings import PLOT_PRESETS,preset_list
 
 import warnings
 warnings.filterwarnings("ignore", message="List indexing selection is experimental.*")
@@ -91,6 +91,7 @@ def make_all_plots(all_hist_collection, proc_map, outdir,plot_preset,test_style=
             )
             fig.savefig(f"test_{var}.png", bbox_inches="tight")
             logger.info(f"    - Saved test_{var}.png")
+            return 0
 
 
         os.makedirs(subdir, exist_ok=True)
@@ -164,7 +165,7 @@ def main(args):
     )
 
     if args.plots:
-        make_all_plots(all_hist_collection, proc_map, outdir, args.plot_preset)
+        make_all_plots(all_hist_collection, proc_map, outdir, args.plot_preset,args.test_style)
     if args.yields:
         output_json_name = os.path.join(outdir,'yield.json') 
         save_yield_json(all_hist_collection, proc_map, output_json_name)

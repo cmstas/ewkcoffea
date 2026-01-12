@@ -1,6 +1,7 @@
 # plotter_utils/plotting/main_plot.py
 
 import numpy as np
+from plotter_utils.helpers.plotting_funcs import snap_to_decade,plt_scientific_notation
 
 import logging
 logger = logging.getLogger(__name__)
@@ -18,10 +19,10 @@ def order_backgrounds(bkg, mode="yield"):
         return sorted(yields, key=yields.get)
     return list(bkg.hist.axes["process_grp"])
 
-
 def get_scaled_signal(sig, bkg, mode="match_bkg"):
     """
-    Scale signal to background yield for overlay.
+    Scale signal histogram to background yield using a * 10^n factor.
+    Returns (scaled_hist, scale_factor).
     """
     if sig is None or bkg is None:
         return sig.hist, 1.0
@@ -29,8 +30,10 @@ def get_scaled_signal(sig, bkg, mode="match_bkg"):
     if mode == "match_bkg":
         s = sig.total_yield()
         b = bkg.total_yield()
-        if s > 0:
-            factor = b / s
+
+        if s > 0 and b > 0:
+            raw_factor = b / s
+            factor = snap_to_decade(raw_factor)
             return sig.hist * factor, factor
 
     return sig.hist, 1.0
@@ -92,23 +95,33 @@ def draw_main_plot(ax, *, sig=None, bkg=None, data=None, proc_map=None):
 
     # ---- Signal overlay ----
     if sig is not None:
-        sig_plot, scale = get_scaled_signal(sig, bkg)
+        sig_plot, sig_scale = get_scaled_signal(sig, bkg)
+        if sig_scale==1: sig_label = 'Signal'
+        elif sig_scale<1000 and sig_scale>0.01: sig_label = f'Signal × {sig_scale:.1f}'
+        else: sig_label=f"Signal × {sig_scale:.1e}"
+
+
         sig_plot.plot1d(
             ax=ax,
             color="red",
             linewidth=2,
-            label=f"Signal × {scale:.1f}",
+            label=sig_label,
             zorder=101,
         )
 
     # ---- Data ----
     if data is not None:
-        data.hist.plot1d(
+        data_plot, data_scale = get_scaled_signal(data, bkg)
+        if data_scale==1: data_label = 'Data'
+        elif data_scale<1000 and data_scale>0.01: data_label = f'Data × {data_scale:.1f}'
+        else: data_label=f"Data × {data_scale:.1e}"
+        data_plot.plot1d(
             ax=ax,
             color="blue",
-            label="Data",
+            label=data_label,
             zorder=102,
         )
 
     ax.legend()
     ax.set_ylabel("Events")
+    
