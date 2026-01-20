@@ -419,7 +419,7 @@ def check_rwgt(histo_dict):
 def dump_json_simple(histo_dict,out_name="vvh_yields_simple"):
     out_dict = {}
     hist_to_use = "njets"
-    cats_to_check = ["all_events", "exactly1lep_exactly1fj", "exactly1lep_exactly2fj", "exactly2lepOS_exactly1fj"]
+    cats_to_check = ["all_events", "exactly2lepOSSF_exactly1fj"]
     for proc_name in histo_dict[hist_to_use].axes["process"]:
         out_dict[proc_name] = {}
         for cat_name in cats_to_check:

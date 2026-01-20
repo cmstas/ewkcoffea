@@ -1,650 +1,2092 @@
 {
-    "yields": {
-        "all_events": {
-            "Signal": [
-                204.3953968815913,
-                0.2043795357086921
-            ],
-            "QCD": [
-                26055693.59580995,
-                928015.9841939211
-            ],
-            "ttbar": [
-                2451379.866081707,
-                346.9184195385651
-            ],
-            "single-t": [
-                162922.51993117854,
-                135.75015654978785
-            ],
-            "ttX": [
-                11582.355762392312,
-                24.32760001311727
-            ],
-            "Vjets": [
-                259818.2406198047,
-                343.59515141398686
-            ],
-            "VV": [
-                204401.62994593108,
-                354.4960183782628
-            ],
-            "VH": [
-                288.94414843962295,
-                0.4822532215746039
-            ],
-            "VVV": [
-                6793.479580295942,
-                40.718069129139195
-            ],
-            "Background": [
-                29152880.631879706,
-                928016.1914939781
-            ],
-            "metric": [
-                0.037855620899756456,
-                null
-            ]
-        },
-        "exactly2lepOSSF_exactly1fj": {
-            "Signal": [
-                0.38281232578810886,
-                0.008212814733778065
-            ],
-            "QCD": [
-                2198.7839356660843,
-                608.3296478085508
-            ],
-            "ttbar": [
-                153.75034366175532,
-                2.7241272142417636
-            ],
-            "single-t": [
-                447.5854098312557,
-                8.093380505120649
-            ],
-            "ttX": [
-                95.33222478008247,
-                2.0426129649425016
-            ],
-            "Vjets": [
-                2600.8592725992203,
-                30.672435273440282
-            ],
-            "VV": [
-                2895.9526218490787,
-                8.733480695398857
-            ],
-            "VH": [
-                0.013500638422556221,
-                0.0033506185510814384
-            ],
-            "VVV": [
-                225.61358808608566,
-                7.142001450369398
-            ],
-            "Background": [
-                8617.890897111984,
-                609.2701670968997
-            ],
-            "metric": [
-                0.004123684372784854,
-                null
-            ]
-        },
-        "exactly2lepOSSF_exactly1fj_HFJ": {
-            "Signal": [
-                0.15037554507580353,
-                0.005121469798119407
-            ],
-            "QCD": [
-                593.3945421129465,
-                347.18988594988093
-            ],
-            "ttbar": [
-                36.796209666877985,
-                1.3361995189743887
-            ],
-            "single-t": [
-                86.54755161702633,
-                3.562363721507245
-            ],
-            "ttX": [
-                22.90878696081927,
-                0.8320512956115328
-            ],
-            "Vjets": [
-                301.43163830041885,
-                10.379891455853578
-            ],
-            "VV": [
-                326.73601098025637,
-                2.8792544638330093
-            ],
-            "VH": [
-                0.00204071233747527,
-                0.0011831066131304181
-            ],
-            "VVV": [
-                41.907355541494326,
-                3.5920206518570486
-            ],
-            "Background": [
-                1409.724135892177,
-                347.3973516685966
-            ],
-            "metric": [
-                0.004005070330744891,
-                null
-            ]
-        },
-        "exactly2lepOSSF_exactly1fj_HFJtag": {
-            "Signal": [
-                0.07157297491721692,
-                0.0035371903151208027
-            ],
-            "QCD": [
-                0.0,
-                0.0
-            ],
-            "ttbar": [
-                4.534807164222002,
-                0.4568378654023271
-            ],
-            "single-t": [
-                7.4923247173428535,
-                1.0456906954433236
-            ],
-            "ttX": [
-                3.2448663584073074,
-                0.1737862631786802
-            ],
-            "Vjets": [
-                7.216512322425842,
-                1.6393917075106048
-            ],
-            "VV": [
-                12.04529475152097,
-                0.4766768247903815
-            ],
-            "VH": [
-                0.0014043920673429966,
-                0.0009974155462252028
-            ],
-            "VVV": [
-                0.650648790950072,
-                0.4868716045293589
-            ],
-            "Background": [
-                35.18585849693639,
-                2.117602996586765
-            ],
-            "metric": [
-                0.012066046455268374,
-                null
-            ]
-        },
-        "exactly2lepOSSF_exactly1fj_HFJtag_njt2": {
-            "Signal": [
-                0.06555996714996581,
-                0.0033272246585414923
-            ],
-            "QCD": [
-                0.0,
-                0.0
-            ],
-            "ttbar": [
-                2.911819752305746,
-                0.36794073486579015
-            ],
-            "single-t": [
-                5.364732548594475,
-                0.8839009587107998
-            ],
-            "ttX": [
-                3.1173667800612748,
-                0.16607481520428805
-            ],
-            "Vjets": [
-                2.666146069765091,
-                0.9464586982491715
-            ],
-            "VV": [
-                5.842159601632822,
-                0.3513329152938097
-            ],
-            "VH": [
-                0.0,
-                0.0
-            ],
-            "VVV": [
-                0.08436120159967686,
-                0.384872695693966
-            ],
-            "Background": [
-                19.986585953959086,
-                1.453130417471085
-            ],
-            "metric": [
-                0.014664572921274552,
-                null
-            ]
-        },
-        "exactly2lepOSSF_exactly1fj_HFJtag_njt2_mjj600": {
-            "Signal": [
-                0.053873554770689225,
-                0.003029572486198218
-            ],
-            "QCD": [
-                0.0,
-                0.0
-            ],
-            "ttbar": [
-                0.5125557594001293,
-                0.15509640142607822
-            ],
-            "single-t": [
-                2.122243583202362,
-                0.5488505423069148
-            ],
-            "ttX": [
-                0.8036443415330723,
-                0.07655877537640053
-            ],
-            "Vjets": [
-                0.37214261293411255,
-                0.37214261293411255
-            ],
-            "VV": [
-                0.9892941609154349,
-                0.14130760902431969
-            ],
-            "VH": [
-                0.0,
-                0.0
-            ],
-            "VVV": [
-                0.05775358136816067,
-                0.004860271789026841
-            ],
-            "Background": [
-                4.857634039353272,
-                0.6997389831819504
-            ],
-            "metric": [
-                0.02444349126040772,
-                null
-            ]
-        },
-        "exactly2lepOSSF_exactly1fj_HFJtag_njt2_mjj600_onZ": {
-            "Signal": [
-                0.04370265944271523,
-                0.0025388044520850386
-            ],
-            "QCD": [
-                0.0,
-                0.0
-            ],
-            "ttbar": [
-                0.13318464532494545,
-                0.07693402009786403
-            ],
-            "single-t": [
-                0.15102100372314453,
-                0.15102100372314453
-            ],
-            "ttX": [
-                0.20855880854651332,
-                0.05232681929506409
-            ],
-            "Vjets": [
-                0.37214261293411255,
-                0.37214261293411255
-            ],
-            "VV": [
-                0.8665372799018058,
-                0.13363301481662251
-            ],
-            "VH": [
-                0.0,
-                0.0
-            ],
-            "VVV": [
-                0.04725124905598932,
-                0.004027919376411394
-            ],
-            "Background": [
-                1.778695599486511,
-                0.4333917560088264
-            ],
-            "metric": [
-                0.03276853689005962,
-                null
-            ]
-        }
+    "UL16APV_TTToSemiLeptonic": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
     },
-    "counts": {
-        "all_events": {
-            "Signal": [
-                1598600.0,
-                1264.3575443678897
-            ],
-            "QCD": [
-                1525542.0,
-                1235.1283334131722
-            ],
-            "ttbar": [
-                52870035.0,
-                7271.17837767717
-            ],
-            "single-t": [
-                2285614.0,
-                1511.8247252906006
-            ],
-            "ttX": [
-                5742022.0,
-                2396.251656233126
-            ],
-            "Vjets": [
-                1769437.0,
-                1330.2018643799895
-            ],
-            "VV": [
-                5456143.0,
-                2335.8388214943257
-            ],
-            "VH": [
-                422110.0,
-                649.6999307372597
-            ],
-            "VVV": [
-                4693017.0,
-                2166.3372313654218
-            ],
-            "Background": [
-                74763920.0,
-                8646.613209806485
-            ],
-            "metric": [
-                184.8816364524044,
-                null
-            ]
-        },
-        "exactly2lepOSSF_exactly1fj": {
-            "Signal": [
-                4132.0,
-                64.28063471995279
-            ],
-            "QCD": [
-                171.0,
-                13.076696830622021
-            ],
-            "ttbar": [
-                3417.0,
-                58.45511098270193
-            ],
-            "single-t": [
-                3120.0,
-                55.85696017507576
-            ],
-            "ttX": [
-                55393.0,
-                235.35717537394095
-            ],
-            "Vjets": [
-                7769.0,
-                88.14193099768123
-            ],
-            "VV": [
-                561796.0,
-                749.5305197255145
-            ],
-            "VH": [
-                18.0,
-                4.242640687119285
-            ],
-            "VVV": [
-                276421.0,
-                525.7575486857036
-            ],
-            "Background": [
-                908105.0,
-                952.945433904796
-            ],
-            "metric": [
-                4.336030010730717,
-                null
-            ]
-        },
-        "exactly2lepOSSF_exactly1fj_HFJ": {
-            "Signal": [
-                1679.0,
-                40.97560249709576
-            ],
-            "QCD": [
-                35.0,
-                5.916079783099616
-            ],
-            "ttbar": [
-                824.0,
-                28.705400188814647
-            ],
-            "single-t": [
-                599.0,
-                24.474476501040833
-            ],
-            "ttX": [
-                16252.0,
-                127.4833322438663
-            ],
-            "Vjets": [
-                914.0,
-                30.23243291566195
-            ],
-            "VV": [
-                68654.0,
-                262.0190832744821
-            ],
-            "VH": [
-                3.0,
-                1.7320508075688772
-            ],
-            "VVV": [
-                36487.0,
-                191.01570616051447
-            ],
-            "Background": [
-                123768.0,
-                351.80676514245715
-            ],
-            "metric": [
-                4.7725062914015375,
-                null
-            ]
-        },
-        "exactly2lepOSSF_exactly1fj_HFJtag": {
-            "Signal": [
-                806.0,
-                28.39013913315678
-            ],
-            "QCD": [
-                0.0,
-                0.0
-            ],
-            "ttbar": [
-                99.0,
-                9.9498743710662
-            ],
-            "single-t": [
-                52.0,
-                7.211102550927978
-            ],
-            "ttX": [
-                4074.0,
-                63.82789358893179
-            ],
-            "Vjets": [
-                21.0,
-                4.58257569495584
-            ],
-            "VV": [
-                3645.0,
-                60.37383539249432
-            ],
-            "VH": [
-                2.0,
-                1.4142135623730951
-            ],
-            "VVV": [
-                2548.0,
-                50.47771785649585
-            ],
-            "Background": [
-                10441.0,
-                102.18121158021175
-            ],
-            "metric": [
-                7.887947182611883,
-                null
-            ]
-        },
-        "exactly2lepOSSF_exactly1fj_HFJtag_njt2": {
-            "Signal": [
-                760.0,
-                27.568097504180443
-            ],
-            "QCD": [
-                0.0,
-                0.0
-            ],
-            "ttbar": [
-                63.0,
-                7.937253933193772
-            ],
-            "single-t": [
-                37.0,
-                6.082762530298219
-            ],
-            "ttX": [
-                3841.0,
-                61.97580172938467
-            ],
-            "Vjets": [
-                9.0,
-                3.0
-            ],
-            "VV": [
-                1890.0,
-                43.474130238568314
-            ],
-            "VH": [
-                0.0,
-                0.0
-            ],
-            "VVV": [
-                1833.0,
-                42.81354925721529
-            ],
-            "Background": [
-                7673.0,
-                87.5956619930462
-            ],
-            "metric": [
-                8.676228739047977,
-                null
-            ]
-        },
-        "exactly2lepOSSF_exactly1fj_HFJtag_njt2_mjj600": {
-            "Signal": [
-                638.0,
-                25.25866188063018
-            ],
-            "QCD": [
-                0.0,
-                0.0
-            ],
-            "ttbar": [
-                11.0,
-                3.3166247903554
-            ],
-            "single-t": [
-                15.0,
-                3.872983346207417
-            ],
-            "ttX": [
-                921.0,
-                30.347981810987037
-            ],
-            "Vjets": [
-                1.0,
-                1.0
-            ],
-            "VV": [
-                297.0,
-                17.233687939614086
-            ],
-            "VH": [
-                0.0,
-                0.0
-            ],
-            "VVV": [
-                264.0,
-                16.24807680927192
-            ],
-            "Background": [
-                1509.0,
-                38.84584919911006
-            ],
-            "metric": [
-                16.423891178947795,
-                null
-            ]
-        },
-        "exactly2lepOSSF_exactly1fj_HFJtag_njt2_mjj600_onZ": {
-            "Signal": [
-                586.0,
-                24.20743687382041
-            ],
-            "QCD": [
-                0.0,
-                0.0
-            ],
-            "ttbar": [
-                3.0,
-                1.7320508075688772
-            ],
-            "single-t": [
-                1.0,
-                1.0
-            ],
-            "ttX": [
-                181.0,
-                13.45362404707371
-            ],
-            "Vjets": [
-                1.0,
-                1.0
-            ],
-            "VV": [
-                266.0,
-                16.30950643030009
-            ],
-            "VH": [
-                0.0,
-                0.0
-            ],
-            "VVV": [
-                243.0,
-                15.588457268119896
-            ],
-            "Background": [
-                695.0,
-                26.362852652928137
-            ],
-            "metric": [
-                22.228246985058828,
-                null
-            ]
-        }
+    "UL17_WZZ": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL17_ZZZ": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL17_ZZTo2Q2L": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL17_ZH_HToBB_ZToQQ_M-125": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL17_ZJetsToQQ_HT-800toInf": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL17_WZTo2Q2L": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL17_ZJetsToQQ_HT-600to800": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL17_ZJetsToQQ_HT-400to600": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL17_ZJetsToQQ_HT-200to400": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL17_TTToSemiLeptonic": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL17_TTToHadronic": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL17_ttHToNonbb_M125": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16_TTToSemiLeptonic": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL17_WWW_4F": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL17_WZJJ_EWK_InclusivePolarization": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL17_WZTo1L1Nu2Q": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL17_WWTo4Q": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL17_WWZ_4F": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL18_QCD_HT1000to1500": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL18_QCD_HT700to1000": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL18_ST_t-channel_antitop_4f": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL18_QCD_HT1500to2000": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL18_QCD_HT500to700": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL18_ST_t-channel_top_4f": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL18_EWKZ2Jets_ZToQQ_dipoleRecoilOn": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL18_EWKZ2Jets_ZToNuNu_M-50": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL18_QCD_HT100to200": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL18_EWKZ2Jets_ZToLL_M-50": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL18_QCD_HT300to500": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL17_ZZTo2Nu2Q": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL18_EWKWplus2Jets_WToQQ_dipoleRecoilOn": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL17_ZZTo4Q": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL18_EWKWminus2Jets_WToQQ_dipoleRecoilOn": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL18_QCD_HT2000toInf": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL18_VBSWZH_VBSCuts_13TeV": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL18_VBSWWH_OS_VBSCuts_13TeV": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL17_ttHTobb_M125": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL17_ST_t-channel_top_4f": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL17_QCD_HT50to100": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL17_ST_tW_top_5f": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL17_ST_tW_antitop_5f": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL17_WJetsToQQ_HT-400to600": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL17_WWTo1L1Nu2Q": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL17_WJetsToQQ_HT-800toInf": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL17_WJetsToQQ_HT-200to400": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL17_WplusH_HToBB_WToLNu_M-125": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL17_VHToNonbb_M125": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL17_WJetsToQQ_HT-600to800": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL17_WminusH_HToBB_WToLNu_M-125": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL18_VBSWWH_SS_VBSCuts_13TeV": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16_ZZTo4Q": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL17_ST_t-channel_antitop_4f": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL17_QCD_HT1500to2000": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL17_EWKZ2Jets_ZToLL_M-50": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL17_QCD_HT700to1000": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL17_QCD_HT500to700": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL17_EWKWplus2Jets_WToQQ_dipoleRecoilOn": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL17_QCD_HT100to200": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL17_EWKWminus2Jets_WToQQ_dipoleRecoilOn": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL17_QCD_HT300to500": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16_ZJetsToQQ_HT-400to600": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL17_EWKZ2Jets_ZToQQ_dipoleRecoilOn": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL17_QCD_HT200to300": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16_ZJetsToQQ_HT-200to400": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL17_EWKZ2Jets_ZToNuNu_M-50": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16_ZZTo2Nu2Q": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL17_QCD_HT2000toInf": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL18_ttHTobb_M125": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL18_ST_tW_antitop_5f": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL18_ST_tW_top_5f": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL18_QCD_HT200to300": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL18_QCD_HT50to100": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL18_VBSZZH_VBSCuts_13TeV": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16_TTWW": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16_TTWJetsToQQ": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16_TTWZ": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16_TTToHadronic": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16_ttHToNonbb_M125": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16_ttHTobb_M125": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16APV_VBSZZH_VBSCuts_13TeV": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL17_VBSWWH_OS_VBSCuts_13TeV": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL17_VBSWZH_VBSCuts_13TeV": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16_VBSWWH_SS_VBSCuts_13TeV": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16APV_VBSWWH_SS_VBSCuts_13TeV": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16_VBSZZH_VBSCuts_13TeV": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16APV_TTToHadronic": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16APV_QCD_HT300to500": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16APV_QCD_HT200to300": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16APV_VBSWWH_OS_VBSCuts_13TeV": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16APV_WZZ": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16APV_WZTo2Q2L": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16APV_WWZ_4F": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16APV_ZJetsToQQ_HT-600to800": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16APV_ZZZ": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16APV_ZZTo2Q2L": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16APV_ZJetsToQQ_HT-400to600": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16APV_WZTo1L1Nu2Q": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16APV_WZJJ_EWK_InclusivePolarization": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16APV_ZH_HToBB_ZToQQ_M-125": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16APV_ZJetsToQQ_HT-800toInf": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16APV_VBSWZH_VBSCuts_13TeV": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL17_VBSWWH_SS_VBSCuts_13TeV": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL17_VBSZZH_VBSCuts_13TeV": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16_WWZ_4F": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16_ZH_HToBB_ZToQQ_M-125": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16_WZTo2Q2L": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16_ZZTo2Q2L": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16_ZJetsToQQ_HT-800toInf": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16_WZTo1L1Nu2Q": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16_WZZ": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16_ZJetsToQQ_HT-600to800": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16_WZJJ_EWK_InclusivePolarization": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16_ZZZ": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL17_QCD_HT1000to1500": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16_VBSWWH_OS_VBSCuts_13TeV": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16APV_WJetsToQQ_HT-600to800": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16APV_TTWW": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16APV_VHToNonbb_M125": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16APV_WWTo1L1Nu2Q": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16APV_TTWJetsToQQ": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16APV_TTWZ": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16APV_WJetsToQQ_HT-800toInf": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16APV_WplusH_HToBB_WToLNu_M-125": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16APV_WminusH_HToBB_WToLNu_M-125": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16_VBSWZH_VBSCuts_13TeV": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16APV_WWW_4F": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16APV_WWTo4Q": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16APV_WJetsToQQ_HT-400to600": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16APV_WJetsToQQ_HT-200to400": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16_WJetsToQQ_HT-800toInf": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16_WWW_4F": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16_WWTo1L1Nu2Q": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16_WJetsToQQ_HT-600to800": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16_WWTo4Q": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16_WJetsToQQ_HT-400to600": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16_WplusH_HToBB_WToLNu_M-125": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16_WJetsToQQ_HT-200to400": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16_WminusH_HToBB_WToLNu_M-125": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16_VHToNonbb_M125": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16APV_QCD_HT500to700": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16APV_ttHTobb_M125": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16APV_EWKZ2Jets_ZToQQ_dipoleRecoilOn": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16APV_ttHToNonbb_M125": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16APV_ST_t-channel_antitop_4f": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16APV_EWKZ2Jets_ZToNuNu_M-50": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16APV_ST_tW_top_5f": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16APV_ST_tW_antitop_5f": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16APV_EWKZ2Jets_ZToLL_M-50": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16APV_QCD_HT700to1000": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16APV_ST_t-channel_top_4f": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16APV_EWKWplus2Jets_WToQQ_dipoleRecoilOn": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16APV_QCD_HT2000toInf": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16APV_EWKWminus2Jets_WToQQ_dipoleRecoilOn": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL18_TTToSemiLeptonic": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16APV_QCD_HT100to200": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL18_TTToHadronic": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL18_ttHToNonbb_M125": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL17_TTWW": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL17_TTWZ": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL17_TTWJetsToQQ": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL18_WWTo1L1Nu2Q": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL18_WZJJ_EWK_InclusivePolarization": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL18_WWZ_4F": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL18_WWW_4F": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL18_WWTo4Q": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL18_WZTo1L1Nu2Q": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL18_ZZZ": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL18_ZJetsToQQ_HT-800toInf": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL18_ZZTo2Q2L": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL18_ZZTo2Nu2Q": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL18_WZTo2Q2L": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL18_ZJetsToQQ_HT-600to800": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL18_WZZ": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL18_ZJetsToQQ_HT-400to600": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL18_ZZTo4Q": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL18_ZJetsToQQ_HT-200to400": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL18_ZH_HToBB_ZToQQ_M-125": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16APV_QCD_HT1500to2000": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL18_TTWW": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL18_WJetsToQQ_HT-600to800": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL18_TTWJetsToQQ": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL18_WJetsToQQ_HT-400to600": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL18_WJetsToQQ_HT-200to400": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL18_VHToNonbb_M125": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL18_TTWZ": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL18_WplusH_HToBB_WToLNu_M-125": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL18_WminusH_HToBB_WToLNu_M-125": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL18_WJetsToQQ_HT-800toInf": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16APV_QCD_HT1000to1500": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16_QCD_HT1000to1500": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16_ST_t-channel_top_4f": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16_ST_tW_top_5f": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16_QCD_HT700to1000": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16_EWKZ2Jets_ZToQQ_dipoleRecoilOn": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16_EWKZ2Jets_ZToNuNu_M-50": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16_QCD_HT500to700": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16_EWKZ2Jets_ZToLL_M-50": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16_ST_tW_antitop_5f": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16APV_ZZTo4Q": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16_QCD_HT300to500": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16APV_ZJetsToQQ_HT-200to400": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16APV_ZZTo2Nu2Q": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16_QCD_HT200to300": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16_EWKWplus2Jets_WToQQ_dipoleRecoilOn": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16_ST_t-channel_antitop_4f": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16_EWKWminus2Jets_WToQQ_dipoleRecoilOn": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16_QCD_HT2000toInf": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
+    },
+    "UL16_QCD_HT1500to2000": {
+        "all_events": [
+            29153085.02727659,
+            null
+        ],
+        "exactly2lepOSSF_exactly1fj": [
+            8618.273709437772,
+            null
+        ]
     }
 }
