@@ -1,0 +1,17 @@
+{
+    "xsec": "0.05565",
+    "year": "2016",
+    "treeName": "Events",
+    "histAxisName": "UL16_WZZ",
+    "options": "",
+    "WCnames": [],
+    "files": [
+        "WZZ_TuneCP5_13TeV-amcatnlo-pythia8_RunIISummer20UL16NanoAODv9-106X_mcRun2_asymptotic_v17_ext1-v1_NANOAODSIM_nanoaodv9_bkg_3LepRun2_13Jan2026/output_1.root"
+    ],
+    "nEvents": 951720,
+    "nGenEvents": 4191000,
+    "nSumOfWeights": 239577.66254908202,
+    "isData": false,
+    "path": "WZZ_TuneCP5_13TeV-amcatnlo-pythia8_RunIISummer20UL16NanoAODv9-106X_mcRun2_asymptotic_v17_ext1-v1_NANOAODSIM_nanoaodv9_bkg_3LepRun2_13Jan2026",
+    "nSumOfLheWeights": 0
+}
