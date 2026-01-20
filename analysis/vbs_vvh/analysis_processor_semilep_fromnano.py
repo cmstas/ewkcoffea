@@ -964,16 +964,12 @@ class AnalysisProcessor(processor.ProcessorABC):
             mask_exactly2lepSS = veto_map_mask & filter_mask & (nleps==2) & ss_mask
             mask_exactly2lepOS = veto_map_mask & filter_mask & (nleps==2) & os_mask
             mask_exactly2lepOSSF = veto_map_mask & filter_mask & (nleps==2) & os_mask & sf_mask
-            mask_exactly2lepOSOF = veto_map_mask & filter_mask & (nleps==2) & os_mask & of_mask
 
             mask_exactly1lep_exactly1fj     = mask_exactly1lep     & (nfatjets==1)
             mask_exactly1lep_exactly2fj     = mask_exactly1lep     & (nfatjets==2)
             mask_exactly2lepSS_exactly1fj   = mask_exactly2lepSS   & (nfatjets==1)
             mask_exactly2lepOS_exactly1fj   = mask_exactly2lepOS   & (nfatjets==1)
             mask_exactly2lepOSSF_exactly1fj = mask_exactly2lepOSSF & (nfatjets==1)
-            mask_exactly2lepOSOF_exactly1fj = mask_exactly2lepOSOF & (nfatjets==1)
-
-            mask_exactly2lepOSSF_exactly2fj = mask_exactly2lepOSSF & (nfatjets==2)
 
             mask_exactly3lep   = veto_map_mask & filter_mask & (nleps==3)
 
@@ -1022,15 +1018,6 @@ class AnalysisProcessor(processor.ProcessorABC):
             selections.add("exactly1lep_exactly2fj_l40_noloosel", veto_map_mask & filter_mask & (nleps==1) & (nfatjets==2) & (l0.pt>40) & (nleps_l_not_t==0))
 
             ### 2lOS + 1FJ ###
-            selections.add("exactly2lepOS",                                mask_exactly2lepOS)
-
-            selections.add("exactly2lepOSOF",                                mask_exactly2lepOSOF)
-            selections.add("exactly2lepOSOF_exactly1fj",                     mask_exactly2lepOSOF_exactly1fj)
-            selections.add("exactly2lepOSOF_exactly1fj_HFJ",                 mask_exactly2lepOSOF_exactly1fj & mask_HFJ)
-            selections.add("exactly2lepOSOF_exactly1fj_HFJtag",              mask_exactly2lepOSOF_exactly1fj & mask_HFJ & mask_HFJTagHbb)
-            selections.add("exactly2lepOSOF_exactly1fj_HFJtag_njt2",         mask_exactly2lepOSOF_exactly1fj & mask_HFJ & mask_HFJTagHbb & (njets_tot>=2))
-            selections.add("exactly2lepOSOF_exactly1fj_HFJtag_njt2_mjj1000", mask_exactly2lepOSOF_exactly1fj & mask_HFJ & mask_HFJTagHbb & (njets_tot>=2) & (mjj_max_any>1000))
-
             selections.add("exactly2lepOSSF",                                   mask_exactly2lepOSSF)
             selections.add("exactly2lepOSSF_exactly1fj",                        mask_exactly2lepOSSF_exactly1fj)
             selections.add("exactly2lepOSSF_exactly1fj_HFJ",                    mask_exactly2lepOSSF_exactly1fj & mask_HFJ)
@@ -1038,11 +1025,6 @@ class AnalysisProcessor(processor.ProcessorABC):
             selections.add("exactly2lepOSSF_exactly1fj_HFJtag_njt2",            mask_exactly2lepOSSF_exactly1fj & mask_HFJ & mask_HFJTagHbb & (njets_tot>=2))
             selections.add("exactly2lepOSSF_exactly1fj_HFJtag_njt2_mjj600",     mask_exactly2lepOSSF_exactly1fj & mask_HFJ & mask_HFJTagHbb & (njets_tot>=2) & (mjj_max_any>600))
             selections.add("exactly2lepOSSF_exactly1fj_HFJtag_njt2_mjj600_onZ", mask_exactly2lepOSSF_exactly1fj & mask_HFJ & mask_HFJTagHbb & (njets_tot>=2) & (mjj_max_any>600) & onZ)
-
-            selections.add("exactly2lepOSSF_exactly2fj",                     mask_exactly2lepOSSF_exactly2fj)
-            selections.add("exactly2lepOSSF_exactly2fj_HFJ",                 mask_exactly2lepOSSF_exactly2fj & mask_HFJ)
-            selections.add("exactly2lepOSSF_exactly2fj_HFJ_njt2",            mask_exactly2lepOSSF_exactly2fj & mask_HFJ & (njets_tot>=2))
-            selections.add("exactly2lepOSSF_exactly2fj_HFJ_njt2_mjj500",     mask_exactly2lepOSSF_exactly2fj & mask_HFJ & (njets_tot>=2) & (mjj_max_any>500))
 
             ### 3l ###
             selections.add("exactly3lep", mask_exactly3lep)
@@ -1086,8 +1068,7 @@ class AnalysisProcessor(processor.ProcessorABC):
                     "exactly1lep_exactly2fj_l40",
                     "exactly1lep_exactly2fj_l40_noloosel"  ,
 
-                    ### 2lOS 1FJ ###
-                    "exactly2lepOS",
+                    ### 2l OS SF 1FJ ###
                     "exactly2lepOSSF",
                     "exactly2lepOSSF_exactly1fj",
                     "exactly2lepOSSF_exactly1fj_HFJ",
@@ -1095,19 +1076,8 @@ class AnalysisProcessor(processor.ProcessorABC):
                     "exactly2lepOSSF_exactly1fj_HFJtag_njt2",
                     "exactly2lepOSSF_exactly1fj_HFJtag_njt2_mjj600",
                     "exactly2lepOSSF_exactly1fj_HFJtag_njt2_mjj600_onZ",
-                    #"exactly2lepOSOF",
-                    #"exactly2lepOSOF_exactly1fj",
-                    #"exactly2lepOSOF_exactly1fj_HFJ",
-                    #"exactly2lepOSOF_exactly1fj_HFJtag",
-                    #"exactly2lepOSOF_exactly1fj_HFJtag_njt2",
-                    #"exactly2lepOSOF_exactly1fj_HFJtag_njt2_mjj1000",
 
-                    ### 2lOS 2FJ ###
-                    "exactly2lepOSSF_exactly2fj",
-                    "exactly2lepOSSF_exactly2fj_HFJ",
-                    "exactly2lepOSSF_exactly2fj_HFJ_njt2",
-                    "exactly2lepOSSF_exactly2fj_HFJ_njt2_mjj500",
-
+                    ### 3l ###
                     "exactly3lep",
                     "exactly3lep_2j_mjj600",
                     "exactly3lep_2j_mjj600_noSFOS",
