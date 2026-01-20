@@ -128,7 +128,7 @@ GRP_DICT_FULL_R2 = {
 
 
 CAT_LST = [
-    #"all_events",
+    "all_events",
     #"filter",
     #"exactly1lep",
     #"exactly2lepOS",
@@ -178,11 +178,6 @@ CAT_LST = [
     "exactly2lepOSSF_exactly1fj_HFJtag_njt2",
     "exactly2lepOSSF_exactly1fj_HFJtag_njt2_mjj600",
     "exactly2lepOSSF_exactly1fj_HFJtag_njt2_mjj600_onZ",
-
-    #"exactly2lepOSSF_exactly2fj",
-    #"exactly2lepOSSF_exactly2fj_HFJ",
-    #"exactly2lepOSSF_exactly2fj_HFJ_njt2",
-    #"exactly2lepOSSF_exactly2fj_HFJ_njt2_mjj500",
 
     #### 3l ###
     #"exactly3lep",
