@@ -130,60 +130,25 @@ GRP_DICT_FULL_R2 = {
 CAT_LST = [
     "all_events",
     #"filter",
-    #"exactly1lep",
-    #"exactly2lepOS",
+    #"just1lep",
 
-    #### 1lep 1FJ ###
-    #"exactly1lep_exactly1fj",
-    #"exactly1lep_exactly1fj_HFJ",
-    #"exactly1lep_exactly1fj_HFJ_Htag",
-    #"exactly1lep_exactly1fj_HFJ_Htag_njt2",
-    #"exactly1lep_exactly1fj_HFJ_Htag_njt2_mjj1000",
-    #"exactly1lep_exactly1fj_HFJ_Htag_njt2_mjj1000_nbm0",
-    #"exactly1lep_exactly1fj_VFJ",
-    #"exactly1lep_exactly1fj_VFJ_njt2",
-    #"exactly1lep_exactly1fj_VFJ_njt2_mjj1000",
-    #"exactly1lep_exactly1fj_VFJ_njt2_mjj1000_nbm0",
+    # 2l OS SF 1FJ
+    "2l_1fj",
+    "2l_1fj_trg",
+    "2l_1fj_trg_OS",
+    "2l_1fj_trg_OSSF",
+    "2l_1fj_trg_OSSF_onZ",
+    "2l_1fj_trg_OSSF_onZ_HFJ",
+    "2l_1fj_trg_OSSF_onZ_HFJtag",
+    "2l_1fj_trg_OSSF_onZ_HFJtag_nj2",
+    "2l_1fj_trg_OSSF_onZ_HFJtag_nj2_mjj600",
 
-    #### 1lep+2FJ ###
-    #"exactly1lep_exactly2fj",
-    #"exactly1lep_exactly2fj_HFJ",
-    #"exactly1lep_exactly2fj_HFJ_nbm0",
-    #"exactly1lep_exactly2fj_HFJ_nbm0_HtagWtag",
-    #"exactly1lep_exactly2fj_HFJ_nbm0_HtagWtag_njt2",
-    #"exactly1lep_exactly2fj_HFJ_nbm0_HtagWtag_njt2_mjj1000",
-    #"exactly1lep_exactly2fj_HFJ_nbm0_HtagWtag_njt2_mjj1000_njc01",
-    #"exactly1lep_exactly2fj_VFJ",
-    #"exactly1lep_exactly2fj_VFJ_HFJ",
-    #"exactly1lep_exactly2fj_VFJ_HFJ_njt2",
-    #"exactly1lep_exactly2fj_VFJ_HFJ_njt2_mjj1000",
-    #"exactly1lep_exactly2fj_VFJ_HFJ_njt2_mjj1000_mjj980",
-    ## Aashay
-    ##"exactly1lep_exactly2fj_l40",
-    ##"exactly1lep_exactly2fj_l40_noloosel"  ,
-
-    #### 2lOS 1FJ ###
-    #"exactly2lepOS",
-    #"exactly2lepOS_exactly1fj",
-    #"exactly2lepOS_exactly1fj_HFJ",
-    #"exactly2lepOS_exactly1fj_HFJtag",
-    #"exactly2lepOS_exactly1fj_HFJtag_njt2",
-    #"exactly2lepOS_exactly1fj_HFJtag_njt2_mjj1000",
-
-    #"exactly2lepOS",
-    #"exactly2lepOSSF",
-    "exactly2lepOSSF_exactly1fj",
-    "exactly2lepOSSF_exactly1fj_HFJ",
-    "exactly2lepOSSF_exactly1fj_HFJtag",
-    "exactly2lepOSSF_exactly1fj_HFJtag_njt2",
-    "exactly2lepOSSF_exactly1fj_HFJtag_njt2_mjj600",
-    "exactly2lepOSSF_exactly1fj_HFJtag_njt2_mjj600_onZ",
-
-    #### 3l ###
-    #"exactly3lep",
-    #"exactly3lep_2j_mjj600",
-    #"exactly3lep_2j_mjj600_noSFOS",
-
+    # 3l
+    "3l",
+    "3l_trg",
+    "3l_trg_2j_mjj600",
+    "3l_trg_2j_mjj600_noSFOS",
+    "3l_trg_2j_mjj600_ch3",
 ]
 
 
@@ -520,12 +485,12 @@ def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend):
         for var in var_lst:
             print("\nVar:",var)
             #if var not in ["njets","njets_counts","scalarptsum_lepmet"]: continue # TMP
-            #if "ll" not in var: continue # TMP
+            #if "abs_ch_sum_3l" not in var: continue # TMP
 
             histo = copy.deepcopy(histo_dict[var][{"systematic":"nominal", "category":cat}])
 
             # Clean up a bit (rebin, regroup, and handle overflow)
-            if var not in ["njets","nleps","nbtagsl","nbtagsm","njets_counts","nleps_counts","nfatjets","njets_forward","njets_tot","n_ll_sfos"]:
+            if var not in ["njets","nleps","nbtagsl","nbtagsm","njets_counts","nleps_counts","nfatjets","njets_forward","njets_tot","n_ll_sfos","abs_ch_sum_3l"]:
                 histo = plt_tools.rebin(histo,6)
             histo = plt_tools.group(histo,"process","process_grp",grouping_dict)
             histo = plt_tools.merge_overflow(histo)

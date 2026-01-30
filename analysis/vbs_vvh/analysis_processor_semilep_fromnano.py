@@ -12,7 +12,7 @@ from coffea.analysis_tools import PackedSelection
 from coffea.lumi_tools import LumiMask
 
 from topcoffea.modules.paths import topcoffea_path
-#import topcoffea.modules.event_selection as es_tc
+import topcoffea.modules.event_selection as es_tc
 #import topcoffea.modules.corrections as cor_tc
 
 from ewkcoffea.modules.paths import ewkcoffea_path as ewkcoffea_path
@@ -646,21 +646,11 @@ class AnalysisProcessor(processor.ProcessorABC):
             if not (is2022 or is2023):
                 # Era not used for R2
                 era_for_trg_check = None
-            #pass_trg = es_tc.trg_pass_no_overlap(events,isData,dataset,str(year),dataset_dict=es_ec.dataset_dict,exclude_dict=es_ec.exclude_dict,era=era_for_trg_check)
+            pass_trg = es_tc.trg_pass_no_overlap(events,isData,dataset,str(year),dataset_dict=es_ec.dataset_dict,exclude_dict=es_ec.exclude_dict,era=era_for_trg_check)
             #pass_trg = (pass_trg & es_ec.trg_matching(events,year))
 
             # b jet masks
-            bmask_atleast1med_atleast2loose = ((nbtagsm>=1)&(nbtagsl>=2)) # Used for 2lss and 4l
-            bmask_exactly0loose = (nbtagsl==0) # Used for 4l WWZ SR
-            bmask_exactly0med = (nbtagsm==0) # Used for 3l CR and 2los Z CR
-            bmask_exactly1med = (nbtagsm==1) # Used for 3l SR and 2lss CR
-            bmask_exactly2med = (nbtagsm==2) # Used for CRtt
-            bmask_atleast2med = (nbtagsm>=2) # Used for 3l SR
-            bmask_atmost2med  = (nbtagsm< 3) # Used to make 2lss mutually exclusive from tttt enriched
-            bmask_atleast3med = (nbtagsm>=3) # Used for tttt enriched
-            bmask_atleast1med = (nbtagsm>=1)
-            bmask_atleast1loose = (nbtagsl>=1)
-            bmask_atleast2loose = (nbtagsl>=2)
+            bmask_exactly0med = (nbtagsm==0)
 
 
             ######### Get variables we haven't already calculated #########
@@ -960,136 +950,69 @@ class AnalysisProcessor(processor.ProcessorABC):
             # Form some other useful masks for SRs
 
             os_mask = l0.pdgId*l1.pdgId<0
-            ss_mask = l0.pdgId*l1.pdgId>0
             sf_mask = abs(l0.pdgId) == abs(l1.pdgId)
-            of_mask = abs(l0.pdgId) != abs(l1.pdgId)
 
             is_3l_pt = (l0.pt>25) & (l1.pt>15) & (l2.pt>10)
             is_2l_pt = (l0.pt>25) & (l1.pt>15)
 
-            mask_exactly1lep   = veto_map_mask & filter_mask & (nleps==1) & is_2l_pt
-            mask_exactly2lepSS = veto_map_mask & filter_mask & (nleps==2) & ss_mask & is_2l_pt
-            mask_exactly2lepOS = veto_map_mask & filter_mask & (nleps==2) & os_mask & is_2l_pt
-            mask_exactly2lepOSSF = veto_map_mask & filter_mask & (nleps==2) & os_mask & sf_mask & is_2l_pt
+            mask_2l_1fj = veto_map_mask & filter_mask & (nleps==2) & is_2l_pt & (nfatjets==1)
+            mask_3lep   = veto_map_mask & filter_mask & (nleps==3) & is_3l_pt
 
-            mask_exactly1lep_exactly1fj     = mask_exactly1lep     & (nfatjets==1)
-            mask_exactly1lep_exactly2fj     = mask_exactly1lep     & (nfatjets==2)
-            mask_exactly2lepSS_exactly1fj   = mask_exactly2lepSS   & (nfatjets==1)
-            mask_exactly2lepOS_exactly1fj   = mask_exactly2lepOS   & (nfatjets==1)
-            mask_exactly2lepOSSF_exactly1fj = mask_exactly2lepOSSF & (nfatjets==1)
-
-            mask_exactly3lep = veto_map_mask & filter_mask & (nleps==3) & is_3l_pt
-
-            mask_VFJ  = (fj0_mparticlenet <= 100.) & (fj0_mparticlenet > 65)
-            mask_HFJ  = (fj0_mparticlenet >  110.) & (fj0_mparticlenet <= 150.)
-            mask_HFJ1 = (fj1_mparticlenet >  100.) & (fj1_mparticlenet <= 150.)
-
+            mask_VFJ       = (fj0_mparticlenet <= 100.) & (fj0_mparticlenet > 65)
+            mask_HFJ       = (fj0_mparticlenet >  110.) & (fj0_mparticlenet <= 150.)
             mask_HFJTagHbb = (fj0_pNetHbbvsQCD > 0.98)
-            mask_HFJtag    = (fj0_pNetHbbvsQCD > 0.98) & (fj0_pNetTvsQCD < 0.5) & (fj0_pNetWvsQCD < 0.5)
-            mask_VFJtag    = (fj0_pNetWvsQCD   > 0.95) & (fj0_pNetTvsQCD < 0.5)
 
             onZ = abs(mass_l0l1 - 91.1876) < 20
 
-            ### Inclusive selections ###
+            ### Inclusive selections, just use for sync ###
             selections.add("all_events", (veto_map_mask | (~veto_map_mask))) # All events.. this logic is a bit roundabout to just get an array of True
             selections.add("filter", filter_mask)
-            selections.add("exactly1lep", mask_exactly1lep)
-
-            ### 1lep + 1FJ ###
-            selections.add("exactly1lep_exactly1fj",                            mask_exactly1lep_exactly1fj)
-            selections.add("exactly1lep_exactly1fj_HFJ",                        mask_exactly1lep_exactly1fj & mask_HFJ)
-            selections.add("exactly1lep_exactly1fj_HFJ_Htag",                   mask_exactly1lep_exactly1fj & mask_HFJ & mask_HFJTagHbb)
-            selections.add("exactly1lep_exactly1fj_HFJ_Htag_njt2",              mask_exactly1lep_exactly1fj & mask_HFJ & mask_HFJTagHbb & (njets_tot>=2))
-            selections.add("exactly1lep_exactly1fj_HFJ_Htag_njt2_mjj1000",      mask_exactly1lep_exactly1fj & mask_HFJ & mask_HFJTagHbb & (njets_tot>=2) & (mjj_max_any>1000))
-            selections.add("exactly1lep_exactly1fj_HFJ_Htag_njt2_mjj1000_nbm0", mask_exactly1lep_exactly1fj & mask_HFJ & mask_HFJTagHbb & (njets_tot>=2) & (mjj_max_any>1000) & bmask_exactly0med)
-            selections.add("exactly1lep_exactly1fj_VFJ" ,                       mask_exactly1lep_exactly1fj & mask_VFJ)
-            selections.add("exactly1lep_exactly1fj_VFJ_njt2" ,                  mask_exactly1lep_exactly1fj & mask_VFJ & (njets_tot>=2))
-            selections.add("exactly1lep_exactly1fj_VFJ_njt2_mjj1000" ,          mask_exactly1lep_exactly1fj & mask_VFJ & (njets_tot>=2) & (mjj_max_any>1000))
-            selections.add("exactly1lep_exactly1fj_VFJ_njt2_mjj1000_nbm0" ,     mask_exactly1lep_exactly1fj & mask_VFJ & (njets_tot>=2) & (mjj_max_any>1000) & bmask_exactly0med)
-
-            ### 1lep + 2FJ ###
-            selections.add("exactly1lep_exactly2fj" ,                                     mask_exactly1lep_exactly2fj)
-            selections.add("exactly1lep_exactly2fj_HFJ" ,                                 mask_exactly1lep_exactly2fj & mask_HFJ)
-            selections.add("exactly1lep_exactly2fj_HFJ_nbm0" ,                            mask_exactly1lep_exactly2fj & mask_HFJ & bmask_exactly0med)
-            selections.add("exactly1lep_exactly2fj_HFJ_nbm0_HtagWtag" ,                   mask_exactly1lep_exactly2fj & mask_HFJ & bmask_exactly0med & mask_HFJTagHbb & (fj1_pNetWvsQCD>0.8))
-            selections.add("exactly1lep_exactly2fj_HFJ_nbm0_HtagWtag_njt2" ,              mask_exactly1lep_exactly2fj & mask_HFJ & bmask_exactly0med & mask_HFJTagHbb & (fj1_pNetWvsQCD>0.8) & (njets_tot>=2))
-            selections.add("exactly1lep_exactly2fj_HFJ_nbm0_HtagWtag_njt2_mjj1000" ,      mask_exactly1lep_exactly2fj & mask_HFJ & bmask_exactly0med & mask_HFJTagHbb & (fj1_pNetWvsQCD>0.8) & (njets_tot>=2) & (mass_j0anyj1any>1000))
-            selections.add("exactly1lep_exactly2fj_HFJ_nbm0_HtagWtag_njt2_mjj1000_njc01", mask_exactly1lep_exactly2fj & mask_HFJ & bmask_exactly0med & mask_HFJTagHbb & (fj1_pNetWvsQCD>0.8) & (njets_tot>=2) & (mass_j0anyj1any>1000) & (njets<2))
-            selections.add("exactly1lep_exactly2fj_VFJ" ,                                 mask_exactly1lep_exactly2fj & mask_VFJ)
-            selections.add("exactly1lep_exactly2fj_VFJ_HFJ" ,                             mask_exactly1lep_exactly2fj & mask_VFJ & mask_HFJ1)
-            selections.add("exactly1lep_exactly2fj_VFJ_HFJ_njt2" ,                        mask_exactly1lep_exactly2fj & mask_VFJ & mask_HFJ1 & (njets_tot>=2))
-            selections.add("exactly1lep_exactly2fj_VFJ_HFJ_njt2_mjj1000" ,                mask_exactly1lep_exactly2fj & mask_VFJ & mask_HFJ1 & (njets_tot>=2) & (mjj_max_any>1000))
-            selections.add("exactly1lep_exactly2fj_VFJ_HFJ_njt2_mjj1000_mjj980" ,         mask_exactly1lep_exactly2fj & mask_VFJ & mask_HFJ1 & (njets_tot>=2) & (mjj_max_any>1000) & (jj_pairs_atmindr_mjj>980))
-            # Aashay 1l+2FJ region
-            selections.add("exactly1lep_exactly2fj_l40",          veto_map_mask & filter_mask & (nleps==1) & (nfatjets==2) & (l0.pt>40))
-            selections.add("exactly1lep_exactly2fj_l40_noloosel", veto_map_mask & filter_mask & (nleps==1) & (nfatjets==2) & (l0.pt>40) & (nleps_l_not_t==0))
+            selections.add("just1lep", nleps==1)
 
             ### 2lOS + 1FJ ###
-            selections.add("exactly2lepOSSF",                                   mask_exactly2lepOSSF)
-            selections.add("exactly2lepOSSF_exactly1fj",                        mask_exactly2lepOSSF_exactly1fj)
-            selections.add("exactly2lepOSSF_exactly1fj_HFJ",                    mask_exactly2lepOSSF_exactly1fj & mask_HFJ)
-            selections.add("exactly2lepOSSF_exactly1fj_HFJtag",                 mask_exactly2lepOSSF_exactly1fj & mask_HFJ & mask_HFJTagHbb)
-            selections.add("exactly2lepOSSF_exactly1fj_HFJtag_njt2",            mask_exactly2lepOSSF_exactly1fj & mask_HFJ & mask_HFJTagHbb & (njets_tot>=2))
-            selections.add("exactly2lepOSSF_exactly1fj_HFJtag_njt2_mjj600",     mask_exactly2lepOSSF_exactly1fj & mask_HFJ & mask_HFJTagHbb & (njets_tot>=2) & (mjj_max_any>600))
-            selections.add("exactly2lepOSSF_exactly1fj_HFJtag_njt2_mjj600_onZ", mask_exactly2lepOSSF_exactly1fj & mask_HFJ & mask_HFJTagHbb & (njets_tot>=2) & (mjj_max_any>600) & onZ)
+            selections.add("2l_1fj",                                mask_2l_1fj)
+            selections.add("2l_1fj_trg",                            mask_2l_1fj & pass_trg)
+            selections.add("2l_1fj_trg_OS",                         mask_2l_1fj & pass_trg & os_mask)
+            selections.add("2l_1fj_trg_OSSF",                       mask_2l_1fj & pass_trg & os_mask & sf_mask)
+            selections.add("2l_1fj_trg_OSSF_onZ",                   mask_2l_1fj & pass_trg & os_mask & sf_mask & onZ)
+            selections.add("2l_1fj_trg_OSSF_onZ_HFJ",               mask_2l_1fj & pass_trg & os_mask & sf_mask & onZ & mask_HFJ)
+            selections.add("2l_1fj_trg_OSSF_onZ_HFJtag",            mask_2l_1fj & pass_trg & os_mask & sf_mask & onZ & mask_HFJ & mask_HFJTagHbb)
+            selections.add("2l_1fj_trg_OSSF_onZ_HFJtag_nj2",        mask_2l_1fj & pass_trg & os_mask & sf_mask & onZ & mask_HFJ & mask_HFJTagHbb & (njets_tot>=2))
+            selections.add("2l_1fj_trg_OSSF_onZ_HFJtag_nj2_mjj600", mask_2l_1fj & pass_trg & os_mask & sf_mask & onZ & mask_HFJ & mask_HFJTagHbb & (njets_tot>=2) & (mjj_max_any>600))
 
             ### 3l ###
-            selections.add("exactly3lep", mask_exactly3lep)
-            selections.add("exactly3lep_2j_mjj600", mask_exactly3lep & (njets_tot>=2) & (mjj_max_any>600))
-            selections.add("exactly3lep_2j_mjj600_noSFOS", mask_exactly3lep & (njets_tot>=2) & (mjj_max_any>600) & (n_ll_sfos==0))
-            selections.add("exactly3lep_2j_mjj600_ch3", mask_exactly3lep & (njets_tot>=2) & (mjj_max_any>600) & (abs_ch_sum_3l==3))
+            selections.add("3l",                      mask_3lep)
+            selections.add("3l_trg",                  mask_3lep & pass_trg )
+            selections.add("3l_trg_2j_mjj600",        mask_3lep & pass_trg  & (njets_tot>=2) & (mjj_max_any>600))
+            selections.add("3l_trg_2j_mjj600_noSFOS", mask_3lep & pass_trg  & (njets_tot>=2) & (mjj_max_any>600) & (n_ll_sfos==0))
+            selections.add("3l_trg_2j_mjj600_ch3",    mask_3lep & pass_trg  & (njets_tot>=2) & (mjj_max_any>600) & (abs_ch_sum_3l==3))
 
 
+            # Keep track of the ones we want to actually fill
             cat_dict = {
                 "lep_chan_lst" : [
 
                     "all_events",
-                    "filter",
-                    "exactly1lep",
-
-                    ### 1lep 1FJ ###
-                    "exactly1lep_exactly1fj",
-                    "exactly1lep_exactly1fj_HFJ",
-                    "exactly1lep_exactly1fj_HFJ_Htag",
-                    "exactly1lep_exactly1fj_HFJ_Htag_njt2",
-                    "exactly1lep_exactly1fj_HFJ_Htag_njt2_mjj1000",
-                    "exactly1lep_exactly1fj_HFJ_Htag_njt2_mjj1000_nbm0",
-                    "exactly1lep_exactly1fj_VFJ",
-                    "exactly1lep_exactly1fj_VFJ_njt2",
-                    "exactly1lep_exactly1fj_VFJ_njt2_mjj1000",
-                    "exactly1lep_exactly1fj_VFJ_njt2_mjj1000_nbm0",
-
-                    ### 1lep+2FJ ###
-                    "exactly1lep_exactly2fj",
-                    "exactly1lep_exactly2fj_HFJ",
-                    "exactly1lep_exactly2fj_HFJ_nbm0",
-                    "exactly1lep_exactly2fj_HFJ_nbm0_HtagWtag",
-                    "exactly1lep_exactly2fj_HFJ_nbm0_HtagWtag_njt2",
-                    "exactly1lep_exactly2fj_HFJ_nbm0_HtagWtag_njt2_mjj1000",
-                    "exactly1lep_exactly2fj_HFJ_nbm0_HtagWtag_njt2_mjj1000_njc01",
-                    "exactly1lep_exactly2fj_VFJ",
-                    "exactly1lep_exactly2fj_VFJ_HFJ",
-                    "exactly1lep_exactly2fj_VFJ_HFJ_njt2",
-                    "exactly1lep_exactly2fj_VFJ_HFJ_njt2_mjj1000",
-                    "exactly1lep_exactly2fj_VFJ_HFJ_njt2_mjj1000_mjj980",
-                    # Aashay
-                    "exactly1lep_exactly2fj_l40",
-                    "exactly1lep_exactly2fj_l40_noloosel"  ,
+                    #"filter",
+                    #"just1lep",
 
                     ### 2l OS SF 1FJ ###
-                    "exactly2lepOSSF",
-                    "exactly2lepOSSF_exactly1fj",
-                    "exactly2lepOSSF_exactly1fj_HFJ",
-                    "exactly2lepOSSF_exactly1fj_HFJtag",
-                    "exactly2lepOSSF_exactly1fj_HFJtag_njt2",
-                    "exactly2lepOSSF_exactly1fj_HFJtag_njt2_mjj600",
-                    "exactly2lepOSSF_exactly1fj_HFJtag_njt2_mjj600_onZ",
+                    "2l_1fj",
+                    "2l_1fj_trg",
+                    "2l_1fj_trg_OS",
+                    "2l_1fj_trg_OSSF",
+                    "2l_1fj_trg_OSSF_onZ",
+                    "2l_1fj_trg_OSSF_onZ_HFJ",
+                    "2l_1fj_trg_OSSF_onZ_HFJtag",
+                    "2l_1fj_trg_OSSF_onZ_HFJtag_nj2",
+                    "2l_1fj_trg_OSSF_onZ_HFJtag_nj2_mjj600",
 
                     ### 3l ###
-                    "exactly3lep",
-                    "exactly3lep_2j_mjj600",
-                    "exactly3lep_2j_mjj600_noSFOS",
-                    "exactly3lep_2j_mjj600_ch3",
+                    "3l",
+                    "3l_trg",
+                    "3l_trg_2j_mjj600",
+                    "3l_trg_2j_mjj600_noSFOS",
+                    "3l_trg_2j_mjj600_ch3",
                 ]
             }
 
