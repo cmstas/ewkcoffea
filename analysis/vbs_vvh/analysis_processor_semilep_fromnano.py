@@ -292,6 +292,10 @@ class AnalysisProcessor(processor.ProcessorABC):
         # Probably there's a better way to do this, but we use this method elsewhere so I guess why not..
         events.nom = ak.ones_like(met.pt)
 
+        # A mask that is all True by construction
+        # Probably there's a better way to do this...
+        pass_through = ak.full_like(met.pt,True,dtype=bool)
+
         # Get the lumi mask for data
         if year == "2016" or year == "2016APV":
             golden_json_path = topcoffea_path("data/goldenJsons/Cert_271036-284044_13TeV_Legacy2016_Collisions16_JSON.txt")
@@ -307,7 +311,10 @@ class AnalysisProcessor(processor.ProcessorABC):
             golden_json_path = topcoffea_path("data/goldenJsons/Cert_Collisions2024_378981_386951_Golden.json")
         else:
             raise ValueError(f"Error: Unknown year \"{year}\".")
-        lumi_mask = LumiMask(golden_json_path)(events.run,events.luminosityBlock)
+        if isData:
+            lumi_mask = LumiMask(golden_json_path)(events.run,events.luminosityBlock)
+        else:
+            lumi_mask = pass_through
 
         ################### Lepton selection ####################
 
@@ -941,51 +948,47 @@ class AnalysisProcessor(processor.ProcessorABC):
 
             selections = PackedSelection(dtype='uint64')
 
-            # Lumi mask (for data)
-            selections.add("is_good_lumi",lumi_mask)
+            # Form some useful masks for SRs
 
-            # Event filter masks
-            filter_mask = es_ec.get_filter_flag_mask_vvh(events,year,is2022,is2023)
+            is_os = l0.pdgId*l1.pdgId<0
+            is_sf = abs(l0.pdgId) == abs(l1.pdgId)
 
-            # Form some other useful masks for SRs
+            is_2l = (nleps==2) & (l0.pt>25) & (l1.pt>15)
+            is_3l = (nleps==3) & (l0.pt>25) & (l1.pt>15) & (l2.pt>10)
 
-            os_mask = l0.pdgId*l1.pdgId<0
-            sf_mask = abs(l0.pdgId) == abs(l1.pdgId)
+            is_VFJ       = (fj0_mparticlenet <= 100.) & (fj0_mparticlenet > 65)
+            is_HFJ       = (fj0_mparticlenet >  110.) & (fj0_mparticlenet <= 150.)
+            is_HFJTagHbb = (fj0_pNetHbbvsQCD > 0.98)
 
-            is_3l_pt = (l0.pt>25) & (l1.pt>15) & (l2.pt>10)
-            is_2l_pt = (l0.pt>25) & (l1.pt>15)
+            is_onZ = abs(mass_l0l1 - 91.1876) < 20
 
-            mask_2l_1fj = veto_map_mask & filter_mask & (nleps==2) & is_2l_pt & (nfatjets==1)
-            mask_3lep   = veto_map_mask & filter_mask & (nleps==3) & is_3l_pt
 
-            mask_VFJ       = (fj0_mparticlenet <= 100.) & (fj0_mparticlenet > 65)
-            mask_HFJ       = (fj0_mparticlenet >  110.) & (fj0_mparticlenet <= 150.)
-            mask_HFJTagHbb = (fj0_pNetHbbvsQCD > 0.98)
-
-            onZ = abs(mass_l0l1 - 91.1876) < 20
-
-            ### Inclusive selections, just use for sync ###
-            selections.add("all_events", (veto_map_mask | (~veto_map_mask))) # All events.. this logic is a bit roundabout to just get an array of True
-            selections.add("filter", filter_mask)
-            selections.add("just1lep", nleps==1)
+            ### Inclusive selections ###
+            filter_mask = es_ec.get_filter_flag_mask_vvh(events,year,is2022,is2023) # Get the filter flag mask
+            quality = filter_mask & lumi_mask & pass_trg # This is what we'll actually apply to the SRs
+            # Cut flow for quality mask
+            selections.add("all_events",     pass_through) # Just a pass through
+            selections.add("filter",         filter_mask)
+            selections.add("filter_grl",     filter_mask & lumi_mask)
+            selections.add("filter_grl_trg", filter_mask & lumi_mask & pass_trg)
 
             ### 2lOS + 1FJ ###
-            selections.add("2l_1fj",                                mask_2l_1fj)
-            selections.add("2l_1fj_trg",                            mask_2l_1fj & pass_trg)
-            selections.add("2l_1fj_trg_OS",                         mask_2l_1fj & pass_trg & os_mask)
-            selections.add("2l_1fj_trg_OSSF",                       mask_2l_1fj & pass_trg & os_mask & sf_mask)
-            selections.add("2l_1fj_trg_OSSF_onZ",                   mask_2l_1fj & pass_trg & os_mask & sf_mask & onZ)
-            selections.add("2l_1fj_trg_OSSF_onZ_HFJ",               mask_2l_1fj & pass_trg & os_mask & sf_mask & onZ & mask_HFJ)
-            selections.add("2l_1fj_trg_OSSF_onZ_HFJtag",            mask_2l_1fj & pass_trg & os_mask & sf_mask & onZ & mask_HFJ & mask_HFJTagHbb)
-            selections.add("2l_1fj_trg_OSSF_onZ_HFJtag_nj2",        mask_2l_1fj & pass_trg & os_mask & sf_mask & onZ & mask_HFJ & mask_HFJTagHbb & (njets_tot>=2))
-            selections.add("2l_1fj_trg_OSSF_onZ_HFJtag_nj2_mjj600", mask_2l_1fj & pass_trg & os_mask & sf_mask & onZ & mask_HFJ & mask_HFJTagHbb & (njets_tot>=2) & (mjj_max_any>600))
+            selections.add("2l",                                quality & is_2l)
+            selections.add("2lOS",                              quality & is_2l & is_os)
+            selections.add("2lOSSF",                            quality & is_2l & is_os & is_sf)
+            selections.add("2lOSSF_1fj",                        quality & is_2l & is_os & is_sf & (nfatjets>=1))
+            selections.add("2lOSSF_1fjx",                       quality & is_2l & is_os & is_sf & (nfatjets==1))
+            selections.add("2lOSSF_1fjx_onZ",                   quality & is_2l & is_os & is_sf & (nfatjets==1) & is_onZ)
+            selections.add("2lOSSF_1fjx_onZ_HFJ",               quality & is_2l & is_os & is_sf & (nfatjets==1) & is_onZ & is_HFJ)
+            selections.add("2lOSSF_1fjx_onZ_HFJtag",            quality & is_2l & is_os & is_sf & (nfatjets==1) & is_onZ & is_HFJ & is_HFJTagHbb)
+            selections.add("2lOSSF_1fjx_onZ_HFJtag_nj2",        quality & is_2l & is_os & is_sf & (nfatjets==1) & is_onZ & is_HFJ & is_HFJTagHbb & (njets_tot>=2))
+            selections.add("2lOSSF_1fjx_onZ_HFJtag_nj2_mjj600", quality & is_2l & is_os & is_sf & (nfatjets==1) & is_onZ & is_HFJ & is_HFJTagHbb & (njets_tot>=2) & (mjj_max_any>600))
 
             ### 3l ###
-            selections.add("3l",                      mask_3lep)
-            selections.add("3l_trg",                  mask_3lep & pass_trg )
-            selections.add("3l_trg_2j_mjj600",        mask_3lep & pass_trg  & (njets_tot>=2) & (mjj_max_any>600))
-            selections.add("3l_trg_2j_mjj600_noSFOS", mask_3lep & pass_trg  & (njets_tot>=2) & (mjj_max_any>600) & (n_ll_sfos==0))
-            selections.add("3l_trg_2j_mjj600_ch3",    mask_3lep & pass_trg  & (njets_tot>=2) & (mjj_max_any>600) & (abs_ch_sum_3l==3))
+            selections.add("3l",                  quality & is_3l)
+            selections.add("3l_2j_mjj600",        quality & is_3l & (njets_tot>=2) & (mjj_max_any>600))
+            selections.add("3l_2j_mjj600_noSFOS", quality & is_3l & (njets_tot>=2) & (mjj_max_any>600) & (n_ll_sfos==0))
+            selections.add("3l_2j_mjj600_ch3",    quality & is_3l & (njets_tot>=2) & (mjj_max_any>600) & (abs_ch_sum_3l==3))
 
 
             # Keep track of the ones we want to actually fill
@@ -993,26 +996,27 @@ class AnalysisProcessor(processor.ProcessorABC):
                 "lep_chan_lst" : [
 
                     "all_events",
-                    #"filter",
-                    #"just1lep",
+                    "filter",
+                    "filter_grl",
+                    "filter_grl_trg",
 
                     ### 2l OS SF 1FJ ###
-                    "2l_1fj",
-                    "2l_1fj_trg",
-                    "2l_1fj_trg_OS",
-                    "2l_1fj_trg_OSSF",
-                    "2l_1fj_trg_OSSF_onZ",
-                    "2l_1fj_trg_OSSF_onZ_HFJ",
-                    "2l_1fj_trg_OSSF_onZ_HFJtag",
-                    "2l_1fj_trg_OSSF_onZ_HFJtag_nj2",
-                    "2l_1fj_trg_OSSF_onZ_HFJtag_nj2_mjj600",
+                    "2l",
+                    "2lOS",
+                    "2lOSSF",
+                    "2lOSSF_1fj",
+                    "2lOSSF_1fjx",
+                    "2lOSSF_1fjx_onZ",
+                    "2lOSSF_1fjx_onZ_HFJ",
+                    "2lOSSF_1fjx_onZ_HFJtag",
+                    "2lOSSF_1fjx_onZ_HFJtag_nj2",
+                    "2lOSSF_1fjx_onZ_HFJtag_nj2_mjj600",
 
                     ### 3l ###
                     "3l",
-                    "3l_trg",
-                    "3l_trg_2j_mjj600",
-                    "3l_trg_2j_mjj600_noSFOS",
-                    "3l_trg_2j_mjj600_ch3",
+                    "3l_2j_mjj600",
+                    "3l_2j_mjj600_noSFOS",
+                    "3l_2j_mjj600_ch3",
                 ]
             }
 
@@ -1065,7 +1069,6 @@ class AnalysisProcessor(processor.ProcessorABC):
 
                         # Make the cuts mask
                         cuts_lst = [sr_cat]
-                        if isData: cuts_lst.append("is_good_lumi") # Apply golden json requirements if this is data
                         all_cuts_mask = selections.all(*cuts_lst)
 
                         # Print info about the events

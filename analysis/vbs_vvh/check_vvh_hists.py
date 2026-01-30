@@ -129,26 +129,27 @@ GRP_DICT_FULL_R2 = {
 
 CAT_LST = [
     "all_events",
-    #"filter",
-    #"just1lep",
+    "filter",
+    "filter_grl",
+    "filter_grl_trg",
 
-    # 2l OS SF 1FJ
-    "2l_1fj",
-    "2l_1fj_trg",
-    "2l_1fj_trg_OS",
-    "2l_1fj_trg_OSSF",
-    "2l_1fj_trg_OSSF_onZ",
-    "2l_1fj_trg_OSSF_onZ_HFJ",
-    "2l_1fj_trg_OSSF_onZ_HFJtag",
-    "2l_1fj_trg_OSSF_onZ_HFJtag_nj2",
-    "2l_1fj_trg_OSSF_onZ_HFJtag_nj2_mjj600",
+    ### 2l OS SF 1FJ ###
+    "2l",
+    "2lOS",
+    "2lOSSF",
+    "2lOSSF_1fj",
+    "2lOSSF_1fjx",
+    "2lOSSF_1fjx_onZ",
+    "2lOSSF_1fjx_onZ_HFJ",
+    "2lOSSF_1fjx_onZ_HFJtag",
+    "2lOSSF_1fjx_onZ_HFJtag_nj2",
+    "2lOSSF_1fjx_onZ_HFJtag_nj2_mjj600",
 
-    # 3l
+    ### 3l ###
     "3l",
-    "3l_trg",
-    "3l_trg_2j_mjj600",
-    "3l_trg_2j_mjj600_noSFOS",
-    "3l_trg_2j_mjj600_ch3",
+    "3l_2j_mjj600",
+    "3l_2j_mjj600_noSFOS",
+    "3l_2j_mjj600_ch3",
 ]
 
 
@@ -433,7 +434,8 @@ def print_yields(histo_dict,grp_dict,years_to_prepend,roundat=None,print_counts=
         out_str = ""
         header = "cat name"
         for proc_name in group_lst_order:
-            header = header + f", {proc_name}"
+            #header = header + f", {proc_name}"
+            header = header + f", {proc_name}, pm, error"
         header = header + ", metric"
         out_str = out_str + header
 
@@ -444,7 +446,8 @@ def print_yields(histo_dict,grp_dict,years_to_prepend,roundat=None,print_counts=
                 if group_name == "metric": continue
                 yld, err = yld_dict[cat][group_name]
                 perr = 100*(err/yld)
-                line_str = line_str + f" , {np.round(yld,roundat)} ± {np.round(perr,2)}%"
+                #line_str = line_str + f" , {np.round(yld,roundat)} ± {np.round(perr,2)}%"
+                line_str = line_str + f" , {np.round(yld,roundat)} , ± , {np.round(err,roundat)}"
             # And also append the metric
             metric = yld_dict[cat]["metric"][0]
             line_str = line_str + f" , {np.round(metric,3)}"
