@@ -269,7 +269,8 @@ def is_loose_vvh_muo(muo):
 
 def is_tight_vvh_muo(muo):
     mask = (
-        (muo.pt > 30) &
+        #(muo.pt > 30) &
+        (muo.pt > 10) &
         (muo.pfIsoId > 4) &
         (muo.tightCharge == 2) &
         (muo.highPurity) &
@@ -294,7 +295,8 @@ def is_loose_vvh_ele(ele):
 def is_tight_vvh_ele(ele):
     ele_eta_sc = ele.eta + ele.deltaEtaSC
     mask = (
-        (ele.pt >  30) &
+        #(ele.pt >  30) &
+        (ele.pt >  10) &
         (ele.cutBased >= 4) &
         (ele.pfRelIso03_all < 0.15) &
         (ele.hoe < 0.1) &

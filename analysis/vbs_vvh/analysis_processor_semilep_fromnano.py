@@ -73,6 +73,7 @@ class AnalysisProcessor(processor.ProcessorABC):
             "njets_tot"   : axis.Regular(8, 0, 8, name="njets_tot",   label="Jet multiplicity (central and forward)"),
 
             "n_ll_sfos"   : axis.Regular(5, 0, 5, name="n_ll_sfos",   label="Number of SF OS lepton pairs"),
+            "abs_ch_sum_3l" : axis.Regular(4, 0, 4, name="abs_ch_sum_3l",   label="Abs sum of charges of the 3l"),
 
             "fj0_pt"  : axis.Regular(180, 0, 2000, name="fj0_pt", label="fj0 pt"),
             "fj0_mass"  : axis.Regular(180, 0, 250, name="fj0_mass", label="fj0 mass"),
@@ -339,6 +340,7 @@ class AnalysisProcessor(processor.ProcessorABC):
         l1 = l_vvh_t_padded[:,1]
         l2 = l_vvh_t_padded[:,2]
         nleps = ak.num(l_vvh_t)
+        abs_ch_sum_3l = abs(l0.charge + l1.charge + l2.charge)
 
 
         ######### Normalization and weights ###########
@@ -940,6 +942,7 @@ class AnalysisProcessor(processor.ProcessorABC):
                 #"gvectorboson0_pt" : gvectorboson0.pt,
 
                 "n_ll_sfos": n_ll_sfos,
+                "abs_ch_sum_3l": abs_ch_sum_3l,
 
             }
 
@@ -960,10 +963,14 @@ class AnalysisProcessor(processor.ProcessorABC):
             ss_mask = l0.pdgId*l1.pdgId>0
             sf_mask = abs(l0.pdgId) == abs(l1.pdgId)
             of_mask = abs(l0.pdgId) != abs(l1.pdgId)
-            mask_exactly1lep   = veto_map_mask & filter_mask & (nleps==1)
-            mask_exactly2lepSS = veto_map_mask & filter_mask & (nleps==2) & ss_mask
-            mask_exactly2lepOS = veto_map_mask & filter_mask & (nleps==2) & os_mask
-            mask_exactly2lepOSSF = veto_map_mask & filter_mask & (nleps==2) & os_mask & sf_mask
+
+            is_3l_pt = (l0.pt>25) & (l1.pt>15) & (l2.pt>10)
+            is_2l_pt = (l0.pt>25) & (l1.pt>15)
+
+            mask_exactly1lep   = veto_map_mask & filter_mask & (nleps==1) & is_2l_pt
+            mask_exactly2lepSS = veto_map_mask & filter_mask & (nleps==2) & ss_mask & is_2l_pt
+            mask_exactly2lepOS = veto_map_mask & filter_mask & (nleps==2) & os_mask & is_2l_pt
+            mask_exactly2lepOSSF = veto_map_mask & filter_mask & (nleps==2) & os_mask & sf_mask & is_2l_pt
 
             mask_exactly1lep_exactly1fj     = mask_exactly1lep     & (nfatjets==1)
             mask_exactly1lep_exactly2fj     = mask_exactly1lep     & (nfatjets==2)
@@ -971,7 +978,7 @@ class AnalysisProcessor(processor.ProcessorABC):
             mask_exactly2lepOS_exactly1fj   = mask_exactly2lepOS   & (nfatjets==1)
             mask_exactly2lepOSSF_exactly1fj = mask_exactly2lepOSSF & (nfatjets==1)
 
-            mask_exactly3lep   = veto_map_mask & filter_mask & (nleps==3)
+            mask_exactly3lep = veto_map_mask & filter_mask & (nleps==3) & is_3l_pt
 
             mask_VFJ  = (fj0_mparticlenet <= 100.) & (fj0_mparticlenet > 65)
             mask_HFJ  = (fj0_mparticlenet >  110.) & (fj0_mparticlenet <= 150.)
@@ -1030,6 +1037,7 @@ class AnalysisProcessor(processor.ProcessorABC):
             selections.add("exactly3lep", mask_exactly3lep)
             selections.add("exactly3lep_2j_mjj600", mask_exactly3lep & (njets_tot>=2) & (mjj_max_any>600))
             selections.add("exactly3lep_2j_mjj600_noSFOS", mask_exactly3lep & (njets_tot>=2) & (mjj_max_any>600) & (n_ll_sfos==0))
+            selections.add("exactly3lep_2j_mjj600_ch3", mask_exactly3lep & (njets_tot>=2) & (mjj_max_any>600) & (abs_ch_sum_3l==3))
 
 
             cat_dict = {
@@ -1081,6 +1089,7 @@ class AnalysisProcessor(processor.ProcessorABC):
                     "exactly3lep",
                     "exactly3lep_2j_mjj600",
                     "exactly3lep_2j_mjj600_noSFOS",
+                    "exactly3lep_2j_mjj600_ch3",
                 ]
             }
 
