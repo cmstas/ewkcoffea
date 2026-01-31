@@ -653,7 +653,25 @@ class AnalysisProcessor(processor.ProcessorABC):
             if not (is2022 or is2023):
                 # Era not used for R2
                 era_for_trg_check = None
-            pass_trg = es_tc.trg_pass_no_overlap(events,isData,dataset,str(year),dataset_dict=es_ec.dataset_dict,exclude_dict=es_ec.exclude_dict,era=era_for_trg_check)
+
+            # Add single lepton triggers to the WWZ trigger list (just use the ones from Tab 5 of HWW channel)
+            # Not a good implementation, but this will be in RDF in the end, so it's ok for now
+            dataset_dict = copy.deepcopy(es_ec.dataset_dict)
+            exclude_dict = copy.deepcopy(es_ec.exclude_dict)
+            dataset_dict["2016"]["SingleElectron"] = ["Ele32_WPTight_Gsf"]
+            dataset_dict["2016"]["SingleMuon"]     = ["IsoMu24"]
+            dataset_dict["2017"]["SingleElectron"] = ["Ele32_WPTight_Gsf_L1DoubleEG"]
+            dataset_dict["2017"]["SingleMuon"]     = ["IsoMu27"]
+            dataset_dict["2018"]["SingleElectron"] = ["Ele32_WPTight_Gsf"]
+            dataset_dict["2018"]["SingleMuon"]     = ["IsoMu24"]
+            exclude_dict["2016"]["SingleMuon"]     = dataset_dict["2016"]["DoubleMuon"] + dataset_dict["2016"]["DoubleEG"] + dataset_dict["2016"]["MuonEG"],
+            exclude_dict["2016"]["SingleElectron"] = dataset_dict["2016"]["DoubleMuon"] + dataset_dict["2016"]["DoubleEG"] + dataset_dict["2016"]["MuonEG"] + dataset_dict["2016"]["SingleMuon"],
+            exclude_dict["2017"]["SingleMuon"]     = dataset_dict["2017"]["DoubleMuon"] + dataset_dict["2017"]["DoubleEG"] + dataset_dict["2017"]["MuonEG"],
+            exclude_dict["2017"]["SingleElectron"] = dataset_dict["2017"]["DoubleMuon"] + dataset_dict["2017"]["DoubleEG"] + dataset_dict["2017"]["MuonEG"] + dataset_dict["2017"]["SingleMuon"],
+            exclude_dict["2018"]["SingleMuon"]     = dataset_dict["2018"]["DoubleMuon"] + dataset_dict["2018"]["EGamma"]   + dataset_dict["2018"]["MuonEG"],
+            exclude_dict["2018"]["SingleElectron"] = dataset_dict["2018"]["DoubleMuon"] + dataset_dict["2018"]["EGamma"]   + dataset_dict["2018"]["MuonEG"] + dataset_dict["2018"]["SingleMuon"],
+
+            pass_trg = es_tc.trg_pass_no_overlap(events,isData,dataset,str(year),dataset_dict=dataset_dict,exclude_dict=exclude_dict,era=era_for_trg_check)
             #pass_trg = (pass_trg & es_ec.trg_matching(events,year))
 
             # b jet masks
