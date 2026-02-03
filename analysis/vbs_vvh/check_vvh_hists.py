@@ -29,6 +29,137 @@ GRP_DICT_FULL_R3 = {
 }
 
 GRP_DICT_FULL_R2 = {
+    "Signal" : [
+        "VBSWWH_OS_VBSCuts_13TeV",
+        "VBSWWH_SS_VBSCuts_13TeV",
+        "VBSWZH_VBSCuts_13TeV",
+        "VBSZZH_VBSCuts_13TeV",
+    ],
+    "QCD" : [
+        "QCD_HT50to100_TuneCP5_PSWeights_13TeV",
+        "QCD_HT100to200_TuneCP5_PSWeights_13TeV",
+        "QCD_HT200to300_TuneCP5_PSWeights_13TeV",
+        "QCD_HT300to500_TuneCP5_PSWeights_13TeV",
+        "QCD_HT500to700_TuneCP5_PSWeights_13TeV",
+        "QCD_HT700to1000_TuneCP5_PSWeights_13TeV",
+        "QCD_HT1000to1500_TuneCP5_PSWeights_13TeV",
+        "QCD_HT1500to2000_TuneCP5_PSWeights_13TeV",
+        "QCD_HT2000toInf_TuneCP5_PSWeights_13TeV",
+    ],
+    "ttbar" : [
+        "TTToHadronic_TuneCP5_13TeV",
+        "TTToSemiLeptonic_TuneCP5_13TeV",
+        "TTTo2L2Nu_TuneCP5_13TeV",
+    ],
+    "single-t" : [
+        "ST_tW_antitop_5f_inclusiveDecays_TuneCP5_13TeV",
+        "ST_tW_top_5f_inclusiveDecays_TuneCP5_13TeV",
+        "ST_s-channel_4f_leptonDecays_TuneCP5_13TeV",
+        "ST_t-channel_top_4f_InclusiveDecays_TuneCP5_13TeV",
+        "ST_t-channel_antitop_4f_InclusiveDecays_TuneCP5_13TeV",
+        "tZq_ll_4f_ckm_NLO_TuneCP5_13TeV",
+        "TWZToLL_tlept_Wlept_5f_DR_TuneCP5_13TeV",
+    ],
+    "ttX" : [
+        #"TTbb_4f_TTToSemiLeptonic", # Not sure
+        #"TTbb_4f_TTToHadronic", # Not sure
+        #"TTbb_4f_TTTo2L2Nu", # Not sure
+        "ttZJets_TuneCP5_13TeV",
+        "TTZToLLNuNu_M-10_TuneCP5_13TeV",
+        "TTWJetsToLNu_TuneCP5_13TeV",
+        "TTWJetsToQQ_TuneCP5_13TeV",
+        "ttWJets_TuneCP5_13TeV",
+        "ttHTobb_M125_TuneCP5_13TeV",
+        "ttHToNonbb_M125_TuneCP5_13TeV",
+        "TTWZ_TuneCP5_13TeV",
+        "TTWW_TuneCP5_13TeV",
+    ],
+    "Vjets" : [
+        "EWKZ2Jets_ZToLL_M-50_TuneCP5_withDipoleRecoil_13TeV",
+        "EWKZ2Jets_ZToQQ_dipoleRecoilOn_TuneCP5_13TeV",
+        "EWKZ2Jets_ZToNuNu_M-50_TuneCP5_withDipoleRecoil_13TeV",
+        "EWKWMinus2Jets_WToLNu_M-50_TuneCP5_withDipoleRecoil_13TeV",
+        "EWKWminus2Jets_WToQQ_dipoleRecoilOn_TuneCP5_13TeV",
+        "EWKWplus2Jets_WToQQ_dipoleRecoilOn_TuneCP5_13TeV",
+        "EWKWPlus2Jets_WToLNu_M-50_TuneCP5_withDipoleRecoil_13TeV",
+        "WJetsToQQ_HT-200to400_TuneCP5_13TeV",
+        "WJetsToQQ_HT-400to600_TuneCP5_13TeV",
+        "WJetsToQQ_HT-600to800_TuneCP5_13TeV",
+        "WJetsToQQ_HT-800toInf_TuneCP5_13TeV",
+        "WJetsToLNu_TuneCP5_13TeV",
+        "WJetsToLNu_HT-70To100_TuneCP5_13TeV",
+        "WJetsToLNu_HT-100To200_TuneCP5_13TeV",
+        "WJetsToLNu_HT-200To400_TuneCP5_13TeV",
+        "WJetsToLNu_HT-400To600_TuneCP5_13TeV",
+        "WJetsToLNu_HT-600To800_TuneCP5_13TeV",
+        "WJetsToLNu_HT-800To1200_TuneCP5_13TeV",
+        "WJetsToLNu_HT-1200To2500_TuneCP5_13TeV",
+        "WJetsToLNu_HT-2500ToInf_TuneCP5_13TeV",
+        "ZJetsToQQ_HT-200to400_TuneCP5_13TeV",
+        "ZJetsToQQ_HT-400to600_TuneCP5_13TeV",
+        "ZJetsToQQ_HT-600to800_TuneCP5_13TeV",
+        "ZJetsToQQ_HT-800toInf_TuneCP5_13TeV",
+    ],
+    "VV" : [
+        "ZZTo4Q_5f_TuneCP5_13TeV",
+        "ZZTo2Q2L_mllmin4p0_TuneCP5_13TeV",
+        "ZZJJTo4L_TuneCP5_13TeV",
+        "GluGluToContinToZZTo2e2tau_TuneCP5_13TeV",
+        "GluGluToContinToZZTo4tau_TuneCP5_13TeV",
+        "GluGluToContinToZZTo2mu2tau_TuneCP5_13TeV",
+        "GluGluToContinToZZTo4mu_TuneCP5_13TeV",
+        "GluGluToContinToZZTo2e2mu_TuneCP5_13TeV",
+        "GluGluToContinToZZTo4e_TuneCP5_13TeV",
+        "WWJJToLNuLNu_EWK_noTop_TuneCP5_13TeV",
+        "WW_TuneCP5_13TeV",
+        "WWTo2L2Nu_TuneCP5_13TeV",
+        "WWTo1L1Nu2Q_4f_TuneCP5_13TeV",
+        "WWTo4Q_4f_TuneCP5_13TeV",
+        "WZ_TuneCP5_13TeV",
+        "WZTo1L3Nu_4f_TuneCP5_13TeV",
+        "WZTo3LNu_TuneCP5_13TeV",
+        "WZTo2Q2L_mllmin4p0_TuneCP5_13TeV",
+        "WZTo1L1Nu2Q_4f_TuneCP5_13TeV",
+        "WZJJ_EWK_InclusivePolarization_TuneCP5_13TeV",
+        "ZZ_TuneCP5_13TeV",
+        "ZZTo4L_M-1toInf_TuneCP5_13TeV",
+        "ZZTo2L2Nu_TuneCP5_13TeV",
+        #"ZZTo2Nu2Q_5f_TuneCP5_13TeV", # Weirdly crashes the processor
+        "SSWW",
+        "GluGluHToZZTo4L",
+    ],
+    "VH" : [
+        "ZH_HToBB_ZToBB_M-125_TuneCP5_13TeV",
+        "ZH_HToBB_ZToQQ_M-125_TuneCP5_13TeV",
+        "ZH_HToBB_ZToNuNu_M-125_TuneCP5_13TeV",
+        "ZH_HToBB_ZToLL_M-125_TuneCP5_13TeV",
+        "ggZH_HToBB_ZToBB_M-125_TuneCP5_13TeV",
+        "ggZH_HToBB_ZToQQ_M-125_TuneCP5_13TeV",
+        "ggZH_HToBB_ZToLL_M-125_TuneCP5_13TeV",
+        "ggZH_HToBB_ZToNuNu_M-125_TuneCP5_13TeV",
+        "GluGluZH_HToWWTo2L2Nu_M-125_TuneCP5_13TeV",
+        "HZJ_HToWWTo2L2Nu_ZTo2L_M-125_TuneCP5_13TeV",
+        "VHToNonbb_M125_TuneCP5_13TeV",
+        "WminusH_HToBB_WToLNu_M-125_TuneCP5_13TeV",
+        #"WminusH_HToBB_WToQQ_M-125_TuneCP5_13TeV", # Missing UL16APV
+        #"WplusH_HToBB_WToQQ_M-125_TuneCP5_13TeV", # Missing UL16APV
+        "WplusH_HToBB_WToLNu_M-125_TuneCP5_13TeV",
+        "VBFWH_HToBB_WToLNu_M-125_dipoleRecoilOn_TuneCP5_13TeV",
+    ],
+    "VVV" : [
+        "ZZZ_TuneCP5_13TeV",
+        "WZZ_TuneCP5_13TeV",
+        "WWZ_4F_TuneCP5_13TeV",
+        "WWW_4F_TuneCP5_13TeV",
+    ],
+    "DY" : [
+        "DYJetsToLL_M-10to50_TuneCP5_13TeV",
+        "DYJetsToLL_M-50_TuneCP5_13TeV",
+    ],
+
+}
+
+_GRP_DICT_FULL_R2 = {
 
     "Signal" : [
         # Naming in Run 2 legacy samples
@@ -46,7 +177,6 @@ GRP_DICT_FULL_R2 = {
     #"WWH_SS" : ["VBSWWH_SS_VBSCuts_13TeV"],
     #"WZH" : ["VBSWZH_VBSCuts_13TeV"],
     #"ZZH" : ["VBSZZH_VBSCuts_13TeV"],
-
     "QCD" : [
         "QCD_HT1000to1500",
         "QCD_HT100to200",
@@ -58,65 +188,53 @@ GRP_DICT_FULL_R2 = {
         "QCD_HT50to100", # Has a spike
         "QCD_HT700to1000",
     ],
-
     "ttbar" : [
         "TTToHadronic",
         "TTToSemiLeptonic",
     ],
-
     "single-t" : [
         "ST_t-channel_antitop_4f",
         "ST_t-channel_top_4f",
         "ST_tW_antitop_5f",
         "ST_tW_top_5f",
     ],
-
     "ttX" : [
         "ttHTobb_M125",
         "ttHToNonbb_M125",
-
         "TTWJetsToQQ",
         "TTWW",
         "TTWZ",
-
     ],
-
     "Vjets" : [
         "ZJetsToQQ_HT-200to400",
         "ZJetsToQQ_HT-400to600",
         "ZJetsToQQ_HT-600to800",
         "ZJetsToQQ_HT-800toInf",
-
         "WJetsToQQ_HT-200to400",
         "WJetsToQQ_HT-400to600",
         "WJetsToQQ_HT-600to800",
         "WJetsToQQ_HT-800toInf",
-
         "EWKWminus2Jets_WToQQ_dipoleRecoilOn",
         "EWKWplus2Jets_WToQQ_dipoleRecoilOn",
         "EWKZ2Jets_ZToLL_M-50",
         "EWKZ2Jets_ZToNuNu_M-50",
         "EWKZ2Jets_ZToQQ_dipoleRecoilOn",
     ],
-
     "VV" : [
         "WWTo1L1Nu2Q",
         "WWTo4Q",
         "WZJJ_EWK_InclusivePolarization",
         "WZTo1L1Nu2Q",
         "WZTo2Q2L",
-
         "ZZTo2Nu2Q",
         "ZZTo2Q2L",
         "ZZTo4Q",
     ],
-
     "VH" : [
         "ZH_HToBB_ZToQQ_M-125",
         "WminusH_HToBB_WToLNu_M-125",
         "WplusH_HToBB_WToLNu_M-125",
     ],
-
     "VVV" : [
         "WWW_4F",
         "WWZ_4F",
@@ -132,24 +250,27 @@ CAT_LST = [
     "filter",
     "filter_grl",
     "filter_grl_trg",
+    #"just2lep",
+    #"just3lep",
 
-    ### 2l OS SF 1FJ ###
-    "2l",
-    "2lOS",
-    "2lOSSF",
-    "2lOSSF_1fj",
-    "2lOSSF_1fjx",
-    "2lOSSF_1fjx_onZ",
-    "2lOSSF_1fjx_onZ_HFJ",
-    "2lOSSF_1fjx_onZ_HFJtag",
-    "2lOSSF_1fjx_onZ_HFJtag_nj2",
-    "2lOSSF_1fjx_onZ_HFJtag_nj2_mjj600",
+    #### 2l OS SF 1FJ ###
+    #"2l",
+    #"2lOS",
+    #"2lOSSF",
+    #"2lOSSF_1fj",
+    #"2lOSSF_1fjx",
+    #"2lOSSF_1fjx_onZ",
+    #"2lOSSF_1fjx_onZ_HFJ",
+    #"2lOSSF_1fjx_onZ_HFJtag",
+    #"2lOSSF_1fjx_onZ_HFJtag_nj2",
+    #"2lOSSF_1fjx_onZ_HFJtag_nj2_mjj600",
 
     ### 3l ###
     "3l",
     "3l_2j_mjj600",
-    "3l_2j_mjj600_noSFOS",
-    "3l_2j_mjj600_ch3",
+    "3l_2j_mjj600_ht350"
+    #"3l_2j_mjj600_noSFOS",
+    #"3l_2j_mjj600_ch3",
 ]
 
 
@@ -407,7 +528,8 @@ def print_yields(histo_dict,grp_dict,years_to_prepend,roundat=None,print_counts=
     counts_dict = get_yields_per_cat(histo_dict,"njets_counts",grp_dict,years_to_prepend)
     #yld_dict = counts_dict
 
-    group_lst_order = ['Signal', 'Background', 'ttbar', 'VV', 'Vjets', 'QCD', 'single-t', 'ttX', 'VH', 'VVV']
+    group_lst_order = ['Signal', 'Background', 'QCD', 'ttbar', 'single-t', 'ttX', 'Vjets', 'VV', 'VH', 'VVV', 'DY']
+    #group_lst_order = ['Signal', 'Background', 'ttbar', 'VV', 'Vjets', 'QCD', 'single-t', 'ttX', 'VH', 'VVV']
     #group_lst_order = ['WWH_OS', 'WWH_SS', 'WZH', 'ZZH', 'Background', 'ttbar', 'VV', 'Vjets', 'QCD', 'single-t', 'ttX', 'VH', 'VVV']
 
     # Print to screen
@@ -542,7 +664,7 @@ def main():
 
     # Print total raw events
     tot_raw = sum(sum(histo_dict["njets_counts"][{"systematic":"nominal", "category":"all_events"}].values(flow=True)))
-    print("Tot raw events:",tot_raw)
+    #print("Tot raw events:",tot_raw)
     #print(histo_dict["njets"])
     #exit()
 
