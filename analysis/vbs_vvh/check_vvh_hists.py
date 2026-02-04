@@ -57,8 +57,6 @@ GRP_DICT_FULL_R2 = {
         "ST_s-channel_4f_leptonDecays_TuneCP5_13TeV",
         "ST_t-channel_top_4f_InclusiveDecays_TuneCP5_13TeV",
         "ST_t-channel_antitop_4f_InclusiveDecays_TuneCP5_13TeV",
-        "tZq_ll_4f_ckm_NLO_TuneCP5_13TeV",
-        "TWZToLL_tlept_Wlept_5f_DR_TuneCP5_13TeV",
     ],
     "ttX" : [
         #"TTbb_4f_TTToSemiLeptonic", # Not sure
@@ -71,17 +69,14 @@ GRP_DICT_FULL_R2 = {
         "ttWJets_TuneCP5_13TeV",
         "ttHTobb_M125_TuneCP5_13TeV",
         "ttHToNonbb_M125_TuneCP5_13TeV",
+    ],
+    "rare-top" : [
         "TTWZ_TuneCP5_13TeV",
         "TTWW_TuneCP5_13TeV",
+        "tZq_ll_4f_ckm_NLO_TuneCP5_13TeV",
+        "TWZToLL_tlept_Wlept_5f_DR_TuneCP5_13TeV",
     ],
     "Vjets" : [
-        "EWKZ2Jets_ZToLL_M-50_TuneCP5_withDipoleRecoil_13TeV",
-        "EWKZ2Jets_ZToQQ_dipoleRecoilOn_TuneCP5_13TeV",
-        "EWKZ2Jets_ZToNuNu_M-50_TuneCP5_withDipoleRecoil_13TeV",
-        "EWKWMinus2Jets_WToLNu_M-50_TuneCP5_withDipoleRecoil_13TeV",
-        "EWKWminus2Jets_WToQQ_dipoleRecoilOn_TuneCP5_13TeV",
-        "EWKWplus2Jets_WToQQ_dipoleRecoilOn_TuneCP5_13TeV",
-        "EWKWPlus2Jets_WToLNu_M-50_TuneCP5_withDipoleRecoil_13TeV",
         "WJetsToQQ_HT-200to400_TuneCP5_13TeV",
         "WJetsToQQ_HT-400to600_TuneCP5_13TeV",
         "WJetsToQQ_HT-600to800_TuneCP5_13TeV",
@@ -99,6 +94,17 @@ GRP_DICT_FULL_R2 = {
         "ZJetsToQQ_HT-400to600_TuneCP5_13TeV",
         "ZJetsToQQ_HT-600to800_TuneCP5_13TeV",
         "ZJetsToQQ_HT-800toInf_TuneCP5_13TeV",
+        "DYJetsToLL_M-10to50_TuneCP5_13TeV",
+        "DYJetsToLL_M-50_TuneCP5_13TeV",
+    ],
+    "ewkV" : [
+        "EWKZ2Jets_ZToLL_M-50_TuneCP5_withDipoleRecoil_13TeV",
+        "EWKZ2Jets_ZToQQ_dipoleRecoilOn_TuneCP5_13TeV",
+        "EWKZ2Jets_ZToNuNu_M-50_TuneCP5_withDipoleRecoil_13TeV",
+        "EWKWMinus2Jets_WToLNu_M-50_TuneCP5_withDipoleRecoil_13TeV",
+        "EWKWminus2Jets_WToQQ_dipoleRecoilOn_TuneCP5_13TeV",
+        "EWKWplus2Jets_WToQQ_dipoleRecoilOn_TuneCP5_13TeV",
+        "EWKWPlus2Jets_WToLNu_M-50_TuneCP5_withDipoleRecoil_13TeV",
     ],
     "VV" : [
         "ZZTo4Q_5f_TuneCP5_13TeV",
@@ -110,7 +116,6 @@ GRP_DICT_FULL_R2 = {
         "GluGluToContinToZZTo4mu_TuneCP5_13TeV",
         "GluGluToContinToZZTo2e2mu_TuneCP5_13TeV",
         "GluGluToContinToZZTo4e_TuneCP5_13TeV",
-        "WWJJToLNuLNu_EWK_noTop_TuneCP5_13TeV",
         "WW_TuneCP5_13TeV",
         "WWTo2L2Nu_TuneCP5_13TeV",
         "WWTo1L1Nu2Q_4f_TuneCP5_13TeV",
@@ -120,13 +125,16 @@ GRP_DICT_FULL_R2 = {
         "WZTo3LNu_TuneCP5_13TeV",
         "WZTo2Q2L_mllmin4p0_TuneCP5_13TeV",
         "WZTo1L1Nu2Q_4f_TuneCP5_13TeV",
-        "WZJJ_EWK_InclusivePolarization_TuneCP5_13TeV",
         "ZZ_TuneCP5_13TeV",
         "ZZTo4L_M-1toInf_TuneCP5_13TeV",
         "ZZTo2L2Nu_TuneCP5_13TeV",
         #"ZZTo2Nu2Q_5f_TuneCP5_13TeV", # Weirdly crashes the processor
-        "SSWW",
         "GluGluHToZZTo4L",
+    ],
+    "ewkVV" : [
+        "SSWW",
+        "WZJJ_EWK_InclusivePolarization_TuneCP5_13TeV",
+        "WWJJToLNuLNu_EWK_noTop_TuneCP5_13TeV",
     ],
     "VH" : [
         "ZH_HToBB_ZToBB_M-125_TuneCP5_13TeV",
@@ -151,10 +159,6 @@ GRP_DICT_FULL_R2 = {
         "WZZ_TuneCP5_13TeV",
         "WWZ_4F_TuneCP5_13TeV",
         "WWW_4F_TuneCP5_13TeV",
-    ],
-    "DY" : [
-        "DYJetsToLL_M-10to50_TuneCP5_13TeV",
-        "DYJetsToLL_M-50_TuneCP5_13TeV",
     ],
 
 }
@@ -528,7 +532,7 @@ def print_yields(histo_dict,grp_dict,years_to_prepend,roundat=None,print_counts=
     counts_dict = get_yields_per_cat(histo_dict,"njets_counts",grp_dict,years_to_prepend)
     #yld_dict = counts_dict
 
-    group_lst_order = ['Signal', 'Background', 'QCD', 'ttbar', 'single-t', 'ttX', 'Vjets', 'VV', 'VH', 'VVV', 'DY']
+    group_lst_order = ['Signal', 'Background', 'QCD', 'ttbar', 'single-t', 'rare-top', 'ttX', 'Vjets', 'VV', 'ewkV', 'ewkVV', 'VH', 'VVV']
     #group_lst_order = ['Signal', 'Background', 'ttbar', 'VV', 'Vjets', 'QCD', 'single-t', 'ttX', 'VH', 'VVV']
     #group_lst_order = ['WWH_OS', 'WWH_SS', 'WZH', 'ZZH', 'Background', 'ttbar', 'VV', 'Vjets', 'QCD', 'single-t', 'ttX', 'VH', 'VVV']
 
