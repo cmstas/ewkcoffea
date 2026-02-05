@@ -228,9 +228,6 @@ class AnalysisProcessor(processor.ProcessorABC):
         xsec               = self._samples[json_name]["xsec"]
         sow                = self._samples[json_name]["nSumOfWeights"]
 
-        # For now, exit if this is data, not ready for it yet
-        if isData: raise Exception("Not ready to run on data. E.g., golden json for 2024 is using a standin")
-
         # Set a flag for Run3 years
         is2022 = year in ["2022","2022EE"]
         is2023 = year in ["2023","2023BPix"]
@@ -246,16 +243,19 @@ class AnalysisProcessor(processor.ProcessorABC):
 
         # Era Needed for all samples
         if isData:
-            era = self._samples[json_name]["era"]
+            #era = self._samples[json_name]["era"]
+            era = None
         else:
             era = None
 
 
         # Get the dataset name (used for duplicate removal) and check to make sure it is an expected name
         # Get name for MC cases too, since "dataset" is passed to overlap removal function in all cases (though it's not actually used in the MC case)
-        dataset = json_name.split('_')[0]
+        #dataset = json_name.split('_')[0]
+        dataset = json_name.split('_')[1]
         if isData:
-            datasets = ["SingleElectron", "EGamma", "MuonEG", "DoubleMuon", "DoubleElectron", "DoubleEG","Muon"]
+            #datasets = ["SingleElectron", "EGamma", "MuonEG", "DoubleMuon", "DoubleElectron", "DoubleEG","Muon"]
+            datasets = ["SingleElectron", "EGamma", "MuonEG", "DoubleMuon", "DoubleElectron", "DoubleEG","Muon", "SingleMuon"]
             if dataset not in datasets:
                 raise Exception(f"ERROR: Unexpected dataset name for data file: {dataset}")
 
@@ -359,11 +359,12 @@ class AnalysisProcessor(processor.ProcessorABC):
         # Note: Here we will to the weights object the SFs that do not depend on any of the forthcoming loops
         weights_obj_base = coffea.analysis_tools.Weights(len(events),storeIndividual=True)
         if not isData:
-            if ak.any(events["LHEReweightingWeight"]) and self._rwgt_to_sm:
-                # Note this assumes 60 is the SM point
-                genw = events["LHEReweightingWeight"][:,60]
-            else:
-                genw = events["genWeight"]
+            #if ak.any(events["LHEReweightingWeight"]) and self._rwgt_to_sm:
+            #    # Note this assumes 60 is the SM point
+            #    genw = events["LHEReweightingWeight"][:,60]
+            #else:
+            #    genw = events["genWeight"]
+            genw = events["genWeight"]
 
             # If it's an EFT sample, just take SM piece
             sm_wgt = 1.0
@@ -664,12 +665,12 @@ class AnalysisProcessor(processor.ProcessorABC):
             dataset_dict["2017"]["SingleMuon"]     = ["IsoMu27"]
             dataset_dict["2018"]["SingleElectron"] = ["Ele32_WPTight_Gsf"]
             dataset_dict["2018"]["SingleMuon"]     = ["IsoMu24"]
-            exclude_dict["2016"]["SingleMuon"]     = dataset_dict["2016"]["DoubleMuon"] + dataset_dict["2016"]["DoubleEG"] + dataset_dict["2016"]["MuonEG"],
-            exclude_dict["2016"]["SingleElectron"] = dataset_dict["2016"]["DoubleMuon"] + dataset_dict["2016"]["DoubleEG"] + dataset_dict["2016"]["MuonEG"] + dataset_dict["2016"]["SingleMuon"],
-            exclude_dict["2017"]["SingleMuon"]     = dataset_dict["2017"]["DoubleMuon"] + dataset_dict["2017"]["DoubleEG"] + dataset_dict["2017"]["MuonEG"],
-            exclude_dict["2017"]["SingleElectron"] = dataset_dict["2017"]["DoubleMuon"] + dataset_dict["2017"]["DoubleEG"] + dataset_dict["2017"]["MuonEG"] + dataset_dict["2017"]["SingleMuon"],
-            exclude_dict["2018"]["SingleMuon"]     = dataset_dict["2018"]["DoubleMuon"] + dataset_dict["2018"]["EGamma"]   + dataset_dict["2018"]["MuonEG"],
-            exclude_dict["2018"]["SingleElectron"] = dataset_dict["2018"]["DoubleMuon"] + dataset_dict["2018"]["EGamma"]   + dataset_dict["2018"]["MuonEG"] + dataset_dict["2018"]["SingleMuon"],
+            exclude_dict["2016"]["SingleMuon"]     = dataset_dict["2016"]["DoubleMuon"] + dataset_dict["2016"]["DoubleEG"] + dataset_dict["2016"]["MuonEG"]
+            exclude_dict["2016"]["SingleElectron"] = dataset_dict["2016"]["DoubleMuon"] + dataset_dict["2016"]["DoubleEG"] + dataset_dict["2016"]["MuonEG"] + dataset_dict["2016"]["SingleMuon"]
+            exclude_dict["2017"]["SingleMuon"]     = dataset_dict["2017"]["DoubleMuon"] + dataset_dict["2017"]["DoubleEG"] + dataset_dict["2017"]["MuonEG"]
+            exclude_dict["2017"]["SingleElectron"] = dataset_dict["2017"]["DoubleMuon"] + dataset_dict["2017"]["DoubleEG"] + dataset_dict["2017"]["MuonEG"] + dataset_dict["2017"]["SingleMuon"]
+            exclude_dict["2018"]["SingleMuon"]     = dataset_dict["2018"]["DoubleMuon"] + dataset_dict["2018"]["EGamma"]   + dataset_dict["2018"]["MuonEG"]
+            exclude_dict["2018"]["SingleElectron"] = dataset_dict["2018"]["DoubleMuon"] + dataset_dict["2018"]["EGamma"]   + dataset_dict["2018"]["MuonEG"] + dataset_dict["2018"]["SingleMuon"]
 
             pass_trg = es_tc.trg_pass_no_overlap(events,isData,dataset,str(year),dataset_dict=dataset_dict,exclude_dict=exclude_dict,era=era_for_trg_check)
             #pass_trg = (pass_trg & es_ec.trg_matching(events,year))
@@ -986,6 +987,8 @@ class AnalysisProcessor(processor.ProcessorABC):
             quality = filter_mask & lumi_mask & pass_trg # This is what we'll actually apply to the SRs
             # Cut flow for quality mask
             selections.add("all_events",     pass_through) # Just a pass through
+            selections.add("just2lep",       (nleps==2))
+            selections.add("just3lep",       (nleps==3))
             selections.add("filter",         filter_mask)
             selections.add("filter_grl",     filter_mask & lumi_mask)
             selections.add("filter_grl_trg", filter_mask & lumi_mask & pass_trg)
@@ -1005,6 +1008,7 @@ class AnalysisProcessor(processor.ProcessorABC):
             ### 3l ###
             selections.add("3l",                  quality & is_3l)
             selections.add("3l_2j_mjj600",        quality & is_3l & (njets_tot>=2) & (mjj_max_any>600))
+            selections.add("3l_2j_mjj600_ht350",  quality & is_3l & (njets_tot>=2) & (mjj_max_any>600) & (scalarptsum_lepmetalljets>350))
             selections.add("3l_2j_mjj600_noSFOS", quality & is_3l & (njets_tot>=2) & (mjj_max_any>600) & (n_ll_sfos==0))
             selections.add("3l_2j_mjj600_ch3",    quality & is_3l & (njets_tot>=2) & (mjj_max_any>600) & (abs_ch_sum_3l==3))
 
@@ -1017,6 +1021,8 @@ class AnalysisProcessor(processor.ProcessorABC):
                     "filter",
                     "filter_grl",
                     "filter_grl_trg",
+                    "just2lep",
+                    "just3lep",
 
                     ### 2l OS SF 1FJ ###
                     "2l",
@@ -1033,6 +1039,7 @@ class AnalysisProcessor(processor.ProcessorABC):
                     ### 3l ###
                     "3l",
                     "3l_2j_mjj600",
+                    "3l_2j_mjj600_ht350",
                     "3l_2j_mjj600_noSFOS",
                     "3l_2j_mjj600_ch3",
                 ]

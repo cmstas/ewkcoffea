@@ -29,6 +29,99 @@ dataset_lst_sig_r2_newMG = [
     "VBSZZH_VBSCuts_13TeV_TuneCP5_RunIISummer20UL18_NANOGEN",
 ]
 
+################################# Data #################################
+
+# Data skim 3l (Feb 2, 2026)
+# /ceph/cms/store/user/mdittric/skim/nanoaodv9_data_3LepRun2_02Feb2026/
+dataset_lst_data_r2_3lep = [
+    "DoubleEG_Run2016B-ver1_HIPM_UL2016_MiniAODv2_NanoAODv9-v2_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "DoubleEG_Run2016B-ver2_HIPM_UL2016_MiniAODv2_NanoAODv9-v3_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "DoubleEG_Run2016C-HIPM_UL2016_MiniAODv2_NanoAODv9-v2_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "DoubleEG_Run2016D-HIPM_UL2016_MiniAODv2_NanoAODv9-v2_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "DoubleEG_Run2016E-HIPM_UL2016_MiniAODv2_NanoAODv9-v2_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "DoubleEG_Run2016F-HIPM_UL2016_MiniAODv2_NanoAODv9-v2_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "DoubleEG_Run2016F-UL2016_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "DoubleEG_Run2016G-UL2016_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "DoubleEG_Run2016H-UL2016_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "DoubleEG_Run2017B-UL2017_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "DoubleEG_Run2017C-UL2017_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "DoubleEG_Run2017D-UL2017_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "DoubleEG_Run2017E-UL2017_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "DoubleEG_Run2017F-UL2017_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "DoubleMuon_Run2016B-ver1_HIPM_UL2016_MiniAODv2_NanoAODv9-v2_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "DoubleMuon_Run2016B-ver2_HIPM_UL2016_MiniAODv2_NanoAODv9-v2_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "DoubleMuon_Run2016C-HIPM_UL2016_MiniAODv2_NanoAODv9-v2_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "DoubleMuon_Run2016D-HIPM_UL2016_MiniAODv2_NanoAODv9-v2_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "DoubleMuon_Run2016E-HIPM_UL2016_MiniAODv2_NanoAODv9-v2_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "DoubleMuon_Run2016F-HIPM_UL2016_MiniAODv2_NanoAODv9-v2_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "DoubleMuon_Run2016F-UL2016_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "DoubleMuon_Run2016G-UL2016_MiniAODv2_NanoAODv9-v2_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "DoubleMuon_Run2016H-UL2016_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "DoubleMuon_Run2017B-UL2017_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "DoubleMuon_Run2017C-UL2017_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "DoubleMuon_Run2017D-UL2017_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "DoubleMuon_Run2017E-UL2017_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "DoubleMuon_Run2017F-UL2017_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "DoubleMuon_Run2018A-UL2018_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "DoubleMuon_Run2018B-UL2018_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "DoubleMuon_Run2018C-UL2018_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "DoubleMuon_Run2018D-UL2018_MiniAODv2_NanoAODv9-v2_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "EGamma_Run2018A-UL2018_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "EGamma_Run2018B-UL2018_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "EGamma_Run2018C-UL2018_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "EGamma_Run2018D-UL2018_MiniAODv2_NanoAODv9-v3_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "MuonEG_Run2016B-ver1_HIPM_UL2016_MiniAODv2_NanoAODv9-v2_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "MuonEG_Run2016B-ver2_HIPM_UL2016_MiniAODv2_NanoAODv9-v2_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "MuonEG_Run2016C-HIPM_UL2016_MiniAODv2_NanoAODv9-v2_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "MuonEG_Run2016D-HIPM_UL2016_MiniAODv2_NanoAODv9-v2_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "MuonEG_Run2016E-HIPM_UL2016_MiniAODv2_NanoAODv9-v2_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "MuonEG_Run2016F-HIPM_UL2016_MiniAODv2_NanoAODv9-v2_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "MuonEG_Run2016F-UL2016_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "MuonEG_Run2016G-UL2016_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "MuonEG_Run2016H-UL2016_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "MuonEG_Run2017B-UL2017_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "MuonEG_Run2017C-UL2017_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "MuonEG_Run2017D-UL2017_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "MuonEG_Run2017E-UL2017_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "MuonEG_Run2017F-UL2017_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "MuonEG_Run2018A-UL2018_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "MuonEG_Run2018B-UL2018_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "MuonEG_Run2018C-UL2018_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "MuonEG_Run2018D-UL2018_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "SingleElectron_Run2016B-ver1_HIPM_UL2016_MiniAODv2_NanoAODv9-v2_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "SingleElectron_Run2016B-ver2_HIPM_UL2016_MiniAODv2_NanoAODv9-v2_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "SingleElectron_Run2016C-HIPM_UL2016_MiniAODv2_NanoAODv9-v2_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "SingleElectron_Run2016D-HIPM_UL2016_MiniAODv2_NanoAODv9-v2_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "SingleElectron_Run2016E-HIPM_UL2016_MiniAODv2_NanoAODv9-v2_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "SingleElectron_Run2016F-HIPM_UL2016_MiniAODv2_NanoAODv9-v2_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "SingleElectron_Run2016F-UL2016_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "SingleElectron_Run2016G-UL2016_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "SingleElectron_Run2016H-UL2016_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "SingleElectron_Run2017B-UL2017_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "SingleElectron_Run2017C-UL2017_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "SingleElectron_Run2017D-UL2017_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "SingleElectron_Run2017E-UL2017_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "SingleElectron_Run2017F-UL2017_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "SingleMuon_Run2016B-ver1_HIPM_UL2016_MiniAODv2_NanoAODv9-v2_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "SingleMuon_Run2016B-ver2_HIPM_UL2016_MiniAODv2_NanoAODv9-v2_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "SingleMuon_Run2016C-HIPM_UL2016_MiniAODv2_NanoAODv9-v2_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "SingleMuon_Run2016D-HIPM_UL2016_MiniAODv2_NanoAODv9-v2_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "SingleMuon_Run2016E-HIPM_UL2016_MiniAODv2_NanoAODv9-v2_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "SingleMuon_Run2016F-HIPM_UL2016_MiniAODv2_NanoAODv9-v2_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "SingleMuon_Run2016F-UL2016_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "SingleMuon_Run2016G-UL2016_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "SingleMuon_Run2016H-UL2016_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "SingleMuon_Run2017B-UL2017_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "SingleMuon_Run2017C-UL2017_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "SingleMuon_Run2017D-UL2017_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "SingleMuon_Run2017E-UL2017_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "SingleMuon_Run2017F-UL2017_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "SingleMuon_Run2018A-UL2018_MiniAODv2_NanoAODv9-v2_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "SingleMuon_Run2018B-UL2018_MiniAODv2_NanoAODv9-v2_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "SingleMuon_Run2018C-UL2018_MiniAODv2_NanoAODv9-v2_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "SingleMuon_Run2018D-UL2018_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+]
+
 
 ################################# Background #################################
 
@@ -653,6 +746,7 @@ dataset_lst_bkg_r2_3lep = [
 ]
 
 
+
 # Matthew's 2l1FJ skim (Feb 2, 2026)
 # /ceph/cms/store/user/mdittric/skim/nanoaodv9_bkg_2Lep1FJRun2_01Feb2026
 dataset_lst_bkg_r2_2lep1fj = [
@@ -1081,18 +1175,17 @@ def main():
     #path_to_datasets = "/ceph/cms/store/user/mmazza/SignalGeneration/VBSVVH_VBSCuts_13TeV_4f_LO_MG_2_9_18_c2v_1p0_c3_10p0_c2Vc3scan_slc7_amd64_gcc10_CMSSW_12_4_8/"
 
     # Bkg
-    xsec_dict = xsec_dict["bkg_new"]
-    #dataset_lst = dataset_lst_bkg_r2_1fj1lep
-    #out_dir = "../../input_samples/sample_jsons/vbs_vvh/bkg"
-    #path_to_datasets = "/ceph/cms/store/user/mdittric/skim/nanoaodv9_bkg_1FJ1Lep_13Jun2025_v1/"
-    #dataset_lst = dataset_lst_bkg_r2_3lep
-    #out_dir = "../../input_samples/sample_jsons/vbs_vvh/bkg/skim_r2_3l_new_subset"
-    #path_to_datasets = "/ceph/cms/store/user/mdittric/skim/nanoaodv9_bkg_3LepRun2_30Jan2026/"
-
-    dataset_lst = dataset_lst_bkg_r2_2lep1fj
-    out_dir = "../../input_samples/sample_jsons/vbs_vvh/bkg/skim_r2_2l_all_feb1"
-    path_to_datasets = "/ceph/cms/store/user/mdittric/skim/nanoaodv9_bkg_2Lep1FJRun2_01Feb2026/"
+    #xsec_dict = xsec_dict["bkg"]
+    #dataset_lst = dataset_lst_bkg_r2_2lep1fj
+    #out_dir = "../../input_samples/sample_jsons/vbs_vvh/bkg/skim_r2_2l_all_feb1"
+    #path_to_datasets = "/ceph/cms/store/user/mdittric/skim/nanoaodv9_bkg_2Lep1FJRun2_01Feb2026/"
     #path_to_datasets = "/ceph/cms/store/user/mdittric/skim/nanoaodv9_bkg_3LepRun2_31Jan2026/"
+
+    # Data
+    xsec_dict = None
+    dataset_lst = dataset_lst_data_r2_3lep
+    out_dir = "../../input_samples/sample_jsons/vbs_vvh/data/skim_3l"
+    path_to_datasets = "/ceph/cms/store/user/mdittric/skim/nanoaodv9_data_3LepRun2_02Feb2026/"
 
     #dataset_lst = dataset_lst_bkg_r3_aashay_v2v3
     #out_dir = "../../input_samples/sample_jsons/vbs_vvh/bkg/skim_aa_v01"
@@ -1107,30 +1200,39 @@ def main():
         #dataset_name = os.path.join(dataset_name,"merged")
 
         # Get the short name for the sample, and the associated xsec
-        match_xsec = False
-        dataset_name_short = ""
-        for xsec_name in xsec_dict:
-            if dataset_name.startswith(xsec_name):
-                dataset_name_short = xsec_name
-                dataset_xsec = xsec_dict[xsec_name]
-                match_xsec = True
-                break
-        if not match_xsec:
-            raise Exception("Failed to find xsec for sample",dataset_name)
+        if xsec_dict is not None:
+            match_xsec = False
+            dataset_name_short = ""
+            for xsec_name in xsec_dict:
+                if dataset_name.startswith(xsec_name):
+                    dataset_name_short = xsec_name
+                    dataset_xsec = xsec_dict[xsec_name]
+                    match_xsec = True
+                    break
+            if not match_xsec:
+                raise Exception("Failed to find xsec for sample",dataset_name)
+        else:
+           # This is data
+            dataset_name_short = dataset_name
+            dataset_xsec = "1"
 
         # Get the year, and assign a hist axis name
-        if ("20UL16" in dataset_name) and ("APV" in dataset_name):
+        if (("20UL16" in dataset_name) and ("APV" in dataset_name)) or ("HIPM_UL2016" in dataset_name):
             year = "2016APV"
             hist_axis_name = f"UL16APV_{dataset_name_short}"
-        elif ("20UL16" in dataset_name) and ("APV" not in dataset_name):
+            hist_axis_name_data = f"UL16APV_data"
+        elif (("20UL16" in dataset_name) and ("APV" not in dataset_name)) or (("UL2016" in dataset_name) and ("HIPM" not in dataset_name) ):
             year = "2016"
             hist_axis_name = f"UL16_{dataset_name_short}"
-        elif "20UL17" in dataset_name:
+            hist_axis_name_data = f"UL16_data"
+        elif ("20UL17" in dataset_name) or ("UL2017" in dataset_name):
             year = "2017"
             hist_axis_name = f"UL17_{dataset_name_short}"
-        elif "20UL18" in dataset_name:
+            hist_axis_name_data = f"UL17_data"
+        elif ("20UL18" in dataset_name) or ("UL2018" in dataset_name):
             year = "2018"
             hist_axis_name = f"UL18_{dataset_name_short}"
+            hist_axis_name_data = f"UL18_data"
         elif "13p6TeV" in dataset_name:
             year = "2024"
             hist_axis_name = f"2024_{dataset_name_short}" # TMP, fix if we need to make more years or Aashay's naming changes
@@ -1149,7 +1251,8 @@ def main():
             sample_yr            = year,
             xsec_name            = None,
             xsec_value           = str(dataset_xsec),
-            hist_axis_name       = hist_axis_name,
+            #hist_axis_name       = hist_axis_name,
+            hist_axis_name       = hist_axis_name_data,
             era                  = None,
             on_das               = False,
             include_lhe_wgts_arr = True,
