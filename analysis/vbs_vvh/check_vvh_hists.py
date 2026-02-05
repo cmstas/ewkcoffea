@@ -29,6 +29,9 @@ GRP_DICT_FULL_R3 = {
 }
 
 GRP_DICT_FULL_R2 = {
+    "Data" : [
+        "data",
+    ],
     "Signal" : [
         "VBSWWH_OS_VBSCuts_13TeV",
         "VBSWWH_SS_VBSCuts_13TeV",
@@ -271,8 +274,8 @@ CAT_LST = [
 
     ### 3l ###
     "3l",
-    "3l_2j_mjj600",
-    "3l_2j_mjj600_ht350"
+    #"3l_2j_mjj600",
+    #"3l_2j_mjj600_ht350"
     #"3l_2j_mjj600_noSFOS",
     #"3l_2j_mjj600_ch3",
 ]
@@ -302,7 +305,7 @@ def get_yields_per_cat(histo_dict,var_name,grp_dict,year_name_lst_to_prepend):
     # Get list of all of the backgrounds together
     bkg_lst = []
     for grp in grouping_dict:
-        if grp != "Signal":
+        if (grp != "Signal") and (grp != "Data"):
             bkg_lst = bkg_lst + grouping_dict[grp]
 
     # Make the dictionary to get yields for, it includes what's in grouping_dict, plus the backgrounds grouped as one
@@ -331,7 +334,7 @@ def get_yields_per_cat(histo_dict,var_name,grp_dict,year_name_lst_to_prepend):
 
 
 # Make the figures for the vvh study
-def make_vvh_fig(histo_mc,histo_mc_sig,histo_mc_bkg,title="test",axisrangex=None):
+def make_vvh_fig(histo_mc,histo_mc_sig,histo_mc_bkg,histo_dat=None,title="test",axisrangex=None):
 
     # Create the figure
     fig, (ax1, ax2, ax3, ax4) = plt.subplots(
@@ -351,6 +354,19 @@ def make_vvh_fig(histo_mc,histo_mc_sig,histo_mc_bkg,title="test",axisrangex=None
         ax=ax1,
         zorder=10,
     )
+
+    # Plot the data
+    if histo_dat is not None:
+        histo_dat.plot1d(
+            stack=False,
+            histtype="errorbar",
+            color="k",
+            ax=ax1,
+            w2=histo_dat.variances(),
+            w2method="sqrt",
+            #w2method="poisson",
+            zorder=11,
+        )
 
     # Get the errs on MC and plot them by hand on the stack plot
     histo_mc_sum = histo_mc[{"process_grp":sum}]
@@ -434,6 +450,9 @@ def make_vvh_fig(histo_mc,histo_mc_sig,histo_mc_bkg,title="test",axisrangex=None
     plt.text(0.15,0.83, f"Bkg. yield: {np.round(yld_bkg,2)}", fontsize = 11, transform=fig.transFigure)
     plt.text(0.15,0.81, f"Metric: {np.round(metric,3)}", fontsize = 11, transform=fig.transFigure)
     plt.text(0.15,0.79, f"[Note: sig. overlay scaled {np.round(yld_bkg/yld_sig,1)}x]", fontsize = 12, transform=fig.transFigure)
+    if histo_dat is not None:
+        yld_dat = sum(sum(histo_dat.values(flow=True)))
+        plt.text(0.15,0.76, f"Data: {yld_dat}, data/mc = {np.round(yld_dat/(yld_sig+yld_bkg),2)}", fontsize = 12, transform=fig.transFigure)
 
     extt = ax1.set_title(title)
     ax1.set_xlabel(None)
@@ -532,7 +551,7 @@ def print_yields(histo_dict,grp_dict,years_to_prepend,roundat=None,print_counts=
     counts_dict = get_yields_per_cat(histo_dict,"njets_counts",grp_dict,years_to_prepend)
     #yld_dict = counts_dict
 
-    group_lst_order = ['Signal', 'Background', 'QCD', 'ttbar', 'single-t', 'rare-top', 'ttX', 'Vjets', 'VV', 'ewkV', 'ewkVV', 'VH', 'VVV']
+    group_lst_order = ['Signal', 'Background', 'QCD', 'ttbar', 'single-t', 'rare-top', 'ttX', 'Vjets', 'VV', 'ewkV', 'ewkVV', 'VH', 'VVV', 'Data']
     #group_lst_order = ['Signal', 'Background', 'ttbar', 'VV', 'Vjets', 'QCD', 'single-t', 'ttX', 'VH', 'VVV']
     #group_lst_order = ['WWH_OS', 'WWH_SS', 'WZH', 'ZZH', 'Background', 'ttbar', 'VV', 'Vjets', 'QCD', 'single-t', 'ttX', 'VH', 'VVV']
 
@@ -544,7 +563,8 @@ def print_yields(histo_dict,grp_dict,years_to_prepend,roundat=None,print_counts=
         for cat in yld_dict:
             print(f"\n{cat}")
             for group_name in group_lst_order:
-                if group_name not in ["Signal","Background"]: continue
+                #if group_name not in ["Signal","Background"]: continue
+                if group_name not in ["Signal","Background","Data"]: continue
                 if group_name == "metric": continue
                 yld, err = yld_dict[cat][group_name]
                 perr = 100*(err/yld)
@@ -604,38 +624,48 @@ def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend):
 
     grouping_dict = append_years(grp_dict,year_name_lst_to_prepend)
 
+    sample_group_names_lst_mc = []
+    sample_group_names_lst_bkg = []
+    for grp_name in grp_dict:
+        if grp_name not in ["Data"]:
+            sample_group_names_lst_mc.append(grp_name)
+        if grp_name not in ["Data", "Signal"]:
+            sample_group_names_lst_bkg.append(grp_name)
+
     cat_lst = CAT_LST
     var_lst = histo_dict.keys()
     #cat_lst = ["exactly1lep_exactly1fj_STmet1000"]
     #var_lst = ["scalarptsum_lepmet"]
 
+
     for cat in cat_lst:
         print("\nCat:",cat)
         for var in var_lst:
             print("\nVar:",var)
+            if "fj1" in var: continue
             #if var not in ["njets","njets_counts","scalarptsum_lepmet"]: continue # TMP
-            #if "abs_ch_sum_3l" not in var: continue # TMP
 
             histo = copy.deepcopy(histo_dict[var][{"systematic":"nominal", "category":cat}])
 
             # Clean up a bit (rebin, regroup, and handle overflow)
             if var not in ["njets","nleps","nbtagsl","nbtagsm","njets_counts","nleps_counts","nfatjets","njets_forward","njets_tot","n_ll_sfos","abs_ch_sum_3l"]:
                 histo = plt_tools.rebin(histo,6)
+            #histo = plt_tools.group(histo,"process","process_grp",grouping_dict_mc)
             histo = plt_tools.group(histo,"process","process_grp",grouping_dict)
             histo = plt_tools.merge_overflow(histo)
 
-            # Get one hist of just sig and one of just bkg
-            grp_names_bkg_lst = list(grouping_dict.keys()) # All names, still need to drop signal
-            grp_names_bkg_lst.remove("Signal")
+            histo_mc  = histo[{"process_grp":sample_group_names_lst_mc}]
             histo_sig = histo[{"process_grp":["Signal"]}]
-            histo_bkg = plt_tools.group(histo,"process_grp","process_grp",{"Background":grp_names_bkg_lst})
+            histo_dat = histo[{"process_grp":["Data"]}]
+            histo_bkg = plt_tools.group(histo,"process_grp","process_grp",{"Background": sample_group_names_lst_bkg})
 
             # Make the figure
             title = f"{cat}__{var}"
             fig,ext_tup = make_vvh_fig(
-                histo_mc = histo,
+                histo_mc = histo_mc,
                 histo_mc_sig = histo_sig,
                 histo_mc_bkg = histo_bkg,
+                histo_dat = histo_dat,
                 title=title
             )
 
@@ -668,7 +698,7 @@ def main():
 
     # Print total raw events
     tot_raw = sum(sum(histo_dict["njets_counts"][{"systematic":"nominal", "category":"all_events"}].values(flow=True)))
-    #print("Tot raw events:",tot_raw)
+    print("Tot raw events:",tot_raw)
     #print(histo_dict["njets"])
     #exit()
 
