@@ -1,0 +1,22 @@
+{
+    "xsec": "1",
+    "year": "2017",
+    "treeName": "Events",
+    "histAxisName": "UL17_data",
+    "options": "",
+    "WCnames": [],
+    "files": [
+        "MuonEG_Run2017B-UL2017_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026/output_6.root",
+        "MuonEG_Run2017B-UL2017_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026/output_5.root",
+        "MuonEG_Run2017B-UL2017_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026/output_1.root",
+        "MuonEG_Run2017B-UL2017_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026/output_4.root",
+        "MuonEG_Run2017B-UL2017_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026/output_3.root",
+        "MuonEG_Run2017B-UL2017_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026/output_2.root"
+    ],
+    "nEvents": 313471,
+    "nGenEvents": 313471,
+    "nSumOfWeights": 313471,
+    "isData": true,
+    "path": "MuonEG_Run2017B-UL2017_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "nSumOfLheWeights": 0
+}

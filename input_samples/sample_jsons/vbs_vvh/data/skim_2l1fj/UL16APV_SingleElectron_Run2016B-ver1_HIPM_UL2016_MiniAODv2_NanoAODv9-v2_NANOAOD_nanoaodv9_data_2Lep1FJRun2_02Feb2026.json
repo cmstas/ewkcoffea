@@ -1,0 +1,17 @@
+{
+    "xsec": "1",
+    "year": "2016APV",
+    "treeName": "Events",
+    "histAxisName": "UL16APV_data",
+    "options": "",
+    "WCnames": [],
+    "files": [
+        "SingleElectron_Run2016B-ver1_HIPM_UL2016_MiniAODv2_NanoAODv9-v2_NANOAOD_nanoaodv9_data_2Lep1FJRun2_02Feb2026/output_1.root"
+    ],
+    "nEvents": 19350,
+    "nGenEvents": 19350,
+    "nSumOfWeights": 19350,
+    "isData": true,
+    "path": "SingleElectron_Run2016B-ver1_HIPM_UL2016_MiniAODv2_NanoAODv9-v2_NANOAOD_nanoaodv9_data_2Lep1FJRun2_02Feb2026",
+    "nSumOfLheWeights": 0
+}

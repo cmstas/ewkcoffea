@@ -1,0 +1,23 @@
+{
+    "xsec": "1",
+    "year": "2016APV",
+    "treeName": "Events",
+    "histAxisName": "UL16APV_data",
+    "options": "",
+    "WCnames": [],
+    "files": [
+        "DoubleEG_Run2016B-ver1_HIPM_UL2016_MiniAODv2_NanoAODv9-v2_NANOAOD_nanoaodv9_data_2Lep1FJRun2_02Feb2026/output_6.root",
+        "DoubleEG_Run2016B-ver1_HIPM_UL2016_MiniAODv2_NanoAODv9-v2_NANOAOD_nanoaodv9_data_2Lep1FJRun2_02Feb2026/output_5.root",
+        "DoubleEG_Run2016B-ver1_HIPM_UL2016_MiniAODv2_NanoAODv9-v2_NANOAOD_nanoaodv9_data_2Lep1FJRun2_02Feb2026/output_7.root",
+        "DoubleEG_Run2016B-ver1_HIPM_UL2016_MiniAODv2_NanoAODv9-v2_NANOAOD_nanoaodv9_data_2Lep1FJRun2_02Feb2026/output_1.root",
+        "DoubleEG_Run2016B-ver1_HIPM_UL2016_MiniAODv2_NanoAODv9-v2_NANOAOD_nanoaodv9_data_2Lep1FJRun2_02Feb2026/output_4.root",
+        "DoubleEG_Run2016B-ver1_HIPM_UL2016_MiniAODv2_NanoAODv9-v2_NANOAOD_nanoaodv9_data_2Lep1FJRun2_02Feb2026/output_3.root",
+        "DoubleEG_Run2016B-ver1_HIPM_UL2016_MiniAODv2_NanoAODv9-v2_NANOAOD_nanoaodv9_data_2Lep1FJRun2_02Feb2026/output_2.root"
+    ],
+    "nEvents": 19586,
+    "nGenEvents": 19586,
+    "nSumOfWeights": 19586,
+    "isData": true,
+    "path": "DoubleEG_Run2016B-ver1_HIPM_UL2016_MiniAODv2_NanoAODv9-v2_NANOAOD_nanoaodv9_data_2Lep1FJRun2_02Feb2026",
+    "nSumOfLheWeights": 0
+}

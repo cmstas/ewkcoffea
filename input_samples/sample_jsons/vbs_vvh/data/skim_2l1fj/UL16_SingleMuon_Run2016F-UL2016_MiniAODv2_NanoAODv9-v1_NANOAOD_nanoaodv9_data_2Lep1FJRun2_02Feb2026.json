@@ -1,0 +1,21 @@
+{
+    "xsec": "1",
+    "year": "2016",
+    "treeName": "Events",
+    "histAxisName": "UL16_data",
+    "options": "",
+    "WCnames": [],
+    "files": [
+        "SingleMuon_Run2016F-UL2016_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_2Lep1FJRun2_02Feb2026/output_5.root",
+        "SingleMuon_Run2016F-UL2016_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_2Lep1FJRun2_02Feb2026/output_1.root",
+        "SingleMuon_Run2016F-UL2016_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_2Lep1FJRun2_02Feb2026/output_4.root",
+        "SingleMuon_Run2016F-UL2016_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_2Lep1FJRun2_02Feb2026/output_3.root",
+        "SingleMuon_Run2016F-UL2016_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_2Lep1FJRun2_02Feb2026/output_2.root"
+    ],
+    "nEvents": 160458,
+    "nGenEvents": 160458,
+    "nSumOfWeights": 160458,
+    "isData": true,
+    "path": "SingleMuon_Run2016F-UL2016_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_2Lep1FJRun2_02Feb2026",
+    "nSumOfLheWeights": 0
+}

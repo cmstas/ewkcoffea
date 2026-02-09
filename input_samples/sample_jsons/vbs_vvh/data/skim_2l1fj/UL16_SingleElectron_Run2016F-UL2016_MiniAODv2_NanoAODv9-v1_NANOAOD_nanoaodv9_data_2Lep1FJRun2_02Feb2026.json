@@ -1,0 +1,21 @@
+{
+    "xsec": "1",
+    "year": "2016",
+    "treeName": "Events",
+    "histAxisName": "UL16_data",
+    "options": "",
+    "WCnames": [],
+    "files": [
+        "SingleElectron_Run2016F-UL2016_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_2Lep1FJRun2_02Feb2026/output_5.root",
+        "SingleElectron_Run2016F-UL2016_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_2Lep1FJRun2_02Feb2026/output_1.root",
+        "SingleElectron_Run2016F-UL2016_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_2Lep1FJRun2_02Feb2026/output_4.root",
+        "SingleElectron_Run2016F-UL2016_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_2Lep1FJRun2_02Feb2026/output_3.root",
+        "SingleElectron_Run2016F-UL2016_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_2Lep1FJRun2_02Feb2026/output_2.root"
+    ],
+    "nEvents": 152329,
+    "nGenEvents": 152329,
+    "nSumOfWeights": 152329,
+    "isData": true,
+    "path": "SingleElectron_Run2016F-UL2016_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_2Lep1FJRun2_02Feb2026",
+    "nSumOfLheWeights": 0
+}

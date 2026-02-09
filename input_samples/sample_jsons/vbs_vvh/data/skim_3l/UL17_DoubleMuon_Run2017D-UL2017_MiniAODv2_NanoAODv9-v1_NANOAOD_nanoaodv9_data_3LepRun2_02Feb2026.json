@@ -1,0 +1,32 @@
+{
+    "xsec": "1",
+    "year": "2017",
+    "treeName": "Events",
+    "histAxisName": "UL17_data",
+    "options": "",
+    "WCnames": [],
+    "files": [
+        "DoubleMuon_Run2017D-UL2017_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026/output_8.root",
+        "DoubleMuon_Run2017D-UL2017_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026/output_6.root",
+        "DoubleMuon_Run2017D-UL2017_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026/output_11.root",
+        "DoubleMuon_Run2017D-UL2017_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026/output_16.root",
+        "DoubleMuon_Run2017D-UL2017_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026/output_13.root",
+        "DoubleMuon_Run2017D-UL2017_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026/output_5.root",
+        "DoubleMuon_Run2017D-UL2017_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026/output_7.root",
+        "DoubleMuon_Run2017D-UL2017_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026/output_10.root",
+        "DoubleMuon_Run2017D-UL2017_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026/output_12.root",
+        "DoubleMuon_Run2017D-UL2017_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026/output_1.root",
+        "DoubleMuon_Run2017D-UL2017_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026/output_15.root",
+        "DoubleMuon_Run2017D-UL2017_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026/output_4.root",
+        "DoubleMuon_Run2017D-UL2017_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026/output_3.root",
+        "DoubleMuon_Run2017D-UL2017_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026/output_9.root",
+        "DoubleMuon_Run2017D-UL2017_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026/output_14.root",
+        "DoubleMuon_Run2017D-UL2017_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026/output_2.root"
+    ],
+    "nEvents": 710816,
+    "nGenEvents": 710816,
+    "nSumOfWeights": 710816,
+    "isData": true,
+    "path": "DoubleMuon_Run2017D-UL2017_MiniAODv2_NanoAODv9-v1_NANOAOD_nanoaodv9_data_3LepRun2_02Feb2026",
+    "nSumOfLheWeights": 0
+}
