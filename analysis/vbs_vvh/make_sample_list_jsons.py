@@ -1306,7 +1306,7 @@ def main():
             if not match_xsec:
                 raise Exception("Failed to find xsec for sample",dataset_name)
         else:
-           # This is data
+            # This is data
             dataset_name_short = dataset_name
             dataset_xsec = "1"
 
@@ -1314,19 +1314,19 @@ def main():
         if (("20UL16" in dataset_name) and ("APV" in dataset_name)) or ("HIPM_UL2016" in dataset_name):
             year = "2016APV"
             hist_axis_name = f"UL16APV_{dataset_name_short}"
-            hist_axis_name_data = f"UL16APV_data"
+            hist_axis_name_data = "UL16APV_data"
         elif (("20UL16" in dataset_name) and ("APV" not in dataset_name)) or (("UL2016" in dataset_name) and ("HIPM" not in dataset_name) ):
             year = "2016"
             hist_axis_name = f"UL16_{dataset_name_short}"
-            hist_axis_name_data = f"UL16_data"
+            hist_axis_name_data = "UL16_data"
         elif ("20UL17" in dataset_name) or ("UL2017" in dataset_name):
             year = "2017"
             hist_axis_name = f"UL17_{dataset_name_short}"
-            hist_axis_name_data = f"UL17_data"
+            hist_axis_name_data = "UL17_data"
         elif ("20UL18" in dataset_name) or ("UL2018" in dataset_name):
             year = "2018"
             hist_axis_name = f"UL18_{dataset_name_short}"
-            hist_axis_name_data = f"UL18_data"
+            hist_axis_name_data = "UL18_data"
         elif "13p6TeV" in dataset_name:
             year = "2024"
             hist_axis_name = f"2024_{dataset_name_short}" # TMP, fix if we need to make more years or Aashay's naming changes
