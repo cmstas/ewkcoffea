@@ -180,7 +180,7 @@ CAT_LST = [
     #"2lOS",
     #"2lOSSF",
     #"2lOSSF_1fj",
-    #"2lOSSF_1fjx",
+    "2lOSSF_1fjx",
     #"2lOSSF_1fjx_onZ",
     #"2lOSSF_1fjx_onZ_HFJ",
     #"2lOSSF_1fjx_onZ_HFJtag",
@@ -444,7 +444,7 @@ def check_rwgt(histo_dict):
 def dump_json_simple(histo_dict,out_name="vvh_yields_simple"):
     out_dict = {}
     hist_to_use = "njets"
-    cats_to_check = ["all_events", "exactly2lepOSSF_exactly1fj"]
+    cats_to_check = ["all_events", "2lOSSF_1fjx", "3l"]
     for proc_name in histo_dict[hist_to_use].axes["process"]:
         out_dict[proc_name] = {}
         for cat_name in cats_to_check:
