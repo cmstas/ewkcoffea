@@ -166,91 +166,6 @@ GRP_DICT_FULL_R2 = {
 
 }
 
-_GRP_DICT_FULL_R2 = {
-
-    "Signal" : [
-        # Naming in Run 2 legacy samples
-        #"VBSWWH_OS_VBSCuts",
-        #"VBSWWH_SS_VBSCuts",
-        #"VBSWZH_VBSCuts",
-        #"VBSZZH_VBSCuts",
-        # Naming in new Run 2 samples
-        "VBSWWH_OS_VBSCuts_13TeV",
-        "VBSWWH_SS_VBSCuts_13TeV",
-        "VBSWZH_VBSCuts_13TeV",
-        "VBSZZH_VBSCuts_13TeV",
-    ],
-    #"WWH_OS" : ["VBSWWH_OS_VBSCuts_13TeV"],
-    #"WWH_SS" : ["VBSWWH_SS_VBSCuts_13TeV"],
-    #"WZH" : ["VBSWZH_VBSCuts_13TeV"],
-    #"ZZH" : ["VBSZZH_VBSCuts_13TeV"],
-    "QCD" : [
-        "QCD_HT1000to1500",
-        "QCD_HT100to200",
-        "QCD_HT1500to2000",
-        "QCD_HT2000toInf",
-        "QCD_HT200to300",
-        "QCD_HT300to500",
-        "QCD_HT500to700",
-        "QCD_HT50to100", # Has a spike
-        "QCD_HT700to1000",
-    ],
-    "ttbar" : [
-        "TTToHadronic",
-        "TTToSemiLeptonic",
-    ],
-    "single-t" : [
-        "ST_t-channel_antitop_4f",
-        "ST_t-channel_top_4f",
-        "ST_tW_antitop_5f",
-        "ST_tW_top_5f",
-    ],
-    "ttX" : [
-        "ttHTobb_M125",
-        "ttHToNonbb_M125",
-        "TTWJetsToQQ",
-        "TTWW",
-        "TTWZ",
-    ],
-    "Vjets" : [
-        "ZJetsToQQ_HT-200to400",
-        "ZJetsToQQ_HT-400to600",
-        "ZJetsToQQ_HT-600to800",
-        "ZJetsToQQ_HT-800toInf",
-        "WJetsToQQ_HT-200to400",
-        "WJetsToQQ_HT-400to600",
-        "WJetsToQQ_HT-600to800",
-        "WJetsToQQ_HT-800toInf",
-        "EWKWminus2Jets_WToQQ_dipoleRecoilOn",
-        "EWKWplus2Jets_WToQQ_dipoleRecoilOn",
-        "EWKZ2Jets_ZToLL_M-50",
-        "EWKZ2Jets_ZToNuNu_M-50",
-        "EWKZ2Jets_ZToQQ_dipoleRecoilOn",
-    ],
-    "VV" : [
-        "WWTo1L1Nu2Q",
-        "WWTo4Q",
-        "WZJJ_EWK_InclusivePolarization",
-        "WZTo1L1Nu2Q",
-        "WZTo2Q2L",
-        "ZZTo2Nu2Q",
-        "ZZTo2Q2L",
-        "ZZTo4Q",
-    ],
-    "VH" : [
-        "ZH_HToBB_ZToQQ_M-125",
-        "WminusH_HToBB_WToLNu_M-125",
-        "WplusH_HToBB_WToLNu_M-125",
-    ],
-    "VVV" : [
-        "WWW_4F",
-        "WWZ_4F",
-        "WZZ",
-        "ZZZ",
-        "VHToNonbb_M125",
-    ],
-}
-
 
 CAT_LST = [
     "all_events",
@@ -657,6 +572,7 @@ def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend):
             histo_mc  = histo[{"process_grp":sample_group_names_lst_mc}]
             histo_sig = histo[{"process_grp":["Signal"]}]
             histo_dat = histo[{"process_grp":["Data"]}]
+            #histo_dat = None
             histo_bkg = plt_tools.group(histo,"process_grp","process_grp",{"Background": sample_group_names_lst_bkg})
 
             # Make the figure
