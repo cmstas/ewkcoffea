@@ -8,7 +8,7 @@ def test_ewkcoffea_vvh():
         "analysis/vbs_vvh/run_analysis.py",
         "-x",
         "futures",
-        "input_samples/sample_jsons/test_samples/UL17_WWZJetsTo4L2Nu_forCI.json",
+        "input_samples/sample_jsons/test_samples/UL16APV_WWHSS_forCI.json",
         "-o",
         "output_check_yields",
         "--outpath",

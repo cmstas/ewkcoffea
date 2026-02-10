@@ -1,0 +1,22 @@
+{
+    "xsec": "0.005423",
+    "year": "2018",
+    "treeName": "Events",
+    "histAxisName": "UL18_GluGluToContinToZZTo2e2tau_TuneCP5_13TeV",
+    "options": "",
+    "WCnames": [],
+    "files": [
+        "GluGluToContinToZZTo2e2tau_TuneCP5_13TeV-mcfm701-pythia8_RunIISummer20UL18NanoAODv9-106X_upgrade2018_realistic_v16_L1v1-v2_NANOAODSIM_nanoaodv9_bkg_3LepRun2_31Jan2026/output_6.root",
+        "GluGluToContinToZZTo2e2tau_TuneCP5_13TeV-mcfm701-pythia8_RunIISummer20UL18NanoAODv9-106X_upgrade2018_realistic_v16_L1v1-v2_NANOAODSIM_nanoaodv9_bkg_3LepRun2_31Jan2026/output_5.root",
+        "GluGluToContinToZZTo2e2tau_TuneCP5_13TeV-mcfm701-pythia8_RunIISummer20UL18NanoAODv9-106X_upgrade2018_realistic_v16_L1v1-v2_NANOAODSIM_nanoaodv9_bkg_3LepRun2_31Jan2026/output_1.root",
+        "GluGluToContinToZZTo2e2tau_TuneCP5_13TeV-mcfm701-pythia8_RunIISummer20UL18NanoAODv9-106X_upgrade2018_realistic_v16_L1v1-v2_NANOAODSIM_nanoaodv9_bkg_3LepRun2_31Jan2026/output_4.root",
+        "GluGluToContinToZZTo2e2tau_TuneCP5_13TeV-mcfm701-pythia8_RunIISummer20UL18NanoAODv9-106X_upgrade2018_realistic_v16_L1v1-v2_NANOAODSIM_nanoaodv9_bkg_3LepRun2_31Jan2026/output_3.root",
+        "GluGluToContinToZZTo2e2tau_TuneCP5_13TeV-mcfm701-pythia8_RunIISummer20UL18NanoAODv9-106X_upgrade2018_realistic_v16_L1v1-v2_NANOAODSIM_nanoaodv9_bkg_3LepRun2_31Jan2026/output_2.root"
+    ],
+    "nEvents": 148214,
+    "nGenEvents": 500000,
+    "nSumOfWeights": 500000.0,
+    "isData": false,
+    "path": "GluGluToContinToZZTo2e2tau_TuneCP5_13TeV-mcfm701-pythia8_RunIISummer20UL18NanoAODv9-106X_upgrade2018_realistic_v16_L1v1-v2_NANOAODSIM_nanoaodv9_bkg_3LepRun2_31Jan2026",
+    "nSumOfLheWeights": 0
+}

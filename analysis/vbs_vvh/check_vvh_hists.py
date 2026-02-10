@@ -29,161 +29,170 @@ GRP_DICT_FULL_R3 = {
 }
 
 GRP_DICT_FULL_R2 = {
-
+    "Data" : [
+        "data",
+    ],
     "Signal" : [
-        # Naming in Run 2 legacy samples
-        #"VBSWWH_OS_VBSCuts",
-        #"VBSWWH_SS_VBSCuts",
-        #"VBSWZH_VBSCuts",
-        #"VBSZZH_VBSCuts",
-        # Naming in new Run 2 samples
         "VBSWWH_OS_VBSCuts_13TeV",
         "VBSWWH_SS_VBSCuts_13TeV",
         "VBSWZH_VBSCuts_13TeV",
         "VBSZZH_VBSCuts_13TeV",
     ],
-    #"WWH_OS" : ["VBSWWH_OS_VBSCuts_13TeV"],
-    #"WWH_SS" : ["VBSWWH_SS_VBSCuts_13TeV"],
-    #"WZH" : ["VBSWZH_VBSCuts_13TeV"],
-    #"ZZH" : ["VBSZZH_VBSCuts_13TeV"],
-
     "QCD" : [
-        "QCD_HT1000to1500",
-        "QCD_HT100to200",
-        "QCD_HT1500to2000",
-        "QCD_HT2000toInf",
-        "QCD_HT200to300",
-        "QCD_HT300to500",
-        "QCD_HT500to700",
-        "QCD_HT50to100", # Has a spike
-        "QCD_HT700to1000",
+        "QCD_HT50to100_TuneCP5_PSWeights_13TeV",
+        "QCD_HT100to200_TuneCP5_PSWeights_13TeV",
+        "QCD_HT200to300_TuneCP5_PSWeights_13TeV",
+        "QCD_HT300to500_TuneCP5_PSWeights_13TeV",
+        "QCD_HT500to700_TuneCP5_PSWeights_13TeV",
+        "QCD_HT700to1000_TuneCP5_PSWeights_13TeV",
+        "QCD_HT1000to1500_TuneCP5_PSWeights_13TeV",
+        "QCD_HT1500to2000_TuneCP5_PSWeights_13TeV",
+        "QCD_HT2000toInf_TuneCP5_PSWeights_13TeV",
     ],
-
     "ttbar" : [
-        "TTToHadronic",
-        "TTToSemiLeptonic",
+        "TTToHadronic_TuneCP5_13TeV",
+        "TTToSemiLeptonic_TuneCP5_13TeV",
+        "TTTo2L2Nu_TuneCP5_13TeV",
     ],
-
     "single-t" : [
-        "ST_t-channel_antitop_4f",
-        "ST_t-channel_top_4f",
-        "ST_tW_antitop_5f",
-        "ST_tW_top_5f",
+        "ST_tW_antitop_5f_inclusiveDecays_TuneCP5_13TeV",
+        "ST_tW_top_5f_inclusiveDecays_TuneCP5_13TeV",
+        "ST_s-channel_4f_leptonDecays_TuneCP5_13TeV",
+        "ST_t-channel_top_4f_InclusiveDecays_TuneCP5_13TeV",
+        "ST_t-channel_antitop_4f_InclusiveDecays_TuneCP5_13TeV",
     ],
-
     "ttX" : [
-        "ttHTobb_M125",
-        "ttHToNonbb_M125",
-
-        "TTWJetsToQQ",
-        "TTWW",
-        "TTWZ",
-
+        #"TTbb_4f_TTToSemiLeptonic", # Not sure
+        #"TTbb_4f_TTToHadronic", # Not sure
+        #"TTbb_4f_TTTo2L2Nu", # Not sure
+        "ttZJets_TuneCP5_13TeV",
+        "TTZToLLNuNu_M-10_TuneCP5_13TeV",
+        "TTWJetsToLNu_TuneCP5_13TeV",
+        "TTWJetsToQQ_TuneCP5_13TeV",
+        "ttWJets_TuneCP5_13TeV",
+        "ttHTobb_M125_TuneCP5_13TeV",
+        "ttHToNonbb_M125_TuneCP5_13TeV",
     ],
-
+    "rare-top" : [
+        "TTWZ_TuneCP5_13TeV",
+        "TTWW_TuneCP5_13TeV",
+        "tZq_ll_4f_ckm_NLO_TuneCP5_13TeV",
+        "TWZToLL_tlept_Wlept_5f_DR_TuneCP5_13TeV",
+    ],
     "Vjets" : [
-        "ZJetsToQQ_HT-200to400",
-        "ZJetsToQQ_HT-400to600",
-        "ZJetsToQQ_HT-600to800",
-        "ZJetsToQQ_HT-800toInf",
-
-        "WJetsToQQ_HT-200to400",
-        "WJetsToQQ_HT-400to600",
-        "WJetsToQQ_HT-600to800",
-        "WJetsToQQ_HT-800toInf",
-
-        "EWKWminus2Jets_WToQQ_dipoleRecoilOn",
-        "EWKWplus2Jets_WToQQ_dipoleRecoilOn",
-        "EWKZ2Jets_ZToLL_M-50",
-        "EWKZ2Jets_ZToNuNu_M-50",
-        "EWKZ2Jets_ZToQQ_dipoleRecoilOn",
+        "WJetsToQQ_HT-200to400_TuneCP5_13TeV",
+        "WJetsToQQ_HT-400to600_TuneCP5_13TeV",
+        "WJetsToQQ_HT-600to800_TuneCP5_13TeV",
+        "WJetsToQQ_HT-800toInf_TuneCP5_13TeV",
+        "WJetsToLNu_TuneCP5_13TeV",
+        "WJetsToLNu_HT-70To100_TuneCP5_13TeV",
+        "WJetsToLNu_HT-100To200_TuneCP5_13TeV",
+        "WJetsToLNu_HT-200To400_TuneCP5_13TeV",
+        "WJetsToLNu_HT-400To600_TuneCP5_13TeV",
+        "WJetsToLNu_HT-600To800_TuneCP5_13TeV",
+        "WJetsToLNu_HT-800To1200_TuneCP5_13TeV",
+        "WJetsToLNu_HT-1200To2500_TuneCP5_13TeV",
+        "WJetsToLNu_HT-2500ToInf_TuneCP5_13TeV",
+        "ZJetsToQQ_HT-200to400_TuneCP5_13TeV",
+        "ZJetsToQQ_HT-400to600_TuneCP5_13TeV",
+        "ZJetsToQQ_HT-600to800_TuneCP5_13TeV",
+        "ZJetsToQQ_HT-800toInf_TuneCP5_13TeV",
+        "DYJetsToLL_M-10to50_TuneCP5_13TeV",
+        "DYJetsToLL_M-50_TuneCP5_13TeV",
     ],
-
+    "ewkV" : [
+        "EWKZ2Jets_ZToLL_M-50_TuneCP5_withDipoleRecoil_13TeV",
+        "EWKZ2Jets_ZToQQ_dipoleRecoilOn_TuneCP5_13TeV",
+        "EWKZ2Jets_ZToNuNu_M-50_TuneCP5_withDipoleRecoil_13TeV",
+        "EWKWMinus2Jets_WToLNu_M-50_TuneCP5_withDipoleRecoil_13TeV",
+        "EWKWminus2Jets_WToQQ_dipoleRecoilOn_TuneCP5_13TeV",
+        "EWKWplus2Jets_WToQQ_dipoleRecoilOn_TuneCP5_13TeV",
+        "EWKWPlus2Jets_WToLNu_M-50_TuneCP5_withDipoleRecoil_13TeV",
+    ],
     "VV" : [
-        "WWTo1L1Nu2Q",
-        "WWTo4Q",
-        "WZJJ_EWK_InclusivePolarization",
-        "WZTo1L1Nu2Q",
-        "WZTo2Q2L",
-
-        "ZZTo2Nu2Q",
-        "ZZTo2Q2L",
-        "ZZTo4Q",
+        "ZZTo4Q_5f_TuneCP5_13TeV",
+        "ZZTo2Q2L_mllmin4p0_TuneCP5_13TeV",
+        "ZZJJTo4L_TuneCP5_13TeV",
+        "GluGluToContinToZZTo2e2tau_TuneCP5_13TeV",
+        "GluGluToContinToZZTo4tau_TuneCP5_13TeV",
+        "GluGluToContinToZZTo2mu2tau_TuneCP5_13TeV",
+        "GluGluToContinToZZTo4mu_TuneCP5_13TeV",
+        "GluGluToContinToZZTo2e2mu_TuneCP5_13TeV",
+        "GluGluToContinToZZTo4e_TuneCP5_13TeV",
+        "WW_TuneCP5_13TeV",
+        "WWTo2L2Nu_TuneCP5_13TeV",
+        "WWTo1L1Nu2Q_4f_TuneCP5_13TeV",
+        "WWTo4Q_4f_TuneCP5_13TeV",
+        "WZ_TuneCP5_13TeV",
+        "WZTo1L3Nu_4f_TuneCP5_13TeV",
+        "WZTo3LNu_TuneCP5_13TeV",
+        "WZTo2Q2L_mllmin4p0_TuneCP5_13TeV",
+        "WZTo1L1Nu2Q_4f_TuneCP5_13TeV",
+        "ZZ_TuneCP5_13TeV",
+        "ZZTo4L_M-1toInf_TuneCP5_13TeV",
+        "ZZTo2L2Nu_TuneCP5_13TeV",
+        #"ZZTo2Nu2Q_5f_TuneCP5_13TeV", # Weirdly crashes the processor
+        "GluGluHToZZTo4L",
     ],
-
+    "ewkVV" : [
+        "SSWW",
+        "WZJJ_EWK_InclusivePolarization_TuneCP5_13TeV",
+        "WWJJToLNuLNu_EWK_noTop_TuneCP5_13TeV",
+    ],
     "VH" : [
-        "ZH_HToBB_ZToQQ_M-125",
-        "WminusH_HToBB_WToLNu_M-125",
-        "WplusH_HToBB_WToLNu_M-125",
+        "ZH_HToBB_ZToBB_M-125_TuneCP5_13TeV",
+        "ZH_HToBB_ZToQQ_M-125_TuneCP5_13TeV",
+        "ZH_HToBB_ZToNuNu_M-125_TuneCP5_13TeV",
+        "ZH_HToBB_ZToLL_M-125_TuneCP5_13TeV",
+        "ggZH_HToBB_ZToBB_M-125_TuneCP5_13TeV",
+        "ggZH_HToBB_ZToQQ_M-125_TuneCP5_13TeV",
+        "ggZH_HToBB_ZToLL_M-125_TuneCP5_13TeV",
+        "ggZH_HToBB_ZToNuNu_M-125_TuneCP5_13TeV",
+        "GluGluZH_HToWWTo2L2Nu_M-125_TuneCP5_13TeV",
+        "HZJ_HToWWTo2L2Nu_ZTo2L_M-125_TuneCP5_13TeV",
+        "VHToNonbb_M125_TuneCP5_13TeV",
+        "WminusH_HToBB_WToLNu_M-125_TuneCP5_13TeV",
+        #"WminusH_HToBB_WToQQ_M-125_TuneCP5_13TeV", # Missing UL16APV
+        #"WplusH_HToBB_WToQQ_M-125_TuneCP5_13TeV", # Missing UL16APV
+        "WplusH_HToBB_WToLNu_M-125_TuneCP5_13TeV",
+        "VBFWH_HToBB_WToLNu_M-125_dipoleRecoilOn_TuneCP5_13TeV",
+    ],
+    "VVV" : [
+        "ZZZ_TuneCP5_13TeV",
+        "WZZ_TuneCP5_13TeV",
+        "WWZ_4F_TuneCP5_13TeV",
+        "WWW_4F_TuneCP5_13TeV",
     ],
 
-    "VVV" : [
-        "WWW_4F",
-        "WWZ_4F",
-        "WZZ",
-        "ZZZ",
-        "VHToNonbb_M125",
-    ],
 }
 
 
 CAT_LST = [
     "all_events",
-    #"filter",
-    #"exactly1lep",
-    #"exactly2lepOS",
+    "filter",
+    "filter_grl",
+    "filter_grl_trg",
+    #"just2lep",
+    #"just3lep",
 
-    #### 1lep 1FJ ###
-    #"exactly1lep_exactly1fj",
-    #"exactly1lep_exactly1fj_HFJ",
-    #"exactly1lep_exactly1fj_HFJ_Htag",
-    #"exactly1lep_exactly1fj_HFJ_Htag_njt2",
-    #"exactly1lep_exactly1fj_HFJ_Htag_njt2_mjj1000",
-    #"exactly1lep_exactly1fj_HFJ_Htag_njt2_mjj1000_nbm0",
-    #"exactly1lep_exactly1fj_VFJ",
-    #"exactly1lep_exactly1fj_VFJ_njt2",
-    #"exactly1lep_exactly1fj_VFJ_njt2_mjj1000",
-    #"exactly1lep_exactly1fj_VFJ_njt2_mjj1000_nbm0",
+    #### 2l OS SF 1FJ ###
+    #"2l",
+    #"2lOS",
+    #"2lOSSF",
+    #"2lOSSF_1fj",
+    "2lOSSF_1fjx",
+    #"2lOSSF_1fjx_onZ",
+    #"2lOSSF_1fjx_onZ_HFJ",
+    #"2lOSSF_1fjx_onZ_HFJtag",
+    #"2lOSSF_1fjx_onZ_HFJtag_nj2",
+    #"2lOSSF_1fjx_onZ_HFJtag_nj2_mjj600",
 
-    #### 1lep+2FJ ###
-    #"exactly1lep_exactly2fj",
-    #"exactly1lep_exactly2fj_HFJ",
-    #"exactly1lep_exactly2fj_HFJ_nbm0",
-    #"exactly1lep_exactly2fj_HFJ_nbm0_HtagWtag",
-    #"exactly1lep_exactly2fj_HFJ_nbm0_HtagWtag_njt2",
-    #"exactly1lep_exactly2fj_HFJ_nbm0_HtagWtag_njt2_mjj1000",
-    #"exactly1lep_exactly2fj_HFJ_nbm0_HtagWtag_njt2_mjj1000_njc01",
-    #"exactly1lep_exactly2fj_VFJ",
-    #"exactly1lep_exactly2fj_VFJ_HFJ",
-    #"exactly1lep_exactly2fj_VFJ_HFJ_njt2",
-    #"exactly1lep_exactly2fj_VFJ_HFJ_njt2_mjj1000",
-    #"exactly1lep_exactly2fj_VFJ_HFJ_njt2_mjj1000_mjj980",
-    ## Aashay
-    ##"exactly1lep_exactly2fj_l40",
-    ##"exactly1lep_exactly2fj_l40_noloosel"  ,
-
-    #### 2lOS 1FJ ###
-    #"exactly2lepOS",
-    #"exactly2lepOS_exactly1fj",
-    #"exactly2lepOS_exactly1fj_HFJ",
-    #"exactly2lepOS_exactly1fj_HFJtag",
-    #"exactly2lepOS_exactly1fj_HFJtag_njt2",
-    #"exactly2lepOS_exactly1fj_HFJtag_njt2_mjj1000",
-
-    #"exactly2lepOS",
-    #"exactly2lepOSSF",
-    "exactly2lepOSSF_exactly1fj",
-    "exactly2lepOSSF_exactly1fj_HFJ",
-    "exactly2lepOSSF_exactly1fj_HFJtag",
-    "exactly2lepOSSF_exactly1fj_HFJtag_njt2",
-    "exactly2lepOSSF_exactly1fj_HFJtag_njt2_mjj600",
-    "exactly2lepOSSF_exactly1fj_HFJtag_njt2_mjj600_onZ",
-
-    #### 3l ###
-    #"exactly3lep",
-    #"exactly3lep_2j_mjj600",
-    #"exactly3lep_2j_mjj600_noSFOS",
-
+    ### 3l ###
+    "3l",
+    #"3l_2j_mjj600",
+    #"3l_2j_mjj600_ht350"
+    #"3l_2j_mjj600_noSFOS",
+    #"3l_2j_mjj600_ch3",
 ]
 
 
@@ -211,7 +220,7 @@ def get_yields_per_cat(histo_dict,var_name,grp_dict,year_name_lst_to_prepend):
     # Get list of all of the backgrounds together
     bkg_lst = []
     for grp in grouping_dict:
-        if grp != "Signal":
+        if (grp != "Signal") and (grp != "Data"):
             bkg_lst = bkg_lst + grouping_dict[grp]
 
     # Make the dictionary to get yields for, it includes what's in grouping_dict, plus the backgrounds grouped as one
@@ -240,7 +249,7 @@ def get_yields_per_cat(histo_dict,var_name,grp_dict,year_name_lst_to_prepend):
 
 
 # Make the figures for the vvh study
-def make_vvh_fig(histo_mc,histo_mc_sig,histo_mc_bkg,title="test",axisrangex=None):
+def make_vvh_fig(histo_mc,histo_mc_sig,histo_mc_bkg,histo_dat=None,title="test",axisrangex=None):
 
     # Create the figure
     fig, (ax1, ax2, ax3, ax4) = plt.subplots(
@@ -260,6 +269,19 @@ def make_vvh_fig(histo_mc,histo_mc_sig,histo_mc_bkg,title="test",axisrangex=None
         ax=ax1,
         zorder=10,
     )
+
+    # Plot the data
+    if histo_dat is not None:
+        histo_dat.plot1d(
+            stack=False,
+            histtype="errorbar",
+            color="k",
+            ax=ax1,
+            w2=histo_dat.variances(),
+            w2method="sqrt",
+            #w2method="poisson",
+            zorder=11,
+        )
 
     # Get the errs on MC and plot them by hand on the stack plot
     histo_mc_sum = histo_mc[{"process_grp":sum}]
@@ -343,6 +365,9 @@ def make_vvh_fig(histo_mc,histo_mc_sig,histo_mc_bkg,title="test",axisrangex=None
     plt.text(0.15,0.83, f"Bkg. yield: {np.round(yld_bkg,2)}", fontsize = 11, transform=fig.transFigure)
     plt.text(0.15,0.81, f"Metric: {np.round(metric,3)}", fontsize = 11, transform=fig.transFigure)
     plt.text(0.15,0.79, f"[Note: sig. overlay scaled {np.round(yld_bkg/yld_sig,1)}x]", fontsize = 12, transform=fig.transFigure)
+    if histo_dat is not None:
+        yld_dat = sum(sum(histo_dat.values(flow=True)))
+        plt.text(0.15,0.76, f"Data: {yld_dat}, data/mc = {np.round(yld_dat/(yld_sig+yld_bkg),2)}", fontsize = 12, transform=fig.transFigure)
 
     extt = ax1.set_title(title)
     ax1.set_xlabel(None)
@@ -419,7 +444,7 @@ def check_rwgt(histo_dict):
 def dump_json_simple(histo_dict,out_name="vvh_yields_simple"):
     out_dict = {}
     hist_to_use = "njets"
-    cats_to_check = ["all_events", "exactly2lepOSSF_exactly1fj"]
+    cats_to_check = ["all_events", "2lOSSF_1fjx", "3l"]
     for proc_name in histo_dict[hist_to_use].axes["process"]:
         out_dict[proc_name] = {}
         for cat_name in cats_to_check:
@@ -441,7 +466,8 @@ def print_yields(histo_dict,grp_dict,years_to_prepend,roundat=None,print_counts=
     counts_dict = get_yields_per_cat(histo_dict,"njets_counts",grp_dict,years_to_prepend)
     #yld_dict = counts_dict
 
-    group_lst_order = ['Signal', 'Background', 'ttbar', 'VV', 'Vjets', 'QCD', 'single-t', 'ttX', 'VH', 'VVV']
+    group_lst_order = ['Signal', 'Background', 'QCD', 'ttbar', 'single-t', 'rare-top', 'ttX', 'Vjets', 'VV', 'ewkV', 'ewkVV', 'VH', 'VVV', 'Data']
+    #group_lst_order = ['Signal', 'Background', 'ttbar', 'VV', 'Vjets', 'QCD', 'single-t', 'ttX', 'VH', 'VVV']
     #group_lst_order = ['WWH_OS', 'WWH_SS', 'WZH', 'ZZH', 'Background', 'ttbar', 'VV', 'Vjets', 'QCD', 'single-t', 'ttX', 'VH', 'VVV']
 
     # Print to screen
@@ -452,7 +478,8 @@ def print_yields(histo_dict,grp_dict,years_to_prepend,roundat=None,print_counts=
         for cat in yld_dict:
             print(f"\n{cat}")
             for group_name in group_lst_order:
-                if group_name not in ["Signal","Background"]: continue
+                #if group_name not in ["Signal","Background"]: continue
+                if group_name not in ["Signal","Background","Data"]: continue
                 if group_name == "metric": continue
                 yld, err = yld_dict[cat][group_name]
                 perr = 100*(err/yld)
@@ -468,7 +495,8 @@ def print_yields(histo_dict,grp_dict,years_to_prepend,roundat=None,print_counts=
         out_str = ""
         header = "cat name"
         for proc_name in group_lst_order:
-            header = header + f", {proc_name}"
+            #header = header + f", {proc_name}"
+            header = header + f", {proc_name}, pm, error"
         header = header + ", metric"
         out_str = out_str + header
 
@@ -479,7 +507,8 @@ def print_yields(histo_dict,grp_dict,years_to_prepend,roundat=None,print_counts=
                 if group_name == "metric": continue
                 yld, err = yld_dict[cat][group_name]
                 perr = 100*(err/yld)
-                line_str = line_str + f" , {np.round(yld,roundat)} ± {np.round(perr,2)}%"
+                #line_str = line_str + f" , {np.round(yld,roundat)} ± {np.round(perr,2)}%"
+                line_str = line_str + f" , {np.round(yld,roundat)} , ± , {np.round(err,roundat)}"
             # And also append the metric
             metric = yld_dict[cat]["metric"][0]
             line_str = line_str + f" , {np.round(metric,3)}"
@@ -510,38 +539,49 @@ def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend):
 
     grouping_dict = append_years(grp_dict,year_name_lst_to_prepend)
 
+    sample_group_names_lst_mc = []
+    sample_group_names_lst_bkg = []
+    for grp_name in grp_dict:
+        if grp_name not in ["Data"]:
+            sample_group_names_lst_mc.append(grp_name)
+        if grp_name not in ["Data", "Signal"]:
+            sample_group_names_lst_bkg.append(grp_name)
+
     cat_lst = CAT_LST
     var_lst = histo_dict.keys()
     #cat_lst = ["exactly1lep_exactly1fj_STmet1000"]
     #var_lst = ["scalarptsum_lepmet"]
 
+
     for cat in cat_lst:
         print("\nCat:",cat)
         for var in var_lst:
             print("\nVar:",var)
+            if "fj1" in var: continue
             #if var not in ["njets","njets_counts","scalarptsum_lepmet"]: continue # TMP
-            #if "ll" not in var: continue # TMP
 
             histo = copy.deepcopy(histo_dict[var][{"systematic":"nominal", "category":cat}])
 
             # Clean up a bit (rebin, regroup, and handle overflow)
-            if var not in ["njets","nleps","nbtagsl","nbtagsm","njets_counts","nleps_counts","nfatjets","njets_forward","njets_tot","n_ll_sfos"]:
+            if var not in ["njets","nleps","nbtagsl","nbtagsm","njets_counts","nleps_counts","nfatjets","njets_forward","njets_tot","n_ll_sfos","abs_ch_sum_3l"]:
                 histo = plt_tools.rebin(histo,6)
+            #histo = plt_tools.group(histo,"process","process_grp",grouping_dict_mc)
             histo = plt_tools.group(histo,"process","process_grp",grouping_dict)
             histo = plt_tools.merge_overflow(histo)
 
-            # Get one hist of just sig and one of just bkg
-            grp_names_bkg_lst = list(grouping_dict.keys()) # All names, still need to drop signal
-            grp_names_bkg_lst.remove("Signal")
+            histo_mc  = histo[{"process_grp":sample_group_names_lst_mc}]
             histo_sig = histo[{"process_grp":["Signal"]}]
-            histo_bkg = plt_tools.group(histo,"process_grp","process_grp",{"Background":grp_names_bkg_lst})
+            histo_dat = histo[{"process_grp":["Data"]}]
+            #histo_dat = None
+            histo_bkg = plt_tools.group(histo,"process_grp","process_grp",{"Background": sample_group_names_lst_bkg})
 
             # Make the figure
             title = f"{cat}__{var}"
             fig,ext_tup = make_vvh_fig(
-                histo_mc = histo,
+                histo_mc = histo_mc,
                 histo_mc_sig = histo_sig,
                 histo_mc_bkg = histo_bkg,
+                histo_dat = histo_dat,
                 title=title
             )
 

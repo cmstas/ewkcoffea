@@ -1,0 +1,18 @@
+{
+    "xsec": "1",
+    "year": "2016APV",
+    "treeName": "Events",
+    "histAxisName": "UL16APV_data",
+    "options": "",
+    "WCnames": [],
+    "files": [
+        "SingleMuon_Run2016B-ver1_HIPM_UL2016_MiniAODv2_NanoAODv9-v2_NANOAOD_nanoaodv9_data_2Lep1FJRun2_02Feb2026/output_1.root",
+        "SingleMuon_Run2016B-ver1_HIPM_UL2016_MiniAODv2_NanoAODv9-v2_NANOAOD_nanoaodv9_data_2Lep1FJRun2_02Feb2026/output_2.root"
+    ],
+    "nEvents": 28172,
+    "nGenEvents": 28172,
+    "nSumOfWeights": 28172,
+    "isData": true,
+    "path": "SingleMuon_Run2016B-ver1_HIPM_UL2016_MiniAODv2_NanoAODv9-v2_NANOAOD_nanoaodv9_data_2Lep1FJRun2_02Feb2026",
+    "nSumOfLheWeights": 0
+}

@@ -1,0 +1,28 @@
+{
+    "xsec": "0.62",
+    "year": "2017",
+    "treeName": "Events",
+    "histAxisName": "UL17_TTbb_4f_TTToSemiLeptonic",
+    "options": "",
+    "WCnames": [],
+    "files": [
+        "TTbb_4f_TTToSemiLeptonic_TuneCP5-Powheg-Openloops-Pythia8_RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1_NANOAODSIM_nanoaodv9_bkg_3LepRun2_31Jan2026/output_8.root",
+        "TTbb_4f_TTToSemiLeptonic_TuneCP5-Powheg-Openloops-Pythia8_RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1_NANOAODSIM_nanoaodv9_bkg_3LepRun2_31Jan2026/output_6.root",
+        "TTbb_4f_TTToSemiLeptonic_TuneCP5-Powheg-Openloops-Pythia8_RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1_NANOAODSIM_nanoaodv9_bkg_3LepRun2_31Jan2026/output_11.root",
+        "TTbb_4f_TTToSemiLeptonic_TuneCP5-Powheg-Openloops-Pythia8_RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1_NANOAODSIM_nanoaodv9_bkg_3LepRun2_31Jan2026/output_5.root",
+        "TTbb_4f_TTToSemiLeptonic_TuneCP5-Powheg-Openloops-Pythia8_RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1_NANOAODSIM_nanoaodv9_bkg_3LepRun2_31Jan2026/output_7.root",
+        "TTbb_4f_TTToSemiLeptonic_TuneCP5-Powheg-Openloops-Pythia8_RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1_NANOAODSIM_nanoaodv9_bkg_3LepRun2_31Jan2026/output_10.root",
+        "TTbb_4f_TTToSemiLeptonic_TuneCP5-Powheg-Openloops-Pythia8_RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1_NANOAODSIM_nanoaodv9_bkg_3LepRun2_31Jan2026/output_12.root",
+        "TTbb_4f_TTToSemiLeptonic_TuneCP5-Powheg-Openloops-Pythia8_RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1_NANOAODSIM_nanoaodv9_bkg_3LepRun2_31Jan2026/output_1.root",
+        "TTbb_4f_TTToSemiLeptonic_TuneCP5-Powheg-Openloops-Pythia8_RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1_NANOAODSIM_nanoaodv9_bkg_3LepRun2_31Jan2026/output_4.root",
+        "TTbb_4f_TTToSemiLeptonic_TuneCP5-Powheg-Openloops-Pythia8_RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1_NANOAODSIM_nanoaodv9_bkg_3LepRun2_31Jan2026/output_3.root",
+        "TTbb_4f_TTToSemiLeptonic_TuneCP5-Powheg-Openloops-Pythia8_RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1_NANOAODSIM_nanoaodv9_bkg_3LepRun2_31Jan2026/output_9.root",
+        "TTbb_4f_TTToSemiLeptonic_TuneCP5-Powheg-Openloops-Pythia8_RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1_NANOAODSIM_nanoaodv9_bkg_3LepRun2_31Jan2026/output_2.root"
+    ],
+    "nEvents": 509572,
+    "nGenEvents": 7318891,
+    "nSumOfWeights": 153797754.09350005,
+    "isData": false,
+    "path": "TTbb_4f_TTToSemiLeptonic_TuneCP5-Powheg-Openloops-Pythia8_RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1_NANOAODSIM_nanoaodv9_bkg_3LepRun2_31Jan2026",
+    "nSumOfLheWeights": 0
+}

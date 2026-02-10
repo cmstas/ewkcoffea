@@ -1,0 +1,23 @@
+{
+    "xsec": "0.04",
+    "year": "2017",
+    "treeName": "Events",
+    "histAxisName": "UL17_TTbb_4f_TTTo2L2Nu",
+    "options": "",
+    "WCnames": [],
+    "files": [
+        "TTbb_4f_TTTo2L2Nu_TuneCP5-Powheg-Openloops-Pythia8_RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1_NANOAODSIM_nanoaodv9_bkg_2Lep1FJRun2_01Feb2026/output_6.root",
+        "TTbb_4f_TTTo2L2Nu_TuneCP5-Powheg-Openloops-Pythia8_RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1_NANOAODSIM_nanoaodv9_bkg_2Lep1FJRun2_01Feb2026/output_5.root",
+        "TTbb_4f_TTTo2L2Nu_TuneCP5-Powheg-Openloops-Pythia8_RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1_NANOAODSIM_nanoaodv9_bkg_2Lep1FJRun2_01Feb2026/output_7.root",
+        "TTbb_4f_TTTo2L2Nu_TuneCP5-Powheg-Openloops-Pythia8_RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1_NANOAODSIM_nanoaodv9_bkg_2Lep1FJRun2_01Feb2026/output_1.root",
+        "TTbb_4f_TTTo2L2Nu_TuneCP5-Powheg-Openloops-Pythia8_RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1_NANOAODSIM_nanoaodv9_bkg_2Lep1FJRun2_01Feb2026/output_4.root",
+        "TTbb_4f_TTTo2L2Nu_TuneCP5-Powheg-Openloops-Pythia8_RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1_NANOAODSIM_nanoaodv9_bkg_2Lep1FJRun2_01Feb2026/output_3.root",
+        "TTbb_4f_TTTo2L2Nu_TuneCP5-Powheg-Openloops-Pythia8_RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1_NANOAODSIM_nanoaodv9_bkg_2Lep1FJRun2_01Feb2026/output_2.root"
+    ],
+    "nEvents": 477795,
+    "nGenEvents": 3472503,
+    "nSumOfWeights": 15930889.901690006,
+    "isData": false,
+    "path": "TTbb_4f_TTTo2L2Nu_TuneCP5-Powheg-Openloops-Pythia8_RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1_NANOAODSIM_nanoaodv9_bkg_2Lep1FJRun2_01Feb2026",
+    "nSumOfLheWeights": 0
+}

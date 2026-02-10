@@ -1,0 +1,19 @@
+{
+    "xsec": "0.04",
+    "year": "2016",
+    "treeName": "Events",
+    "histAxisName": "UL16_TTbb_4f_TTTo2L2Nu",
+    "options": "",
+    "WCnames": [],
+    "files": [
+        "TTbb_4f_TTTo2L2Nu_TuneCP5-Powheg-Openloops-Pythia8_RunIISummer20UL16NanoAODv9-106X_mcRun2_asymptotic_v17-v1_NANOAODSIM_nanoaodv9_bkg_3LepRun2_31Jan2026/output_1.root",
+        "TTbb_4f_TTTo2L2Nu_TuneCP5-Powheg-Openloops-Pythia8_RunIISummer20UL16NanoAODv9-106X_mcRun2_asymptotic_v17-v1_NANOAODSIM_nanoaodv9_bkg_3LepRun2_31Jan2026/output_3.root",
+        "TTbb_4f_TTTo2L2Nu_TuneCP5-Powheg-Openloops-Pythia8_RunIISummer20UL16NanoAODv9-106X_mcRun2_asymptotic_v17-v1_NANOAODSIM_nanoaodv9_bkg_3LepRun2_31Jan2026/output_2.root"
+    ],
+    "nEvents": 292643,
+    "nGenEvents": 1571799,
+    "nSumOfWeights": 7209376.715190004,
+    "isData": false,
+    "path": "TTbb_4f_TTTo2L2Nu_TuneCP5-Powheg-Openloops-Pythia8_RunIISummer20UL16NanoAODv9-106X_mcRun2_asymptotic_v17-v1_NANOAODSIM_nanoaodv9_bkg_3LepRun2_31Jan2026",
+    "nSumOfLheWeights": 0
+}

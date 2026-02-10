@@ -1,0 +1,19 @@
+{
+    "xsec": "5.5",
+    "year": "2016APV",
+    "treeName": "Events",
+    "histAxisName": "UL16APV_TTbb_4f_TTToHadronic",
+    "options": "",
+    "WCnames": [],
+    "files": [
+        "TTbb_4f_TTToHadronic_TuneCP5-Powheg-Openloops-Pythia8_RunIISummer20UL16NanoAODAPVv9-106X_mcRun2_asymptotic_preVFP_v11-v1_NANOAODSIM_nanoaodv9_bkg_2Lep1FJRun2_01Feb2026/output_1.root",
+        "TTbb_4f_TTToHadronic_TuneCP5-Powheg-Openloops-Pythia8_RunIISummer20UL16NanoAODAPVv9-106X_mcRun2_asymptotic_preVFP_v11-v1_NANOAODSIM_nanoaodv9_bkg_2Lep1FJRun2_01Feb2026/output_3.root",
+        "TTbb_4f_TTToHadronic_TuneCP5-Powheg-Openloops-Pythia8_RunIISummer20UL16NanoAODAPVv9-106X_mcRun2_asymptotic_preVFP_v11-v1_NANOAODSIM_nanoaodv9_bkg_2Lep1FJRun2_01Feb2026/output_2.root"
+    ],
+    "nEvents": 157827,
+    "nGenEvents": 2303410,
+    "nSumOfWeights": 46015105.035600014,
+    "isData": false,
+    "path": "TTbb_4f_TTToHadronic_TuneCP5-Powheg-Openloops-Pythia8_RunIISummer20UL16NanoAODAPVv9-106X_mcRun2_asymptotic_preVFP_v11-v1_NANOAODSIM_nanoaodv9_bkg_2Lep1FJRun2_01Feb2026",
+    "nSumOfLheWeights": 0
+}
