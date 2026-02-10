@@ -1,0 +1,20 @@
+{
+    "xsec": "0.62",
+    "year": "2016APV",
+    "treeName": "Events",
+    "histAxisName": "UL16APV_TTbb_4f_TTToSemiLeptonic",
+    "options": "",
+    "WCnames": [],
+    "files": [
+        "TTbb_4f_TTToSemiLeptonic_TuneCP5-Powheg-Openloops-Pythia8_RunIISummer20UL16NanoAODAPVv9-106X_mcRun2_asymptotic_preVFP_v11-v1_NANOAODSIM_nanoaodv9_bkg_2Lep1FJRun2_01Feb2026/output_1.root",
+        "TTbb_4f_TTToSemiLeptonic_TuneCP5-Powheg-Openloops-Pythia8_RunIISummer20UL16NanoAODAPVv9-106X_mcRun2_asymptotic_preVFP_v11-v1_NANOAODSIM_nanoaodv9_bkg_2Lep1FJRun2_01Feb2026/output_4.root",
+        "TTbb_4f_TTToSemiLeptonic_TuneCP5-Powheg-Openloops-Pythia8_RunIISummer20UL16NanoAODAPVv9-106X_mcRun2_asymptotic_preVFP_v11-v1_NANOAODSIM_nanoaodv9_bkg_2Lep1FJRun2_01Feb2026/output_3.root",
+        "TTbb_4f_TTToSemiLeptonic_TuneCP5-Powheg-Openloops-Pythia8_RunIISummer20UL16NanoAODAPVv9-106X_mcRun2_asymptotic_preVFP_v11-v1_NANOAODSIM_nanoaodv9_bkg_2Lep1FJRun2_01Feb2026/output_2.root"
+    ],
+    "nEvents": 321628,
+    "nGenEvents": 2991789,
+    "nSumOfWeights": 57255372.019300014,
+    "isData": false,
+    "path": "TTbb_4f_TTToSemiLeptonic_TuneCP5-Powheg-Openloops-Pythia8_RunIISummer20UL16NanoAODAPVv9-106X_mcRun2_asymptotic_preVFP_v11-v1_NANOAODSIM_nanoaodv9_bkg_2Lep1FJRun2_01Feb2026",
+    "nSumOfLheWeights": 0
+}
