@@ -6,9 +6,8 @@ printf "\nDownloading root file...\n"
 wget -nc http://uaf-10.t2.ucsd.edu/~kmohrman/large_files_no_backup/for_ci/vvh/feb10_2026/merged.root
 
 # Run the processor
-# Note this json file is now for a WWH sample, but did not bother to change the naming
 printf "\nRunning the processor...\n"
-time python run_analysis.py ../../input_samples/sample_jsons/test_samples/UL17_WWZJetsTo4L2Nu_forCI.json -x iterative -o new_ref_histos -p semilep_nano
+time python run_analysis.py ../../input_samples/sample_jsons/test_samples/UL16APV_WWHSS_forCI.json -x iterative -o new_ref_histos -p semilep_nano
 
 # Make the JSON file of the yields
 printf "\nMaking the yields JSON file...\n"
