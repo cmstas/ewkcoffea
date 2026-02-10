@@ -9,13 +9,15 @@ import os
 import socket
 from coffea import processor
 from coffea.nanoevents import NanoAODSchema
+from coffea.nanoevents.schemas import BaseSchema
+
 NanoAODSchema.warn_missing_crossrefs = False
 import topcoffea.modules.remote_environment as remote_environment
 
 LST_OF_KNOWN_EXECUTORS = ["futures","work_queue","iterative"]
-LST_OF_KNOWN_PROCESSORS = ["semilep","semilep_nano","simple_gen"]
+LST_OF_KNOWN_PROCESSORS = ["semilep","semilep_nano","simple_gen",'2FJMET']
 
-
+#NanoAODSchema.error_missing_event_ids = False
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='You can customize your run')
@@ -39,6 +41,11 @@ if __name__ == '__main__':
     parser.add_argument('--processor', '-p', default='semilep', help = 'Which processor to execute', choices=LST_OF_KNOWN_PROCESSORS)
     parser.add_argument('--rwgt-to-sm', action='store_true', help = '')
 
+    # make output easier
+    parser.add_argument('--project', default=None, help = 'useful when trying combinations of cutflow (name of cutflows(.yaml) file)')
+    parser.add_argument('--cutflow', default=None, help = "Specify which cutflow to use")
+    parser.add_argument('--minus', action='store_true', help = "Use this to plot n-1 plots instead of cutflow")
+
 
     args = parser.parse_args()
     jsonFiles  = args.jsonFiles
@@ -58,13 +65,23 @@ if __name__ == '__main__':
     rwgt_to_sm = args.rwgt_to_sm
     wc_lst = args.wc_list if args.wc_list is not None else []
 
+    project = args.project
+    cutflow_name = args.cutflow
+    n_minus_1 = args.minus
+
     # Import the proper processor, based on option specified
     if args.processor == "semilep":
         import analysis_processor_semilep as analysis_processor
+        defaultSchema = NanoAODSchema
     elif args.processor == "semilep_nano":
         import analysis_processor_semilep_fromnano as analysis_processor
+        defaultSchema = NanoAODSchema
     elif args.processor == "simple_gen":
         import analysis_processor_gen_fromnano as analysis_processor
+        defaultSchema = NanoAODSchema
+    elif args. processor == "2FJMET":
+        import analysis_processor_2FJMET_fromRDF as analysis_processor
+        defaultSchema = BaseSchema
 
     # Check that if on UF login node, we're using WQ
     hostname = socket.gethostname()
@@ -202,7 +219,10 @@ if __name__ == '__main__':
     else:
         print('No Wilson coefficients specified')
 
-    processor_instance = analysis_processor.AnalysisProcessor(samplesdict,wc_lst,hist_lst,do_systs,skip_obj_systs,skip_sr,skip_cr,siphon_bdt_data=siphon,rwgt_to_sm=rwgt_to_sm)
+    if args.processor == "2FJMET":
+        processor_instance = analysis_processor.AnalysisProcessor(samplesdict,wc_lst,n_minus_1,project,cutflow_name)
+    else:
+        processor_instance = analysis_processor.AnalysisProcessor(samplesdict,wc_lst,hist_lst,do_systs,skip_obj_systs,skip_sr,skip_cr,siphon_bdt_data=siphon,rwgt_to_sm=rwgt_to_sm)
 
     if executor == "work_queue":
         executor_args = {
@@ -282,18 +302,27 @@ if __name__ == '__main__':
 
     # Run the processor and get the output
     tstart = time.time()
-
     if executor == "futures":
         exec_instance = processor.FuturesExecutor(workers=nworkers, merging=(1, 30, 10000))
-        runner = processor.Runner(exec_instance, schema=NanoAODSchema, chunksize=chunksize, maxchunks=nchunks)
+        print(exec_instance)
+        runner = processor.Runner(
+            executor=exec_instance,
+            schema=defaultSchema,
+            chunksize=chunksize,
+            maxchunks=nchunks
+    )
     elif executor == "iterative":
         exec_instance = processor.IterativeExecutor()
-        runner = processor.Runner(exec_instance, schema=NanoAODSchema, chunksize=chunksize, maxchunks=nchunks)
+        runner = processor.Runner(exec_instance, schema=defaultSchema, chunksize=chunksize, maxchunks=nchunks)
     elif executor ==  "work_queue":
         executor = processor.WorkQueueExecutor(**executor_args)
-        runner = processor.Runner(executor, schema=NanoAODSchema, chunksize=chunksize, maxchunks=nchunks, skipbadfiles=False, xrootdtimeout=180)
+        runner = processor.Runner(executor, schema=defaultSchema, chunksize=chunksize, maxchunks=nchunks, skipbadfiles=False, xrootdtimeout=180)
 
-    output = runner(flist, treename, processor_instance)
+    output = runner(
+        fileset=flist,
+        treename=treename,
+        processor_instance=processor_instance
+    )
 
     dt = time.time() - tstart
 
@@ -307,9 +336,38 @@ if __name__ == '__main__':
     if executor == "futures":
         print("Processing time: %1.2f s with %i workers (%.2f s cpu overall)" % (dt, nworkers, dt*nworkers, ))
 
+    if args.processor == "2FJMET":
+        #add project and cutflow to name
+        if project is not None: #add a subdir 
+            outpath = outpath+f'/{project}'
+            if cutflow_name is not None:
+                outpath = outpath+f'/{cutflow_name}'
+        else:
+            outpath = outpath
+
+        if outname != 'plotsTopEFT':
+            if args.cutflow is not None:
+                outname = f'{args.cutflow}_{outname}'
+            elif args.project is not None:
+                outname = f'{args.project}_{outname}'
+            else:
+                outname = 'hists_'+outname
+        else:
+            if args.cutflow is not None:
+                outname = f'{args.cutflow}_hists'
+
+
+            
     # Save the output
     if not os.path.isdir(outpath): os.system("mkdir -p %s"%outpath)
     out_pkl_file = os.path.join(outpath,outname+".pkl.gz")
+
+
+    if args.processor == "2FJMET":
+        if n_minus_1:
+            # Save the output
+            out_pkl_file = os.path.join(outpath,outname+"_m.pkl.gz")
+
     print(f"\nSaving output in {out_pkl_file}...")
     with gzip.open(out_pkl_file, "wb") as fout:
         cloudpickle.dump(output, fout)
