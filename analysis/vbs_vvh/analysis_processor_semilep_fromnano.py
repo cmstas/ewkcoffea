@@ -54,6 +54,13 @@ class AnalysisProcessor(processor.ProcessorABC):
             "l2_pt"  : axis.Regular(180, 0, 1000, name="l2_pt", label="l2 pt"),
             "l2_eta"  : axis.Regular(180, -3,3, name="l2_eta", label="l2 eta"),
 
+            "l0_iso"     : axis.Regular(180, 0,0.2, name="l0_iso", label="l0 pfRelIso03_all"),
+            "l0_miniiso" : axis.Regular(180, 0,0.2, name="l0_miniiso", label="l0 miniPFRelIso_all"),
+            "l1_iso"     : axis.Regular(180, 0,0.2, name="l1_iso", label="l1 pfRelIso03_all"),
+            "l1_miniiso" : axis.Regular(180, 0,0.2, name="l1_miniiso", label="l1 miniPFRelIso_all"),
+            "l2_iso"     : axis.Regular(180, 0,0.2, name="l2_iso", label="l2 pfRelIso03_all"),
+            "l2_miniiso" : axis.Regular(180, 0,0.2, name="l2_miniiso", label="l2 miniPFRelIso_all"),
+
             "mass_l0l1"  : axis.Regular(180, 0,500, name="mass_l0l1", label="mll of leading two leptons"),
             "dr_l0l1" : axis.Regular(180, 0, 6, name="dr_l0l1", label="dr between leading two leptons"),
 
@@ -90,20 +97,20 @@ class AnalysisProcessor(processor.ProcessorABC):
             "fj0_pNetWvsQCD"  : axis.Regular(180, 0, 1, name="fj0_pNetWvsQCD", label="fj0 pNet WvsQCD"),
             "fj0_pNetZvsQCD"  : axis.Regular(180, 0, 1, name="fj0_pNetZvsQCD", label="fj0 pNet ZvsQCD"),
 
-            "fj1_pt"  : axis.Regular(180, 0, 2000, name="fj1_pt", label="fj1 pt"),
-            "fj1_mass"  : axis.Regular(180, 0, 250, name="fj1_mass", label="fj1 mass"),
-            "fj1_msoftdrop"  : axis.Regular(180, 0, 250, name="fj1_msoftdrop", label="fj1 softdrop mass"),
-            "fj1_mparticlenet"  : axis.Regular(180, 0, 250, name="fj1_mparticlenet", label="fj1 particleNet mass"),
-            "fj1_eta" : axis.Regular(180, -5, 5, name="fj1_eta", label="fj1 eta"),
-            "fj1_phi" : axis.Regular(180, -3.1416, 3.1416, name="fj1_phi", label="j0 phi"),
+            #"fj1_pt"  : axis.Regular(180, 0, 2000, name="fj1_pt", label="fj1 pt"),
+            #"fj1_mass"  : axis.Regular(180, 0, 250, name="fj1_mass", label="fj1 mass"),
+            #"fj1_msoftdrop"  : axis.Regular(180, 0, 250, name="fj1_msoftdrop", label="fj1 softdrop mass"),
+            #"fj1_mparticlenet"  : axis.Regular(180, 0, 250, name="fj1_mparticlenet", label="fj1 particleNet mass"),
+            #"fj1_eta" : axis.Regular(180, -5, 5, name="fj1_eta", label="fj1 eta"),
+            #"fj1_phi" : axis.Regular(180, -3.1416, 3.1416, name="fj1_phi", label="j0 phi"),
 
-            "fj1_pNetH4qvsQCD": axis.Regular(180, 0, 1, name="fj1_pNetH4qvsQCD", label="fj1 pNet H4qvsQCD"),
-            "fj1_pNetHbbvsQCD": axis.Regular(180, 0, 1, name="fj1_pNetHbbvsQCD", label="fj1 pNet HbbvsQCD"),
-            "fj1_pNetHccvsQCD": axis.Regular(180, 0, 1, name="fj1_pNetHccvsQCD", label="fj1 pNet HccvsQCD"),
-            "fj1_pNetQCD"     : axis.Regular(180, 0, 1, name="fj1_pNetQCD",    label="fj1 pNet QCD"),
-            "fj1_pNetTvsQCD"  : axis.Regular(180, 0, 1, name="fj1_pNetTvsQCD", label="fj1 pNet TvsQCD"),
-            "fj1_pNetWvsQCD"  : axis.Regular(180, 0, 1, name="fj1_pNetWvsQCD", label="fj1 pNet WvsQCD"),
-            "fj1_pNetZvsQCD"  : axis.Regular(180, 0, 1, name="fj1_pNetZvsQCD", label="fj1 pNet ZvsQCD"),
+            #"fj1_pNetH4qvsQCD": axis.Regular(180, 0, 1, name="fj1_pNetH4qvsQCD", label="fj1 pNet H4qvsQCD"),
+            #"fj1_pNetHbbvsQCD": axis.Regular(180, 0, 1, name="fj1_pNetHbbvsQCD", label="fj1 pNet HbbvsQCD"),
+            #"fj1_pNetHccvsQCD": axis.Regular(180, 0, 1, name="fj1_pNetHccvsQCD", label="fj1 pNet HccvsQCD"),
+            #"fj1_pNetQCD"     : axis.Regular(180, 0, 1, name="fj1_pNetQCD",    label="fj1 pNet QCD"),
+            #"fj1_pNetTvsQCD"  : axis.Regular(180, 0, 1, name="fj1_pNetTvsQCD", label="fj1 pNet TvsQCD"),
+            #"fj1_pNetWvsQCD"  : axis.Regular(180, 0, 1, name="fj1_pNetWvsQCD", label="fj1 pNet WvsQCD"),
+            #"fj1_pNetZvsQCD"  : axis.Regular(180, 0, 1, name="fj1_pNetZvsQCD", label="fj1 pNet ZvsQCD"),
 
             "j0central_pt"  : axis.Regular(180, 0, 250, name="j0central_pt", label="j0 pt (central jets)"), # Naming
             "j0central_eta" : axis.Regular(180, -5, 5, name="j0central_eta", label="j0 eta (central jets)"), # Naming
@@ -798,14 +805,6 @@ class AnalysisProcessor(processor.ProcessorABC):
                 fj0_pNetWvsQCD   = fj0.particleNetWithMass_WvsQCD
                 fj0_pNetZvsQCD   = fj0.particleNetWithMass_ZvsQCD
                 fj0_mparticlenet = fj0.particleNetLegacy_mass
-                fj1_pNetH4qvsQCD = fj1.particleNetWithMass_H4qvsQCD
-                fj1_pNetHbbvsQCD = fj1.particleNetWithMass_HbbvsQCD
-                fj1_pNetHccvsQCD = fj1.particleNetWithMass_HccvsQCD
-                fj1_pNetQCD      = fj1.particleNetWithMass_QCD
-                fj1_pNetTvsQCD   = fj1.particleNetWithMass_TvsQCD
-                fj1_pNetWvsQCD   = fj1.particleNetWithMass_WvsQCD
-                fj1_pNetZvsQCD   = fj1.particleNetWithMass_ZvsQCD
-                fj1_mparticlenet = fj1.particleNetLegacy_mass
             else:
                 # Only for R2
                 fj0_pNetH4qvsQCD = fj0.particleNet_H4qvsQCD
@@ -816,14 +815,6 @@ class AnalysisProcessor(processor.ProcessorABC):
                 fj0_pNetWvsQCD   = fj0.particleNet_WvsQCD
                 fj0_pNetZvsQCD   = fj0.particleNet_ZvsQCD
                 fj0_mparticlenet = fj0.particleNet_mass
-                fj1_pNetH4qvsQCD = fj1.particleNet_H4qvsQCD
-                fj1_pNetHbbvsQCD = fj1.particleNet_HbbvsQCD
-                fj1_pNetHccvsQCD = fj1.particleNet_HccvsQCD
-                fj1_pNetQCD      = fj1.particleNet_QCD
-                fj1_pNetTvsQCD   = fj1.particleNet_TvsQCD
-                fj1_pNetWvsQCD   = fj1.particleNet_WvsQCD
-                fj1_pNetZvsQCD   = fj1.particleNet_ZvsQCD
-                fj1_mparticlenet = fj1.particleNet_mass
 
 
             # Put the variables we'll plot into a dictionary for easy access later
@@ -848,6 +839,12 @@ class AnalysisProcessor(processor.ProcessorABC):
                 "l2_eta" : l2_eta,
                 "mass_l0l1" : mass_l0l1,
                 "dr_l0l1" : dr_l0l1,
+                "l0_iso"     : l0.pfRelIso03_all,
+                "l0_miniiso" : l0.miniPFRelIso_all,
+                "l1_iso"     : l1.pfRelIso03_all,
+                "l1_miniiso" : l1.miniPFRelIso_all,
+                "l2_iso"     : l2.pfRelIso03_all,
+                "l2_miniiso" : l2.miniPFRelIso_all,
 
                 "j0central_pt" : j0central_pt,
                 "j0central_eta" : j0central_eta,
@@ -881,11 +878,11 @@ class AnalysisProcessor(processor.ProcessorABC):
                 "fj0_eta" : fj0.eta,
                 "fj0_phi" : fj0.phi,
 
-                "fj1_pt" : fj1.pt,
-                "fj1_mass" : fj1.mass,
-                "fj1_msoftdrop" : fj1.msoftdrop,
-                "fj1_eta" : fj1.eta,
-                "fj1_phi" : fj1.phi,
+                #"fj1_pt" : fj1.pt,
+                #"fj1_mass" : fj1.mass,
+                #"fj1_msoftdrop" : fj1.msoftdrop,
+                #"fj1_eta" : fj1.eta,
+                #"fj1_phi" : fj1.phi,
 
                 "j0_pt" : j0.pt,
                 "j0_eta" : j0.eta,
@@ -914,14 +911,14 @@ class AnalysisProcessor(processor.ProcessorABC):
                 "fj0_pNetZvsQCD"   : fj0_pNetZvsQCD,
                 "fj0_mparticlenet" : fj0_mparticlenet,
 
-                "fj1_pNetH4qvsQCD" : fj1_pNetH4qvsQCD,
-                "fj1_pNetHbbvsQCD" : fj1_pNetHbbvsQCD,
-                "fj1_pNetHccvsQCD" : fj1_pNetHccvsQCD,
-                "fj1_pNetQCD"      : fj1_pNetQCD,
-                "fj1_pNetTvsQCD"   : fj1_pNetTvsQCD,
-                "fj1_pNetWvsQCD"   : fj1_pNetWvsQCD,
-                "fj1_pNetZvsQCD"   : fj1_pNetZvsQCD,
-                "fj1_mparticlenet" : fj1_mparticlenet,
+                #"fj1_pNetH4qvsQCD" : fj1_pNetH4qvsQCD,
+                #"fj1_pNetHbbvsQCD" : fj1_pNetHbbvsQCD,
+                #"fj1_pNetHccvsQCD" : fj1_pNetHccvsQCD,
+                #"fj1_pNetQCD"      : fj1_pNetQCD,
+                #"fj1_pNetTvsQCD"   : fj1_pNetTvsQCD,
+                #"fj1_pNetWvsQCD"   : fj1_pNetWvsQCD,
+                #"fj1_pNetZvsQCD"   : fj1_pNetZvsQCD,
+                #"fj1_mparticlenet" : fj1_mparticlenet,
 
                 "jj_pairs_atmindr_mjj" : jj_pairs_atmindr_mjj,
 
