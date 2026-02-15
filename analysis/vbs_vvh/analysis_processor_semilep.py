@@ -26,7 +26,7 @@ get_ec_param = GetParam(ewkcoffea_path("params/params.json"))
 
 class AnalysisProcessor(processor.ProcessorABC):
 
-    def __init__(self, samples, wc_names_lst=[], hist_lst=None, do_systematics=False, skip_obj_systematics=False, skip_signal_regions=False, skip_control_regions=False, muonSyst='nominal', dtype=np.float32, siphon_bdt_data=False):
+    def __init__(self, samples, wc_names_lst=[], hist_lst=None, do_systematics=False, skip_obj_systematics=False, skip_signal_regions=False, skip_control_regions=False, muonSyst='nominal', dtype=np.float32, siphon_bdt_data=False, rwgt_to_sm=False):
 
         self._samples = samples
         self._wc_names_lst = wc_names_lst
@@ -212,7 +212,8 @@ class AnalysisProcessor(processor.ProcessorABC):
         json_name = events.metadata["dataset"]
 
         isData       = self._samples[json_name]["isData"]
-        histAxisName = events.namewithyear
+        #histAxisName = events.namewithyear
+        histAxisName = events.name
         year         = events.year
         xsec         = events.xsec
 
@@ -236,12 +237,12 @@ class AnalysisProcessor(processor.ProcessorABC):
                 raise Exception(f"ERROR: Unexpected dataset name for data file: {dataset}")
 
         # Initialize objects
-        ele     = events.Electron
-        mu      = events.Muon
-        jets    = events.Jet
+        ele     = events.electron
+        mu      = events.muon
+        jets    = events.jet
         #met     = events.MET
         met     = events.PuppiMET
-        fatjets = events.FatJet
+        fatjets = events.fatjet
         #fatjets = events.CorrFatJet
         #higgs   = events.Higgs
 
@@ -276,11 +277,13 @@ class AnalysisProcessor(processor.ProcessorABC):
         # Note: Here we will to the weights object the SFs that do not depend on any of the forthcoming loops
         weights_obj_base = coffea.analysis_tools.Weights(len(events),storeIndividual=True)
         if not isData:
-            if ak.any(events["LHEReweightingWeight"]):
-                genw = events["LHEReweightingWeight"][:,60]
-            else:
-                genw = events["genWeight"]
-            genw_raw = events["genWeight"]
+            #if ak.any(events["LHEReweightingWeight"]):
+            #    genw = events["LHEReweightingWeight"][:,60]
+            #else:
+            #    genw = events["genWeight"]
+            #genw_raw = events["genWeight"]
+            genw_raw = 1
+            genw = 1
 
             # Normalize to the weight from RDF
             weights_obj_base.add("norm",events.weight * genw/genw_raw)
