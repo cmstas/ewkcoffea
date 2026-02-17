@@ -13,3 +13,6 @@ LOG_LEVEL = "INFO"
 LOG_FORMAT = "%(message)s"
 
 DEFAULT_PLOTTING_PRESET = "default"
+
+SIG_COLOR = "red"
+DATA_COLOR = "blue"

@@ -22,7 +22,7 @@ def setup_logging():
 logger = logging.getLogger(__name__)
 
 def parse_args():
-    parser = argparse.ArgumentParser("make_plots")
+    parser = argparse.ArgumentParser("output_reader")
 
     parser.add_argument(
         "inputs",
@@ -33,6 +33,17 @@ def parse_args():
         "-o", "--output",
         default=None,
         help="Output directory. will use the dir of the first pkl.gz file if not provided",
+    )
+    parser.add_argument(
+        "--outdir",
+        default=None,
+        help="Output folder name. will use default (plots/syst name) if not provided",
+    )
+    
+    parser.add_argument(
+        "--run",type=int,
+        default=2,
+        help="run: 2/3",
     )
     parser.add_argument(
         "-p", "--plots",
@@ -56,15 +67,36 @@ def parse_args():
         choices=preset_list
     )
     parser.add_argument(
-        "--test_style",
+        "--blinded",
+        default=False,
+        action="store_true",
+        help="hide data"
+    )
+
+    parser.add_argument(
+        "--sig_coupling","-s",
+        default='nominal',
+        help="signal coupling name"
+    )
+    parser.add_argument(
+        "--bkg_syst","-b",
+        default='nominal',
+        help="bkg weighing name"
+    )
+
+
+    parser.add_argument(
+        "--test",
         default=False,
         action="store_true",
         help="to plot only one plot for testing plotting style"
     )
 
+
+
     return parser.parse_args()
 
-def make_all_plots(all_hist_collection, proc_map, outdir,plot_preset,test_style=False):
+def make_all_plots(all_hist_collection, proc_map, outdir,plot_preset,sig_coupling,bkg_syst,test_style=False):
     for cut,hist_collection in all_hist_collection.items():
         subdir = os.path.join(outdir, cut) if cut is not None else os.path.join(outdir, 'no_category')
         subdir = os.path.join(subdir, plot_preset) if plot_preset is not None else os.path.join(subdir, CONFIG.DEFAULT_PLOTTING_PRESET)
@@ -98,8 +130,8 @@ def make_all_plots(all_hist_collection, proc_map, outdir,plot_preset,test_style=
         logger.info(f'start producing plots for cut: {cut}')
         logger.info(f'output will be saved at {subdir}')
 
-        for var in hist_collection.variables_all:
-            sig,bkg,data = unpack_hist(hist_collection,var,proc_map)
+        for var in hist_collection.variables_any:
+            sig,bkg,data = unpack_hist(hist_collection,var,proc_map,sig_coupling=sig_coupling,bkg_syst=bkg_syst)
             fig = draw( 
                 sig=sig,
                 bkg=bkg,
@@ -112,13 +144,13 @@ def make_all_plots(all_hist_collection, proc_map, outdir,plot_preset,test_style=
             fig.savefig(os.path.join(subdir,f"{var}.png"), bbox_inches="tight")
             logger.info(f"    - Saved {var}.png")
 
-def save_yield_json(all_hist_collection, proc_map, output_json_name):
+def save_yield_json(all_hist_collection, proc_map, output_json_name,sig_coupling,bkg_syst):
     yield_ref_var = CONFIG.REF_VAR 
     logger.info(f"Using reference variable: {yield_ref_var}")
     yield_dict = {} #initialize yield dict
     uncer_dict = {}
     for cutname,hist_collection in all_hist_collection.items(): #cutname = cat in old script
-        sig,bkg,data = unpack_hist(hist_collection,yield_ref_var,proc_map)
+        sig,bkg,data = unpack_hist(hist_collection,yield_ref_var,proc_map,sig_coupling=sig_coupling,bkg_syst=bkg_syst)
         yield_dict[cutname]={
             "Signal":sig.total_yield(),
             "Background":bkg.total_yield(),
@@ -152,10 +184,24 @@ def main(args):
     setup_logging()
 
     input_list = resolve_input_list(args.inputs)
-    outdir = resolve_outdir(args.output,input_list,CONFIG.DEFAULT_OUTPUT_DIRNAME)
+    if args.outdir is not None:
+        folder_name = args.outdir
+    else:
+        folder_name = CONFIG.DEFAULT_OUTPUT_DIRNAME
+        if args.sig_coupling != 'nominal' :
+            folder_name += f'_s{args.sig_coupling}'
+        if args.bkg_syst=='nominal':
+            folder_name += f'_b{args.bkg_syst}'
+            
+    outdir = resolve_outdir(args.output,input_list,folder_name)
 
     #get proc_map that link process to sample type e.g. QCDpt to QCD
-    proc_map = ProcessMap.from_csv(CONFIG.PROC_MAP_CSV)
+    if args.run==2:
+        proc_map = ProcessMap.from_csv('/home/users/pyli/projects/analysis_VVH/coffea/ewkcoffea/analysis/vbs_vvh/config/run3_sample_names.csv' )#CONFIG.PROC_MAP_CSV)
+    elif args.run==3:
+        proc_map = ProcessMap.from_csv('/home/users/pyli/projects/analysis_VVH/coffea/ewkcoffea/analysis/vbs_vvh/config/run3_sample_names.csv' )#CONFIG.PROC_MAP_CSV)
+    else:
+        raise ValueError("Invalid run number: run",args.run)
 
     #load all hist in given files
     all_hist_collection = load_hist_collection(
@@ -163,12 +209,18 @@ def main(args):
         proc_map=proc_map,
         cutname=args.cutname,
     )
+    if args.blinded:
+        logger.info('Data will be hidden')
+        for hc in all_hist_collection.values():
+            hc.hide_data()
 
-    if args.plots:
-        make_all_plots(all_hist_collection, proc_map, outdir, args.plot_preset,args.test_style)
+
+    print(outdir)
+    if args.plots or args.test:
+        make_all_plots(all_hist_collection, proc_map, outdir, args.plot_preset,args.sig_coupling,args.bkg_syst,test_style=args.test)
     if args.yields:
         output_json_name = os.path.join(outdir,'yield.json') 
-        save_yield_json(all_hist_collection, proc_map, output_json_name)
+        save_yield_json(all_hist_collection, proc_map, output_json_name,args.sig_coupling,args.bkg_syst)
 
 if __name__ == "__main__":
     args = parse_args()

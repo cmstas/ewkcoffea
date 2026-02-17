@@ -1,0 +1,15 @@
+sample_year,sample_category,sample_type,sample_name,xsec,lumi,sumws,sample_code,plotting_colour
+run3,sig,WWH_OS,VBSWWH_OS_C2V_1p0_C3_1p0_13p6TeV_5f_LO_2024Prompt,0.001715,109.08,-1,10,crimson
+run3,sig,WWH_OS,VBSWWH_OS_C2V_1p5_C3_1p0_13p6TeV_5f_LO_2024Prompt,0.002221,109.08,-1,11,crimson
+run3,sig,WWH_OS,VBSWWH_OS_C2V_2p0_C3_1p0_13p6TeV_5f_LO_2024Prompt,0.003654,109.08,-1,12,crimson
+run3,sig,WWH_SS,VBSWWH_SS_C2V_1p0_C3_1p0_13p6TeV_5f_LO_2024Prompt,0.0003585,109.08,-1,13,lightcoral
+run3,sig,WWH_SS,VBSWWH_SS_C2V_1p5_C3_1p0_13p6TeV_5f_LO_2024Prompt,0.000728,109.08,-1,14,lightcoral
+run3,sig,WWH_SS,VBSWWH_SS_C2V_2p0_C3_1p0_13p6TeV_5f_LO_2024Prompt,0.001788,109.08,-1,15,lightcoral
+run3,sig,WZH,VBSWZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO_2024Prompt,0.000747,109.08,-1,16,orangered
+run3,sig,WZH,VBSWZH_C2V_1p5_C3_1p0_13p6TeV_5f_LO_2024Prompt,0.001106,109.08,-1,17,orangered
+run3,sig,WZH,VBSWZH_C2V_2p0_C3_1p0_13p6TeV_5f_LO_2024Prompt,0.002123,109.08,-1,18,orangered
+run3,sig,ZZH,VBSZZH_C2V_1p0_C3_1p0_13p6TeV_5f_LO_2024Prompt,0.0001302,109.08,-1,19,tomato
+run3,sig,ZZH,VBSZZH_C2V_1p5_C3_1p0_13p6TeV_5f_LO_2024Prompt,0.0004435,109.08,-1,110,tomato
+run3,sig,ZZH,VBSZZH_C2V_2p0_C3_1p0_13p6TeV_5f_LO_2024Prompt,0.001376,109.08,-1,111,tomato
+2018,bkg,ttx,ttHTobb_M125,0.1279,59.7,4843451.7560519995,149,"#00db6e"
+2016preVFP,data,MET,MET,1.0,1.0,1.0,20,black

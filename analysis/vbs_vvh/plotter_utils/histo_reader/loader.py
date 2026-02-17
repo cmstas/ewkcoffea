@@ -53,7 +53,7 @@ def load_hist_collection(pkl_paths,proc_map,cutname=None):
         
     return all_hist_collection
 
-def unpack_hist(hist_collection,var,proc_map):
+def unpack_hist(hist_collection,var,proc_map,sig_coupling='nominal',bkg_syst='nominal'):
     #need to test when none.
     """distribute into sig,bkg,dataHist for a single variable"""
     view = hist_collection.views[var]
@@ -63,7 +63,7 @@ def unpack_hist(hist_collection,var,proc_map):
             view["signal"],
             years=years,
             process_grouping={"Signal": proc_map.signal},
-            coupling="nominal",
+            coupling=sig_coupling,
         )
     else:
         sig = None
@@ -74,6 +74,7 @@ def unpack_hist(hist_collection,var,proc_map):
             years=years,
             process_grouping=proc_map.background_groups,
             background_groups=list(proc_map.background_groups),
+            coupling=bkg_syst,
         )
     else:
         bkg = None
@@ -161,6 +162,7 @@ def _get_hist_collection_single_cut(hist_dicts,proc_map,cutname=None):
     vars_sig_only = []
     vars_mc_only = [] # sig&bkg but not data
     vars_all = []
+    variables_any=[]
 
     # ---- inspect each variable ----
     
@@ -197,6 +199,8 @@ def _get_hist_collection_single_cut(hist_dicts,proc_map,cutname=None):
 
         vdict["years"] = sorted(year_sets[0]) if year_sets else []
 
+        
+        variables_any.append(var)
         if vdict["signal"] and not vdict["background"]:
             vars_sig_only.append(var)
         elif vdict["signal"] and vdict["background"] and not vdict["data"]:
@@ -220,5 +224,6 @@ def _get_hist_collection_single_cut(hist_dicts,proc_map,cutname=None):
         variables_sig_only=vars_sig_only,
         variables_mc_only=vars_mc_only,
         variables_all=vars_all,
+        variables_any =variables_any,
         proc_map=proc_map
     )

@@ -1,4 +1,5 @@
 import numpy as np
+import re
 
 def snap_to_decade(factor):
     """
@@ -25,3 +26,31 @@ def plt_scientific_notation(ax,limit=4):
 
     ax.yaxis.set_major_formatter(formatter)
     return ax
+
+def format_variable_label(hist):
+    """ fixing this
+            raise s.error('bad escape %s' % this, len(this))
+            re.error: bad escape \D at position 1
+    """
+    axis = hist.axes[-1]
+    label = axis.label or axis.name
+    s = label
+
+    rules = [
+        # Delta variables (with or without underscore)
+        (r"(?:^|_)dR\b",    "$\\Delta R$"),
+        (r"(?:^|_)dphi\b",  "$\\Delta \\phi$"),
+        (r"(?:^|_)deta\b",  "$\\Delta \\eta$"),
+
+        # Single variables
+        (r"\bphi\b", "$\\phi$"),
+        (r"\beta\b", "$\\eta$"),
+    ]
+
+    for pattern, repl in rules:
+        s = re.sub(pattern, repl, s)
+
+    # Optional cosmetic cleanup
+    s = s.replace("_", " ")
+
+    return s

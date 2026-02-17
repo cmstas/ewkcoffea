@@ -64,9 +64,9 @@ def draw(
 
 
     #need to move this into each ax later
-    xlabel = ax_main.xaxis.label
-    logger.debug(f'font size is {rel_fontsize_calc(rel_xfontsize,x_size)}')
-    xlabel.set_fontsize(rel_fontsize_calc(rel_xfontsize,x_size))
+    # xlabel = ax_main.xaxis.label
+    # logger.debug(f'font size is {rel_fontsize_calc(rel_xfontsize,x_size)}')
+    # xlabel.set_fontsize(rel_fontsize_calc(rel_xfontsize,x_size))
 
     ylabel = ax_main.yaxis.label
     logger.debug(f'font size is {rel_fontsize_calc(rel_yfontsize,x_size)}')
@@ -86,5 +86,7 @@ def draw(
         metric_cls = METRIC_REGISTRY[name]
         metric = metric_cls(sig=sig, bkg=bkg, data=data)
         draw_metric_subplot(ax, metric, name,line_colors=line_colors)
+
+    axes[-1].set_xlabel(title, fontsize=rel_fontsize_calc(rel_xfontsize, x_size))
 
     return fig

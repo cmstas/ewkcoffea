@@ -123,7 +123,7 @@ class BaseHist:
         return self._hist.axes[0].edges
 
     def bin_centers(self):
-        return self._hist.axes[0].centers
+        return self._hist.axes[-1].centers
     
     def get_yield_per_type(self):
         """

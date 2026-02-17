@@ -32,3 +32,17 @@ def draw_metric_subplot(ax, metric, metric_name, line_colors):
             ax.step(result.x, result.y,color=line_colors["General"])
 
     ax.set_ylabel(result.label)
+    # ------------------------------------------------------------------
+    # Reference line(s)
+    # ------------------------------------------------------------------
+    if metric_name == "dataMC":
+        _draw_horizontal_line(ax,y=1)
+
+def _draw_horizontal_line(ax,y):
+    ax.axhline(
+        1.0,
+        color="gray",
+        linestyle="--",
+        linewidth=1.0,
+        zorder=0,
+    )

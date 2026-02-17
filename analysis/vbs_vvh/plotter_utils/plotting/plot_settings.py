@@ -38,10 +38,10 @@ PLOT_PRESETS = {
     ),
 
     "cut_study": PlotConfig(
-        subplots=("pass_rate", "significance"),
+        subplots=("efficiency", "significance"),
         fig_ratio={
             "main": 3,
-            "pass_rate": 1,
+            "efficiency": 1,
             "significance": 1,
         },
         line_colors=DEFAULT_COLORS
@@ -64,13 +64,16 @@ def font_size(fig, frac):
 PLOT_SETTINGS = {
     "xsize": 7,
     "main_ysize":3,
-    "sub_ysize":2,
+    "sub_ysize":2.5,
 
     "show_title": False, #default to false because title is predefned to be the same as x-axis. change if necessary
     "rel_xfontsize": 3, #somehow looks good
     "rel_yfontsize": 2, #somehow looks good
     "rel_label_fontsize": 2,
-    "title_fontsize": 12 #will be changed to use rel size. 
+    "title_fontsize": 12, #will be changed to use rel size. 
+
+    "legend_order": ["EWK", "Other",'QCD',"ST","WJets","ZJets","ttbar","ttx"], 
+    'ncol_legend':2,
 }
 
 def rel_fontsize_calc(ratio,x_size):

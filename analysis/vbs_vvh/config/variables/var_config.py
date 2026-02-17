@@ -242,6 +242,10 @@ dense_variables_config = { #name of axis must be same as key
         "axis": axis.Regular(80, 0, 800, name="Met_pt_low", label="MET pt (GeV)"),
         "expr":  lambda events, objects: objects["MET"].pt,
     },
+    "Met_pt_rew":{
+        "axis": axis.Regular(20, 0, 1000, name="Met_pt_rew", label="MET pt (GeV)"),
+        "expr":  lambda events, objects: objects["MET"].pt,
+    },
     "Met_significance":{
         "axis": axis.Regular(50, 0, 2000, name="Met_significance", label="MET significance"),
         "expr":  lambda events, objects: objects["MET"].significance,
