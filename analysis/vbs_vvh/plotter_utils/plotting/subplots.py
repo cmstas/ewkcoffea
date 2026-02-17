@@ -1,20 +1,16 @@
 # plotter_utils/plotting/subplots.py
 
 import logging
+logger = logging.getLogger(__name__)
 
-log = logging.getLogger(__name__)
-
-
-def draw_metric_subplot(ax, metric, metric_name):
+def draw_metric_subplot(ax, metric, metric_name, line_colors):
     ok, missing = metric.available()
     if metric.y_range:
         ax.set_ylim(*metric.y_range)
 
-    logging.debug(f"in draw_metric_subplot we have\n {metric_name}: {metric.compute().x}\n{metric.compute().y}")
-
     if not ok:
         msg = f"{metric_name}: {missing} not available"
-        log.warning(msg)
+        logger.warning(msg)
         ax.text(
             0.5, 0.5, msg,
             ha="center", va="center",
@@ -25,17 +21,28 @@ def draw_metric_subplot(ax, metric, metric_name):
 
     result = metric.compute()
 
-    if result.yerr is not None:
-        ax.errorbar(
-            result.x,
-            result.y,
-            yerr=result.yerr,
-            fmt="o",
-        )
+    if isinstance(result.y, dict):
+        for label, yvals in result.y.items():
+            ax.step(result.x, yvals, where="mid", label=label,color=line_colors[label])
+        ax.legend()
     else:
-        ax.step(result.x, result.y, where="mid")
-
-    ax.axhline(1.0 if metric_name == "dataMC" else 0.0,
-               color="gray", linestyle="--")
+        if result.yerr is not None:
+            ax.errorbar(result.x, result.y, yerr=result.yerr, fmt="o",color=line_colors["General"])
+        else:
+            ax.step(result.x, result.y,color=line_colors["General"])
 
     ax.set_ylabel(result.label)
+    # ------------------------------------------------------------------
+    # Reference line(s)
+    # ------------------------------------------------------------------
+    if metric_name == "dataMC":
+        _draw_horizontal_line(ax,y=1)
+
+def _draw_horizontal_line(ax,y):
+    ax.axhline(
+        1.0,
+        color="gray",
+        linestyle="--",
+        linewidth=1.0,
+        zorder=0,
+    )

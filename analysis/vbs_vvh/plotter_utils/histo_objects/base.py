@@ -123,7 +123,7 @@ class BaseHist:
         return self._hist.axes[0].edges
 
     def bin_centers(self):
-        return self._hist.axes[0].centers
+        return self._hist.axes[-1].centers
     
     def get_yield_per_type(self):
         """
@@ -142,3 +142,29 @@ class BaseHist:
     def get_variance_per_type(self):
         """Return yields grouped by 'type'."""
         raise NotImplementedError
+
+            
+    def right_cumulative(self, *, total=False):
+        """
+        Cumulative yield passing cut (x → last bin). total for bkg if needed
+        """
+        if total:
+            vals = self.values_total(flow=False)
+        else:
+            vals = self.values(flow=False)
+
+        vals = np.asarray(vals)
+        return np.cumsum(vals[..., ::-1], axis=-1)[..., ::-1]
+    
+    
+    def left_cumulative(self, *, total=False):
+        """
+        Cumulative yield passing cut (first bin -> x). total for bkg if needed
+        """
+        if total:
+            vals = self.values_total(flow=False)
+        else:
+            vals = self.values(flow=False)
+
+        vals = np.asarray(vals)
+        return np.cumsum(vals, axis=-1)

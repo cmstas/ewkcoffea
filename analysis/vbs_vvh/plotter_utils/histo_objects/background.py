@@ -8,7 +8,7 @@ class BackgroundHist(BaseHist):
     Background histogram.
 
     Differences from BaseHist:
-      - always nominal systematic
+      - select coupling-dependent systematic
       - keeps individual background process_grp for stacked plotting
       - provides total background histogram
     """
@@ -20,7 +20,9 @@ class BackgroundHist(BaseHist):
         years,
         process_grouping,
         background_groups,
+        coupling
     ):
+        self.coupling = coupling
         self.background_groups = background_groups
         super().__init__(
             hist,
@@ -35,8 +37,7 @@ class BackgroundHist(BaseHist):
         import copy
         h = super()._prepare_hist()
 
-        # Nominal only
-        h = h[{"systematic": "nominal"}]
+        h = h[{"systematic": self.coupling}]
         h = plt_tools.merge_overflow(h)
         return h
 
@@ -101,7 +102,7 @@ class BackgroundHist(BaseHist):
                 )
                 # apply same pipeline steps
                 h_proc = self._sum_years(h_proc)
-                h_proc = h_proc[{"systematic": "nominal"}]
+                h_proc = h_proc[{"systematic": self.coupling}]
                 h_proc = self._safe_merge_overflow(h_proc)
 
                 out[grp][proc] = self._yield_from_hist(h_proc)

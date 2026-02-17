@@ -45,6 +45,7 @@ if __name__ == '__main__':
     parser.add_argument('--project', default=None, help = 'useful when trying combinations of cutflow (name of cutflows(.yaml) file)')
     parser.add_argument('--cutflow', default=None, help = "Specify which cutflow to use")
     parser.add_argument('--minus', action='store_true', help = "Use this to plot n-1 plots instead of cutflow")
+    parser.add_argument('--run',type=int,default=2,help="run: 2/3")
 
 
     args = parser.parse_args()
@@ -68,6 +69,7 @@ if __name__ == '__main__':
     project = args.project
     cutflow_name = args.cutflow
     n_minus_1 = args.minus
+    run = args.run
 
     # Import the proper processor, based on option specified
     if args.processor == "semilep":
@@ -79,10 +81,12 @@ if __name__ == '__main__':
     elif args.processor == "simple_gen":
         import analysis_processor_gen_fromnano as analysis_processor
         defaultSchema = NanoAODSchema
-    elif args. processor == "2FJMET":
+    elif args.processor == "2FJMET":
+        if run !=2 and run !=3:
+            raise ValueError(f'invalid run number (should be 2/3): run is {run}')
         import analysis_processor_2FJMET_fromRDF as analysis_processor
         defaultSchema = BaseSchema
-
+        
     # Check that if on UF login node, we're using WQ
     hostname = socket.gethostname()
     if "login" in hostname:
@@ -220,7 +224,7 @@ if __name__ == '__main__':
         print('No Wilson coefficients specified')
 
     if args.processor == "2FJMET":
-        processor_instance = analysis_processor.AnalysisProcessor(samplesdict,wc_lst,n_minus_1,project,cutflow_name)
+        processor_instance = analysis_processor.AnalysisProcessor(samplesdict,wc_lst,n_minus_1,project,cutflow_name,run)
     else:
         processor_instance = analysis_processor.AnalysisProcessor(samplesdict,wc_lst,hist_lst,do_systs,skip_obj_systs,skip_sr,skip_cr,siphon_bdt_data=siphon,rwgt_to_sm=rwgt_to_sm)
 
@@ -344,6 +348,11 @@ if __name__ == '__main__':
                 outpath = outpath+f'/{cutflow_name}'
         else:
             outpath = outpath
+        
+        
+        if args.minus:
+            outpath = outpath + '_minus'
+
 
         if outname != 'plotsTopEFT':
             if args.cutflow is not None:

@@ -61,3 +61,56 @@ class MetricBase(ABC):
             arr = arr.sum(axis=axes)
 
         return arr
+    
+    #errorbars
+    @staticmethod
+    def poisson_err(vals):
+        """
+        Poisson statistical uncertainty.
+        Negative or NaN inputs give zero error.
+        """
+        vals = np.asarray(vals, dtype=float)
+        return np.sqrt(np.clip(vals, 0.0, None))
+
+    @staticmethod
+    def safe_ratio_err(num, den, num_var=None, den_var=None):
+        """
+        Error propagation for ratio R = num / den.
+
+        If only den_var is provided:
+            sigma_R = R * sqrt(den_var / den^2)
+
+        If both num_var and den_var are provided:
+            sigma_R = R * sqrt( num_var/num^2 + den_var/den^2 )
+
+        Returns zero where den <= 0.
+        """
+        num = np.asarray(num, dtype=float)
+        den = np.asarray(den, dtype=float)
+
+        R = np.divide(
+            num, den,
+            out=np.zeros_like(num, dtype=float),
+            where=den > 0
+        )
+
+        err2 = np.zeros_like(R, dtype=float)
+
+        if num_var is not None:
+            num_var = np.asarray(num_var, dtype=float)
+            err2 += np.divide(
+                num_var, num**2,
+                out=np.zeros_like(num_var, dtype=float),
+                where=num > 0
+            )
+
+        if den_var is not None:
+            den_var = np.asarray(den_var, dtype=float)
+            err2 += np.divide(
+                den_var, den**2,
+                out=np.zeros_like(den_var, dtype=float),
+                where=den > 0
+            )
+
+        return R * np.sqrt(err2)
+
