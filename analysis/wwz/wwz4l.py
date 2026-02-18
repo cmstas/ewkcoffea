@@ -67,17 +67,24 @@ class AnalysisProcessor(processor.ProcessorABC):
             "scalarptsum_jet" : axis.Regular(180, 0, 700, name="scalarptsum_jet", label="H_T"),
             "mll_01": axis.Regular(180, 0, 200, name="mll_01",  label="mll_l0_l1"),
             "mllll": axis.Regular(180, 0, 1000, name="mllll",  label="mllll"),
-            "l0pt"  : axis.Regular(180, 0, 500, name="l0pt", label="l0pt"),
-            "j0pt"  : axis.Regular(180, 0, 500, name="j0pt", label="j0 pt"),
+            "l0pt"  : axis.Regular(180, 0, 300, name="l0pt", label="l0pt"),
+            "l1pt"  : axis.Regular(180, 0, 200, name="l1pt", label="l1pt"),
+            "l2pt"  : axis.Regular(180, 0, 100, name="l2pt", label="l2pt"),
+            "l3pt"  : axis.Regular(180, 0, 100, name="l3pt", label="l3pt"),
+            "j0pt"  : axis.Regular(180, 0, 300, name="j0pt", label="j0 pt"),
             "j0eta" : axis.Regular(180, -3, 3, name="j0eta", label="j0 eta"),
             "j0phi" : axis.Regular(180, -3.1416, 3.1416, name="j0phi", label="j0 phi"),
+            "j1pt"  : axis.Regular(180, 0, 300, name="j1pt", label="j1 pt"),
+            "j1eta" : axis.Regular(180, -3, 3, name="j1eta", label="j1 eta"),
+            "j1phi" : axis.Regular(180, -3.1416, 3.1416, name="j1phi", label="j1 phi"),
+            "mjj" : axis.Regular(180, 0, 300, name="mjj", label="mjj"),
 
             "abs_pdgid_sum" : axis.Regular(15, 40, 55, name="abs_pdgid_sum", label="Sum of abs pdgId for all 4 lep"),
 
-            "w_lep0_pt"  : axis.Regular(180, 0, 300, name="w_lep0_pt", label="Leading W lep pt"),
-            "w_lep1_pt"  : axis.Regular(180, 0, 300, name="w_lep1_pt", label="Subleading W lep pt"),
-            "z_lep0_pt"  : axis.Regular(180, 0, 300, name="z_lep0_pt", label="Leading Z lep pt"),
-            "z_lep1_pt"  : axis.Regular(180, 0, 300, name="z_lep1_pt", label="Subleading Z lep pt"),
+            "w_lep0_pt"  : axis.Regular(180, 0, 100, name="w_lep0_pt", label="Leading W lep pt"),
+            "w_lep1_pt"  : axis.Regular(180, 0, 100, name="w_lep1_pt", label="Subleading W lep pt"),
+            "z_lep0_pt"  : axis.Regular(180, 0, 200, name="z_lep0_pt", label="Leading Z lep pt"),
+            "z_lep1_pt"  : axis.Regular(180, 0, 200, name="z_lep1_pt", label="Subleading Z lep pt"),
             "w_lep0_eta" : axis.Regular(180, -3, 3, name="w_lep0_eta", label="Leading W lep eta"),
             "w_lep1_eta" : axis.Regular(180, -3, 3, name="w_lep1_eta", label="Subleading W lep eta"),
             "z_lep0_eta" : axis.Regular(180, -3, 3, name="z_lep0_eta", label="Leading Z lep eta"),
@@ -388,6 +395,7 @@ class AnalysisProcessor(processor.ProcessorABC):
         # Put njets and l_fo_conept_sorted into events and get 4l event selection mask
         events["l_wwz_t"] = l_wwz_t
         es_ec.add4lmask_wwz(events, year, isData, histAxisName, is2022,is2023)
+        es_ec.add4lmask_bbzz(events, year, isData, histAxisName, is2022,is2023)
 
 
         ######### Normalization and weights ###########
@@ -515,8 +523,13 @@ class AnalysisProcessor(processor.ProcessorABC):
             # Count jets
             njets = ak.num(goodJets)
             ht = ak.sum(goodJets.pt,axis=-1)
-            j0 = goodJets[ak.argmax(goodJets.pt,axis=-1,keepdims=True)]
+            #j0 = goodJets[ak.argmax(goodJets.pt,axis=-1,keepdims=True)]
 
+            goodJets_ptordered = goodJets[ak.argsort(goodJets.pt,axis=-1,ascending=False)]
+            goodJets_ptordered_padded = ak.pad_none(goodJets_ptordered, 2)
+            j0 = goodJets_ptordered_padded[:,0]
+            j1 = goodJets_ptordered_padded[:,1]
+            mjj = (j0+j1).mass
 
             # Loose DeepJet WP
             btagger = "btag" # For deep flavor WPs
@@ -694,9 +707,12 @@ class AnalysisProcessor(processor.ProcessorABC):
             abs_pdgid_sum = (abs(l0.pdgId) + abs(l1.pdgId) + abs(l2.pdgId) + abs(l3.pdgId))
 
             l0pt = l0.pt
-            j0pt = ak.flatten(j0.pt) # Flatten to go from [[j0pt],[j0pt],...] -> [j0pt,j0pt,...]
-            j0eta = ak.flatten(j0.eta) # Flatten to go from [[j0pt],[j0pt],...] -> [j0pt,j0pt,...]
-            j0phi = ak.flatten(j0.phi) # Flatten to go from [[j0pt],[j0pt],...] -> [j0pt,j0pt,...]
+            j0pt = j0.pt
+            j0eta = j0.eta
+            j0phi = j0.phi
+            j1pt = j1.pt
+            j1eta = j1.eta
+            j1phi = j1.phi
             mll_01 = (l0+l1).mass
             mllll = (l0+l1+l2+l3).mass
             scalarptsum_lep = l0.pt + l1.pt + l2.pt + l3.pt
@@ -759,9 +775,16 @@ class AnalysisProcessor(processor.ProcessorABC):
                 "mll_01" : mll_01,
                 "mllll" : mllll,
                 "l0pt" : l0pt,
+                "l1pt" : l1.pt,
+                "l2pt" : l2.pt,
+                "l3pt" : l3.pt,
                 "j0pt" : j0pt,
                 "j0eta" : j0eta,
                 "j0phi" : j0phi,
+                "j1pt" : j1pt,
+                "j1eta" : j1eta,
+                "j1phi" : j1phi,
+                "mjj" : mjj,
 
                 "abs_pdgid_sum": abs_pdgid_sum,
 
@@ -818,8 +841,8 @@ class AnalysisProcessor(processor.ProcessorABC):
                 "mll_min_afos" : mll_min_afos,
                 "mll_min_sfos" : mll_min_sfos,
 
-                "mlb_min" : mlb_min,
-                "mlb_max" : mlb_max,
+                #"mlb_min" : mlb_min,
+                #"mlb_max" : mlb_max,
 
             }
             # Include the genPartFlav, though this is only defined for MC, so just fill with 1 if data
@@ -827,6 +850,17 @@ class AnalysisProcessor(processor.ProcessorABC):
             dense_variables_dict["w_lep1_genPartFlav"] = w_lep1.genPartFlav if not isData else events.nom
             dense_variables_dict["z_lep0_genPartFlav"] = z_lep0.genPartFlav if not isData else events.nom
             dense_variables_dict["z_lep1_genPartFlav"] = z_lep1.genPartFlav if not isData else events.nom
+
+
+            ############### bbzz selection ###############
+            z1_candidate_sfos = w_lep0.pdgId == -(w_lep1.pdgId)
+            z1_candidate_good_pt = ((w_lep0+w_lep1).mass > 12) & ((w_lep0+w_lep1).mass<120)
+
+            has_z0_candidate = (z_lep0+z_lep1).mass > 40
+            has_z1_candidate = z1_candidate_sfos & z1_candidate_good_pt
+
+            has_zz_candidate = has_z0_candidate & has_z1_candidate
+            ####################################
 
 
             ######### Evaluate the BDTs (get WWZ, ZH, and WZ scores for SF and OF) #########
@@ -1014,6 +1048,36 @@ class AnalysisProcessor(processor.ProcessorABC):
             selections.add("sr_4l_sf_incl", (veto_map_mask & pass_trg & events.is4lWWZ & bmask_exactly0loose & events.wwz_presel_sf & w_candidates_mll_far_from_z & (met.pt >= 65.0))) # Inclusive over SF sr (only applying cuts that are applied to all SF SRs), just use for visualization
             selections.add("sr_4l_of_incl", (veto_map_mask & pass_trg & events.is4lWWZ & bmask_exactly0loose & events.wwz_presel_of)) # Inclusive over OF sr (only applying cuts that are applied to all OF SRs), just use for visualization
 
+            ########## For bbzz SRs ##########
+            z0_ee = ((abs(z_lep0.pdgId) == 11) & (abs(z_lep1.pdgId) == 11))
+            z1_ee = ((abs(w_lep0.pdgId) == 11) & (abs(w_lep1.pdgId) == 11))
+            z0_mm = ((abs(z_lep0.pdgId) == 13) & (abs(z_lep1.pdgId) == 13))
+            z1_mm = ((abs(w_lep0.pdgId) == 13) & (abs(w_lep1.pdgId) == 13))
+
+            mllll_bbzz = (mllll > 115) & (mllll < 135)
+            bbzz_4e = z0_ee & z1_ee
+            bbzz_4m = z0_mm & z1_mm
+            bbzz_2e2m = (z0_ee & z1_mm) | (z0_mm & z1_ee)
+            selections.add("bbzz",                    (veto_map_mask & pass_trg & events.is4lbbzz))
+            selections.add("bbzz_zzcand",             (veto_map_mask & pass_trg & events.is4lbbzz & has_zz_candidate))
+            selections.add("bbzz_zzcand_bb",          (veto_map_mask & pass_trg & events.is4lbbzz & has_zz_candidate & (njets>=2)))
+            selections.add("bbzz_zzcand_bb_m4l",      (veto_map_mask & pass_trg & events.is4lbbzz & has_zz_candidate & (njets>=2) & mllll_bbzz))
+            selections.add("bbzz_zzcand_bb_m4l_4e",   (veto_map_mask & pass_trg & events.is4lbbzz & has_zz_candidate & (njets>=2) & mllll_bbzz & bbzz_4e))
+            selections.add("bbzz_zzcand_bb_m4l_4m",   (veto_map_mask & pass_trg & events.is4lbbzz & has_zz_candidate & (njets>=2) & mllll_bbzz & bbzz_4m))
+            selections.add("bbzz_zzcand_bb_m4l_2e2m", (veto_map_mask & pass_trg & events.is4lbbzz & has_zz_candidate & (njets>=2) & mllll_bbzz & bbzz_2e2m))
+            bbzz_cat_lst = [
+                "all_events",
+                "sr_4l_bdt_of_trn",
+                "bbzz",
+                "bbzz_zzcand",
+                "bbzz_zzcand_bb",
+                "bbzz_zzcand_bb_m4l",
+                "bbzz_zzcand_bb_m4l_4e",
+                "bbzz_zzcand_bb_m4l_4m",
+                "bbzz_zzcand_bb_m4l_2e2m",
+            ]
+            ##################################
+
             # For BDT SRs
 
             sr_4l_bdt_sf_presel        = (veto_map_mask & pass_trg & events.is4lWWZ & bmask_exactly0loose & events.wwz_presel_sf & w_candidates_mll_far_from_z)
@@ -1113,6 +1177,9 @@ class AnalysisProcessor(processor.ProcessorABC):
 
             cat_dict["lep_chan_lst"] = cat_dict["lep_chan_lst"] + bdt_sr_names + bdt_misc_names
 
+            # TMP: Just hard code list of channels
+            cat_dict["lep_chan_lst"] = bbzz_cat_lst
+
             ######### Fill histos #########
 
             # List the hists that are only defined for some categories
@@ -1124,7 +1191,14 @@ class AnalysisProcessor(processor.ProcessorABC):
                 "j0pt" : ["all_events", "4l_presel", "sr_4l_sf", "sr_4l_of", "sr_4l_sf_incl", "sr_4l_of_incl", "cr_4l_sf", "cr_4l_sf_higgs"] + analysis_cats + bdt_misc_names,
                 "j0eta" : ["all_events", "4l_presel", "sr_4l_sf", "sr_4l_of", "sr_4l_sf_incl", "sr_4l_of_incl", "cr_4l_sf", "cr_4l_sf_higgs"] + analysis_cats + bdt_misc_names,
                 "j0phi" : ["all_events", "4l_presel", "sr_4l_sf", "sr_4l_of", "sr_4l_sf_incl", "sr_4l_of_incl", "cr_4l_sf", "cr_4l_sf_higgs"] + analysis_cats + bdt_misc_names,
+                "j1pt" : ["all_events", "4l_presel", "sr_4l_sf", "sr_4l_of", "sr_4l_sf_incl", "sr_4l_of_incl", "cr_4l_sf", "cr_4l_sf_higgs"] + analysis_cats + bdt_misc_names,
+                "j1eta" : ["all_events", "4l_presel", "sr_4l_sf", "sr_4l_of", "sr_4l_sf_incl", "sr_4l_of_incl", "cr_4l_sf", "cr_4l_sf_higgs"] + analysis_cats + bdt_misc_names,
+                "j1phi" : ["all_events", "4l_presel", "sr_4l_sf", "sr_4l_of", "sr_4l_sf_incl", "sr_4l_of_incl", "cr_4l_sf", "cr_4l_sf_higgs"] + analysis_cats + bdt_misc_names,
+                "mjj" : ["all_events", "4l_presel", "sr_4l_sf", "sr_4l_of", "sr_4l_sf_incl", "sr_4l_of_incl", "cr_4l_sf", "cr_4l_sf_higgs"] + analysis_cats + bdt_misc_names,
                 "l0pt" : ["all_events"],
+                "l1pt" : ["all_events"],
+                "l2pt" : ["all_events"],
+                "l3pt" : ["all_events"],
                 "mll_01" : ["all_events"],
                 "mllll" : ["all_events"],
                 "scalarptsum_lep" : ["all_events"],
