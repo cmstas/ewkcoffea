@@ -9,19 +9,7 @@ from coffea import processor
 import hist
 from hist import axis
 from coffea.analysis_tools import PackedSelection
-
-from topcoffea.modules.paths import topcoffea_path
-#import topcoffea.modules.event_selection as es_tc
-#import topcoffea.modules.corrections as cor_tc
-
-from ewkcoffea.modules.paths import ewkcoffea_path as ewkcoffea_path
-#import ewkcoffea.modules.selection_wwz as es_ec
 import ewkcoffea.modules.objects_wwz as os_ec
-import ewkcoffea.modules.corrections as cor_ec
-
-from topcoffea.modules.get_param_from_jsons import GetParam
-get_tc_param = GetParam(topcoffea_path("params/params.json"))
-get_ec_param = GetParam(ewkcoffea_path("params/params.json"))
 
 
 class AnalysisProcessor(processor.ProcessorABC):
@@ -220,11 +208,7 @@ class AnalysisProcessor(processor.ProcessorABC):
         ################### Lepton selection ####################
 
         # Get tight leptons for VVH selection, using mask from RDF
-        # These now come from RDF output
-        ele_vvh_t = ele
-        mu_vvh_t  = mu
-
-        l_vvh_t = ak.with_name(ak.concatenate([ele_vvh_t,mu_vvh_t],axis=1),'PtEtaPhiMCandidate')
+        l_vvh_t = ak.with_name(ak.concatenate([ele,mu],axis=1),'PtEtaPhiMCandidate')
         l_vvh_t = l_vvh_t[ak.argsort(l_vvh_t.pt, axis=-1,ascending=False)] # Sort by pt
         events["l_vvh_t"] = l_vvh_t
 
@@ -304,28 +288,20 @@ class AnalysisProcessor(processor.ProcessorABC):
         mljjjjcnt = ak.where(njets>=4, (l0 + j0+j1+j2+j3).mass, 0)
 
 
-        ### Btag WPs ###
-        # Eventually we should probably just take the btag jet collection from the RDF output
-        # For now handle it with a hard-to-read series of ak.where
-        btagwpl = events.nom
-        btagwpm = events.nom
-        btagwpl = ak.where(events.year=="2018",get_tc_param("btag_wp_loose_UL18"),btagwpl)
-        btagwpm = ak.where(events.year=="2018",get_tc_param("btag_wp_loose_UL18"),btagwpm)
-        btagwpl = ak.where(events.year=="2017",get_tc_param("btag_wp_loose_UL17"),btagwpl)
-        btagwpm = ak.where(events.year=="2017",get_tc_param("btag_wp_loose_UL17"),btagwpm)
-        btagwpl = ak.where(events.year=="2016postVFP",get_tc_param("btag_wp_loose_UL16"),btagwpl)
-        btagwpm = ak.where(events.year=="2016postVFP",get_tc_param("btag_wp_loose_UL16"),btagwpm)
-        btagwpl = ak.where(events.year=="2016preVFP",get_tc_param("btag_wp_loose_UL16APV"),btagwpl)
-        btagwpm = ak.where(events.year=="2016preVFP",get_tc_param("btag_wp_loose_UL16APV"),btagwpm)
+        ### Bjets ###
 
-        isBtagJetsLoose = (goodJets.btagDeepFlavB > btagwpl)
-        isBtagJetsMedium = (goodJets.btagDeepFlavB > btagwpm)
-
+        isBtagJetsLoose  = goodJets.isLooseBTag
+        isBtagJetsMedium = goodJets.isMediumBTag
+        isBtagJetsTight  = goodJets.isTightBTag
         isNotBtagJetsLoose = np.invert(isBtagJetsLoose)
-        nbtagsl = ak.num(goodJets[isBtagJetsLoose])
 
-        isNotBtagJetsMedium = np.invert(isBtagJetsMedium)
+        bjetsl = goodJets[isBtagJetsLoose]
+        bjetsm = goodJets[isBtagJetsMedium]
+        bjetst = goodJets[isBtagJetsTight]
+
+        nbtagsl = ak.num(goodJets[isBtagJetsLoose])
         nbtagsm = ak.num(goodJets[isBtagJetsMedium])
+        nbtagst = ak.num(goodJets[isBtagJetsTight])
 
 
         ######### Get variables we haven't already calculated #########
@@ -376,13 +352,11 @@ class AnalysisProcessor(processor.ProcessorABC):
         scalarptsum_lepmetfwdjets = scalarptsum_lep + met.pt + scalarptsum_jetFwd
 
         # lb pairs (i.e. always one lep, one bjet)
-        bjets = goodJets[isBtagJetsLoose]
-        bjetsm = goodJets[isBtagJetsMedium]
-        lb_pairs = ak.cartesian({"l":l_vvh_t,"j":bjets})
+        lb_pairs = ak.cartesian({"l":l_vvh_t,"j": bjetsl})
         mlb_min = ak.min((lb_pairs["l"] + lb_pairs["j"]).mass,axis=-1)
         mlb_max = ak.max((lb_pairs["l"] + lb_pairs["j"]).mass,axis=-1)
 
-        bjets_ptordered = bjets[ak.argsort(bjets.pt,axis=-1,ascending=False)]
+        bjets_ptordered = bjetsl[ak.argsort( bjetsl.pt,axis=-1,ascending=False)]
         bjets_ptordered_padded = ak.pad_none(bjets_ptordered, 2)
         b0 = bjets_ptordered_padded[:,0]
         b1 = bjets_ptordered_padded[:,1]
@@ -390,7 +364,7 @@ class AnalysisProcessor(processor.ProcessorABC):
         mass_b0b1 = ak.where(nbtagsl>1,mass_b0b1_tmp,0)
 
         # Variables related to leading b jet score of b jets
-        bjets_bscoreordered = bjets[ak.argsort(bjets.btagDeepFlavB,axis=-1,ascending=False)]
+        bjets_bscoreordered = bjetsl[ak.argsort(bjetsl.btagDeepFlavB,axis=-1,ascending=False)]
         bjets_bscoreordered_padded = ak.pad_none(bjets_bscoreordered, 2)
         bbscore0 = bjets_bscoreordered_padded[:,0]
         bbscore1 = bjets_bscoreordered_padded[:,1]
