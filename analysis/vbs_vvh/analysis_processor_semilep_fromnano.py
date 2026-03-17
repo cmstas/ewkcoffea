@@ -47,12 +47,30 @@ class AnalysisProcessor(processor.ProcessorABC):
             "scalarptsum_lepmetalljets" : axis.Regular(180, 0, 2500, name="scalarptsum_lepmetalljets", label="S_T + metpt + H_T all"),
             "scalarptsum_lepmetcentjets" : axis.Regular(180, 0, 2500, name="scalarptsum_lepmetcentjets", label="S_T + metpt + H_T cent"),
             "scalarptsum_lepmetfwdjets" : axis.Regular(180, 0, 1500, name="scalarptsum_lepmetfwdjets", label="S_T + metpt + H_T fwd"),
-            "l0_pt"  : axis.Regular(180, 0, 1000, name="l0_pt", label="l0 pt"),
-            "l0_eta"  : axis.Regular(180, -3,3, name="l0_eta", label="l0 eta"),
-            "l1_pt"  : axis.Regular(180, 0, 1000, name="l1_pt", label="l1 pt"),
-            "l1_eta"  : axis.Regular(180, -3,3, name="l1_eta", label="l1 eta"),
-            "l2_pt"  : axis.Regular(180, 0, 1000, name="l2_pt", label="l2 pt"),
-            "l2_eta"  : axis.Regular(180, -3,3, name="l2_eta", label="l2 eta"),
+            "l0_pt"    : axis.Regular(180, 0, 1000, name="l0_pt", label="l0 pt"),
+            "l0_eta"   : axis.Regular(180, -3,3, name="l0_eta", label="l0 eta"),
+            "l1_pt"    : axis.Regular(180, 0, 1000, name="l1_pt", label="l1 pt"),
+            "l1_eta"   : axis.Regular(180, -3,3, name="l1_eta", label="l1 eta"),
+            "l2_pt"    : axis.Regular(180, 0, 1000, name="l2_pt", label="l2 pt"),
+            "l2_eta"   : axis.Regular(180, -3,3, name="l2_eta", label="l2 eta"),
+
+            "l0_truth"          : axis.Regular(36, -1, 34, name="l0_truth", label="l0 truth flag"),
+            "l1_truth"          : axis.Regular(36, -1, 34, name="l1_truth", label="l1 truth flag"),
+            "l2_truth"          : axis.Regular(36, -1, 34, name="l2_truth", label="l2 truth flag"),
+            "l0_truth_real_pt"  : axis.Regular(180, 0, 500, name="l0_truth_real_pt", label="l0 truth real pt"),
+            "l1_truth_real_pt"  : axis.Regular(180, 0, 500, name="l1_truth_real_pt", label="l1 truth real pt"),
+            "l2_truth_real_pt"  : axis.Regular(180, 0, 500, name="l2_truth_real_pt", label="l2 truth real pt"),
+            "l0_truth_fake_pt"  : axis.Regular(180, 0, 500, name="l0_truth_fake_pt", label="l0 truth fake pt"),
+            "l1_truth_fake_pt"  : axis.Regular(180, 0, 500, name="l1_truth_fake_pt", label="l1 truth fake pt"),
+            "l2_truth_fake_pt"  : axis.Regular(180, 0, 500, name="l2_truth_fake_pt", label="l2 truth fake pt"),
+            "l0_truth_real_iso" : axis.Regular(180, 0, 0.4, name="l0_truth_real_iso", label="l0 truth real pfRelIso03_all"),
+            "l1_truth_real_iso" : axis.Regular(180, 0, 0.4, name="l1_truth_real_iso", label="l1 truth real pfRelIso03_all"),
+            "l2_truth_real_iso" : axis.Regular(180, 0, 0.4, name="l2_truth_real_iso", label="l2 truth real pfRelIso03_all"),
+            "l0_truth_fake_iso" : axis.Regular(180, 0, 0.4, name="l0_truth_fake_iso", label="l0 truth fake pfRelIso03_all"),
+            "l1_truth_fake_iso" : axis.Regular(180, 0, 0.4, name="l1_truth_fake_iso", label="l1 truth fake pfRelIso03_all"),
+            "l2_truth_fake_iso" : axis.Regular(180, 0, 0.4, name="l2_truth_fake_iso", label="l2 truth fake pfRelIso03_all"),
+            "nlep_truth_real"   : axis.Regular(5, 0, 5, name="nlep_truth_real",   label="Lep (truth, real) multiplicity"),
+            "nlep_truth_fake"   : axis.Regular(5, 0, 5, name="nlep_truth_fake",   label="Lep (truth, fake) multiplicity"),
 
             "l0_iso"     : axis.Regular(180, 0,0.2, name="l0_iso", label="l0 pfRelIso03_all"),
             "l0_miniiso" : axis.Regular(180, 0,0.2, name="l0_miniiso", label="l0 miniPFRelIso_all"),
@@ -97,25 +115,9 @@ class AnalysisProcessor(processor.ProcessorABC):
             "fj0_pNetWvsQCD"  : axis.Regular(180, 0, 1, name="fj0_pNetWvsQCD", label="fj0 pNet WvsQCD"),
             "fj0_pNetZvsQCD"  : axis.Regular(180, 0, 1, name="fj0_pNetZvsQCD", label="fj0 pNet ZvsQCD"),
 
-            #"fj1_pt"  : axis.Regular(180, 0, 2000, name="fj1_pt", label="fj1 pt"),
-            #"fj1_mass"  : axis.Regular(180, 0, 250, name="fj1_mass", label="fj1 mass"),
-            #"fj1_msoftdrop"  : axis.Regular(180, 0, 250, name="fj1_msoftdrop", label="fj1 softdrop mass"),
-            #"fj1_mparticlenet"  : axis.Regular(180, 0, 250, name="fj1_mparticlenet", label="fj1 particleNet mass"),
-            #"fj1_eta" : axis.Regular(180, -5, 5, name="fj1_eta", label="fj1 eta"),
-            #"fj1_phi" : axis.Regular(180, -3.1416, 3.1416, name="fj1_phi", label="j0 phi"),
-
-            #"fj1_pNetH4qvsQCD": axis.Regular(180, 0, 1, name="fj1_pNetH4qvsQCD", label="fj1 pNet H4qvsQCD"),
-            #"fj1_pNetHbbvsQCD": axis.Regular(180, 0, 1, name="fj1_pNetHbbvsQCD", label="fj1 pNet HbbvsQCD"),
-            #"fj1_pNetHccvsQCD": axis.Regular(180, 0, 1, name="fj1_pNetHccvsQCD", label="fj1 pNet HccvsQCD"),
-            #"fj1_pNetQCD"     : axis.Regular(180, 0, 1, name="fj1_pNetQCD",    label="fj1 pNet QCD"),
-            #"fj1_pNetTvsQCD"  : axis.Regular(180, 0, 1, name="fj1_pNetTvsQCD", label="fj1 pNet TvsQCD"),
-            #"fj1_pNetWvsQCD"  : axis.Regular(180, 0, 1, name="fj1_pNetWvsQCD", label="fj1 pNet WvsQCD"),
-            #"fj1_pNetZvsQCD"  : axis.Regular(180, 0, 1, name="fj1_pNetZvsQCD", label="fj1 pNet ZvsQCD"),
-
             "j0central_pt"  : axis.Regular(180, 0, 250, name="j0central_pt", label="j0 pt (central jets)"), # Naming
             "j0central_eta" : axis.Regular(180, -5, 5, name="j0central_eta", label="j0 eta (central jets)"), # Naming
             "j0central_phi" : axis.Regular(180, -3.1416, 3.1416, name="j0central_phi", label="j0 phi (central jets)"), # Naming
-
 
             "j0forward_pt"  : axis.Regular(180, 0, 150, name="j0forward_pt", label="j0 pt (forward jets)"),
             "j0forward_eta" : axis.Regular(180, -5, 5, name="j0forward_eta", label="j0 eta (forward jets)"),
@@ -172,6 +174,8 @@ class AnalysisProcessor(processor.ProcessorABC):
 
             #"ghiggs0_pt" : axis.Regular(180, 0, 1500, name="ghiggs0_pt", label="Gen higgs pt"),
             #"gvectorboson0_pt" : axis.Regular(180, 0, 1500, name="gvectorboson0_pt", label="Gen V pt"),
+
+            "abs_pdgid_sum" : axis.Regular(20, 20, 40, name="abs_pdgid_sum", label="Sum of abs pdgId for the 3 lep"),
 
         }
 
@@ -348,6 +352,8 @@ class AnalysisProcessor(processor.ProcessorABC):
         l_vvh_t = ak.with_name(ak.concatenate([ele_vvh_t,mu_vvh_t],axis=1),'PtEtaPhiMCandidate')
         l_vvh_t = l_vvh_t[ak.argsort(l_vvh_t.pt, axis=-1,ascending=False)] # Sort by pt
         events["l_vvh_t"] = l_vvh_t
+
+        #if "VBS" in json_name: l_vvh_t["provenance"] = ak.ones_like(l_vvh_t.pt)
 
         l_vvh_t_padded = ak.pad_none(l_vvh_t, 4)
         l0 = l_vvh_t_padded[:,0]
@@ -878,12 +884,6 @@ class AnalysisProcessor(processor.ProcessorABC):
                 "fj0_eta" : fj0.eta,
                 "fj0_phi" : fj0.phi,
 
-                #"fj1_pt" : fj1.pt,
-                #"fj1_mass" : fj1.mass,
-                #"fj1_msoftdrop" : fj1.msoftdrop,
-                #"fj1_eta" : fj1.eta,
-                #"fj1_phi" : fj1.phi,
-
                 "j0_pt" : j0.pt,
                 "j0_eta" : j0.eta,
                 "j0_phi" : j0.phi,
@@ -910,15 +910,6 @@ class AnalysisProcessor(processor.ProcessorABC):
                 "fj0_pNetWvsQCD"   : fj0_pNetWvsQCD,
                 "fj0_pNetZvsQCD"   : fj0_pNetZvsQCD,
                 "fj0_mparticlenet" : fj0_mparticlenet,
-
-                #"fj1_pNetH4qvsQCD" : fj1_pNetH4qvsQCD,
-                #"fj1_pNetHbbvsQCD" : fj1_pNetHbbvsQCD,
-                #"fj1_pNetHccvsQCD" : fj1_pNetHccvsQCD,
-                #"fj1_pNetQCD"      : fj1_pNetQCD,
-                #"fj1_pNetTvsQCD"   : fj1_pNetTvsQCD,
-                #"fj1_pNetWvsQCD"   : fj1_pNetWvsQCD,
-                #"fj1_pNetZvsQCD"   : fj1_pNetZvsQCD,
-                #"fj1_mparticlenet" : fj1_mparticlenet,
 
                 "jj_pairs_atmindr_mjj" : jj_pairs_atmindr_mjj,
 
@@ -956,8 +947,57 @@ class AnalysisProcessor(processor.ProcessorABC):
 
                 "n_ll_sfos": n_ll_sfos,
                 "abs_ch_sum_3l": abs_ch_sum_3l,
+                "abs_pdgid_sum": abs(l0.pdgId) + abs(l1.pdgId) + abs(l2.pdgId),
 
             }
+
+            #if not isData:
+            if 0:
+
+                #if "VBS" not in dataset:
+                #else:
+                #if "VBS" in dataset:
+
+                lep_truth_real_mask = ((l_vvh_t.provenance == 23) | (l_vvh_t.provenance == 24) | (l_vvh_t.provenance == 33) | (l_vvh_t.provenance == 34))
+                lep_truth_real = l_vvh_t_padded[lep_truth_real_mask]
+                lep_truth_fake = l_vvh_t_padded[~lep_truth_real_mask]
+
+                lep_truth_real = lep_truth_real[ak.argsort(lep_truth_real.pt,axis=-1,ascending=False)]
+                lep_truth_fake = lep_truth_fake[ak.argsort(lep_truth_fake.pt,axis=-1,ascending=False)]
+
+                lep_truth_real_padded = ak.pad_none(lep_truth_real, 3)
+                lep_truth_fake_padded = ak.pad_none(lep_truth_fake, 3)
+
+                l0_truth_real = lep_truth_real_padded[:,0]
+                l1_truth_real = lep_truth_real_padded[:,1]
+                l2_truth_real = lep_truth_real_padded[:,2]
+                l0_truth_fake = lep_truth_fake_padded[:,0]
+                l1_truth_fake = lep_truth_fake_padded[:,1]
+                l2_truth_fake = lep_truth_fake_padded[:,2]
+
+                nlep_truth_real = ak.num(lep_truth_real)
+                nlep_truth_fake = ak.num(lep_truth_fake)
+
+                dense_variables_dict["l0_truth"] = l0.provenance
+                dense_variables_dict["l1_truth"] = l1.provenance
+                dense_variables_dict["l2_truth"] = l2.provenance
+
+                dense_variables_dict["l0_truth_real_pt"] = l0_truth_real.pt
+                dense_variables_dict["l1_truth_real_pt"] = l1_truth_real.pt
+                dense_variables_dict["l2_truth_real_pt"] = l2_truth_real.pt
+                dense_variables_dict["l0_truth_fake_pt"] = l0_truth_fake.pt
+                dense_variables_dict["l1_truth_fake_pt"] = l1_truth_fake.pt
+                dense_variables_dict["l2_truth_fake_pt"] = l2_truth_fake.pt
+
+                dense_variables_dict["l0_truth_real_iso"] = l0_truth_real.pfRelIso03_all
+                dense_variables_dict["l1_truth_real_iso"] = l1_truth_real.pfRelIso03_all
+                dense_variables_dict["l2_truth_real_iso"] = l2_truth_real.pfRelIso03_all
+                dense_variables_dict["l0_truth_fake_iso"] = l0_truth_fake.pfRelIso03_all
+                dense_variables_dict["l1_truth_fake_iso"] = l1_truth_fake.pfRelIso03_all
+                dense_variables_dict["l2_truth_fake_iso"] = l2_truth_fake.pfRelIso03_all
+
+                dense_variables_dict["nlep_truth_real"] = nlep_truth_real
+                dense_variables_dict["nlep_truth_fake"] = nlep_truth_fake
 
 
             ######### Store boolean masks with PackedSelection ##########
@@ -991,23 +1031,28 @@ class AnalysisProcessor(processor.ProcessorABC):
             selections.add("filter_grl_trg", filter_mask & lumi_mask & pass_trg)
 
             ### 2lOS + 1FJ ###
-            selections.add("2l",                                quality & is_2l)
-            selections.add("2lOS",                              quality & is_2l & is_os)
-            selections.add("2lOSSF",                            quality & is_2l & is_os & is_sf)
-            selections.add("2lOSSF_1fj",                        quality & is_2l & is_os & is_sf & (nfatjets>=1))
-            selections.add("2lOSSF_1fjx",                       quality & is_2l & is_os & is_sf & (nfatjets==1))
-            selections.add("2lOSSF_1fjx_onZ",                   quality & is_2l & is_os & is_sf & (nfatjets==1) & is_onZ)
-            selections.add("2lOSSF_1fjx_onZ_HFJ",               quality & is_2l & is_os & is_sf & (nfatjets==1) & is_onZ & is_HFJ)
-            selections.add("2lOSSF_1fjx_onZ_HFJtag",            quality & is_2l & is_os & is_sf & (nfatjets==1) & is_onZ & is_HFJ & is_HFJTagHbb)
-            selections.add("2lOSSF_1fjx_onZ_HFJtag_nj2",        quality & is_2l & is_os & is_sf & (nfatjets==1) & is_onZ & is_HFJ & is_HFJTagHbb & (njets_tot>=2))
-            selections.add("2lOSSF_1fjx_onZ_HFJtag_nj2_mjj600", quality & is_2l & is_os & is_sf & (nfatjets==1) & is_onZ & is_HFJ & is_HFJTagHbb & (njets_tot>=2) & (mjj_max_any>600))
+            selections.add("2l",                                      quality & is_2l)
+            selections.add("2lOS",                                    quality & is_2l & is_os)
+            selections.add("2lOSSF",                                  quality & is_2l & is_os & is_sf)
+            selections.add("2lOSSF_1fj",                              quality & is_2l & is_os & is_sf & (nfatjets>=1))
+            selections.add("2lOSSF_1fjx",                             quality & is_2l & is_os & is_sf & (nfatjets==1))
+            selections.add("2lOSSF_1fjx_HFJ",                         quality & is_2l & is_os & is_sf & (nfatjets==1) & is_HFJ)
+            selections.add("2lOSSF_1fjx_HFJtag",                      quality & is_2l & is_os & is_sf & (nfatjets==1) & is_HFJ & is_HFJTagHbb)
+            selections.add("2lOSSF_1fjx_HFJtag_nj2",                  quality & is_2l & is_os & is_sf & (nfatjets==1) & is_HFJ & is_HFJTagHbb & (njets_tot>=2))
+            selections.add("2lOSSF_1fjx_HFJtag_nj2_mjj600",           quality & is_2l & is_os & is_sf & (nfatjets==1) & is_HFJ & is_HFJTagHbb & (njets_tot>=2) & (mjj_max_any>600))
+            selections.add("2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0",      quality & is_2l & is_os & is_sf & (nfatjets==1) & is_HFJ & is_HFJTagHbb & (njets_tot>=2) & (mjj_max_any>600) & (nbtagsm==0))
+            selections.add("2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0_onZ",  quality & is_2l & is_os & is_sf & (nfatjets==1) & is_HFJ & is_HFJTagHbb & (njets_tot>=2) & (mjj_max_any>600) & (nbtagsm==0) & is_onZ)
+            selections.add("2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0_offZ", quality & is_2l & is_os & is_sf & (nfatjets==1) & is_HFJ & is_HFJTagHbb & (njets_tot>=2) & (mjj_max_any>600) & (nbtagsm==0) & ~is_onZ)
 
             ### 3l ###
             selections.add("3l",                  quality & is_3l)
-            selections.add("3l_2j_mjj600",        quality & is_3l & (njets_tot>=2) & (mjj_max_any>600))
-            selections.add("3l_2j_mjj600_ht350",  quality & is_3l & (njets_tot>=2) & (mjj_max_any>600) & (scalarptsum_lepmetalljets>350))
-            selections.add("3l_2j_mjj600_noSFOS", quality & is_3l & (njets_tot>=2) & (mjj_max_any>600) & (n_ll_sfos==0))
-            selections.add("3l_2j_mjj600_ch3",    quality & is_3l & (njets_tot>=2) & (mjj_max_any>600) & (abs_ch_sum_3l==3))
+            selections.add("3l_2j_mjj400",        quality & is_3l & (njets_tot>=2) & (mjj_max_any>400))
+            selections.add("3l_2j_mjj400_noSFOS", quality & is_3l & (njets_tot>=2) & (mjj_max_any>400) & (n_ll_sfos==0))
+            selections.add("3l_2j_mjj400_noSFOS_b0p4", quality & is_3l & (njets_tot>=2) & (mjj_max_any>400) & (n_ll_sfos==0) & (bbscore0_bscore<0.4))
+            selections.add("3l_2j_mjj400_noSFOS_b0p4_ch1", quality & is_3l & (njets_tot>=2) & (mjj_max_any>400) & (n_ll_sfos==0) & (bbscore0_bscore<0.4) & (abs_ch_sum_3l==1))
+            selections.add("3l_2j_mjj400_noSFOS_b0p4_ch3", quality & is_3l & (njets_tot>=2) & (mjj_max_any>400) & (n_ll_sfos==0) & (bbscore0_bscore<0.4) & (abs_ch_sum_3l==3))
+            selections.add("3l_2j_mjj400_SFOS",         quality & is_3l & (njets_tot>=2) & (mjj_max_any>400) & (n_ll_sfos>0))
+            selections.add("3l_2j_mjj400_SFOS_jf0pt50", quality & is_3l & (njets_tot>=2) & (mjj_max_any>400) & (n_ll_sfos>0) & (j0forward.pt>50))
 
 
             # Keep track of the ones we want to actually fill
@@ -1018,8 +1063,8 @@ class AnalysisProcessor(processor.ProcessorABC):
                     "filter",
                     "filter_grl",
                     "filter_grl_trg",
-                    "just2lep",
-                    "just3lep",
+                    #"just2lep",
+                    #"just3lep",
 
                     ### 2l OS SF 1FJ ###
                     "2l",
@@ -1027,18 +1072,23 @@ class AnalysisProcessor(processor.ProcessorABC):
                     "2lOSSF",
                     "2lOSSF_1fj",
                     "2lOSSF_1fjx",
-                    "2lOSSF_1fjx_onZ",
-                    "2lOSSF_1fjx_onZ_HFJ",
-                    "2lOSSF_1fjx_onZ_HFJtag",
-                    "2lOSSF_1fjx_onZ_HFJtag_nj2",
-                    "2lOSSF_1fjx_onZ_HFJtag_nj2_mjj600",
+                    "2lOSSF_1fjx_HFJ",
+                    "2lOSSF_1fjx_HFJtag",
+                    "2lOSSF_1fjx_HFJtag_nj2",
+                    "2lOSSF_1fjx_HFJtag_nj2_mjj600",
+                    "2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0",
+                    "2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0_onZ",
+                    "2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0_offZ",
 
                     ### 3l ###
                     "3l",
-                    "3l_2j_mjj600",
-                    "3l_2j_mjj600_ht350",
-                    "3l_2j_mjj600_noSFOS",
-                    "3l_2j_mjj600_ch3",
+                    "3l_2j_mjj400",
+                    "3l_2j_mjj400_noSFOS",
+                    "3l_2j_mjj400_noSFOS_b0p4",
+                    "3l_2j_mjj400_noSFOS_b0p4_ch1",
+                    "3l_2j_mjj400_noSFOS_b0p4_ch3",
+                    "3l_2j_mjj400_SFOS",
+                    "3l_2j_mjj400_SFOS_jf0pt50",
                 ]
             }
 
