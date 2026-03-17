@@ -181,6 +181,7 @@ class AnalysisProcessor(processor.ProcessorABC):
                 hist.axis.StrCategory([], growth=True, name="process", label="process"),
                 hist.axis.StrCategory([], growth=True, name="category", label="category"),
                 hist.axis.StrCategory([], growth=True, name="systematic", label="systematic"),
+                hist.axis.StrCategory([], growth=True, name="year", label="year"),
                 self._dense_axes_dict[dense_axis_name],
                 storage="weight", # Keeps track of sumw2
                 name="Counts",
@@ -220,7 +221,7 @@ class AnalysisProcessor(processor.ProcessorABC):
 
         isData       = self._samples[json_name]["isData"]
         #histAxisName = events.namewithyear
-        histAxisName = events.name
+        histAxisName = events.shortname
         year         = events.year
         xsec         = events.xsec
 
@@ -256,6 +257,9 @@ class AnalysisProcessor(processor.ProcessorABC):
         # An array of lenght events that is just 1 for each event
         # Probably there's a better way to do this, but we use this method elsewhere so I guess why not..
         events.nom = ak.ones_like(met.pt)
+        #events.weight = events.nom
+        #events.weight = 1000* events.xsec * events.lumi * events.genWeight / events.sumw
+        #events.weight = events.baseweight
 
         # A mask that is all True by construction
         # Probably there's a better way to do this...
@@ -288,14 +292,17 @@ class AnalysisProcessor(processor.ProcessorABC):
         # Note: add() will generally modify up/down weights, so if these are needed for any reason after this point, we should instead pass copies to add()
         # Note: Here we will to the weights object the SFs that do not depend on any of the forthcoming loops
         weights_obj_base = coffea.analysis_tools.Weights(len(events),storeIndividual=True)
-        if not isData:
-            #genw_raw = events.weight
-            #genw = events.weight
-            genw_raw = 1
-            genw = 1
+        #if not isData:
+        if hasattr(events, "baseweight"):
+            events.weight = events.baseweight
+            genw_raw = events.weight
+            genw = events.weight
+            #genw_raw = 1
+            #genw = 1
 
             # Normalize to the weight from RDF
-            weights_obj_base.add("norm",events.weight * genw/genw_raw)
+            #weights_obj_base.add("norm",events.weight * genw/genw_raw)
+            weights_obj_base.add("norm",events.weight)
 
 
         ######### The rest of the processor is inside this loop over systs that affect object kinematics  ###########
@@ -516,12 +523,12 @@ class AnalysisProcessor(processor.ProcessorABC):
             mass_bmbscore0bmbscore1 = ak.fill_none((bmbscore0+bmbscore1).mass,0)
 
             # Variables related to leading b jet score of central jets
-            centraljets_bscoreordered = goodJets_ptordered_padded[ak.argsort(goodJets_ptordered_padded.btagDeepFlavB,axis=-1,ascending=False)]
-            jbscore0 = centraljets_bscoreordered[:,0]
-            jbscore1 = centraljets_bscoreordered[:,1]
-            mass_jbscore0jbscore1 = ak.fill_none((jbscore0+jbscore1).mass,0)
-            jbscore0_bscore = ak.fill_none(jbscore0.btagDeepFlavB,0)
-            jbscore1_bscore = ak.fill_none(jbscore1.btagDeepFlavB,0)
+            #centraljets_bscoreordered = goodJets_ptordered_padded[ak.argsort(goodJets_ptordered_padded.btagDeepFlavB,axis=-1,ascending=False)]
+            #jbscore0 = centraljets_bscoreordered[:,0]
+            #jbscore1 = centraljets_bscoreordered[:,1]
+            #mass_jbscore0jbscore1 = ak.fill_none((jbscore0+jbscore1).mass,0)
+            #jbscore0_bscore = ak.fill_none(jbscore0.btagDeepFlavB,0)
+            #jbscore1_bscore = ak.fill_none(jbscore1.btagDeepFlavB,0)
 
             # Mjj max from any jets
             jjCentFwd_pairs = ak.combinations( goodJetsCentFwd_ptordered_padded, 2, fields=["j0", "j1"] )
@@ -671,9 +678,9 @@ class AnalysisProcessor(processor.ProcessorABC):
                 "mass_bbscore0bbscore1" : mass_bbscore0bbscore1,
                 "mass_bmbscore0bmbscore1" : mass_bmbscore0bmbscore1,
 
-                "jbscore0_bscore" : jbscore0_bscore,
-                "jbscore1_bscore" : jbscore1_bscore,
-                "mass_jbscore0jbscore1" : mass_jbscore0jbscore1,
+                #"jbscore0_bscore" : jbscore0_bscore,
+                #"jbscore1_bscore" : jbscore1_bscore,
+                #"mass_jbscore0jbscore1" : mass_jbscore0jbscore1,
 
                 "mjj_max_any" : mjj_max_any,
                 "mjj_max_cent" : mjj_max_cent,
@@ -729,6 +736,7 @@ class AnalysisProcessor(processor.ProcessorABC):
             lumi_mask = pass_through
             pass_trg = pass_through
             quality = filter_mask & lumi_mask & pass_trg # This is what we'll actually apply to the SRs
+            quality = pass_through
             # Cut flow for quality mask
             selections.add("all_events",     pass_through) # Just a pass through
             selections.add("just2lep",       (nleps==2))
@@ -761,31 +769,31 @@ class AnalysisProcessor(processor.ProcessorABC):
             cat_dict = {
                 "lep_chan_lst" : [
 
-                    #"all_events",
-                    #"filter",
-                    #"filter_grl",
-                    #"filter_grl_trg",
+                    "all_events",
+                    "filter",
+                    "filter_grl",
+                    "filter_grl_trg",
                     "just2lep",
-                    #"just3lep",
+                    "just3lep",
 
-                    #### 2l OS SF 1FJ ###
-                    #"2l",
-                    #"2lOS",
-                    #"2lOSSF",
-                    #"2lOSSF_1fj",
-                    #"2lOSSF_1fjx",
-                    #"2lOSSF_1fjx_onZ",
-                    #"2lOSSF_1fjx_onZ_HFJ",
-                    #"2lOSSF_1fjx_onZ_HFJtag",
-                    #"2lOSSF_1fjx_onZ_HFJtag_nj2",
-                    #"2lOSSF_1fjx_onZ_HFJtag_nj2_mjj600",
+                    ### 2l OS SF 1FJ ###
+                    "2l",
+                    "2lOS",
+                    "2lOSSF",
+                    "2lOSSF_1fj",
+                    "2lOSSF_1fjx",
+                    "2lOSSF_1fjx_onZ",
+                    "2lOSSF_1fjx_onZ_HFJ",
+                    "2lOSSF_1fjx_onZ_HFJtag",
+                    "2lOSSF_1fjx_onZ_HFJtag_nj2",
+                    "2lOSSF_1fjx_onZ_HFJtag_nj2_mjj600",
 
-                    #### 3l ###
-                    #"3l",
-                    #"3l_2j_mjj600",
-                    #"3l_2j_mjj600_ht350",
-                    #"3l_2j_mjj600_noSFOS",
-                    #"3l_2j_mjj600_ch3",
+                    ### 3l ###
+                    "3l",
+                    "3l_2j_mjj600",
+                    "3l_2j_mjj600_ht350",
+                    "3l_2j_mjj600_noSFOS",
+                    "3l_2j_mjj600_ch3",
                 ]
             }
 
@@ -800,7 +808,8 @@ class AnalysisProcessor(processor.ProcessorABC):
             # For now the syst do not depend on the category, so we can figure this out outside of the filling loop
             wgt_var_lst = ["nominal"]
             if self._do_systematics:
-                if not isData:
+                #if not isData:
+                if not hasattr(events, "baseweight"):
                     if (obj_corr_syst_var != "nominal"):
                         # In this case, we are dealing with systs that change the kinematics of the objs (e.g. JES)
                         # So we don't want to loop over up/down weight variations here
@@ -867,6 +876,7 @@ class AnalysisProcessor(processor.ProcessorABC):
                             "process"       : histAxisName[all_cuts_mask],
                             "category"      : sr_cat,
                             "systematic"    : wgt_fluct,
+                            "year"          : events.year[all_cuts_mask],
                         }
 
                         self.accumulator[dense_axis_name].fill(**axes_fill_info_dict)
