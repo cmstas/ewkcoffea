@@ -96,21 +96,6 @@ class AnalysisProcessor(processor.ProcessorABC):
             "fj0_pNetWvsQCD"  : axis.Regular(180, 0, 1, name="fj0_pNetWvsQCD", label="fj0 pNet WvsQCD"),
             "fj0_pNetZvsQCD"  : axis.Regular(180, 0, 1, name="fj0_pNetZvsQCD", label="fj0 pNet ZvsQCD"),
 
-            #"fj1_pt"  : axis.Regular(180, 0, 2000, name="fj1_pt", label="fj1 pt"),
-            #"fj1_mass"  : axis.Regular(180, 0, 250, name="fj1_mass", label="fj1 mass"),
-            #"fj1_msoftdrop"  : axis.Regular(180, 0, 250, name="fj1_msoftdrop", label="fj1 softdrop mass"),
-            #"fj1_mparticlenet"  : axis.Regular(180, 0, 250, name="fj1_mparticlenet", label="fj1 particleNet mass"),
-            #"fj1_eta" : axis.Regular(180, -5, 5, name="fj1_eta", label="fj1 eta"),
-            #"fj1_phi" : axis.Regular(180, -3.1416, 3.1416, name="fj1_phi", label="j0 phi"),
-
-            #"fj1_pNetH4qvsQCD": axis.Regular(180, 0, 1, name="fj1_pNetH4qvsQCD", label="fj1 pNet H4qvsQCD"),
-            #"fj1_pNetHbbvsQCD": axis.Regular(180, 0, 1, name="fj1_pNetHbbvsQCD", label="fj1 pNet HbbvsQCD"),
-            #"fj1_pNetHccvsQCD": axis.Regular(180, 0, 1, name="fj1_pNetHccvsQCD", label="fj1 pNet HccvsQCD"),
-            #"fj1_pNetQCD"     : axis.Regular(180, 0, 1, name="fj1_pNetQCD",    label="fj1 pNet QCD"),
-            #"fj1_pNetTvsQCD"  : axis.Regular(180, 0, 1, name="fj1_pNetTvsQCD", label="fj1 pNet TvsQCD"),
-            #"fj1_pNetWvsQCD"  : axis.Regular(180, 0, 1, name="fj1_pNetWvsQCD", label="fj1 pNet WvsQCD"),
-            #"fj1_pNetZvsQCD"  : axis.Regular(180, 0, 1, name="fj1_pNetZvsQCD", label="fj1 pNet ZvsQCD"),
-
             "j0central_pt"  : axis.Regular(180, 0, 250, name="j0central_pt", label="j0 pt (central jets)"), # Naming
             "j0central_eta" : axis.Regular(180, -5, 5, name="j0central_eta", label="j0 eta (central jets)"), # Naming
             "j0central_phi" : axis.Regular(180, -3.1416, 3.1416, name="j0central_phi", label="j0 phi (central jets)"), # Naming
@@ -169,6 +154,8 @@ class AnalysisProcessor(processor.ProcessorABC):
             "mljjjjany" : axis.Regular(180, 0, 4000, name="mljjjjany", label="mljjjj of leading (in pt) lep and four central or fwd jets"),
             "mljjjjcnt" : axis.Regular(180, 0, 4000, name="mljjjjcnt", label="mljjjj of leading (in pt) lep and four central jets"),
 
+            "abs_pdgid_sum3l" : axis.Regular(20, 20, 40, name="abs_pdgid_sum", label="Sum of abs pdgId for the 3 lep"),
+
             #"ghiggs0_pt" : axis.Regular(180, 0, 1500, name="ghiggs0_pt", label="Gen higgs pt"),
             #"gvectorboson0_pt" : axis.Regular(180, 0, 1500, name="gvectorboson0_pt", label="Gen V pt"),
 
@@ -201,10 +188,6 @@ class AnalysisProcessor(processor.ProcessorABC):
                     raise Exception(f"Error: Cannot specify hist \"{hist_to_include}\", it is not defined in the processor.")
             self._hist_lst = hist_lst # Which hists to fill
 
-        # Set the booleans
-        self._do_systematics = do_systematics # Whether to process systematic samples
-        self._skip_obj_systematics = skip_obj_systematics # Skip the JEC/JER/MET systematics (even if running with do_systematics on)
-
     @property
     def accumulator(self):
         return self._accumulator
@@ -216,53 +199,21 @@ class AnalysisProcessor(processor.ProcessorABC):
     # Main function: run on a given dataset
     def process(self, events):
 
-        # Dataset parameters
-        json_name = events.metadata["dataset"]
-
-        isData       = self._samples[json_name]["isData"]
-        #histAxisName = events.namewithyear
         histAxisName = events.shortname
         year         = events.year
         xsec         = events.xsec
-
-        # FIXME Temp fix since only R2, maybe should specify in the input cfg
-        is2022 = False
-        is2023 = False
-
-        # Era Needed for all samples
-        if isData:
-            era = self._samples[json_name]["era"]
-        else:
-            era = None
-
-
-        # Get the dataset name (used for duplicate removal) and check to make sure it is an expected name
-        # Get name for MC cases too, since "dataset" is passed to overlap removal function in all cases (though it's not actually used in the MC case)
-        dataset = json_name.split('_')[0]
-        if isData:
-            datasets = ["SingleElectron", "EGamma", "MuonEG", "DoubleMuon", "DoubleElectron", "DoubleEG","Muon"]
-            if dataset not in datasets:
-                raise Exception(f"ERROR: Unexpected dataset name for data file: {dataset}")
 
         # Initialize objects
         ele     = events.electron
         mu      = events.muon
         jets    = events.jet
-        #met     = events.MET
         met     = events.PuppiMET
         fatjets = events.fatjet
-        #fatjets = events.CorrFatJet
-        #higgs   = events.Higgs
 
         # An array of lenght events that is just 1 for each event
-        # Probably there's a better way to do this, but we use this method elsewhere so I guess why not..
         events.nom = ak.ones_like(met.pt)
-        #events.weight = events.nom
-        #events.weight = 1000* events.xsec * events.lumi * events.genWeight / events.sumw
-        #events.weight = events.baseweight
 
-        # A mask that is all True by construction
-        # Probably there's a better way to do this...
+        # A mask that is all True by construction (probably there's a better way to do this...)
         pass_through = ak.full_like(met.pt,True,dtype=bool)
 
 
@@ -287,599 +238,471 @@ class AnalysisProcessor(processor.ProcessorABC):
 
         ######### Normalization and weights ###########
 
-        # These weights can go outside of the outside sys loop since they do not depend on pt of mu or jets
-        # We only calculate these values if not isData
+        # Weights object
         # Note: add() will generally modify up/down weights, so if these are needed for any reason after this point, we should instead pass copies to add()
-        # Note: Here we will to the weights object the SFs that do not depend on any of the forthcoming loops
         weights_obj_base = coffea.analysis_tools.Weights(len(events),storeIndividual=True)
-        #if not isData:
-        if hasattr(events, "baseweight"):
-            events.weight = events.baseweight
-            genw_raw = events.weight
-            genw = events.weight
-            #genw_raw = 1
-            #genw = 1
-
-            # Normalize to the weight from RDF
-            #weights_obj_base.add("norm",events.weight * genw/genw_raw)
-            weights_obj_base.add("norm",events.weight)
-
-
-        ######### The rest of the processor is inside this loop over systs that affect object kinematics  ###########
-
-        obj_correction_systs = [
-            #f"CMS_scale_j_{year}",
-            #f"CMS_res_j_{year}",
-            #f"CMS_scale_met_unclustered_energy_{year}",
-        ]
-        #obj_correction_systs = append_up_down_to_sys_base(obj_correction_systs)
-
-        # If we're doing systematics and this isn't data, we will loop over the obj correction syst lst list
-        if self._do_systematics and not isData and not self._skip_obj_systematics: obj_corr_syst_var_list = ["nominal"] + obj_correction_systs
-        # Otherwise loop juse once, for nominal
-        else: obj_corr_syst_var_list = ['nominal']
-
-        # Loop over the list of systematic variations (that impact object kinematics) that we've constructed
-        for obj_corr_syst_var in obj_corr_syst_var_list:
-            # Make a copy of the base weights object, so that each time through the loop we do not double count systs
-            # In this loop over systs that impact kinematics, we will add to the weights objects the SFs that depend on the object kinematics
-            weights_obj_base_for_kinematic_syst = copy.deepcopy(weights_obj_base)
-
-
-            #################### Jets ####################
-
-            # Fat jets
-            goodfatjets = fatjets
-
-            # Clean with dr (though another option is to use jetIdx)
-            cleanedJets = os_ec.get_cleaned_collection(l_vvh_t,jets) # Clean against leps
-            cleanedJets = os_ec.get_cleaned_collection(goodfatjets,cleanedJets,drcut=0.8) # Clean against fat jets
-            jetptname = "pt_nom" if hasattr(cleanedJets, "pt_nom") else "pt"
-
-            # Selecting jets and cleaning them (already in RDF)
-            goodJets = cleanedJets[(abs(cleanedJets.eta) <= 2.4)]
-            goodJets_forward = cleanedJets[(abs(cleanedJets.eta) > 2.4)]
-
-            # Count jets
-            njets = ak.num(goodJets)
-            njets_forward = ak.num(goodJets_forward)
-            njets_tot = njets + njets_forward
-            nfatjets = ak.num(goodfatjets)
-            ht = ak.sum(goodJets.pt,axis=-1)
-
-            goodJets_ptordered = goodJets[ak.argsort(goodJets.pt,axis=-1,ascending=False)]
-            goodJets_ptordered_padded = ak.pad_none(goodJets_ptordered, 4)
-            j0 = goodJets_ptordered_padded[:,0]
-            j1 = goodJets_ptordered_padded[:,1]
-            j2 = goodJets_ptordered_padded[:,2]
-            j3 = goodJets_ptordered_padded[:,3]
-
-            goodJets_forward_ptordered = goodJets_forward[ak.argsort(goodJets_forward.pt,axis=-1,ascending=False)]
-            goodJets_forward_ptordered_padded = ak.pad_none(goodJets_forward_ptordered, 2)
-            j0forward = goodJets_forward_ptordered_padded[:,0]
-            j1forward = goodJets_forward_ptordered_padded[:,1]
-
-            goodJetsCentFwd = ak.with_name(ak.concatenate([goodJets,goodJets_forward],axis=1),'PtEtaPhiMLorentzVector')
-            goodJetsCentFwd_ptordered = goodJetsCentFwd[ak.argsort(goodJetsCentFwd.pt,axis=-1,ascending=False)]
-            goodJetsCentFwd_ptordered_padded = ak.pad_none(goodJetsCentFwd_ptordered, 4)
-            j0any = goodJetsCentFwd_ptordered_padded[:,0]
-            j1any = goodJetsCentFwd_ptordered_padded[:,1]
-            j2any = goodJetsCentFwd_ptordered_padded[:,2]
-            j3any = goodJetsCentFwd_ptordered_padded[:,3]
-
-            goodfatjets_ptordered = goodfatjets[ak.argsort(goodfatjets.pt,axis=-1,ascending=False)]
-            goodfatjets_ptordered_padded = ak.pad_none(goodfatjets_ptordered, 2)
-            fj0 = goodfatjets_ptordered_padded[:,0]
-            fj1 = goodfatjets_ptordered_padded[:,1]
-
-            scalarptsum_jetCentFwd = ak.sum(goodJetsCentFwd.pt,axis=-1)
-            scalarptsum_jetCent = ak.sum(goodJets.pt,axis=-1)
-            scalarptsum_jetFwd = ak.sum(goodJets_forward.pt,axis=-1)
-
-            mjjjany = ak.where(njets_tot>=3, (j0any+j1any+j2any).mass, 0)
-            mjjjcnt = ak.where(njets>=3, (j0+j1+j2).mass, 0)
-            mjjjjany = ak.where(njets_tot>=4, (j0any+j1any+j2any+j3any).mass, 0)
-            mjjjjcnt = ak.where(njets>=4, (j0+j1+j2+j3).mass, 0)
-
-            mljjjany = ak.where(njets_tot>=3, (l0 + j0any+j1any+j2any).mass, 0)
-            mljjjcnt = ak.where(njets>=3, (l0 + j0+j1+j2).mass, 0)
-            mljjjjany = ak.where(njets_tot>=4, (l0 + j0any+j1any+j2any+j3any).mass, 0)
-            mljjjjcnt = ak.where(njets>=4, (l0 + j0+j1+j2+j3).mass, 0)
-
-
-
-            ### Btag WPs ###
-            # Eventually we should probably just take the btag jet collection from the RDF output
-            # For now handle it with a hard-to-read series of ak.where
-            btagwpl = events.nom
-            btagwpm = events.nom
-            btagwpl = ak.where(events.year=="2018",get_tc_param("btag_wp_loose_UL18"),btagwpl)
-            btagwpm = ak.where(events.year=="2018",get_tc_param("btag_wp_loose_UL18"),btagwpm)
-            btagwpl = ak.where(events.year=="2017",get_tc_param("btag_wp_loose_UL17"),btagwpl)
-            btagwpm = ak.where(events.year=="2017",get_tc_param("btag_wp_loose_UL17"),btagwpm)
-            btagwpl = ak.where(events.year=="2016postVFP",get_tc_param("btag_wp_loose_UL16"),btagwpl)
-            btagwpm = ak.where(events.year=="2016postVFP",get_tc_param("btag_wp_loose_UL16"),btagwpm)
-            btagwpl = ak.where(events.year=="2016preVFP",get_tc_param("btag_wp_loose_UL16APV"),btagwpl)
-            btagwpm = ak.where(events.year=="2016preVFP",get_tc_param("btag_wp_loose_UL16APV"),btagwpm)
-
-            isBtagJetsLoose = (goodJets.btagDeepFlavB > btagwpl)
-            isBtagJetsMedium = (goodJets.btagDeepFlavB > btagwpm)
-
-            isNotBtagJetsLoose = np.invert(isBtagJetsLoose)
-            nbtagsl = ak.num(goodJets[isBtagJetsLoose])
-
-            isNotBtagJetsMedium = np.invert(isBtagJetsMedium)
-            nbtagsm = ak.num(goodJets[isBtagJetsMedium])
-
-
-            ######### Masks we need for the selection ##########
-
-            # Pass trigger mask
-            era_for_trg_check = era
-            if not (is2022 or is2023):
-                # Era not used for R2
-                era_for_trg_check = None
-            #pass_trg = es_tc.trg_pass_no_overlap(events,isData,dataset,str(year),dataset_dict=es_ec.dataset_dict,exclude_dict=es_ec.exclude_dict,era=era_for_trg_check)
-            #pass_trg = (pass_trg & es_ec.trg_matching(events,year))
-
-            # b jet masks
-            bmask_atleast1med_atleast2loose = ((nbtagsm>=1)&(nbtagsl>=2)) # Used for 2lss and 4l
-            bmask_exactly0loose = (nbtagsl==0) # Used for 4l WWZ SR
-            bmask_exactly0med = (nbtagsm==0) # Used for 3l CR and 2los Z CR
-            bmask_exactly1med = (nbtagsm==1) # Used for 3l SR and 2lss CR
-            bmask_exactly2med = (nbtagsm==2) # Used for CRtt
-            bmask_atleast2med = (nbtagsm>=2) # Used for 3l SR
-            bmask_atmost2med  = (nbtagsm< 3) # Used to make 2lss mutually exclusive from tttt enriched
-            bmask_atleast3med = (nbtagsm>=3) # Used for tttt enriched
-            bmask_atleast1med = (nbtagsm>=1)
-            bmask_atleast1loose = (nbtagsl>=1)
-            bmask_atleast2loose = (nbtagsl>=2)
-
-
-            ######### Get variables we haven't already calculated #########
-
-            # Replace with 0 when there are not a pair of jets
-            mjj_tmp = (j0+j1).mass
-            mass_j0centj1cent = ak.where(njets>1,mjj_tmp,0)
-
-            j0forward_eta = ak.where(njets_forward>0,j0forward.eta,0)
-
-            j0any_pt = ak.where(njets_tot>0,j0any.pt,0)
-
-            mass_j0anyj1any = ak.where(njets_tot>1,(j0any+j1any).mass,0)
-
-            mass_j0fwdj1fwd = ak.where(njets_forward>1,(j0forward+j1forward).mass,0)
-
-            # Count lepton pairs
-            ll_pairs = ak.combinations(l_vvh_t_padded, 2, fields=["l0", "l1"] )
-            sfos_mask = ak.fill_none((ll_pairs.l0.pdgId == -ll_pairs.l1.pdgId),False)
-            n_ll_sfos = ak.num(ll_pairs[sfos_mask])
-
-            # Find the mjj of the pair of jets (central + fwd) that have the min delta R
-            jj_pairs = ak.combinations(goodJetsCentFwd_ptordered_padded, 2, fields=["j0", "j1"] )
-            jj_pairs_dr = jj_pairs.j0.delta_r(jj_pairs.j1)
-            jj_pairs_idx_mindr = ak.argmin(jj_pairs_dr,axis=1,keepdims=True)
-            jj_pairs_atmindr = jj_pairs[jj_pairs_idx_mindr]
-            jj_pairs_atmindr_mjj = (jj_pairs_atmindr.j0 + jj_pairs_atmindr.j1).mass
-            jj_pairs_atmindr_mjj = ak.flatten(ak.fill_none(jj_pairs_atmindr_mjj,-999)) # Replace Nones, flatten (so e.g. [[None],[x],[y]] -> [-999,x,y])
-
-            # Find jet triplets clost to top mass
-            jetall_triplets = ak.combinations(goodJetsCentFwd_ptordered_padded, 3, fields=["j0", "j1", "j2"] )
-            jetcnt_triplets = ak.combinations(goodJets_ptordered_padded,        3, fields=["j0", "j1", "j2"] )
-            jjjall_4vec = jetall_triplets.j0 + jetall_triplets.j1 + jetall_triplets.j2
-            jjjcnt_4vec = jetcnt_triplets.j0 + jetcnt_triplets.j1 + jetcnt_triplets.j2
-            tpeak_jall_idx = ak.argmin(abs(jjjall_4vec.mass - 173),keepdims=True,axis=1)
-            tpeak_jcnt_idx = ak.argmin(abs(jjjcnt_4vec.mass - 173),keepdims=True,axis=1)
-            mjjjall_nearest_t = ak.fill_none(ak.flatten(jjjall_4vec[tpeak_jall_idx].mass),0)
-            mjjjcnt_nearest_t = ak.fill_none(ak.flatten(jjjcnt_4vec[tpeak_jcnt_idx].mass),0)
-
-            l0_pt = l0.pt
-            l0_eta = l0.eta
-            l1_pt = l1.pt
-            l1_eta = l1.eta
-            l2_pt = l2.pt
-            l2_eta = l2.eta
-            j0central_pt = j0.pt
-            j0central_eta = j0.eta
-            j0central_phi = j0.phi
-            mass_l0l1 = (l0+l1).mass
-            dr_l0l1 = l0.delta_r(l1)
-            scalarptsum_lep = ak.sum(l_vvh_t.pt,axis=-1)
-            scalarptsum_lepmet = scalarptsum_lep + met.pt
-            scalarptsum_lepmetFJ = scalarptsum_lep + met.pt + fj0.pt
-            scalarptsum_lepmetFJ10 = scalarptsum_lep + met.pt + fj0.pt + fj1.pt
-            scalarptsum_lepmetalljets = scalarptsum_lep + met.pt + scalarptsum_jetCentFwd
-            scalarptsum_lepmetcentjets = scalarptsum_lep + met.pt + scalarptsum_jetCent
-            scalarptsum_lepmetfwdjets = scalarptsum_lep + met.pt + scalarptsum_jetFwd
-
-            # lb pairs (i.e. always one lep, one bjet)
-            bjets = goodJets[isBtagJetsLoose]
-            bjetsm = goodJets[isBtagJetsMedium]
-            lb_pairs = ak.cartesian({"l":l_vvh_t,"j":bjets})
-            mlb_min = ak.min((lb_pairs["l"] + lb_pairs["j"]).mass,axis=-1)
-            mlb_max = ak.max((lb_pairs["l"] + lb_pairs["j"]).mass,axis=-1)
-
-            bjets_ptordered = bjets[ak.argsort(bjets.pt,axis=-1,ascending=False)]
-            bjets_ptordered_padded = ak.pad_none(bjets_ptordered, 2)
-            b0 = bjets_ptordered_padded[:,0]
-            b1 = bjets_ptordered_padded[:,1]
-            mass_b0b1_tmp = (b0+b1).mass
-            mass_b0b1 = ak.where(nbtagsl>1,mass_b0b1_tmp,0)
-
-            # Variables related to leading b jet score of b jets
-            bjets_bscoreordered = bjets[ak.argsort(bjets.btagDeepFlavB,axis=-1,ascending=False)]
-            bjets_bscoreordered_padded = ak.pad_none(bjets_bscoreordered, 2)
-            bbscore0 = bjets_bscoreordered_padded[:,0]
-            bbscore1 = bjets_bscoreordered_padded[:,1]
-            mass_bbscore0bbscore1 = ak.fill_none((bbscore0+bbscore1).mass,0)
-            bbscore0_bscore = ak.fill_none(bbscore0.btagDeepFlavB,0)
-            bbscore1_bscore = ak.fill_none(bbscore1.btagDeepFlavB,0)
-
-            # Variables related to leading b jet score of med b jets
-            bjetsm_bscoreordered = bjetsm[ak.argsort(bjetsm.btagDeepFlavB,axis=-1,ascending=False)]
-            bjetsm_bscoreordered_padded = ak.pad_none(bjetsm_bscoreordered, 2)
-            bmbscore0 = bjetsm_bscoreordered_padded[:,0]
-            bmbscore1 = bjetsm_bscoreordered_padded[:,1]
-            mass_bmbscore0bmbscore1 = ak.fill_none((bmbscore0+bmbscore1).mass,0)
-
-            # Variables related to leading b jet score of central jets
-            #centraljets_bscoreordered = goodJets_ptordered_padded[ak.argsort(goodJets_ptordered_padded.btagDeepFlavB,axis=-1,ascending=False)]
-            #jbscore0 = centraljets_bscoreordered[:,0]
-            #jbscore1 = centraljets_bscoreordered[:,1]
-            #mass_jbscore0jbscore1 = ak.fill_none((jbscore0+jbscore1).mass,0)
-            #jbscore0_bscore = ak.fill_none(jbscore0.btagDeepFlavB,0)
-            #jbscore1_bscore = ak.fill_none(jbscore1.btagDeepFlavB,0)
-
-            # Mjj max from any jets
-            jjCentFwd_pairs = ak.combinations( goodJetsCentFwd_ptordered_padded, 2, fields=["j0", "j1"] )
-            mjj_max_any     = ak.fill_none(ak.max((jjCentFwd_pairs.j0 + jjCentFwd_pairs.j1).mass,axis=-1),0)
-            absdeta_max_any = ak.fill_none(ak.max(abs(jjCentFwd_pairs.j0.eta - jjCentFwd_pairs.j1.eta),axis=-1),0)
-
-            # Mjj max from cent jets
-            jjCent_pairs = ak.combinations(goodJets_ptordered_padded, 2, fields=["j0", "j1"] )
-            mjj_max_cent = ak.fill_none(ak.max((jjCent_pairs.j0 + jjCent_pairs.j1).mass,axis=-1),0)
-
-            # Mjj max from forward jets
-            jjFwd_pairs = ak.combinations(goodJets_forward_ptordered_padded, 2, fields=["j0", "j1"] )
-            mjj_max_fwd = ak.fill_none(ak.max((jjFwd_pairs.j0 + jjFwd_pairs.j1).mass,axis=-1),0)
-            absdeta_max_fwd = ak.fill_none(ak.max(abs(jjFwd_pairs.j0.eta - jjFwd_pairs.j1.eta),axis=-1),0)
-
-            ###
-            #if year == "2024":
-            if 1:
-                # Only for R3
-                fj0_pNetH4qvsQCD = fj0.particleNetWithMass_H4qvsQCD
-                fj0_pNetHbbvsQCD = fj0.particleNetWithMass_HbbvsQCD
-                fj0_pNetHccvsQCD = fj0.particleNetWithMass_HccvsQCD
-                fj0_pNetQCD      = fj0.particleNetWithMass_QCD
-                fj0_pNetTvsQCD   = fj0.particleNetWithMass_TvsQCD
-                fj0_pNetWvsQCD   = fj0.particleNetWithMass_WvsQCD
-                fj0_pNetZvsQCD   = fj0.particleNetWithMass_ZvsQCD
-                fj0_mparticlenet = fj0.particleNetLegacy_mass
-            else:
-                # Only for R2
-                fj0_pNetH4qvsQCD = fj0.particleNet_H4qvsQCD
-                fj0_pNetHbbvsQCD = fj0.particleNet_HbbvsQCD
-                fj0_pNetHccvsQCD = fj0.particleNet_HccvsQCD
-                fj0_pNetQCD      = fj0.particleNet_QCD
-                fj0_pNetTvsQCD   = fj0.particleNet_TvsQCD
-                fj0_pNetWvsQCD   = fj0.particleNet_WvsQCD
-                fj0_pNetZvsQCD   = fj0.particleNet_ZvsQCD
-                fj0_mparticlenet = fj0.particleNet_mass
-
-
-            # Put the variables we'll plot into a dictionary for easy access later
-            dense_variables_dict = {
-                "met" : met.pt,
-                "metphi" : met.phi,
-                "scalarptsum_lep" : scalarptsum_lep,
-                "scalarptsum_jetCentFwd" : scalarptsum_jetCentFwd,
-                "scalarptsum_jetCent" : scalarptsum_jetCent,
-                "scalarptsum_jetFwd" : scalarptsum_jetFwd,
-                "scalarptsum_lepmet" : scalarptsum_lepmet,
-                "scalarptsum_lepmetFJ" : scalarptsum_lepmetFJ,
-                "scalarptsum_lepmetFJ10" : scalarptsum_lepmetFJ10,
-                "scalarptsum_lepmetalljets" : scalarptsum_lepmetalljets,
-                "scalarptsum_lepmetcentjets" : scalarptsum_lepmetcentjets,
-                "scalarptsum_lepmetfwdjets" : scalarptsum_lepmetfwdjets,
-                "l0_pt" : l0_pt,
-                "l0_eta" : l0_eta,
-                "l1_pt" : l1_pt,
-                "l1_eta" : l1_eta,
-                "l2_pt" : l2_pt,
-                "l2_eta" : l2_eta,
-                "mass_l0l1" : mass_l0l1,
-                "dr_l0l1" : dr_l0l1,
-                "l0_iso"     : l0.pfRelIso03_all,
-                "l0_miniiso" : l0.miniPFRelIso_all,
-                "l1_iso"     : l1.pfRelIso03_all,
-                "l1_miniiso" : l1.miniPFRelIso_all,
-                "l2_iso"     : l2.pfRelIso03_all,
-                "l2_miniiso" : l2.miniPFRelIso_all,
-
-                "j0central_pt" : j0central_pt,
-                "j0central_eta" : j0central_eta,
-                "j0central_phi" : j0central_phi,
-
-                "j0forward_pt" : j0forward.pt,
-                "j0forward_eta" : j0forward_eta,
-                "j0forward_phi" : j0forward.phi,
-
-                "j0any_pt" : j0any_pt,
-                "j0any_eta" : j0any.eta,
-                "j0any_phi" : j0any.phi,
-
-                "nleps" : nleps,
-                "njets" : njets,
-                "nbtagsl" : nbtagsl,
-
-                "nleps_counts" : nleps,
-                "njets_counts" : njets,
-                "nbtagsl_counts" : nbtagsl,
-
-                "nbtagsm" : nbtagsm,
-                "nbtagsl" : nbtagsl,
-
-                "nfatjets" : nfatjets,
-                "njets_forward" : njets_forward,
-                "njets_tot" : njets_tot,
-                "fj0_pt" : fj0.pt,
-                "fj0_mass" : fj0.mass,
-                "fj0_msoftdrop" : fj0.msoftdrop,
-                "fj0_eta" : fj0.eta,
-                "fj0_phi" : fj0.phi,
-
-                #"fj1_pt" : fj1.pt,
-                #"fj1_mass" : fj1.mass,
-                #"fj1_msoftdrop" : fj1.msoftdrop,
-                #"fj1_eta" : fj1.eta,
-                #"fj1_phi" : fj1.phi,
-
-                "j0_pt" : j0.pt,
-                "j0_eta" : j0.eta,
-                "j0_phi" : j0.phi,
-
-                "dr_fj0l0" : fj0.delta_r(l0),
-                "dr_j0fwdj1fwd" : j0forward.delta_r(j1forward),
-                "dr_j0centj1cent" : j0.delta_r(j1),
-                "dr_j0anyj1any" : j0any.delta_r(j1any),
-                "absdphi_j0fwdj1fwd"   : abs(j0forward.delta_phi(j1forward)),
-                "absdphi_j0centj1cent" : abs(j0.delta_phi(j1)),
-                "absdphi_j0anyj1any"   : abs(j0any.delta_phi(j1any)),
-
-                "mass_j0centj1cent" : mass_j0centj1cent,
-                "mass_j0fwdj1fwd" : mass_j0fwdj1fwd,
-                "mass_j0anyj1any" : mass_j0anyj1any,
-
-                "mass_b0b1" : mass_b0b1,
-
-                "fj0_pNetH4qvsQCD" : fj0_pNetH4qvsQCD,
-                "fj0_pNetHbbvsQCD" : fj0_pNetHbbvsQCD,
-                "fj0_pNetHccvsQCD" : fj0_pNetHccvsQCD,
-                "fj0_pNetQCD"      : fj0_pNetQCD,
-                "fj0_pNetTvsQCD"   : fj0_pNetTvsQCD,
-                "fj0_pNetWvsQCD"   : fj0_pNetWvsQCD,
-                "fj0_pNetZvsQCD"   : fj0_pNetZvsQCD,
-                "fj0_mparticlenet" : fj0_mparticlenet,
-
-                #"fj1_pNetH4qvsQCD" : fj1_pNetH4qvsQCD,
-                #"fj1_pNetHbbvsQCD" : fj1_pNetHbbvsQCD,
-                #"fj1_pNetHccvsQCD" : fj1_pNetHccvsQCD,
-                #"fj1_pNetQCD"      : fj1_pNetQCD,
-                #"fj1_pNetTvsQCD"   : fj1_pNetTvsQCD,
-                #"fj1_pNetWvsQCD"   : fj1_pNetWvsQCD,
-                #"fj1_pNetZvsQCD"   : fj1_pNetZvsQCD,
-                #"fj1_mparticlenet" : fj1_mparticlenet,
-
-                "jj_pairs_atmindr_mjj" : jj_pairs_atmindr_mjj,
-
-                "bbscore0_bscore" : bbscore0_bscore,
-                "bbscore1_bscore" : bbscore1_bscore,
-                "mass_bbscore0bbscore1" : mass_bbscore0bbscore1,
-                "mass_bmbscore0bmbscore1" : mass_bmbscore0bmbscore1,
-
-                #"jbscore0_bscore" : jbscore0_bscore,
-                #"jbscore1_bscore" : jbscore1_bscore,
-                #"mass_jbscore0jbscore1" : mass_jbscore0jbscore1,
-
-                "mjj_max_any" : mjj_max_any,
-                "mjj_max_cent" : mjj_max_cent,
-                "mjj_max_fwd" : mjj_max_fwd,
-
-                "absdeta_max_fwd" : absdeta_max_fwd,
-                "absdeta_max_any" : absdeta_max_any,
-
-                "mjjjall_nearest_t": mjjjall_nearest_t,
-                "mjjjcnt_nearest_t": mjjjcnt_nearest_t,
-
-                "mjjjany" : mjjjany,
-                "mjjjcnt" : mjjjcnt,
-                "mjjjjany" : mjjjjany,
-                "mjjjjcnt" : mjjjjcnt,
-
-                "mljjjany" : mljjjany,
-                "mljjjcnt" : mljjjcnt,
-                "mljjjjany" : mljjjjany,
-                "mljjjjcnt" : mljjjjcnt,
-
-                #"ghiggs0_pt" : ghiggs0.pt,
-                #"gvectorboson0_pt" : gvectorboson0.pt,
-
-                "n_ll_sfos": n_ll_sfos,
-                "abs_ch_sum_3l": abs_ch_sum_3l,
-
-            }
-
-
-            ######### Store boolean masks with PackedSelection ##########
-
-            selections = PackedSelection(dtype='uint64')
-
-            # Form some useful masks for SRs
-
-            is_os = l0.pdgId*l1.pdgId<0
-            is_sf = abs(l0.pdgId) == abs(l1.pdgId)
-
-            is_2l = (nleps==2) & (l0.pt>25) & (l1.pt>15)
-            is_3l = (nleps==3) & (l0.pt>25) & (l1.pt>15) & (l2.pt>10)
-
-            is_VFJ       = (fj0_mparticlenet <= 100.) & (fj0_mparticlenet > 65)
-            is_HFJ       = (fj0_mparticlenet >  110.) & (fj0_mparticlenet <= 150.)
-            is_HFJTagHbb = (fj0_pNetHbbvsQCD > 0.98)
-
-            is_onZ = abs(mass_l0l1 - 91.1876) < 20
-
-
-            ### Inclusive selections ###
-            #filter_mask = es_ec.get_filter_flag_mask_vvh(events,year,is2022,is2023) # Get the filter flag mask
-            filter_mask = pass_through
-            lumi_mask = pass_through
-            pass_trg = pass_through
-            quality = filter_mask & lumi_mask & pass_trg # This is what we'll actually apply to the SRs
-            quality = pass_through
-            # Cut flow for quality mask
-            selections.add("all_events",     pass_through) # Just a pass through
-            selections.add("just2lep",       (nleps==2))
-            selections.add("just3lep",       (nleps==3))
-            selections.add("filter",         filter_mask)
-            selections.add("filter_grl",     filter_mask & lumi_mask)
-            selections.add("filter_grl_trg", filter_mask & lumi_mask & pass_trg)
-
-            ### 2lOS + 1FJ ###
-            selections.add("2l",                                quality & is_2l)
-            selections.add("2lOS",                              quality & is_2l & is_os)
-            selections.add("2lOSSF",                            quality & is_2l & is_os & is_sf)
-            selections.add("2lOSSF_1fj",                        quality & is_2l & is_os & is_sf & (nfatjets>=1))
-            selections.add("2lOSSF_1fjx",                       quality & is_2l & is_os & is_sf & (nfatjets==1))
-            selections.add("2lOSSF_1fjx_onZ",                   quality & is_2l & is_os & is_sf & (nfatjets==1) & is_onZ)
-            selections.add("2lOSSF_1fjx_onZ_HFJ",               quality & is_2l & is_os & is_sf & (nfatjets==1) & is_onZ & is_HFJ)
-            selections.add("2lOSSF_1fjx_onZ_HFJtag",            quality & is_2l & is_os & is_sf & (nfatjets==1) & is_onZ & is_HFJ & is_HFJTagHbb)
-            selections.add("2lOSSF_1fjx_onZ_HFJtag_nj2",        quality & is_2l & is_os & is_sf & (nfatjets==1) & is_onZ & is_HFJ & is_HFJTagHbb & (njets_tot>=2))
-            selections.add("2lOSSF_1fjx_onZ_HFJtag_nj2_mjj600", quality & is_2l & is_os & is_sf & (nfatjets==1) & is_onZ & is_HFJ & is_HFJTagHbb & (njets_tot>=2) & (mjj_max_any>600))
-
-            ### 3l ###
-            selections.add("3l",                  quality & is_3l)
-            selections.add("3l_2j_mjj600",        quality & is_3l & (njets_tot>=2) & (mjj_max_any>600))
-            selections.add("3l_2j_mjj600_ht350",  quality & is_3l & (njets_tot>=2) & (mjj_max_any>600) & (scalarptsum_lepmetalljets>350))
-            selections.add("3l_2j_mjj600_noSFOS", quality & is_3l & (njets_tot>=2) & (mjj_max_any>600) & (n_ll_sfos==0))
-            selections.add("3l_2j_mjj600_ch3",    quality & is_3l & (njets_tot>=2) & (mjj_max_any>600) & (abs_ch_sum_3l==3))
-
-
-            # Keep track of the ones we want to actually fill
-            cat_dict = {
-                "lep_chan_lst" : [
-
-                    "all_events",
-                    "filter",
-                    "filter_grl",
-                    "filter_grl_trg",
-                    "just2lep",
-                    "just3lep",
-
-                    ### 2l OS SF 1FJ ###
-                    "2l",
-                    "2lOS",
-                    "2lOSSF",
-                    "2lOSSF_1fj",
-                    "2lOSSF_1fjx",
-                    "2lOSSF_1fjx_onZ",
-                    "2lOSSF_1fjx_onZ_HFJ",
-                    "2lOSSF_1fjx_onZ_HFJtag",
-                    "2lOSSF_1fjx_onZ_HFJtag_nj2",
-                    "2lOSSF_1fjx_onZ_HFJtag_nj2_mjj600",
-
-                    ### 3l ###
-                    "3l",
-                    "3l_2j_mjj600",
-                    "3l_2j_mjj600_ht350",
-                    "3l_2j_mjj600_noSFOS",
-                    "3l_2j_mjj600_ch3",
-                ]
-            }
-
-
-            ######### Fill histos #########
-
-            exclude_var_dict = {} # Any particular ones to skip
-
-            wgt_correction_syst_lst = []
-
-            # Set up the list of weight fluctuations to loop over
-            # For now the syst do not depend on the category, so we can figure this out outside of the filling loop
-            wgt_var_lst = ["nominal"]
-            if self._do_systematics:
-                #if not isData:
-                if not hasattr(events, "baseweight"):
-                    if (obj_corr_syst_var != "nominal"):
-                        # In this case, we are dealing with systs that change the kinematics of the objs (e.g. JES)
-                        # So we don't want to loop over up/down weight variations here
-                        wgt_var_lst = [obj_corr_syst_var]
-                    else:
-                        # Otherwise we want to loop over the up/down weight variations
-                        wgt_var_lst = wgt_var_lst + wgt_correction_syst_lst
-
-
-
-            # Loop over the hists we want to fill
-            for dense_axis_name, dense_axis_vals in dense_variables_dict.items():
-                if dense_axis_name not in self._hist_lst:
-                    #print(f"Skipping \"{dense_axis_name}\", it is not in the list of hists to include.")
-                    continue
-
-                # Loop over weight fluctuations
-                for wgt_fluct in wgt_var_lst:
-
-                    # Get the appropriate weight fluctuation
-                    if (wgt_fluct == "nominal") or (wgt_fluct in obj_corr_syst_var_list):
-                        # In the case of "nominal", no weight systematic variation is used
-                        weight = weights_obj_base_for_kinematic_syst.weight(None)
-                    else:
-                        # Otherwise get the weight from the Weights object
-                        weight = weights_obj_base_for_kinematic_syst.weight(wgt_fluct)
-
-
-                    # Loop over categories
-                    for sr_cat in cat_dict["lep_chan_lst"]:
-
-                        # Skip filling if this variable is not relevant for this selection
-                        if (dense_axis_name in exclude_var_dict) and (sr_cat in exclude_var_dict[dense_axis_name]): continue
-
-                        # If this is a counts hist, forget the weights and just fill with unit weights
-                        if dense_axis_name.endswith("_counts"): weight = events.nom
-
-                        # Make the cuts mask
-                        cuts_lst = [sr_cat]
-                        all_cuts_mask = selections.all(*cuts_lst)
-
-                        # Print info about the events
-                        #import sys
-                        #run = events.run[all_cuts_mask]
-                        #luminosityBlock = events.luminosityBlock[all_cuts_mask]
-                        #event = events.event[all_cuts_mask]
-                        #w = weight[all_cuts_mask]
-                        #if dense_axis_name == "njets":
-                        #    print("\nSTARTPRINT")
-                        #    for i,j in enumerate(w):
-                        #        out_str = f"PRINTTAG {i} {dense_axis_name} {year} {sr_cat} {event[i]} {run[i]} {luminosityBlock[i]} {w[i]}"
-                        #        print(out_str,file=sys.stderr,flush=True)
-                        #    print("ENDPRINT\n")
-                        #print("\ndense_axis_name",dense_axis_name)
-                        #print("sr_cat",sr_cat)
-                        #print("dense_axis_vals[all_cuts_mask]",dense_axis_vals[all_cuts_mask])
-                        #print("end")
-
-                        # Fill the histos
-                        axes_fill_info_dict = {
-                            dense_axis_name : ak.fill_none(dense_axis_vals[all_cuts_mask],0), # Don't like this fill_none
-                            "weight"        : ak.fill_none(weight[all_cuts_mask],0),          # Don't like this fill_none
-                            #"weight"        : ak.fill_none(events.weight[all_cuts_mask],0),          # Don't like this fill_none
-                            "process"       : histAxisName[all_cuts_mask],
-                            "category"      : sr_cat,
-                            "systematic"    : wgt_fluct,
-                            "year"          : events.year[all_cuts_mask],
-                        }
-
-                        self.accumulator[dense_axis_name].fill(**axes_fill_info_dict)
+        weights_obj_base.add("norm",events.baseweight)
+
+
+        #################### Jets ####################
+
+        # Fat jets
+        goodfatjets = fatjets
+
+        # Clean with dr (though another option is to use jetIdx)
+        cleanedJets = os_ec.get_cleaned_collection(l_vvh_t,jets) # Clean against leps
+        cleanedJets = os_ec.get_cleaned_collection(goodfatjets,cleanedJets,drcut=0.8) # Clean against fat jets
+
+        # Selecting jets and cleaning them (already in RDF)
+        goodJets = cleanedJets[(abs(cleanedJets.eta) <= 2.4)]
+        goodJets_forward = cleanedJets[(abs(cleanedJets.eta) > 2.4)]
+
+        # Count jets
+        njets = ak.num(goodJets)
+        njets_forward = ak.num(goodJets_forward)
+        njets_tot = njets + njets_forward
+        nfatjets = ak.num(goodfatjets)
+        ht = ak.sum(goodJets.pt,axis=-1)
+
+        goodJets_ptordered = goodJets[ak.argsort(goodJets.pt,axis=-1,ascending=False)]
+        goodJets_ptordered_padded = ak.pad_none(goodJets_ptordered, 4)
+        j0 = goodJets_ptordered_padded[:,0]
+        j1 = goodJets_ptordered_padded[:,1]
+        j2 = goodJets_ptordered_padded[:,2]
+        j3 = goodJets_ptordered_padded[:,3]
+
+        goodJets_forward_ptordered = goodJets_forward[ak.argsort(goodJets_forward.pt,axis=-1,ascending=False)]
+        goodJets_forward_ptordered_padded = ak.pad_none(goodJets_forward_ptordered, 2)
+        j0forward = goodJets_forward_ptordered_padded[:,0]
+        j1forward = goodJets_forward_ptordered_padded[:,1]
+
+        goodJetsCentFwd = ak.with_name(ak.concatenate([goodJets,goodJets_forward],axis=1),'PtEtaPhiMLorentzVector')
+        goodJetsCentFwd_ptordered = goodJetsCentFwd[ak.argsort(goodJetsCentFwd.pt,axis=-1,ascending=False)]
+        goodJetsCentFwd_ptordered_padded = ak.pad_none(goodJetsCentFwd_ptordered, 4)
+        j0any = goodJetsCentFwd_ptordered_padded[:,0]
+        j1any = goodJetsCentFwd_ptordered_padded[:,1]
+        j2any = goodJetsCentFwd_ptordered_padded[:,2]
+        j3any = goodJetsCentFwd_ptordered_padded[:,3]
+
+        goodfatjets_ptordered = goodfatjets[ak.argsort(goodfatjets.pt,axis=-1,ascending=False)]
+        goodfatjets_ptordered_padded = ak.pad_none(goodfatjets_ptordered, 2)
+        fj0 = goodfatjets_ptordered_padded[:,0]
+        fj1 = goodfatjets_ptordered_padded[:,1]
+
+        scalarptsum_jetCentFwd = ak.sum(goodJetsCentFwd.pt,axis=-1)
+        scalarptsum_jetCent = ak.sum(goodJets.pt,axis=-1)
+        scalarptsum_jetFwd = ak.sum(goodJets_forward.pt,axis=-1)
+
+        mjjjany  = ak.where(njets_tot>=3, (j0any+j1any+j2any).mass, 0)
+        mjjjcnt  = ak.where(njets>=3, (j0+j1+j2).mass, 0)
+        mjjjjany = ak.where(njets_tot>=4, (j0any+j1any+j2any+j3any).mass, 0)
+        mjjjjcnt = ak.where(njets>=4, (j0+j1+j2+j3).mass, 0)
+
+        mljjjany  = ak.where(njets_tot>=3, (l0 + j0any+j1any+j2any).mass, 0)
+        mljjjcnt  = ak.where(njets>=3, (l0 + j0+j1+j2).mass, 0)
+        mljjjjany = ak.where(njets_tot>=4, (l0 + j0any+j1any+j2any+j3any).mass, 0)
+        mljjjjcnt = ak.where(njets>=4, (l0 + j0+j1+j2+j3).mass, 0)
+
+
+        ### Btag WPs ###
+        # Eventually we should probably just take the btag jet collection from the RDF output
+        # For now handle it with a hard-to-read series of ak.where
+        btagwpl = events.nom
+        btagwpm = events.nom
+        btagwpl = ak.where(events.year=="2018",get_tc_param("btag_wp_loose_UL18"),btagwpl)
+        btagwpm = ak.where(events.year=="2018",get_tc_param("btag_wp_loose_UL18"),btagwpm)
+        btagwpl = ak.where(events.year=="2017",get_tc_param("btag_wp_loose_UL17"),btagwpl)
+        btagwpm = ak.where(events.year=="2017",get_tc_param("btag_wp_loose_UL17"),btagwpm)
+        btagwpl = ak.where(events.year=="2016postVFP",get_tc_param("btag_wp_loose_UL16"),btagwpl)
+        btagwpm = ak.where(events.year=="2016postVFP",get_tc_param("btag_wp_loose_UL16"),btagwpm)
+        btagwpl = ak.where(events.year=="2016preVFP",get_tc_param("btag_wp_loose_UL16APV"),btagwpl)
+        btagwpm = ak.where(events.year=="2016preVFP",get_tc_param("btag_wp_loose_UL16APV"),btagwpm)
+
+        isBtagJetsLoose = (goodJets.btagDeepFlavB > btagwpl)
+        isBtagJetsMedium = (goodJets.btagDeepFlavB > btagwpm)
+
+        isNotBtagJetsLoose = np.invert(isBtagJetsLoose)
+        nbtagsl = ak.num(goodJets[isBtagJetsLoose])
+
+        isNotBtagJetsMedium = np.invert(isBtagJetsMedium)
+        nbtagsm = ak.num(goodJets[isBtagJetsMedium])
+
+
+        ######### Get variables we haven't already calculated #########
+
+        # Replace with 0 when there are not a pair of jets
+        mjj_tmp = (j0+j1).mass
+        mass_j0centj1cent = ak.where(njets>1,mjj_tmp,0)
+
+        j0forward_eta = ak.where(njets_forward>0,j0forward.eta,0)
+
+        j0any_pt = ak.where(njets_tot>0,j0any.pt,0)
+
+        mass_j0anyj1any = ak.where(njets_tot>1,(j0any+j1any).mass,0)
+
+        mass_j0fwdj1fwd = ak.where(njets_forward>1,(j0forward+j1forward).mass,0)
+
+        # Count lepton pairs
+        ll_pairs = ak.combinations(l_vvh_t_padded, 2, fields=["l0", "l1"] )
+        sfos_mask = ak.fill_none((ll_pairs.l0.pdgId == -ll_pairs.l1.pdgId),False)
+        n_ll_sfos = ak.num(ll_pairs[sfos_mask])
+
+        # Find the mjj of the pair of jets (central + fwd) that have the min delta R
+        jj_pairs = ak.combinations(goodJetsCentFwd_ptordered_padded, 2, fields=["j0", "j1"] )
+        jj_pairs_dr = jj_pairs.j0.delta_r(jj_pairs.j1)
+        jj_pairs_idx_mindr = ak.argmin(jj_pairs_dr,axis=1,keepdims=True)
+        jj_pairs_atmindr = jj_pairs[jj_pairs_idx_mindr]
+        jj_pairs_atmindr_mjj = (jj_pairs_atmindr.j0 + jj_pairs_atmindr.j1).mass
+        jj_pairs_atmindr_mjj = ak.flatten(ak.fill_none(jj_pairs_atmindr_mjj,-999)) # Replace Nones, flatten (so e.g. [[None],[x],[y]] -> [-999,x,y])
+
+        # Find jet triplets clost to top mass
+        jetall_triplets = ak.combinations(goodJetsCentFwd_ptordered_padded, 3, fields=["j0", "j1", "j2"] )
+        jetcnt_triplets = ak.combinations(goodJets_ptordered_padded,        3, fields=["j0", "j1", "j2"] )
+        jjjall_4vec = jetall_triplets.j0 + jetall_triplets.j1 + jetall_triplets.j2
+        jjjcnt_4vec = jetcnt_triplets.j0 + jetcnt_triplets.j1 + jetcnt_triplets.j2
+        tpeak_jall_idx = ak.argmin(abs(jjjall_4vec.mass - 173),keepdims=True,axis=1)
+        tpeak_jcnt_idx = ak.argmin(abs(jjjcnt_4vec.mass - 173),keepdims=True,axis=1)
+        mjjjall_nearest_t = ak.fill_none(ak.flatten(jjjall_4vec[tpeak_jall_idx].mass),0)
+        mjjjcnt_nearest_t = ak.fill_none(ak.flatten(jjjcnt_4vec[tpeak_jcnt_idx].mass),0)
+
+        mass_l0l1 = (l0+l1).mass
+        dr_l0l1 = l0.delta_r(l1)
+        scalarptsum_lep = ak.sum(l_vvh_t.pt,axis=-1)
+        scalarptsum_lepmet = scalarptsum_lep + met.pt
+        scalarptsum_lepmetFJ = scalarptsum_lep + met.pt + fj0.pt
+        scalarptsum_lepmetFJ10 = scalarptsum_lep + met.pt + fj0.pt + fj1.pt
+        scalarptsum_lepmetalljets = scalarptsum_lep + met.pt + scalarptsum_jetCentFwd
+        scalarptsum_lepmetcentjets = scalarptsum_lep + met.pt + scalarptsum_jetCent
+        scalarptsum_lepmetfwdjets = scalarptsum_lep + met.pt + scalarptsum_jetFwd
+
+        # lb pairs (i.e. always one lep, one bjet)
+        bjets = goodJets[isBtagJetsLoose]
+        bjetsm = goodJets[isBtagJetsMedium]
+        lb_pairs = ak.cartesian({"l":l_vvh_t,"j":bjets})
+        mlb_min = ak.min((lb_pairs["l"] + lb_pairs["j"]).mass,axis=-1)
+        mlb_max = ak.max((lb_pairs["l"] + lb_pairs["j"]).mass,axis=-1)
+
+        bjets_ptordered = bjets[ak.argsort(bjets.pt,axis=-1,ascending=False)]
+        bjets_ptordered_padded = ak.pad_none(bjets_ptordered, 2)
+        b0 = bjets_ptordered_padded[:,0]
+        b1 = bjets_ptordered_padded[:,1]
+        mass_b0b1_tmp = (b0+b1).mass
+        mass_b0b1 = ak.where(nbtagsl>1,mass_b0b1_tmp,0)
+
+        # Variables related to leading b jet score of b jets
+        bjets_bscoreordered = bjets[ak.argsort(bjets.btagDeepFlavB,axis=-1,ascending=False)]
+        bjets_bscoreordered_padded = ak.pad_none(bjets_bscoreordered, 2)
+        bbscore0 = bjets_bscoreordered_padded[:,0]
+        bbscore1 = bjets_bscoreordered_padded[:,1]
+        mass_bbscore0bbscore1 = ak.fill_none((bbscore0+bbscore1).mass,0)
+        bbscore0_bscore = ak.fill_none(bbscore0.btagDeepFlavB,0)
+        bbscore1_bscore = ak.fill_none(bbscore1.btagDeepFlavB,0)
+
+        # Variables related to leading b jet score of med b jets
+        bjetsm_bscoreordered = bjetsm[ak.argsort(bjetsm.btagDeepFlavB,axis=-1,ascending=False)]
+        bjetsm_bscoreordered_padded = ak.pad_none(bjetsm_bscoreordered, 2)
+        bmbscore0 = bjetsm_bscoreordered_padded[:,0]
+        bmbscore1 = bjetsm_bscoreordered_padded[:,1]
+        mass_bmbscore0bmbscore1 = ak.fill_none((bmbscore0+bmbscore1).mass,0)
+
+        # Variables related to leading b jet score of central jets
+        #centraljets_bscoreordered = goodJets_ptordered_padded[ak.argsort(goodJets_ptordered_padded.btagDeepFlavB,axis=-1,ascending=False)]
+        #jbscore0 = centraljets_bscoreordered[:,0]
+        #jbscore1 = centraljets_bscoreordered[:,1]
+        #mass_jbscore0jbscore1 = ak.fill_none((jbscore0+jbscore1).mass,0)
+        #jbscore0_bscore = ak.fill_none(jbscore0.btagDeepFlavB,0)
+        #jbscore1_bscore = ak.fill_none(jbscore1.btagDeepFlavB,0)
+
+        # Mjj max from any jets
+        jjCentFwd_pairs = ak.combinations( goodJetsCentFwd_ptordered_padded, 2, fields=["j0", "j1"] )
+        mjj_max_any     = ak.fill_none(ak.max((jjCentFwd_pairs.j0 + jjCentFwd_pairs.j1).mass,axis=-1),0)
+        absdeta_max_any = ak.fill_none(ak.max(abs(jjCentFwd_pairs.j0.eta - jjCentFwd_pairs.j1.eta),axis=-1),0)
+
+        # Mjj max from cent jets
+        jjCent_pairs = ak.combinations(goodJets_ptordered_padded, 2, fields=["j0", "j1"] )
+        mjj_max_cent = ak.fill_none(ak.max((jjCent_pairs.j0 + jjCent_pairs.j1).mass,axis=-1),0)
+
+        # Mjj max from forward jets
+        jjFwd_pairs = ak.combinations(goodJets_forward_ptordered_padded, 2, fields=["j0", "j1"] )
+        mjj_max_fwd = ak.fill_none(ak.max((jjFwd_pairs.j0 + jjFwd_pairs.j1).mass,axis=-1),0)
+        absdeta_max_fwd = ak.fill_none(ak.max(abs(jjFwd_pairs.j0.eta - jjFwd_pairs.j1.eta),axis=-1),0)
+
+        fj0_pNetH4qvsQCD = fj0.particleNetWithMass_H4qvsQCD
+        fj0_pNetHbbvsQCD = fj0.particleNetWithMass_HbbvsQCD
+        fj0_pNetHccvsQCD = fj0.particleNetWithMass_HccvsQCD
+        fj0_pNetQCD      = fj0.particleNetWithMass_QCD
+        fj0_pNetTvsQCD   = fj0.particleNetWithMass_TvsQCD
+        fj0_pNetWvsQCD   = fj0.particleNetWithMass_WvsQCD
+        fj0_pNetZvsQCD   = fj0.particleNetWithMass_ZvsQCD
+        fj0_mparticlenet = fj0.particleNetLegacy_mass
+
+
+        # Put the variables we'll plot into a dictionary for easy access later
+        dense_variables_dict = {
+            "met" : met.pt,
+            "metphi" : met.phi,
+            "scalarptsum_lep" : scalarptsum_lep,
+            "scalarptsum_jetCentFwd" : scalarptsum_jetCentFwd,
+            "scalarptsum_jetCent" : scalarptsum_jetCent,
+            "scalarptsum_jetFwd" : scalarptsum_jetFwd,
+            "scalarptsum_lepmet" : scalarptsum_lepmet,
+            "scalarptsum_lepmetFJ" : scalarptsum_lepmetFJ,
+            "scalarptsum_lepmetFJ10" : scalarptsum_lepmetFJ10,
+            "scalarptsum_lepmetalljets" : scalarptsum_lepmetalljets,
+            "scalarptsum_lepmetcentjets" : scalarptsum_lepmetcentjets,
+            "scalarptsum_lepmetfwdjets" : scalarptsum_lepmetfwdjets,
+            "l0_pt"  : l0.pt,
+            "l0_eta" : l0.eta,
+            "l1_pt"  : l1.pt,
+            "l1_eta" : l1.eta,
+            "l2_pt"  : l2.pt,
+            "l2_eta" : l2.eta,
+            "mass_l0l1" : mass_l0l1,
+            "dr_l0l1" : dr_l0l1,
+            "l0_iso"     : l0.pfRelIso03_all,
+            "l0_miniiso" : l0.miniPFRelIso_all,
+            "l1_iso"     : l1.pfRelIso03_all,
+            "l1_miniiso" : l1.miniPFRelIso_all,
+            "l2_iso"     : l2.pfRelIso03_all,
+            "l2_miniiso" : l2.miniPFRelIso_all,
+
+            "j0central_pt"  : j0.pt,
+            "j0central_eta" : j0.eta,
+            "j0central_phi" : j0.phi,
+
+            "j0forward_pt"  : j0forward.pt,
+            "j0forward_eta" : j0forward_eta,
+            "j0forward_phi" : j0forward.phi,
+
+            "j0any_pt"  : j0any_pt,
+            "j0any_eta" : j0any.eta,
+            "j0any_phi" : j0any.phi,
+
+            "nleps" : nleps,
+            "njets" : njets,
+            "nbtagsl" : nbtagsl,
+
+            "nleps_counts" : nleps,
+            "njets_counts" : njets,
+            "nbtagsl_counts" : nbtagsl,
+
+            "nbtagsm" : nbtagsm,
+            "nbtagsl" : nbtagsl,
+
+            "nfatjets" : nfatjets,
+            "njets_forward" : njets_forward,
+            "njets_tot" : njets_tot,
+            "fj0_pt" : fj0.pt,
+            "fj0_mass" : fj0.mass,
+            "fj0_msoftdrop" : fj0.msoftdrop,
+            "fj0_eta" : fj0.eta,
+            "fj0_phi" : fj0.phi,
+
+            "j0_pt" : j0.pt,
+            "j0_eta" : j0.eta,
+            "j0_phi" : j0.phi,
+
+            "dr_fj0l0" : fj0.delta_r(l0),
+            "dr_j0fwdj1fwd" : j0forward.delta_r(j1forward),
+            "dr_j0centj1cent" : j0.delta_r(j1),
+            "dr_j0anyj1any" : j0any.delta_r(j1any),
+            "absdphi_j0fwdj1fwd"   : abs(j0forward.delta_phi(j1forward)),
+            "absdphi_j0centj1cent" : abs(j0.delta_phi(j1)),
+            "absdphi_j0anyj1any"   : abs(j0any.delta_phi(j1any)),
+
+            "mass_j0centj1cent" : mass_j0centj1cent,
+            "mass_j0fwdj1fwd" : mass_j0fwdj1fwd,
+            "mass_j0anyj1any" : mass_j0anyj1any,
+
+            "mass_b0b1" : mass_b0b1,
+
+            "fj0_pNetH4qvsQCD" : fj0_pNetH4qvsQCD,
+            "fj0_pNetHbbvsQCD" : fj0_pNetHbbvsQCD,
+            "fj0_pNetHccvsQCD" : fj0_pNetHccvsQCD,
+            "fj0_pNetQCD"      : fj0_pNetQCD,
+            "fj0_pNetTvsQCD"   : fj0_pNetTvsQCD,
+            "fj0_pNetWvsQCD"   : fj0_pNetWvsQCD,
+            "fj0_pNetZvsQCD"   : fj0_pNetZvsQCD,
+            "fj0_mparticlenet" : fj0_mparticlenet,
+
+            "jj_pairs_atmindr_mjj" : jj_pairs_atmindr_mjj,
+
+            "bbscore0_bscore" : bbscore0_bscore,
+            "bbscore1_bscore" : bbscore1_bscore,
+            "mass_bbscore0bbscore1" : mass_bbscore0bbscore1,
+            "mass_bmbscore0bmbscore1" : mass_bmbscore0bmbscore1,
+
+            #"jbscore0_bscore" : jbscore0_bscore,
+            #"jbscore1_bscore" : jbscore1_bscore,
+            #"mass_jbscore0jbscore1" : mass_jbscore0jbscore1,
+
+            "mjj_max_any" : mjj_max_any,
+            "mjj_max_cent" : mjj_max_cent,
+            "mjj_max_fwd" : mjj_max_fwd,
+
+            "absdeta_max_fwd" : absdeta_max_fwd,
+            "absdeta_max_any" : absdeta_max_any,
+
+            "mjjjall_nearest_t": mjjjall_nearest_t,
+            "mjjjcnt_nearest_t": mjjjcnt_nearest_t,
+
+            "mjjjany" : mjjjany,
+            "mjjjcnt" : mjjjcnt,
+            "mjjjjany" : mjjjjany,
+            "mjjjjcnt" : mjjjjcnt,
+
+            "mljjjany" : mljjjany,
+            "mljjjcnt" : mljjjcnt,
+            "mljjjjany" : mljjjjany,
+            "mljjjjcnt" : mljjjjcnt,
+
+            #"ghiggs0_pt" : ghiggs0.pt,
+            #"gvectorboson0_pt" : gvectorboson0.pt,
+
+            "n_ll_sfos": n_ll_sfos,
+            "abs_ch_sum_3l": abs_ch_sum_3l,
+            "abs_pdgid_sum3l": abs(l0.pdgId) + abs(l1.pdgId) + abs(l2.pdgId),
+
+        }
+
+
+        ######### Store boolean masks with PackedSelection ##########
+
+        selections = PackedSelection(dtype='uint64')
+
+        # Form some useful masks for SRs
+
+        is_os = l0.pdgId*l1.pdgId<0
+        is_sf = abs(l0.pdgId) == abs(l1.pdgId)
+
+        is_2l = (nleps==2) & (l0.pt>25) & (l1.pt>15)
+        is_3l = (nleps==3) & (l0.pt>25) & (l1.pt>15) & (l2.pt>10)
+
+        is_VFJ       = (fj0_mparticlenet <= 100.) & (fj0_mparticlenet > 65)
+        is_HFJ       = (fj0_mparticlenet >  110.) & (fj0_mparticlenet <= 150.)
+        is_HFJTagHbb = (fj0_pNetHbbvsQCD > 0.98)
+
+        is_onZ = abs(mass_l0l1 - 91.1876) < 20
+
+        ### 2lOS + 1FJ ###
+        selections.add("2l",                                      is_2l)
+        selections.add("2lOS",                                    is_2l & is_os)
+        selections.add("2lOSSF",                                  is_2l & is_os & is_sf)
+        selections.add("2lOSSF_1fj",                              is_2l & is_os & is_sf & (nfatjets>=1))
+        selections.add("2lOSSF_1fjx",                             is_2l & is_os & is_sf & (nfatjets==1))
+        selections.add("2lOSSF_1fjx_HFJ",                         is_2l & is_os & is_sf & (nfatjets==1) & is_HFJ)
+        selections.add("2lOSSF_1fjx_HFJtag",                      is_2l & is_os & is_sf & (nfatjets==1) & is_HFJ & is_HFJTagHbb)
+        selections.add("2lOSSF_1fjx_HFJtag_nj2",                  is_2l & is_os & is_sf & (nfatjets==1) & is_HFJ & is_HFJTagHbb & (njets_tot>=2))
+        selections.add("2lOSSF_1fjx_HFJtag_nj2_mjj600",           is_2l & is_os & is_sf & (nfatjets==1) & is_HFJ & is_HFJTagHbb & (njets_tot>=2) & (mjj_max_any>600))
+        selections.add("2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0",      is_2l & is_os & is_sf & (nfatjets==1) & is_HFJ & is_HFJTagHbb & (njets_tot>=2) & (mjj_max_any>600) & (nbtagsm==0))
+        selections.add("2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0_onZ",  is_2l & is_os & is_sf & (nfatjets==1) & is_HFJ & is_HFJTagHbb & (njets_tot>=2) & (mjj_max_any>600) & (nbtagsm==0) & is_onZ)
+        selections.add("2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0_offZ", is_2l & is_os & is_sf & (nfatjets==1) & is_HFJ & is_HFJTagHbb & (njets_tot>=2) & (mjj_max_any>600) & (nbtagsm==0) & ~is_onZ)
+
+        ### 3l ###
+        selections.add("3l",                           is_3l)
+        selections.add("3l_2j_mjj400",                 is_3l & (njets_tot>=2) & (mjj_max_any>400))
+        selections.add("3l_2j_mjj400_noSFOS",          is_3l & (njets_tot>=2) & (mjj_max_any>400) & (n_ll_sfos==0))
+        selections.add("3l_2j_mjj400_noSFOS_b0p4",     is_3l & (njets_tot>=2) & (mjj_max_any>400) & (n_ll_sfos==0) & (bbscore0_bscore<0.4))
+        selections.add("3l_2j_mjj400_noSFOS_b0p4_ch1", is_3l & (njets_tot>=2) & (mjj_max_any>400) & (n_ll_sfos==0) & (bbscore0_bscore<0.4) & (abs_ch_sum_3l==1))
+        selections.add("3l_2j_mjj400_noSFOS_b0p4_ch3", is_3l & (njets_tot>=2) & (mjj_max_any>400) & (n_ll_sfos==0) & (bbscore0_bscore<0.4) & (abs_ch_sum_3l==3))
+        selections.add("3l_2j_mjj400_SFOS",            is_3l & (njets_tot>=2) & (mjj_max_any>400) & (n_ll_sfos>0))
+        selections.add("3l_2j_mjj400_SFOS_jf0pt50",    is_3l & (njets_tot>=2) & (mjj_max_any>400) & (n_ll_sfos>0) & (j0forward.pt>50))
+
+        # Keep track of the ones we want to actually fill
+        cat_dict = {
+            "lep_chan_lst" : [
+
+                ### 2l OS SF 1FJ ###
+                "2l",
+                "2lOS",
+                "2lOSSF",
+                "2lOSSF_1fj",
+                "2lOSSF_1fjx",
+                "2lOSSF_1fjx_HFJ",
+                "2lOSSF_1fjx_HFJtag",
+                "2lOSSF_1fjx_HFJtag_nj2",
+                "2lOSSF_1fjx_HFJtag_nj2_mjj600",
+                "2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0",
+                "2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0_onZ",
+                "2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0_offZ",
+
+                ### 3l ###
+                "3l",
+                "3l_2j_mjj400",
+                "3l_2j_mjj400_noSFOS",
+                "3l_2j_mjj400_noSFOS_b0p4",
+                "3l_2j_mjj400_noSFOS_b0p4_ch1",
+                "3l_2j_mjj400_noSFOS_b0p4_ch3",
+                "3l_2j_mjj400_SFOS",
+                "3l_2j_mjj400_SFOS_jf0pt50",
+            ]
+        }
+
+
+        ######### Fill histos #########
+
+        wgt_correction_syst_lst = []
+
+        # Set up the list of weight fluctuations to loop over
+        # For now the syst do not depend on the category, so we can figure this out outside of the filling loop
+        wgt_var_lst = ["nominal"]
+
+        # Loop over the hists we want to fill
+        for dense_axis_name, dense_axis_vals in dense_variables_dict.items():
+            if dense_axis_name not in self._hist_lst:
+                #print(f"Skipping \"{dense_axis_name}\", it is not in the list of hists to include.")
+                continue
+
+            # Loop over weight fluctuations
+            for wgt_fluct in wgt_var_lst:
+
+                # Get the appropriate weight fluctuation
+                if (wgt_fluct == "nominal"):
+                    # In the case of "nominal", no weight systematic variation is used
+                    weight = weights_obj_base.weight(None)
+                else:
+                    # Otherwise get the weight from the Weights object
+                    weight = weights_obj_base.weight(wgt_fluct)
+
+
+                # Loop over categories
+                for sr_cat in cat_dict["lep_chan_lst"]:
+
+                    # If this is a counts hist, forget the weights and just fill with unit weights
+                    if dense_axis_name.endswith("_counts"): weight = events.nom
+
+                    # Make the cuts mask
+                    cuts_lst = [sr_cat]
+                    all_cuts_mask = selections.all(*cuts_lst)
+
+                    # Print info about the events
+                    #import sys
+                    #run = events.run[all_cuts_mask]
+                    #luminosityBlock = events.luminosityBlock[all_cuts_mask]
+                    #event = events.event[all_cuts_mask]
+                    #w = weight[all_cuts_mask]
+                    #if dense_axis_name == "njets":
+                    #    print("\nSTARTPRINT")
+                    #    for i,j in enumerate(w):
+                    #        out_str = f"PRINTTAG {i} {dense_axis_name} {year} {sr_cat} {event[i]} {run[i]} {luminosityBlock[i]} {w[i]}"
+                    #        print(out_str,file=sys.stderr,flush=True)
+                    #    print("ENDPRINT\n")
+                    #print("\ndense_axis_name",dense_axis_name)
+                    #print("sr_cat",sr_cat)
+                    #print("dense_axis_vals[all_cuts_mask]",dense_axis_vals[all_cuts_mask])
+                    #print("end")
+
+                    # Fill the histos
+                    axes_fill_info_dict = {
+                        dense_axis_name : ak.fill_none(dense_axis_vals[all_cuts_mask],0), # Don't like this fill_none
+                        "weight"        : ak.fill_none(weight[all_cuts_mask],0),          # Don't like this fill_none
+                        "process"       : histAxisName[all_cuts_mask],
+                        "category"      : sr_cat,
+                        "systematic"    : wgt_fluct,
+                        "year"          : events.year[all_cuts_mask],
+                    }
+
+                    self.accumulator[dense_axis_name].fill(**axes_fill_info_dict)
 
         return self.accumulator
 
