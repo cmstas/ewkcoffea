@@ -172,27 +172,30 @@ CAT_LST = [
     "filter",
     "filter_grl",
     "filter_grl_trg",
-    #"just2lep",
-    #"just3lep",
 
-    #### 2l OS SF 1FJ ###
-    #"2l",
-    #"2lOS",
-    #"2lOSSF",
-    #"2lOSSF_1fj",
+    ### 2l OS SF 1FJ ###
+    "2l",
+    "2lOS",
+    "2lOSSF",
+    "2lOSSF_1fj",
     "2lOSSF_1fjx",
-    #"2lOSSF_1fjx_onZ",
-    #"2lOSSF_1fjx_onZ_HFJ",
-    #"2lOSSF_1fjx_onZ_HFJtag",
-    #"2lOSSF_1fjx_onZ_HFJtag_nj2",
-    #"2lOSSF_1fjx_onZ_HFJtag_nj2_mjj600",
+    "2lOSSF_1fjx_HFJ",
+    "2lOSSF_1fjx_HFJtag",
+    "2lOSSF_1fjx_HFJtag_nj2",
+    "2lOSSF_1fjx_HFJtag_nj2_mjj600",
+    "2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0",
+    "2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0_onZ",
+    "2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0_offZ",
 
     ### 3l ###
     "3l",
-    #"3l_2j_mjj600",
-    #"3l_2j_mjj600_ht350"
-    #"3l_2j_mjj600_noSFOS",
-    #"3l_2j_mjj600_ch3",
+    "3l_2j_mjj400",
+    "3l_2j_mjj400_noSFOS",
+    "3l_2j_mjj400_noSFOS_b0p4",
+    "3l_2j_mjj400_noSFOS_b0p4_ch1",
+    "3l_2j_mjj400_noSFOS_b0p4_ch3",
+    "3l_2j_mjj400_SFOS",
+    "3l_2j_mjj400_SFOS_jf0pt50",
 ]
 
 
@@ -559,11 +562,12 @@ def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend):
             print("\nVar:",var)
             if "fj1" in var: continue
             #if var not in ["njets","njets_counts","scalarptsum_lepmet"]: continue # TMP
+            if "truth" in var: continue
 
             histo = copy.deepcopy(histo_dict[var][{"systematic":"nominal", "category":cat}])
 
             # Clean up a bit (rebin, regroup, and handle overflow)
-            if var not in ["njets","nleps","nbtagsl","nbtagsm","njets_counts","nleps_counts","nfatjets","njets_forward","njets_tot","n_ll_sfos","abs_ch_sum_3l"]:
+            if var not in ["njets","nleps","nbtagsl","nbtagsm","njets_counts","nleps_counts","nfatjets","njets_forward","njets_tot","n_ll_sfos","abs_ch_sum_3l","l0_truth","l1_truth","l2_truth", "nlep_truth_real", "nlep_truth_fake", "abs_pdgid_sum"]:
                 histo = plt_tools.rebin(histo,6)
             #histo = plt_tools.group(histo,"process","process_grp",grouping_dict_mc)
             histo = plt_tools.group(histo,"process","process_grp",grouping_dict)
@@ -615,7 +619,6 @@ def main():
     # Print total raw events
     tot_raw = sum(sum(histo_dict["njets_counts"][{"systematic":"nominal", "category":"all_events"}].values(flow=True)))
     print("Tot raw events:",tot_raw)
-    #print(histo_dict["njets"])
     #exit()
 
     # Figure out the proc naming convention
