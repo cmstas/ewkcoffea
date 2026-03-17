@@ -28,15 +28,16 @@ GRP_DICT_FULL_R3 = {
     ],
 }
 
+
 GRP_DICT_FULL_R2 = {
     "Data" : [
         "data",
     ],
     "Signal" : [
-        "VBSWWH_OS_VBSCuts_13TeV",
-        "VBSWWH_SS_VBSCuts_13TeV",
-        "VBSWZH_VBSCuts_13TeV",
-        "VBSZZH_VBSCuts_13TeV",
+        "VBSWWH_SS_c2v1p0_c3_1p0",
+        "VBSWWH_OS_c2v1p0_c3_1p0",
+        "VBSWZH_c2v1p0_c3_1p0",
+        "VBSZZH_c2v1p0_c3_1p0",
     ],
     "QCD" : [
         "QCD_HT50to100_TuneCP5_PSWeights_13TeV",
@@ -50,41 +51,36 @@ GRP_DICT_FULL_R2 = {
         "QCD_HT2000toInf_TuneCP5_PSWeights_13TeV",
     ],
     "ttbar" : [
-        "TTToHadronic_TuneCP5_13TeV",
-        "TTToSemiLeptonic_TuneCP5_13TeV",
         "TTTo2L2Nu_TuneCP5_13TeV",
+        "TTToSemiLeptonic_TuneCP5_13TeV",
+        "TTToHadronic_TuneCP5_13TeV",
     ],
     "single-t" : [
+        "ST_t-channel_antitop_4f_InclusiveDecays_TuneCP5_13TeV",
+        "ST_t-channel_top_4f_InclusiveDecays_TuneCP5_13TeV",
         "ST_tW_antitop_5f_inclusiveDecays_TuneCP5_13TeV",
         "ST_tW_top_5f_inclusiveDecays_TuneCP5_13TeV",
         "ST_s-channel_4f_leptonDecays_TuneCP5_13TeV",
-        "ST_t-channel_top_4f_InclusiveDecays_TuneCP5_13TeV",
-        "ST_t-channel_antitop_4f_InclusiveDecays_TuneCP5_13TeV",
     ],
     "ttX" : [
-        #"TTbb_4f_TTToSemiLeptonic", # Not sure
-        #"TTbb_4f_TTToHadronic", # Not sure
-        #"TTbb_4f_TTTo2L2Nu", # Not sure
-        "ttZJets_TuneCP5_13TeV",
-        "TTZToLLNuNu_M-10_TuneCP5_13TeV",
         "TTWJetsToLNu_TuneCP5_13TeV",
         "TTWJetsToQQ_TuneCP5_13TeV",
-        "ttWJets_TuneCP5_13TeV",
-        "ttHTobb_M125_TuneCP5_13TeV",
+        "TTWW_TuneCP5_13TeV",
+        "TTWZ_TuneCP5_13TeV",
+        "TTZToLLNuNu_M-10_TuneCP5_13TeV",
+        "TTbb_4f_TTTo2L2Nu",
+        "TTbb_4f_TTToSemiLeptonic",
+        "TTbb_4f_TTToHadronic",
         "ttHToNonbb_M125_TuneCP5_13TeV",
+        "ttHTobb_M125_TuneCP5_13TeV",
+        "ttWJets_TuneCP5_13TeV",
+        "ttZJets_TuneCP5_13TeV",
     ],
     "rare-top" : [
-        "TTWZ_TuneCP5_13TeV",
-        "TTWW_TuneCP5_13TeV",
-        "tZq_ll_4f_ckm_NLO_TuneCP5_13TeV",
         "TWZToLL_tlept_Wlept_5f_DR_TuneCP5_13TeV",
+        "tZq_ll_4f_ckm_NLO_TuneCP5_13TeV",
     ],
     "Vjets" : [
-        "WJetsToQQ_HT-200to400_TuneCP5_13TeV",
-        "WJetsToQQ_HT-400to600_TuneCP5_13TeV",
-        "WJetsToQQ_HT-600to800_TuneCP5_13TeV",
-        "WJetsToQQ_HT-800toInf_TuneCP5_13TeV",
-        "WJetsToLNu_TuneCP5_13TeV",
         "WJetsToLNu_HT-70To100_TuneCP5_13TeV",
         "WJetsToLNu_HT-100To200_TuneCP5_13TeV",
         "WJetsToLNu_HT-200To400_TuneCP5_13TeV",
@@ -93,75 +89,84 @@ GRP_DICT_FULL_R2 = {
         "WJetsToLNu_HT-800To1200_TuneCP5_13TeV",
         "WJetsToLNu_HT-1200To2500_TuneCP5_13TeV",
         "WJetsToLNu_HT-2500ToInf_TuneCP5_13TeV",
+        "WJetsToLNu_TuneCP5_13TeV",
+        "WJetsToQQ_HT-200to400_TuneCP5_13TeV",
+        "WJetsToQQ_HT-400to600_TuneCP5_13TeV",
+        "WJetsToQQ_HT-600to800_TuneCP5_13TeV",
+        "WJetsToQQ_HT-800toInf_TuneCP5_13TeV",
         "ZJetsToQQ_HT-200to400_TuneCP5_13TeV",
         "ZJetsToQQ_HT-400to600_TuneCP5_13TeV",
         "ZJetsToQQ_HT-600to800_TuneCP5_13TeV",
         "ZJetsToQQ_HT-800toInf_TuneCP5_13TeV",
+        "WminusH_HToBB_WToLNu_M-125_TuneCP5_13TeV",
+        "WminusH_HToBB_WToQQ_M-125_TuneCP5_13TeV",
+        "WplusH_HToBB_WToLNu_M-125_TuneCP5_13TeV",
+        "WplusH_HToBB_WToQQ_M-125_TuneCP5_13TeV",
+    ],
+    "DY" : [
         "DYJetsToLL_M-10to50_TuneCP5_13TeV",
         "DYJetsToLL_M-50_TuneCP5_13TeV",
     ],
     "ewkV" : [
-        "EWKZ2Jets_ZToLL_M-50_TuneCP5_withDipoleRecoil_13TeV",
-        "EWKZ2Jets_ZToQQ_dipoleRecoilOn_TuneCP5_13TeV",
-        "EWKZ2Jets_ZToNuNu_M-50_TuneCP5_withDipoleRecoil_13TeV",
         "EWKWMinus2Jets_WToLNu_M-50_TuneCP5_withDipoleRecoil_13TeV",
+        "EWKWPlus2Jets_WToLNu_M-50_TuneCP5_withDipoleRecoil_13TeV",
         "EWKWminus2Jets_WToQQ_dipoleRecoilOn_TuneCP5_13TeV",
         "EWKWplus2Jets_WToQQ_dipoleRecoilOn_TuneCP5_13TeV",
-        "EWKWPlus2Jets_WToLNu_M-50_TuneCP5_withDipoleRecoil_13TeV",
+        "EWKZ2Jets_ZToLL_M-50_TuneCP5_withDipoleRecoil_13TeV",
+        "EWKZ2Jets_ZToNuNu_M-50_TuneCP5_withDipoleRecoil_13TeV",
+        "EWKZ2Jets_ZToQQ_dipoleRecoilOn_TuneCP5_13TeV",
+        "WWJJToLNuLNu_EWK_noTop_TuneCP5_13TeV",
     ],
     "VV" : [
-        "ZZTo4Q_5f_TuneCP5_13TeV",
-        "ZZTo2Q2L_mllmin4p0_TuneCP5_13TeV",
-        "ZZJJTo4L_TuneCP5_13TeV",
-        "GluGluToContinToZZTo2e2tau_TuneCP5_13TeV",
-        "GluGluToContinToZZTo4tau_TuneCP5_13TeV",
-        "GluGluToContinToZZTo2mu2tau_TuneCP5_13TeV",
-        "GluGluToContinToZZTo4mu_TuneCP5_13TeV",
         "GluGluToContinToZZTo2e2mu_TuneCP5_13TeV",
+        "GluGluToContinToZZTo2e2tau_TuneCP5_13TeV",
+        "GluGluToContinToZZTo2mu2tau_TuneCP5_13TeV",
         "GluGluToContinToZZTo4e_TuneCP5_13TeV",
-        "WW_TuneCP5_13TeV",
-        "WWTo2L2Nu_TuneCP5_13TeV",
-        "WWTo1L1Nu2Q_4f_TuneCP5_13TeV",
-        "WWTo4Q_4f_TuneCP5_13TeV",
+        "GluGluToContinToZZTo4mu_TuneCP5_13TeV",
+        "GluGluToContinToZZTo4tau_TuneCP5_13TeV",
+        "GluGluZH_HToWWTo2L2Nu_TuneCP5_13TeV",
+        "GluGluZH_HToWWTo2L2Nu_M-125_TuneCP5_13TeV",
         "WZ_TuneCP5_13TeV",
-        "WZTo1L3Nu_4f_TuneCP5_13TeV",
-        "WZTo3LNu_TuneCP5_13TeV",
-        "WZTo2Q2L_mllmin4p0_TuneCP5_13TeV",
+        "WZJJ_EWK_InclusivePolarization_TuneCP5_13TeV",
         "WZTo1L1Nu2Q_4f_TuneCP5_13TeV",
+        "WZTo1L3Nu_4f_TuneCP5_13TeV",
+        "WZTo2Q2L_mllmin4p0_TuneCP5_13TeV",
+        "WZTo3LNu_TuneCP5_13TeV",
+        "WW_TuneCP5_13TeV",
         "ZZ_TuneCP5_13TeV",
-        "ZZTo4L_M-1toInf_TuneCP5_13TeV",
-        "ZZTo2L2Nu_TuneCP5_13TeV",
-        #"ZZTo2Nu2Q_5f_TuneCP5_13TeV", # Weirdly crashes the processor
+        "WWTo4Q_4f_TuneCP5_13TeV",
+        "WWTo1L1Nu2Q_4f_TuneCP5_13TeV",
+        "WWTo2L2Nu_TuneCP5_13TeV",
         "GluGluHToZZTo4L",
+        "ZZJJTo4L_TuneCP5_13TeV",
+        "ZZTo2Nu2Q_5f_TuneCP5_13TeV",
+        "ZZTo4Q_5f_TuneCP5_13TeV",
+        "ZZJJTo4L_EWKnotop_TuneCP5_13TeV",
+        "ZZTo2L2Nu_TuneCP5_13TeV",
+        "ZZTo2Q2L_mllmin4p0_TuneCP5_13TeV",
+        "ZZTo4L_M-1toInf_TuneCP5_13TeV",
     ],
     "ewkVV" : [
         "SSWW",
-        "WZJJ_EWK_InclusivePolarization_TuneCP5_13TeV",
-        "WWJJToLNuLNu_EWK_noTop_TuneCP5_13TeV",
     ],
     "VH" : [
-        "ZH_HToBB_ZToBB_M-125_TuneCP5_13TeV",
-        "ZH_HToBB_ZToQQ_M-125_TuneCP5_13TeV",
-        "ZH_HToBB_ZToNuNu_M-125_TuneCP5_13TeV",
-        "ZH_HToBB_ZToLL_M-125_TuneCP5_13TeV",
-        "ggZH_HToBB_ZToBB_M-125_TuneCP5_13TeV",
-        "ggZH_HToBB_ZToQQ_M-125_TuneCP5_13TeV",
-        "ggZH_HToBB_ZToLL_M-125_TuneCP5_13TeV",
-        "ggZH_HToBB_ZToNuNu_M-125_TuneCP5_13TeV",
-        "GluGluZH_HToWWTo2L2Nu_M-125_TuneCP5_13TeV",
-        "HZJ_HToWWTo2L2Nu_ZTo2L_M-125_TuneCP5_13TeV",
-        "VHToNonbb_M125_TuneCP5_13TeV",
-        "WminusH_HToBB_WToLNu_M-125_TuneCP5_13TeV",
-        #"WminusH_HToBB_WToQQ_M-125_TuneCP5_13TeV", # Missing UL16APV
-        #"WplusH_HToBB_WToQQ_M-125_TuneCP5_13TeV", # Missing UL16APV
-        "WplusH_HToBB_WToLNu_M-125_TuneCP5_13TeV",
         "VBFWH_HToBB_WToLNu_M-125_dipoleRecoilOn_TuneCP5_13TeV",
+        "VHToNonbb_M125_TuneCP5_13TeV",
+        "ggZH_HToBB_ZToLL_M-125_TuneCP5_13TeV",
+        "ggZH_HToBB_ZToBB_M-125_TuneCP5_13TeV",
+        "ggZH_HToBB_ZToNuNu_M-125_TuneCP5_13TeV",
+        "ggZH_HToBB_ZToQQ_M-125_TuneCP5_13TeV",
+        "ZH_HToBB_ZToLL_M-125_TuneCP5_13TeV",
+        "ZH_HToBB_ZToBB_M-125_TuneCP5_13TeV",
+        "ZH_HToBB_ZToNuNu_M-125_TuneCP5_13TeV",
+        "ZH_HToBB_ZToQQ_M-125_TuneCP5_13TeV",
+        "HZJ_HToWWTo2L2Nu_ZTo2L_M-125_TuneCP5_13TeV",
     ],
     "VVV" : [
-        "ZZZ_TuneCP5_13TeV",
-        "WZZ_TuneCP5_13TeV",
-        "WWZ_4F_TuneCP5_13TeV",
         "WWW_4F_TuneCP5_13TeV",
+        "WWZ_4F_TuneCP5_13TeV",
+        "WZZ_TuneCP5_13TeV",
+        "ZZZ_TuneCP5_13TeV",
     ],
 
 }
@@ -218,7 +223,8 @@ def get_yields_per_cat(histo_dict,var_name,grp_dict,year_name_lst_to_prepend):
     out_dict = {}
 
     # Get the initial grouping dict
-    grouping_dict = append_years(grp_dict,year_name_lst_to_prepend)
+    #grouping_dict = append_years(grp_dict,year_name_lst_to_prepend) # For fromnano
+    grouping_dict = copy.deepcopy(grp_dict)
 
     # Get list of all of the backgrounds together
     bkg_lst = []
@@ -233,7 +239,8 @@ def get_yields_per_cat(histo_dict,var_name,grp_dict,year_name_lst_to_prepend):
     # Loop over cats and fill dict of sig and bkg
     for cat in CAT_LST:
         out_dict[cat] = {}
-        histo_base = histo_dict[var_name][{"systematic":"nominal", "category":cat}]
+        #histo_base = histo_dict[var_name][{"systematic":"nominal", "category":cat}] # For fromnano
+        histo_base = histo_dict[var_name][{"systematic":"nominal", "category":cat, "year": sum}]
 
         # Get values per proc
         for group_name,group_lst in groups_to_get_yields_for_dict.items():
@@ -540,7 +547,8 @@ def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend):
 
     #cat_lst = ["exactly1lep_exactly1fj", "exactly1lep_exactly1fj550", "exactly1lep_exactly1fj550_2j", "exactly1lep_exactly1fj_2j"]
 
-    grouping_dict = append_years(grp_dict,year_name_lst_to_prepend)
+    #grouping_dict = append_years(grp_dict,year_name_lst_to_prepend) # For fromnano
+    grouping_dict = copy.deepcopy(grp_dict)
 
     sample_group_names_lst_mc = []
     sample_group_names_lst_bkg = []
