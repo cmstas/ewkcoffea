@@ -16,28 +16,194 @@ HTML_PC = "/home/users/kmohrman/ref_scripts/html_stuff/index.php"
 #CLR_LST = ['#d55e00', '#e69f00', '#f0e442', '#009e73', '#0072b2', '#56b4e9', '#cc79a7', '#6e3600', '#a17500'] #, '#a39b2f', '#00664f', '#005d87', '#999999', '#8c5d77']
 CLR_LST = ['#d55e00', '#e69f00']
 
+
 GRP_DICT_FULL_R3 = {
-    "Signal" : [
-        'VBSWWH_OSWW_C2V1p0_13p6TeV_5f_LO',
-        'VBSWWH_SSWW_C2V1p0_13p6TeV_5f_LO',
-        'VBSWZH_C2V1p0_13p6TeV_5f_LO',
-        'VBSZZH_C2V1p0_13p6TeV_5f_LO'
+    "Signal": [
+        "VBSWWH_OS_c2v1p0_c3_1p0",
+        "VBSWWH_SS_c2v1p0_c3_1p0",
+        "VBSWZH_c2v1p0_c3_1p0",
+        "VBSZZH_c2v1p0_c3_1p0",
+        #"VBSWWH_OS_c2v1p0_c3_10p0",
+        #"VBSWWH_SS_c2v1p0_c3_10p0",
+        #"VBSWZH_c2v1p0_c3_10p0",
+        #"VBSZZH_c2v1p0_c3_10p0",
+        #"VBSWWH_OS_c2v1p5_c3_1p0",
+        #"VBSWWH_SS_c2v1p5_c3_1p0",
+        #"VBSWZH_c2v1p5_c3_1p0",
+        #"VBSZZH_c2v1p5_c3_1p0",
     ],
-    "ttbar" : [
-        "TTtoLNu2Q",
+    "Data":[
+        "Muon",
+        "MuonEG",
+        "EGamma",
+    ],
+    "QCD": [
+        "QCD_Bin-PT-1000to1500_TuneCP5_13p6TeV",
+        "QCD_Bin-PT-120to170_TuneCP5_13p6TeV",
+        "QCD_Bin-PT-1500to2000_TuneCP5_13p6TeV",
+        "QCD_Bin-PT-170to300_TuneCP5_13p6TeV",
+        "QCD_Bin-PT-2000to2500_TuneCP5_13p6TeV",
+        "QCD_Bin-PT-2500to3000_TuneCP5_13p6TeV",
+        "QCD_Bin-PT-3000_TuneCP5_13p6TeV",
+        "QCD_Bin-PT-300to470_TuneCP5_13p6TeV",
+        "QCD_Bin-PT-470to600_TuneCP5_13p6TeV",
+        "QCD_Bin-PT-50to80_TuneCP5_13p6TeV",
+        "QCD_Bin-PT-600to800_TuneCP5_13p6TeV",
+        "QCD_Bin-PT-800to1000_TuneCP5_13p6TeV",
+        "QCD_Bin-PT-80to120_TuneCP5_13p6TeV",
+    ],
+    "ttbar": [
+        "TTto2L2Nu_TuneCP5_13p6TeV",
+        "TTto4Q_TuneCP5_13p6TeV",
+        "TTtoLNu2Q_TuneCP5_13p6TeV",
+    ],
+    "single-t": [
+        "TBbarQto2Q-t-channel-4FS_TuneCP5_13p6TeV",
+        "TBbarQtoLNu-t-channel-4FS_TuneCP5_13p6TeV",
+        "TBbartoLNu-s-channel_TuneCP5_13p6TeV",
+        "TWminusto2L2Nu_TuneCP5_13p6TeV",
+        "TWminusto4Q_TuneCP5_13p6TeV",
+        "TWminustoLNu2Q_TuneCP5_13p6TeV",
+        "TZQB-Zto2L-4FS_Bin-MLL-30_TuneCP5_13p6TeV",
+        "TbarBQto2Q-t-channel-4FS_TuneCP5_13p6TeV",
+        "TbarBQtoLNu-t-channel-4FS_TuneCP5_13p6TeV",
+        "TbarBtoLNu-s-channel_TuneCP5_13p6TeV",
+        "TbarWplusto2L2Nu_TuneCP5_13p6TeV",
+        "TbarWplusto4Q_TuneCP5_13p6TeV",
+        "TbarWplustoLNu2Q_TuneCP5_13p6TeV",
+    ],
+    "ttX": [
+        "TTH-Hto2B_Par-M-125_TuneCP5_13p6TeV",
+        "TTH-HtoNon2B_Par-M-125_TuneCP5_13p6TeV",
+        "TTLL_Bin-MLL-4to50_TuneCP5_13p6TeV",
+        "TTLL_Bin-MLL-50_TuneCP5_13p6TeV",
+        "TTLNu-1Jets_TuneCP5_13p6TeV",
+        "TTW-WtoQQ-1Jets_TuneCP5_13p6TeV",
+    ],
+    "rare-top": [
+        "TTWW_TuneCP5_13p6TeV",
+        "TTWZ_TuneCP5_13p6TeV",
+    ],
+    "Vjets": [
+        "Wto2Q-3Jets_Bin-HT-100to400_TuneCP5_13p6TeV",
+        "Wto2Q-3Jets_Bin-HT-1500to2500_TuneCP5_13p6TeV",
+        "Wto2Q-3Jets_Bin-HT-2500_TuneCP5_13p6TeV",
+        "Wto2Q-3Jets_Bin-HT-400to800_TuneCP5_13p6TeV",
+        "Wto2Q-3Jets_Bin-HT-800to1500_TuneCP5_13p6TeV",
+        "WtoLNu-2Jets_Bin-1J-PTLNu-100to200_TuneCP5_13p6TeV",
+        "WtoLNu-2Jets_Bin-1J-PTLNu-200to400_TuneCP5_13p6TeV",
+        "WtoLNu-2Jets_Bin-1J-PTLNu-400to600_TuneCP5_13p6TeV",
+        "WtoLNu-2Jets_Bin-1J-PTLNu-40to100_TuneCP5_13p6TeV",
+        "WtoLNu-2Jets_Bin-1J-PTLNu-600_TuneCP5_13p6TeV",
+        "WtoLNu-2Jets_Bin-2J-PTLNu-100to200_TuneCP5_13p6TeV",
+        "WtoLNu-2Jets_Bin-2J-PTLNu-200to400_TuneCP5_13p6TeV",
+        "WtoLNu-2Jets_Bin-2J-PTLNu-400to600_TuneCP5_13p6TeV",
+        "WtoLNu-2Jets_Bin-2J-PTLNu-40to100_TuneCP5_13p6TeV",
+        "WtoLNu-2Jets_Bin-2J-PTLNu-600_TuneCP5_13p6TeV",
+        "WtoLNu-4Jets_Bin-1J_TuneCP5_13p6TeV",
+        "WtoLNu-4Jets_Bin-2J_TuneCP5_13p6TeV",
+        "WtoLNu-4Jets_Bin-3J_TuneCP5_13p6TeV",
+        "WtoLNu-4Jets_Bin-4J_TuneCP5_13p6TeV",
+        "Zto2Q-4Jets_Bin-HT-100to400_TuneCP5_13p6TeV",
+        "Zto2Q-4Jets_Bin-HT-1500to2500_TuneCP5_13p6TeV",
+        "Zto2Q-4Jets_Bin-HT-2500_TuneCP5_13p6TeV",
+        "Zto2Q-4Jets_Bin-HT-400to800_TuneCP5_13p6TeV",
+        "Zto2Q-4Jets_Bin-HT-800to1500_TuneCP5_13p6TeV",
+    ],
+    "DY": [
+        #"DYto2L-2Jets_Bin-1J-MLL-50-PTLL-100to200",
+        #"DYto2L-2Jets_Bin-1J-MLL-50-PTLL-200to400",
+        #"DYto2L-2Jets_Bin-1J-MLL-50-PTLL-400to600",
+        #"DYto2L-2Jets_Bin-1J-MLL-50-PTLL-40to100",
+        #"DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600",
+        #"DYto2L-2Jets_Bin-2J-MLL-50-PTLL-100to200",
+        #"DYto2L-2Jets_Bin-2J-MLL-50-PTLL-200to400",
+        #"DYto2L-2Jets_Bin-2J-MLL-50-PTLL-400to600",
+        #"DYto2L-2Jets_Bin-2J-MLL-50-PTLL-40to100",
+        #"DYto2L-2Jets_Bin-2J-MLL-50-PTLL-600",
+        "DYto2E_Bin-MLL-10to50_TuneCP5_13p6TeV",
+        "DYto2Mu_Bin-MLL-10to50_TuneCP5_13p6TeV",
+        "DYto2Tau_Bin-MLL-10to50_TuneCP5_13p6TeV",
+        "DYto2Mu-2Jets_Bin-MLL-50_TuneCP5_13p6TeV",
+        "DYto2E-2Jets_Bin-MLL-50_TuneCP5_13p6TeV",
+        "DYto2Tau-2Jets_Bin-MLL-50_TuneCP5_13p6TeV",
+    ],
+    #"ggHtoZZ": [
+    #    "GluGluH-Hto2Zto4L_Par-M-125_TuneCP5_13p6TeV",
+    #],
+    #"ggVV": [
+    #    "GluGluToContinto2Zto2E2Mu_TuneCP5_13p6TeV",
+    #    "GluGluToContinto2Zto2E2Tau_TuneCP5_13p6TeV",
+    #    "GluGluToContinto2Zto2Mu2Tau_TuneCP5_13p6TeV",
+    #    "GluGlutoContinto2Zto4E_TuneCP5_13p6TeV",
+    #    "GluGlutoContinto2Zto4Mu_TuneCP5_13p6TeV",
+    #    "GluGlutoContinto2Zto4Tau_TuneCP5_13p6TeV",
+    #],
+    "VV": [
+        "WWJJto2L2Nu-OS-noTop-EWK_TuneCP5_13p6TeV",
+        "WWJJto2L2Nu-SS-noTop-EWK_TuneCP5_13p6TeV",
+        "WW_TuneCP5_13p6TeV",
+        "WWto2L2Nu_TuneCP5_13p6TeV",
+        "WWto4Q_TuneCP5_13p6TeV",
+        "WWtoLNu2Q_TuneCP5_13p6TeV",
+        "WZ_TuneCP5_13p6TeV",
+        "WZto2L2Q_TuneCP5_13p6TeV",
+        "WZto3LNu_TuneCP5_13p6TeV",
+        "WZtoL3Nu_TuneCP5_13p6TeV",
+        "WZtoLNu2Q_TuneCP5_13p6TeV",
+        "ZZJJto4L-EWK_TuneCP5_13p6TeV",
+        "ZZJJto4L-QCD_TuneCP5_13p6TeV",
+        "ZZ_TuneCP5_13p6TeV",
+        "ZZto2L2Nu_TuneCP5_13p6TeV",
+        "ZZto2L2Q_TuneCP5_13p6TeV",
+        "ZZto2Nu2Q_TuneCP5_13p6TeV",
+        "ZZto4L_TuneCP5_13p6TeV",
+        "ZZto4Q-1Jets_TuneCP5_13p6TeV",
+    ],
+    "ewkVV": [
+        "VBS-SSWW-LL_TuneCP5_13p6TeV",
+        "VBS-SSWW-TL_TuneCP5_13p6TeV",
+    ],
+    "VH": [
+        "WminusH-HtoNon2B_Par-M-125_TuneCP5_13p6TeV",
+        "WminusH-Wto2Q-Hto2B_Par-M-125_TuneCP5_13p6TeV",
+        "WminusH-WtoLNu-Hto2B_Par-M-125_TuneCP5_13p6TeV",
+        "WplusH-HtoNon2B_Par-M-125_TuneCP5_13p6TeV",
+        "WplusH-Wto2Q-Hto2B_Par-M-125_TuneCP5_13p6TeV",
+        "WplusH-WtoLNu-Hto2B_Par-M-125_TuneCP5_13p6TeV",
+        "ZH-HtoNon2B_Par-M-125_TuneCP5_13p6TeV",
+        "ZH-Zto2L-Hto2B_Par-M-125_TuneCP5_13p6TeV",
+        "ZH-Zto2Q-Hto2B_Par-M-125_TuneCP5_13p6TeV",
+        "GluGluZH-Zto2L-Hto2B_Par-M-125_TuneCP5_13p6TeV",
+    ],
+    "VVV": [
+        "WWW-4F_TuneCP5_13p6TeV",
+        "WWZ-4F_TuneCP5_13p6TeV",
+        "WZZ-5F_TuneCP5_13p6TeV",
+        "ZZZ-5F_TuneCP5_13p6TeV",
     ],
 }
 
 
 GRP_DICT_FULL_R2 = {
     "Data" : [
-        "data",
+        #"data",
+        "DoubleMuon",
+        "MuonEG",
+        "DoubleEG",
+        "SingleMuon",
+        "SingleElectron",
+        "EGamma",
     ],
     "Signal" : [
         "VBSWWH_SS_c2v1p0_c3_1p0",
         "VBSWWH_OS_c2v1p0_c3_1p0",
         "VBSWZH_c2v1p0_c3_1p0",
         "VBSZZH_c2v1p0_c3_1p0",
+        #"VBSWWH_SS_VBSCuts_13TeV",
+        #"VBSWWH_OS_VBSCuts_13TeV",
+        #"VBSWZH_VBSCuts_13TeV",
+        #"VBSZZH_VBSCuts_13TeV",
     ],
     "QCD" : [
         "QCD_HT50to100_TuneCP5_PSWeights_13TeV",
@@ -173,34 +339,38 @@ GRP_DICT_FULL_R2 = {
 
 
 CAT_LST = [
-    "all_events",
-    "filter",
-    "filter_grl",
-    "filter_grl_trg",
+
+
+    #"all_events",
+    #"filter",
+    #"filter_grl",
+    #"filter_grl_trg",
 
     ### 2l OS SF 1FJ ###
-    "2l",
-    "2lOS",
-    "2lOSSF",
-    "2lOSSF_1fj",
-    "2lOSSF_1fjx",
-    "2lOSSF_1fjx_HFJ",
-    "2lOSSF_1fjx_HFJtag",
-    "2lOSSF_1fjx_HFJtag_nj2",
-    "2lOSSF_1fjx_HFJtag_nj2_mjj600",
-    "2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0",
-    "2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0_onZ",
-    "2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0_offZ",
+    #"2l",
+    #"2lOS",
+    #"2lOSSF",
+    #"2lOSSF_1fj",
+    #"2lOSSF_1fjx",
+    #"2lOSSF_1fjx_2j",
+    #"2lOSSF_1fjx_HFJ",
+    #"2lOSSF_1fjx_HFJtag",
+    #"2lOSSF_1fjx_HFJtag_nj2",
+    #"2lOSSF_1fjx_HFJtag_nj2_mjj600",
+    #"2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0",
+    #"2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0_onZ",
+    #"2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0_offZ",
 
     ### 3l ###
     "3l",
-    "3l_2j_mjj400",
-    "3l_2j_mjj400_noSFOS",
-    "3l_2j_mjj400_noSFOS_b0p4",
-    "3l_2j_mjj400_noSFOS_b0p4_ch1",
-    "3l_2j_mjj400_noSFOS_b0p4_ch3",
-    "3l_2j_mjj400_SFOS",
-    "3l_2j_mjj400_SFOS_jf0pt50",
+    #"3l_2j",
+    #"3l_2j_mjj400",
+    #"3l_2j_mjj400_noSFOS",
+    #"3l_2j_mjj400_noSFOS_b0p4",
+    #"3l_2j_mjj400_noSFOS_b0p4_ch1",
+    #"3l_2j_mjj400_noSFOS_b0p4_ch3",
+    #"3l_2j_mjj400_SFOS",
+    #"3l_2j_mjj400_SFOS_jf0pt50",
 ]
 
 
@@ -238,9 +408,11 @@ def get_yields_per_cat(histo_dict,var_name,grp_dict,year_name_lst_to_prepend):
 
     # Loop over cats and fill dict of sig and bkg
     for cat in CAT_LST:
+        print("cat",cat)
+        print("var_name",var_name)
         out_dict[cat] = {}
-        #histo_base = histo_dict[var_name][{"systematic":"nominal", "category":cat}] # For fromnano
-        histo_base = histo_dict[var_name][{"systematic":"nominal", "category":cat, "year": sum}]
+        histo_base = histo_dict[var_name][{"systematic":"nominal", "category":cat}] # For fromnano
+        #histo_base = histo_dict[var_name][{"systematic":"nominal", "category":cat, "year": sum}]
 
         # Get values per proc
         for group_name,group_lst in groups_to_get_yields_for_dict.items():
@@ -473,12 +645,11 @@ def print_yields(histo_dict,grp_dict,years_to_prepend,roundat=None,print_counts=
 
     # Get ahold of the yields
     yld_dict    = get_yields_per_cat(histo_dict,"njets",grp_dict,years_to_prepend)
-    counts_dict = get_yields_per_cat(histo_dict,"njets_counts",grp_dict,years_to_prepend)
+    #counts_dict = get_yields_per_cat(histo_dict,"njets_counts",grp_dict,years_to_prepend)
     #yld_dict = counts_dict
 
-    group_lst_order = ['Signal', 'Background', 'QCD', 'ttbar', 'single-t', 'rare-top', 'ttX', 'Vjets', 'VV', 'ewkV', 'ewkVV', 'VH', 'VVV', 'Data']
-    #group_lst_order = ['Signal', 'Background', 'ttbar', 'VV', 'Vjets', 'QCD', 'single-t', 'ttX', 'VH', 'VVV']
-    #group_lst_order = ['WWH_OS', 'WWH_SS', 'WZH', 'ZZH', 'Background', 'ttbar', 'VV', 'Vjets', 'QCD', 'single-t', 'ttX', 'VH', 'VVV']
+    group_lst_order = ['Signal', 'Background', 'QCD', 'ttbar', 'single-t', 'rare-top', 'ttX', 'Vjets', 'VV', 'ewkV', 'ewkVV', 'VH', 'VVV', 'Data'] # R2
+    #group_lst_order = ["Signal", "Background", "QCD", "ttbar", "single-t", "rare-top", "ttX", "Vjets", "VV", "DY", "ewkVV", "VH", "VVV","Data"] # R3
 
     # Print to screen
     if not quiet:
@@ -530,6 +701,7 @@ def print_yields(histo_dict,grp_dict,years_to_prepend,roundat=None,print_counts=
         print(out_str)
 
 
+    '''
     # Dump directly to json
     if dump_to_json:
         out_dict = {"yields":yld_dict, "counts":counts_dict}
@@ -538,6 +710,7 @@ def print_yields(histo_dict,grp_dict,years_to_prepend,roundat=None,print_counts=
         if not quiet:
             print("\n\n--- Yields json formatted ---")
             print(f"\nSaved json file: {output_name}\n")
+    '''
 
 
 
@@ -570,7 +743,8 @@ def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend):
             print("\nVar:",var)
             if "fj1" in var: continue
             #if var not in ["njets","njets_counts","scalarptsum_lepmet"]: continue # TMP
-            if "truth" in var: continue
+            #if "truth" in var: continue
+            if sum(histo_dict[var][{"systematic":sum, "category":sum, "process":sum}].values(flow=True)) == 0: continue
 
             histo = copy.deepcopy(histo_dict[var][{"systematic":"nominal", "category":cat}])
 
@@ -625,8 +799,10 @@ def main():
     histo_dict = pickle.load(gzip.open(args.pkl_file_path))
 
     # Print total raw events
-    tot_raw = sum(sum(histo_dict["njets_counts"][{"systematic":"nominal", "category":"all_events"}].values(flow=True)))
-    print("Tot raw events:",tot_raw)
+    #print(histo_dict["njets"])
+    #tot = sum(sum(histo_dict["njets"][{"systematic":"nominal", "category":"3l"}].values(flow=True)))
+    #tot = sum(sum(histo_dict["njets"][{"systematic":"nominal", "category":"2lOSSF_1fjx"}].values(flow=True)))
+    #print("Events:",tot)
     #exit()
 
     # Figure out the proc naming convention
