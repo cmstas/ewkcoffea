@@ -9,6 +9,7 @@ import hist
 from hist import axis
 from coffea.analysis_tools import PackedSelection
 import ewkcoffea.modules.objects_wwz as os_ec
+#import ewkcoffea.modules.selection_wwz as es_ec
 
 
 class AnalysisProcessor(processor.ProcessorABC):
@@ -33,11 +34,11 @@ class AnalysisProcessor(processor.ProcessorABC):
             "scalarptsum_lepmetalljets" : axis.Regular(180, 0, 2500, name="scalarptsum_lepmetalljets", label="S_T + metpt + H_T all"),
             "scalarptsum_lepmetcentjets" : axis.Regular(180, 0, 2500, name="scalarptsum_lepmetcentjets", label="S_T + metpt + H_T cent"),
             "scalarptsum_lepmetfwdjets" : axis.Regular(180, 0, 1500, name="scalarptsum_lepmetfwdjets", label="S_T + metpt + H_T fwd"),
-            "l0_pt"  : axis.Regular(180, 0, 1000, name="l0_pt", label="l0 pt"),
+            "l0_pt"  : axis.Regular(180, 0, 500, name="l0_pt", label="l0 pt"),
             "l0_eta"  : axis.Regular(180, -3,3, name="l0_eta", label="l0 eta"),
-            "l1_pt"  : axis.Regular(180, 0, 1000, name="l1_pt", label="l1 pt"),
+            "l1_pt"  : axis.Regular(180, 0, 400, name="l1_pt", label="l1 pt"),
             "l1_eta"  : axis.Regular(180, -3,3, name="l1_eta", label="l1 eta"),
-            "l2_pt"  : axis.Regular(180, 0, 1000, name="l2_pt", label="l2 pt"),
+            "l2_pt"  : axis.Regular(180, 0, 300, name="l2_pt", label="l2 pt"),
             "l2_eta"  : axis.Regular(180, -3,3, name="l2_eta", label="l2 eta"),
 
             "l0_iso"     : axis.Regular(180, 0,0.2, name="l0_iso", label="l0 pfRelIso03_all"),
@@ -141,10 +142,31 @@ class AnalysisProcessor(processor.ProcessorABC):
             "mljjjjany" : axis.Regular(180, 0, 4000, name="mljjjjany", label="mljjjj of leading (in pt) lep and four central or fwd jets"),
             "mljjjjcnt" : axis.Regular(180, 0, 4000, name="mljjjjcnt", label="mljjjj of leading (in pt) lep and four central jets"),
 
-            "abs_pdgid_sum3l" : axis.Regular(20, 20, 40, name="abs_pdgid_sum", label="Sum of abs pdgId for the 3 lep"),
+            "abs_pdgid_sum3l" : axis.Regular(20, 20, 40, name="abs_pdgid_sum3l", label="Sum of abs pdgId for the 3 lep"),
 
             #"ghiggs0_pt" : axis.Regular(180, 0, 1500, name="ghiggs0_pt", label="Gen higgs pt"),
             #"gvectorboson0_pt" : axis.Regular(180, 0, 1500, name="gvectorboson0_pt", label="Gen V pt"),
+
+            "mll_min_afos" : axis.Regular(180, 0, 150, name="mll_min_afos",  label="min mll of all OS pairs"),
+            "mll_z" : axis.Regular(180, 0, 150, name="mll_z",  label="mll of the pair of leptons closest to z"),
+
+            "l0_truth"          : axis.Regular(36, -1, 34, name="l0_truth", label="l0 truth flag"),
+            "l1_truth"          : axis.Regular(36, -1, 34, name="l1_truth", label="l1 truth flag"),
+            "l2_truth"          : axis.Regular(36, -1, 34, name="l2_truth", label="l2 truth flag"),
+            "l0_truth_real_pt"  : axis.Regular(180, 0, 500, name="l0_truth_real_pt", label="l0 truth real pt"),
+            "l1_truth_real_pt"  : axis.Regular(180, 0, 500, name="l1_truth_real_pt", label="l1 truth real pt"),
+            "l2_truth_real_pt"  : axis.Regular(180, 0, 500, name="l2_truth_real_pt", label="l2 truth real pt"),
+            "l0_truth_fake_pt"  : axis.Regular(180, 0, 500, name="l0_truth_fake_pt", label="l0 truth fake pt"),
+            "l1_truth_fake_pt"  : axis.Regular(180, 0, 500, name="l1_truth_fake_pt", label="l1 truth fake pt"),
+            "l2_truth_fake_pt"  : axis.Regular(180, 0, 500, name="l2_truth_fake_pt", label="l2 truth fake pt"),
+            "l0_truth_real_iso" : axis.Regular(180, 0, 0.4, name="l0_truth_real_iso", label="l0 truth real pfRelIso03_all"),
+            "l1_truth_real_iso" : axis.Regular(180, 0, 0.4, name="l1_truth_real_iso", label="l1 truth real pfRelIso03_all"),
+            "l2_truth_real_iso" : axis.Regular(180, 0, 0.4, name="l2_truth_real_iso", label="l2 truth real pfRelIso03_all"),
+            "l0_truth_fake_iso" : axis.Regular(180, 0, 0.4, name="l0_truth_fake_iso", label="l0 truth fake pfRelIso03_all"),
+            "l1_truth_fake_iso" : axis.Regular(180, 0, 0.4, name="l1_truth_fake_iso", label="l1 truth fake pfRelIso03_all"),
+            "l2_truth_fake_iso" : axis.Regular(180, 0, 0.4, name="l2_truth_fake_iso", label="l2 truth fake pfRelIso03_all"),
+            "nlep_truth_real"   : axis.Regular(5, 0, 5, name="nlep_truth_real",   label="Lep (truth, real) multiplicity"),
+            "nlep_truth_fake"   : axis.Regular(5, 0, 5, name="nlep_truth_fake",   label="Lep (truth, fake) multiplicity"),
 
         }
 
@@ -155,7 +177,7 @@ class AnalysisProcessor(processor.ProcessorABC):
                 hist.axis.StrCategory([], growth=True, name="process", label="process"),
                 hist.axis.StrCategory([], growth=True, name="category", label="category"),
                 hist.axis.StrCategory([], growth=True, name="systematic", label="systematic"),
-                hist.axis.StrCategory([], growth=True, name="year", label="year"),
+                #hist.axis.StrCategory([], growth=True, name="year", label="year"),
                 self._dense_axes_dict[dense_axis_name],
                 storage="weight", # Keeps track of sumw2
                 name="Counts",
@@ -194,7 +216,7 @@ class AnalysisProcessor(processor.ProcessorABC):
         ele     = events.electron
         mu      = events.muon
         jets    = events.jet
-        met     = events.PuppiMET
+        met     = events.met
         fatjets = events.fatjet
 
         # An array of lenght events that is just 1 for each event
@@ -409,6 +431,24 @@ class AnalysisProcessor(processor.ProcessorABC):
         fj0_pNetZvsQCD   = fj0.particleNetWithMass_ZvsQCD
         fj0_mparticlenet = fj0.particleNetLegacy_mass
 
+        # For WWZ: Compute pair invariant masses
+        llpairs_wwz = ak.combinations(l_vvh_t, 2, fields=["l0","l1"])
+        os_pairs_mask = (llpairs_wwz.l0.pdgId*llpairs_wwz.l1.pdgId < 0)   # Maks for opposite-sign pairs
+        sfos_pairs_mask = (llpairs_wwz.l0.pdgId == -llpairs_wwz.l1.pdgId) # Mask for same-flavor-opposite-sign pairs
+        ll_absdphi_pairs = abs(llpairs_wwz.l0.delta_phi(llpairs_wwz.l1))
+        ll_mass_pairs = (llpairs_wwz.l0+llpairs_wwz.l1).mass            # The mll for each ll pair
+        absdphi_min_afas = ak.min(ll_absdphi_pairs,axis=-1)
+        absdphi_min_afos = ak.min(ll_absdphi_pairs[os_pairs_mask],axis=-1)
+        absdphi_min_sfos = ak.min(ll_absdphi_pairs[sfos_pairs_mask],axis=-1)
+        mll_min_afas = ak.min(ll_mass_pairs,axis=-1)
+        mll_min_afos = ak.min(ll_mass_pairs[os_pairs_mask],axis=-1)
+        mll_min_sfos = ak.min(ll_mass_pairs[sfos_pairs_mask],axis=-1)
+
+        ll_pairs_tmp = ak.combinations(l_vvh_t_padded, 2, fields=["l0", "l1"] )
+        ll_pairs_4vec = ll_pairs_tmp.l0 + ll_pairs_tmp.l1
+        zpeak_idx = ak.argmin(abs(ll_pairs_4vec.mass-91.1876),keepdims=True,axis=1)
+        mll_z = ak.fill_none(ak.flatten(ll_pairs_4vec[zpeak_idx].mass),0)
+
 
         # Put the variables we'll plot into a dictionary for easy access later
         dense_variables_dict = {
@@ -536,7 +576,59 @@ class AnalysisProcessor(processor.ProcessorABC):
             "abs_ch_sum_3l": abs_ch_sum_3l,
             "abs_pdgid_sum3l": abs(l0.pdgId) + abs(l1.pdgId) + abs(l2.pdgId),
 
+            "mll_min_afos" : mll_min_afos,
+            "mll_z" : mll_z,
+
         }
+
+        isData = False
+        if events.kind[0]=="data": isData == True
+        if not isData:
+
+            #if "VBS" not in dataset:
+            #else:
+            #if "VBS" in dataset:
+
+            lep_truth_real_mask = ((l_vvh_t.provenance == 23) | (l_vvh_t.provenance == 24) | (l_vvh_t.provenance == 33) | (l_vvh_t.provenance == 34))
+            lep_truth_real = l_vvh_t_padded[lep_truth_real_mask]
+            lep_truth_fake = l_vvh_t_padded[~lep_truth_real_mask]
+
+            lep_truth_real = lep_truth_real[ak.argsort(lep_truth_real.pt,axis=-1,ascending=False)]
+            lep_truth_fake = lep_truth_fake[ak.argsort(lep_truth_fake.pt,axis=-1,ascending=False)]
+
+            lep_truth_real_padded = ak.pad_none(lep_truth_real, 3)
+            lep_truth_fake_padded = ak.pad_none(lep_truth_fake, 3)
+
+            l0_truth_real = lep_truth_real_padded[:,0]
+            l1_truth_real = lep_truth_real_padded[:,1]
+            l2_truth_real = lep_truth_real_padded[:,2]
+            l0_truth_fake = lep_truth_fake_padded[:,0]
+            l1_truth_fake = lep_truth_fake_padded[:,1]
+            l2_truth_fake = lep_truth_fake_padded[:,2]
+
+            nlep_truth_real = ak.num(lep_truth_real)
+            nlep_truth_fake = ak.num(lep_truth_fake)
+
+            dense_variables_dict["l0_truth"] = l0.provenance
+            dense_variables_dict["l1_truth"] = l1.provenance
+            dense_variables_dict["l2_truth"] = l2.provenance
+
+            dense_variables_dict["l0_truth_real_pt"] = l0_truth_real.pt
+            dense_variables_dict["l1_truth_real_pt"] = l1_truth_real.pt
+            dense_variables_dict["l2_truth_real_pt"] = l2_truth_real.pt
+            dense_variables_dict["l0_truth_fake_pt"] = l0_truth_fake.pt
+            dense_variables_dict["l1_truth_fake_pt"] = l1_truth_fake.pt
+            dense_variables_dict["l2_truth_fake_pt"] = l2_truth_fake.pt
+
+            dense_variables_dict["l0_truth_real_iso"] = l0_truth_real.pfRelIso03_all
+            dense_variables_dict["l1_truth_real_iso"] = l1_truth_real.pfRelIso03_all
+            dense_variables_dict["l2_truth_real_iso"] = l2_truth_real.pfRelIso03_all
+            dense_variables_dict["l0_truth_fake_iso"] = l0_truth_fake.pfRelIso03_all
+            dense_variables_dict["l1_truth_fake_iso"] = l1_truth_fake.pfRelIso03_all
+            dense_variables_dict["l2_truth_fake_iso"] = l2_truth_fake.pfRelIso03_all
+
+            dense_variables_dict["nlep_truth_real"] = nlep_truth_real
+            dense_variables_dict["nlep_truth_fake"] = nlep_truth_fake
 
 
         ######### Store boolean masks with PackedSelection ##########
@@ -557,12 +649,15 @@ class AnalysisProcessor(processor.ProcessorABC):
 
         is_onZ = abs(mass_l0l1 - 91.1876) < 20
 
+        selections.add("all_events", pass_through)
+
         ### 2lOS + 1FJ ###
         selections.add("2l",                                      is_2l)
         selections.add("2lOS",                                    is_2l & is_os)
         selections.add("2lOSSF",                                  is_2l & is_os & is_sf)
         selections.add("2lOSSF_1fj",                              is_2l & is_os & is_sf & (nfatjets>=1))
         selections.add("2lOSSF_1fjx",                             is_2l & is_os & is_sf & (nfatjets==1))
+        selections.add("2lOSSF_1fjx_2j",                          is_2l & is_os & is_sf & (nfatjets==1) & (njets_tot>=2))
         selections.add("2lOSSF_1fjx_HFJ",                         is_2l & is_os & is_sf & (nfatjets==1) & is_HFJ)
         selections.add("2lOSSF_1fjx_HFJtag",                      is_2l & is_os & is_sf & (nfatjets==1) & is_HFJ & is_HFJTagHbb)
         selections.add("2lOSSF_1fjx_HFJtag_nj2",                  is_2l & is_os & is_sf & (nfatjets==1) & is_HFJ & is_HFJTagHbb & (njets_tot>=2))
@@ -573,6 +668,7 @@ class AnalysisProcessor(processor.ProcessorABC):
 
         ### 3l ###
         selections.add("3l",                           is_3l)
+        selections.add("3l_2j",                        is_3l & (njets_tot>=2))
         selections.add("3l_2j_mjj400",                 is_3l & (njets_tot>=2) & (mjj_max_any>400))
         selections.add("3l_2j_mjj400_noSFOS",          is_3l & (njets_tot>=2) & (mjj_max_any>400) & (n_ll_sfos==0))
         selections.add("3l_2j_mjj400_noSFOS_b0p4",     is_3l & (njets_tot>=2) & (mjj_max_any>400) & (n_ll_sfos==0) & (bbscore0_bscore<0.4))
@@ -585,29 +681,33 @@ class AnalysisProcessor(processor.ProcessorABC):
         cat_dict = {
             "lep_chan_lst" : [
 
+                "all_events",
+
                 ### 2l OS SF 1FJ ###
-                "2l",
-                "2lOS",
-                "2lOSSF",
-                "2lOSSF_1fj",
+                #"2l",
+                #"2lOS",
+                #"2lOSSF",
+                #"2lOSSF_1fj",
                 "2lOSSF_1fjx",
-                "2lOSSF_1fjx_HFJ",
-                "2lOSSF_1fjx_HFJtag",
-                "2lOSSF_1fjx_HFJtag_nj2",
-                "2lOSSF_1fjx_HFJtag_nj2_mjj600",
-                "2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0",
-                "2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0_onZ",
-                "2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0_offZ",
+                #"2lOSSF_1fjx_2j",
+                #"2lOSSF_1fjx_HFJ",
+                #"2lOSSF_1fjx_HFJtag",
+                #"2lOSSF_1fjx_HFJtag_nj2",
+                #"2lOSSF_1fjx_HFJtag_nj2_mjj600",
+                #"2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0",
+                #"2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0_onZ",
+                #"2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0_offZ",
 
                 ### 3l ###
                 "3l",
-                "3l_2j_mjj400",
-                "3l_2j_mjj400_noSFOS",
-                "3l_2j_mjj400_noSFOS_b0p4",
-                "3l_2j_mjj400_noSFOS_b0p4_ch1",
-                "3l_2j_mjj400_noSFOS_b0p4_ch3",
-                "3l_2j_mjj400_SFOS",
-                "3l_2j_mjj400_SFOS_jf0pt50",
+                #"3l_2j",
+                #"3l_2j_mjj400",
+                #"3l_2j_mjj400_noSFOS",
+                #"3l_2j_mjj400_noSFOS_b0p4",
+                #"3l_2j_mjj400_noSFOS_b0p4_ch1",
+                #"3l_2j_mjj400_noSFOS_b0p4_ch3",
+                #"3l_2j_mjj400_SFOS",
+                #"3l_2j_mjj400_SFOS_jf0pt50",
             ]
         }
 
@@ -672,7 +772,7 @@ class AnalysisProcessor(processor.ProcessorABC):
                         "process"       : histAxisName[all_cuts_mask],
                         "category"      : sr_cat,
                         "systematic"    : wgt_fluct,
-                        "year"          : events.year[all_cuts_mask],
+                        #"year"          : events.year[all_cuts_mask],
                     }
 
                     self.accumulator[dense_axis_name].fill(**axes_fill_info_dict)
