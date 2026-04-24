@@ -9,12 +9,71 @@ import matplotlib.pyplot as plt
 import copy
 
 import ewkcoffea.modules.plotting_tools as plt_tools
+import topcoffea.modules.MakeLatexTable as mlt
 
 
 HTML_PC = "/home/users/kmohrman/ref_scripts/html_stuff/index.php"
 
 #CLR_LST = ['#d55e00', '#e69f00', '#f0e442', '#009e73', '#0072b2', '#56b4e9', '#cc79a7', '#6e3600', '#a17500'] #, '#a39b2f', '#00664f', '#005d87', '#999999', '#8c5d77']
 CLR_LST = ['#d55e00', '#e69f00']
+
+CAT_LST = [
+
+    #"all_events",
+    #"filter",
+    #"filter_grl",
+    #"filter_grl_trg",
+
+    ### 2l OS SF 1FJ ###
+    #"2l",
+    #"2lOS",
+    #"2lOSSF",
+    #"2lOSSF_1fj",
+    #"2lOSSF_1fjx",
+    #"2lOSSF_1fjx_2j",
+    #"2lOSSF_1fjx_HFJ",
+    #"2lOSSF_1fjx_HFJtag",
+    #"2lOSSF_1fjx_HFJtag_nj2",
+    #"2lOSSF_1fjx_HFJtag_nj2_mjj600",
+    #"2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0",
+    #"2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0_onZ",
+    #"2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0_offZ",
+
+    ### 3l ###
+    #"3l",
+    #"3l_2j",
+    #"3l_2j_mjj400",
+    #"3l_2j_mjj400_noSFOS",
+    #"3l_2j_mjj400_noSFOS_b0p4",
+    #"3l_2j_mjj400_noSFOS_b0p4_ch1",
+    #"3l_2j_mjj400_noSFOS_b0p4_ch3",
+    #"3l_2j_mjj400_SFOS",
+    #"3l_2j_mjj400_SFOS_jf0pt50",
+
+    #"2lOSSF_1fjx",
+    #"2lOSSF_1fjx_ee", 
+    #"2lOSSF_1fjx_mm", 
+
+    #"3l",
+    #"3l_chsum3",
+    #"3l_chsum3_eee",
+    #"3l_chsum3_eem",
+    #"3l_chsum3_emm",
+    #"3l_chsum3_mmm",
+
+    "3l",
+    #"3l_chsum1",
+    ##"3l_chsum1_sfos0",
+    "3l_chsum1_sfos0_eem",
+    "3l_chsum1_sfos0_emm",
+    ##"3l_chsum1_sfos1",
+    "3l_chsum1_sfos1_eem",
+    "3l_chsum1_sfos1_emm",
+    ##"3l_chsum1_sfos2",
+    "3l_chsum1_sfos2_eee",
+    "3l_chsum1_sfos2_mmm",
+
+]
 
 
 GRP_DICT_FULL_R3 = {
@@ -205,6 +264,11 @@ GRP_DICT_FULL_R2 = {
         #"VBSWZH_VBSCuts_13TeV",
         #"VBSZZH_VBSCuts_13TeV",
     ],
+    "VBSWWH_SS": ["VBSWWH_SS_c2v1p0_c3_1p0"],
+    "VBSWWH_OS": ["VBSWWH_OS_c2v1p0_c3_1p0"],
+    "VBSWZH": ["VBSWZH_c2v1p0_c3_1p0"],
+    "VBSZZH": ["VBSZZH_c2v1p0_c3_1p0"],
+
     "QCD" : [
         "QCD_HT50to100_TuneCP5_PSWeights_13TeV",
         "QCD_HT100to200_TuneCP5_PSWeights_13TeV",
@@ -338,40 +402,6 @@ GRP_DICT_FULL_R2 = {
 }
 
 
-CAT_LST = [
-
-
-    #"all_events",
-    #"filter",
-    #"filter_grl",
-    #"filter_grl_trg",
-
-    ### 2l OS SF 1FJ ###
-    #"2l",
-    #"2lOS",
-    #"2lOSSF",
-    #"2lOSSF_1fj",
-    #"2lOSSF_1fjx",
-    #"2lOSSF_1fjx_2j",
-    #"2lOSSF_1fjx_HFJ",
-    #"2lOSSF_1fjx_HFJtag",
-    #"2lOSSF_1fjx_HFJtag_nj2",
-    #"2lOSSF_1fjx_HFJtag_nj2_mjj600",
-    #"2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0",
-    #"2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0_onZ",
-    #"2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0_offZ",
-
-    ### 3l ###
-    "3l",
-    #"3l_2j",
-    #"3l_2j_mjj400",
-    #"3l_2j_mjj400_noSFOS",
-    #"3l_2j_mjj400_noSFOS_b0p4",
-    #"3l_2j_mjj400_noSFOS_b0p4_ch1",
-    #"3l_2j_mjj400_noSFOS_b0p4_ch3",
-    #"3l_2j_mjj400_SFOS",
-    #"3l_2j_mjj400_SFOS_jf0pt50",
-]
 
 
 ########################
@@ -399,7 +429,7 @@ def get_yields_per_cat(histo_dict,var_name,grp_dict,year_name_lst_to_prepend):
     # Get list of all of the backgrounds together
     bkg_lst = []
     for grp in grouping_dict:
-        if (grp != "Signal") and (grp != "Data"):
+        if (grp != "Signal") and (grp != "Data") and (grp not in ["VBSWWH_SS","VBSWWH_OS","VBSWZH","VBSZZH"]):
             bkg_lst = bkg_lst + grouping_dict[grp]
 
     # Make the dictionary to get yields for, it includes what's in grouping_dict, plus the backgrounds grouped as one
@@ -426,6 +456,12 @@ def get_yields_per_cat(histo_dict,var_name,grp_dict,year_name_lst_to_prepend):
         bkg = out_dict[cat]["Background"][0]
         metric = sig/(bkg)**0.5
         out_dict[cat]["metric"] = [metric,None] # Don't bother propagating error
+        out_dict[cat]["metricX100"] = [metric*100,None] # Don't bother propagating error
+
+        # Get the data/MC
+        mc = sig+bkg
+        data = out_dict[cat]["Data"][0]
+        out_dict[cat]["Data/MC"] = [data/mc,None] # Don't bother propagating error
 
     return out_dict
 
@@ -648,7 +684,7 @@ def print_yields(histo_dict,grp_dict,years_to_prepend,roundat=None,print_counts=
     #counts_dict = get_yields_per_cat(histo_dict,"njets_counts",grp_dict,years_to_prepend)
     #yld_dict = counts_dict
 
-    group_lst_order = ['Signal', 'Background', 'QCD', 'ttbar', 'single-t', 'rare-top', 'ttX', 'Vjets', 'VV', 'ewkV', 'ewkVV', 'VH', 'VVV', 'Data'] # R2
+    group_lst_order = ['Signal', 'VBSWWH_SS', 'VBSWWH_OS', 'VBSWZH', 'VBSZZH', 'Background', 'QCD', 'DY', 'ttbar', 'single-t', 'rare-top', 'ttX', 'Vjets', 'VV', 'ewkV', 'ewkVV', 'VH', 'VVV', 'Data', 'Data/MC', 'metricX100'] # R2
     #group_lst_order = ["Signal", "Background", "QCD", "ttbar", "single-t", "rare-top", "ttX", "Vjets", "VV", "DY", "ewkVV", "VH", "VVV","Data"] # R3
 
     # Print to screen
@@ -662,12 +698,32 @@ def print_yields(histo_dict,grp_dict,years_to_prepend,roundat=None,print_counts=
                 #if group_name not in ["Signal","Background"]: continue
                 if group_name not in ["Signal","Background","Data"]: continue
                 if group_name == "metric": continue
+                if group_name == "metricX100": continue
+                if group_name == "Data/MC": continue
                 yld, err = yld_dict[cat][group_name]
                 perr = 100*(err/yld)
                 print(f"    {group_name}:  {np.round(yld,roundat)} +- {np.round(perr,2)}%")
             #print(f"    -> Metric: {np.round(yld_dict[cat]['metric'][0],3)}")
             #print(f"    -> For copy pasting: python dump_toy_card.py {yld_dict[cat]['Signal'][0]} {yld_dict[cat]['Background'][0]}")
         #exit()
+
+
+        mlt.print_latex_yield_table(
+            yld_dict,
+            subkey_order=group_lst_order,
+            print_begin_info=True,
+            print_end_info=True,
+            column_variable="keys",
+            print_errs=True,
+            #tag="3l (ele cutBased$\geq$3, mu pfIsoId$\geq$3)",
+            #tag="3l (ele cutBased$\geq$3, mu pfIsoId$\geq$4)",
+            #tag="3l (ele cutBased$\geq$3, mu pfIsoId$\geq$5)",
+            #tag="3l (ele cutBased$\geq$2, mu pfIsoId$\geq$5)",
+            tag="3l (ele cutBased$\geq$4, mu pfIsoId$\geq$5)",
+            hz_line_lst=[0,4,5,17,18,19],
+            size="tiny",
+        )
+        exit()
 
 
         ### Print csv, build op as an out string ###
