@@ -39,6 +39,9 @@ if __name__ == '__main__':
     parser.add_argument('--processor', '-p', default='semilep', help = 'Which processor to execute', choices=LST_OF_KNOWN_PROCESSORS)
     parser.add_argument('--rwgt-to-sm', action='store_true', help = '')
 
+    parser.add_argument('--ele_cutBased_val' , default=None)
+    parser.add_argument('--mu_pfIsoId_val' , default=None)
+
 
     args = parser.parse_args()
     jsonFiles  = args.jsonFiles
@@ -202,7 +205,7 @@ if __name__ == '__main__':
     else:
         print('No Wilson coefficients specified')
 
-    processor_instance = analysis_processor.AnalysisProcessor(samplesdict,wc_lst,hist_lst,do_systs,skip_obj_systs,skip_sr,skip_cr,siphon_bdt_data=siphon,rwgt_to_sm=rwgt_to_sm)
+    processor_instance = analysis_processor.AnalysisProcessor(samplesdict,wc_lst,hist_lst,do_systs,skip_obj_systs,skip_sr,skip_cr,siphon_bdt_data=siphon,rwgt_to_sm=rwgt_to_sm, ele_cutBased_val=args.ele_cutBased_val, mu_pfIsoId_val=args.mu_pfIsoId_val)
 
     if executor == "work_queue":
         executor_args = {

@@ -14,7 +14,7 @@ import ewkcoffea.modules.objects_wwz as os_ec
 
 class AnalysisProcessor(processor.ProcessorABC):
 
-    def __init__(self, samples, wc_names_lst=[], hist_lst=None, do_systematics=False, skip_obj_systematics=False, skip_signal_regions=False, skip_control_regions=False, muonSyst='nominal', dtype=np.float32, siphon_bdt_data=False, rwgt_to_sm=False):
+    def __init__(self, samples, wc_names_lst=[], hist_lst=None, do_systematics=False, skip_obj_systematics=False, skip_signal_regions=False, skip_control_regions=False, muonSyst='nominal', dtype=np.float32, siphon_bdt_data=False, rwgt_to_sm=False, ele_cutBased_val=None, mu_pfIsoId_val=None):
 
         self._samples = samples
         self._wc_names_lst = wc_names_lst
@@ -142,12 +142,12 @@ class AnalysisProcessor(processor.ProcessorABC):
             "mljjjjany" : axis.Regular(180, 0, 4000, name="mljjjjany", label="mljjjj of leading (in pt) lep and four central or fwd jets"),
             "mljjjjcnt" : axis.Regular(180, 0, 4000, name="mljjjjcnt", label="mljjjj of leading (in pt) lep and four central jets"),
 
-            "abs_pdgid_sum3l" : axis.Regular(20, 20, 40, name="abs_pdgid_sum3l", label="Sum of abs pdgId for the 3 lep"),
+            "abs_pdgid_sum" : axis.Regular(20, 20, 40, name="abs_pdgid_sum", label="Sum of abs pdgId for the 3 lep"),
 
             #"ghiggs0_pt" : axis.Regular(180, 0, 1500, name="ghiggs0_pt", label="Gen higgs pt"),
             #"gvectorboson0_pt" : axis.Regular(180, 0, 1500, name="gvectorboson0_pt", label="Gen V pt"),
 
-            "mll_min_afos" : axis.Regular(180, 0, 150, name="mll_min_afos",  label="min mll of all OS pairs"),
+            "mll_min_afos" : axis.Regular(180, 0, 50, name="mll_min_afos",  label="min mll of all OS pairs"),
             "mll_z" : axis.Regular(180, 0, 150, name="mll_z",  label="mll of the pair of leptons closest to z"),
 
             "l0_truth"          : axis.Regular(36, -1, 34, name="l0_truth", label="l0 truth flag"),
@@ -178,6 +178,7 @@ class AnalysisProcessor(processor.ProcessorABC):
                 hist.axis.StrCategory([], growth=True, name="category", label="category"),
                 hist.axis.StrCategory([], growth=True, name="systematic", label="systematic"),
                 #hist.axis.StrCategory([], growth=True, name="year", label="year"),
+                hist.axis.Integer(0,40, growth=True, name="lepflav", label="lepflav"),
                 self._dense_axes_dict[dense_axis_name],
                 storage="weight", # Keeps track of sumw2
                 name="Counts",
@@ -196,6 +197,9 @@ class AnalysisProcessor(processor.ProcessorABC):
                 if hist_to_include not in self._accumulator.keys():
                     raise Exception(f"Error: Cannot specify hist \"{hist_to_include}\", it is not defined in the processor.")
             self._hist_lst = hist_lst # Which hists to fill
+
+        self._ele_cutBased_val = float(ele_cutBased_val)
+        self._mu_pfIsoId_val = float(mu_pfIsoId_val)
 
     @property
     def accumulator(self):
@@ -227,6 +231,12 @@ class AnalysisProcessor(processor.ProcessorABC):
 
 
         ################### Lepton selection ####################
+
+        # Apply the ID on top of RDF object
+        if self._ele_cutBased_val == None: raise Exception("No val for self._ele_cutBased_val")
+        if self._mu_pfIsoId_val   == None: raise Exception("No val for pfIsoId_val")
+        ele = ele[ele.cutBased >= self._ele_cutBased_val]
+        mu = mu[mu.pfIsoId >= self._mu_pfIsoId_val]
 
         # Get tight leptons for VVH selection, using mask from RDF
         l_vvh_t = ak.with_name(ak.concatenate([ele,mu],axis=1),'PtEtaPhiMCandidate')
@@ -449,6 +459,8 @@ class AnalysisProcessor(processor.ProcessorABC):
         zpeak_idx = ak.argmin(abs(ll_pairs_4vec.mass-91.1876),keepdims=True,axis=1)
         mll_z = ak.fill_none(ak.flatten(ll_pairs_4vec[zpeak_idx].mass),0)
 
+        # NOTE Only defind for exactly 2 and 3 lep
+        abs_pdgid_sum = ak.fill_none(ak.where(nleps==3,abs(l0.pdgId) + abs(l1.pdgId) + abs(l2.pdgId),abs(l0.pdgId) + abs(l1.pdgId)),0)
 
         # Put the variables we'll plot into a dictionary for easy access later
         dense_variables_dict = {
@@ -574,20 +586,17 @@ class AnalysisProcessor(processor.ProcessorABC):
 
             "n_ll_sfos": n_ll_sfos,
             "abs_ch_sum_3l": abs_ch_sum_3l,
-            "abs_pdgid_sum3l": abs(l0.pdgId) + abs(l1.pdgId) + abs(l2.pdgId),
+            "abs_pdgid_sum": abs_pdgid_sum,
 
             "mll_min_afos" : mll_min_afos,
             "mll_z" : mll_z,
 
         }
 
+        # Lepton truth info (note this check assumes all events in this chunk are of the same kind, should be true)
         isData = False
         if events.kind[0]=="data": isData == True
         if not isData:
-
-            #if "VBS" not in dataset:
-            #else:
-            #if "VBS" in dataset:
 
             lep_truth_real_mask = ((l_vvh_t.provenance == 23) | (l_vvh_t.provenance == 24) | (l_vvh_t.provenance == 33) | (l_vvh_t.provenance == 34))
             lep_truth_real = l_vvh_t_padded[lep_truth_real_mask]
@@ -642,6 +651,8 @@ class AnalysisProcessor(processor.ProcessorABC):
 
         is_2l = (nleps==2) & (l0.pt>25) & (l1.pt>15)
         is_3l = (nleps==3) & (l0.pt>25) & (l1.pt>15) & (l2.pt>10)
+        #is_2l_mll12 = is_2l & (mll_min_afos>12)
+        is_3l_mll12 = is_3l & (mll_min_afos>12)
 
         is_VFJ       = (fj0_mparticlenet <= 100.) & (fj0_mparticlenet > 65)
         is_HFJ       = (fj0_mparticlenet >  110.) & (fj0_mparticlenet <= 150.)
@@ -651,7 +662,9 @@ class AnalysisProcessor(processor.ProcessorABC):
 
         selections.add("all_events", pass_through)
 
+
         ### 2lOS + 1FJ ###
+
         selections.add("2l",                                      is_2l)
         selections.add("2lOS",                                    is_2l & is_os)
         selections.add("2lOSSF",                                  is_2l & is_os & is_sf)
@@ -666,16 +679,32 @@ class AnalysisProcessor(processor.ProcessorABC):
         selections.add("2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0_onZ",  is_2l & is_os & is_sf & (nfatjets==1) & is_HFJ & is_HFJTagHbb & (njets_tot>=2) & (mjj_max_any>600) & (nbtagsm==0) & is_onZ)
         selections.add("2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0_offZ", is_2l & is_os & is_sf & (nfatjets==1) & is_HFJ & is_HFJTagHbb & (njets_tot>=2) & (mjj_max_any>600) & (nbtagsm==0) & ~is_onZ)
 
+
         ### 3l ###
-        selections.add("3l",                           is_3l)
-        selections.add("3l_2j",                        is_3l & (njets_tot>=2))
-        selections.add("3l_2j_mjj400",                 is_3l & (njets_tot>=2) & (mjj_max_any>400))
-        selections.add("3l_2j_mjj400_noSFOS",          is_3l & (njets_tot>=2) & (mjj_max_any>400) & (n_ll_sfos==0))
-        selections.add("3l_2j_mjj400_noSFOS_b0p4",     is_3l & (njets_tot>=2) & (mjj_max_any>400) & (n_ll_sfos==0) & (bbscore0_bscore<0.4))
-        selections.add("3l_2j_mjj400_noSFOS_b0p4_ch1", is_3l & (njets_tot>=2) & (mjj_max_any>400) & (n_ll_sfos==0) & (bbscore0_bscore<0.4) & (abs_ch_sum_3l==1))
-        selections.add("3l_2j_mjj400_noSFOS_b0p4_ch3", is_3l & (njets_tot>=2) & (mjj_max_any>400) & (n_ll_sfos==0) & (bbscore0_bscore<0.4) & (abs_ch_sum_3l==3))
-        selections.add("3l_2j_mjj400_SFOS",            is_3l & (njets_tot>=2) & (mjj_max_any>400) & (n_ll_sfos>0))
-        selections.add("3l_2j_mjj400_SFOS_jf0pt50",    is_3l & (njets_tot>=2) & (mjj_max_any>400) & (n_ll_sfos>0) & (j0forward.pt>50))
+
+        selections.add("3l",                                   is_3l)
+
+        selections.add("3l_chsum3",                            is_3l       & (abs_ch_sum_3l==3))
+
+        selections.add("3l_chsum3_mjj400",                     is_3l       & (abs_ch_sum_3l==3) & (mjj_max_any>400))
+        selections.add("3l_chsum3_mjj400_b0p4",                is_3l       & (abs_ch_sum_3l==3) & (mjj_max_any>400) & (bbscore0_bscore<0.4))
+
+        selections.add("3l_chsum1",                            is_3l       & (abs_ch_sum_3l==1))
+        selections.add("3l_chsum1_mll12",                      is_3l_mll12 & (abs_ch_sum_3l==1))
+
+        selections.add("3l_chsum1_mll12_sfos0",                is_3l_mll12 & (abs_ch_sum_3l==1) & (n_ll_sfos==0))
+        selections.add("3l_chsum1_mll12_sfos0_mjj400",         is_3l_mll12 & (abs_ch_sum_3l==1) & (n_ll_sfos==0) & (mjj_max_any>400))
+        selections.add("3l_chsum1_mll12_sfos0_mjj400_b0p4",    is_3l_mll12 & (abs_ch_sum_3l==1) & (n_ll_sfos==0) & (mjj_max_any>400) & (bbscore0_bscore<0.4))
+
+        selections.add("3l_chsum1_mll12_sfos1",                is_3l_mll12 & (abs_ch_sum_3l==1) & (n_ll_sfos==1))
+        selections.add("3l_chsum1_mll12_sfos1_mjj400",         is_3l_mll12 & (abs_ch_sum_3l==1) & (n_ll_sfos==1) & (mjj_max_any>400))
+        selections.add("3l_chsum1_mll12_sfos1_mjj400_jf0pt50", is_3l_mll12 & (abs_ch_sum_3l==1) & (n_ll_sfos==1) & (mjj_max_any>400) & (j0forward.pt>50))
+
+        selections.add("3l_chsum1_mll12_sfos2",                is_3l_mll12 & (abs_ch_sum_3l==1) & (n_ll_sfos==2))
+        selections.add("3l_chsum1_mll12_sfos2_mjj400",         is_3l_mll12 & (abs_ch_sum_3l==1) & (n_ll_sfos==2) & (mjj_max_any>400))
+        selections.add("3l_chsum1_mll12_sfos2_mjj400_jf0pt50", is_3l_mll12 & (abs_ch_sum_3l==1) & (n_ll_sfos==2) & (mjj_max_any>400) & (j0forward.pt>50))
+
+
 
         # Keep track of the ones we want to actually fill
         cat_dict = {
@@ -684,30 +713,38 @@ class AnalysisProcessor(processor.ProcessorABC):
                 "all_events",
 
                 ### 2l OS SF 1FJ ###
-                #"2l",
-                #"2lOS",
-                #"2lOSSF",
-                #"2lOSSF_1fj",
+
+                "2l",
+                "2lOS",
+                "2lOSSF",
+                "2lOSSF_1fj",
                 "2lOSSF_1fjx",
-                #"2lOSSF_1fjx_2j",
-                #"2lOSSF_1fjx_HFJ",
-                #"2lOSSF_1fjx_HFJtag",
-                #"2lOSSF_1fjx_HFJtag_nj2",
-                #"2lOSSF_1fjx_HFJtag_nj2_mjj600",
-                #"2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0",
-                #"2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0_onZ",
-                #"2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0_offZ",
+                "2lOSSF_1fjx_2j",
+                "2lOSSF_1fjx_HFJ",
+                "2lOSSF_1fjx_HFJtag",
+                "2lOSSF_1fjx_HFJtag_nj2",
+                "2lOSSF_1fjx_HFJtag_nj2_mjj600",
+                "2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0",
+                "2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0_onZ",
+                "2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0_offZ",
 
                 ### 3l ###
+
                 "3l",
-                #"3l_2j",
-                #"3l_2j_mjj400",
-                #"3l_2j_mjj400_noSFOS",
-                #"3l_2j_mjj400_noSFOS_b0p4",
-                #"3l_2j_mjj400_noSFOS_b0p4_ch1",
-                #"3l_2j_mjj400_noSFOS_b0p4_ch3",
-                #"3l_2j_mjj400_SFOS",
-                #"3l_2j_mjj400_SFOS_jf0pt50",
+                "3l_chsum3",
+                "3l_chsum3_mjj400",
+                "3l_chsum3_mjj400_b0p4",
+                "3l_chsum1",
+                "3l_chsum1_mll12",
+                "3l_chsum1_mll12_sfos0",
+                "3l_chsum1_mll12_sfos0_mjj400",
+                "3l_chsum1_mll12_sfos0_mjj400_b0p4",
+                "3l_chsum1_mll12_sfos1",
+                "3l_chsum1_mll12_sfos1_mjj400",
+                "3l_chsum1_mll12_sfos1_mjj400_jf0pt50",
+                "3l_chsum1_mll12_sfos2",
+                "3l_chsum1_mll12_sfos2_mjj400",
+                "3l_chsum1_mll12_sfos2_mjj400_jf0pt50",
             ]
         }
 
@@ -773,6 +810,7 @@ class AnalysisProcessor(processor.ProcessorABC):
                         "category"      : sr_cat,
                         "systematic"    : wgt_fluct,
                         #"year"          : events.year[all_cuts_mask],
+                        "lepflav"       : abs_pdgid_sum[all_cuts_mask],
                     }
 
                     self.accumulator[dense_axis_name].fill(**axes_fill_info_dict)
