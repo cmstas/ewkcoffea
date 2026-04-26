@@ -17,61 +17,49 @@ HTML_PC = "/home/users/kmohrman/ref_scripts/html_stuff/index.php"
 #CLR_LST = ['#d55e00', '#e69f00', '#f0e442', '#009e73', '#0072b2', '#56b4e9', '#cc79a7', '#6e3600', '#a17500'] #, '#a39b2f', '#00664f', '#005d87', '#999999', '#8c5d77']
 CLR_LST = ['#d55e00', '#e69f00']
 
+UNBLIND_CATS = [
+    "all_events",
+    "2lOSSF_1fjx",
+    "3l",
+]
+
 CAT_LST = [
 
-    #"all_events",
-    #"filter",
-    #"filter_grl",
-    #"filter_grl_trg",
+    "all_events",
 
     ### 2l OS SF 1FJ ###
-    #"2l",
-    #"2lOS",
-    #"2lOSSF",
-    #"2lOSSF_1fj",
-    #"2lOSSF_1fjx",
-    #"2lOSSF_1fjx_2j",
-    #"2lOSSF_1fjx_HFJ",
-    #"2lOSSF_1fjx_HFJtag",
-    #"2lOSSF_1fjx_HFJtag_nj2",
-    #"2lOSSF_1fjx_HFJtag_nj2_mjj600",
-    #"2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0",
-    #"2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0_onZ",
-    #"2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0_offZ",
+
+    "2l",
+    "2lOS",
+    "2lOSSF",
+    "2lOSSF_1fj",
+    "2lOSSF_1fjx",
+    "2lOSSF_1fjx_2j",
+    "2lOSSF_1fjx_HFJ",
+    "2lOSSF_1fjx_HFJtag",
+    "2lOSSF_1fjx_HFJtag_nj2",
+    "2lOSSF_1fjx_HFJtag_nj2_mjj600",
+    "2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0",
+    "2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0_onZ",
+    "2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0_offZ",
 
     ### 3l ###
-    #"3l",
-    #"3l_2j",
-    #"3l_2j_mjj400",
-    #"3l_2j_mjj400_noSFOS",
-    #"3l_2j_mjj400_noSFOS_b0p4",
-    #"3l_2j_mjj400_noSFOS_b0p4_ch1",
-    #"3l_2j_mjj400_noSFOS_b0p4_ch3",
-    #"3l_2j_mjj400_SFOS",
-    #"3l_2j_mjj400_SFOS_jf0pt50",
-
-    #"2lOSSF_1fjx",
-    #"2lOSSF_1fjx_ee", 
-    #"2lOSSF_1fjx_mm", 
-
-    #"3l",
-    #"3l_chsum3",
-    #"3l_chsum3_eee",
-    #"3l_chsum3_eem",
-    #"3l_chsum3_emm",
-    #"3l_chsum3_mmm",
 
     "3l",
-    #"3l_chsum1",
-    ##"3l_chsum1_sfos0",
-    "3l_chsum1_sfos0_eem",
-    "3l_chsum1_sfos0_emm",
-    ##"3l_chsum1_sfos1",
-    "3l_chsum1_sfos1_eem",
-    "3l_chsum1_sfos1_emm",
-    ##"3l_chsum1_sfos2",
-    "3l_chsum1_sfos2_eee",
-    "3l_chsum1_sfos2_mmm",
+    "3l_chsum3",
+    "3l_chsum3_mjj400",
+    "3l_chsum3_mjj400_b0p4",
+    "3l_chsum1",
+    "3l_chsum1_mll12",
+    "3l_chsum1_mll12_sfos0",
+    "3l_chsum1_mll12_sfos0_mjj400",
+    "3l_chsum1_mll12_sfos0_mjj400_b0p4",
+    "3l_chsum1_mll12_sfos1",
+    "3l_chsum1_mll12_sfos1_mjj400",
+    "3l_chsum1_mll12_sfos1_mjj400_jf0pt50",
+    "3l_chsum1_mll12_sfos2",
+    "3l_chsum1_mll12_sfos2_mjj400",
+    "3l_chsum1_mll12_sfos2_mjj400_jf0pt50",
 
 ]
 
@@ -419,7 +407,7 @@ def append_years(sample_dict_base,year_lst):
 
 
 # Get sig and bkg yield in all categories
-def get_yields_per_cat(histo_dict,var_name,grp_dict,year_name_lst_to_prepend):
+def get_yields_per_cat(histo_dict,var_name,grp_dict,year_name_lst_to_prepend, lepflav_bin=None):
     out_dict = {}
 
     # Get the initial grouping dict
@@ -438,11 +426,20 @@ def get_yields_per_cat(histo_dict,var_name,grp_dict,year_name_lst_to_prepend):
 
     # Loop over cats and fill dict of sig and bkg
     for cat in CAT_LST:
-        print("cat",cat)
-        print("var_name",var_name)
-        out_dict[cat] = {}
-        histo_base = histo_dict[var_name][{"systematic":"nominal", "category":cat}] # For fromnano
-        #histo_base = histo_dict[var_name][{"systematic":"nominal", "category":cat, "year": sum}]
+        if cat not in plt_tools.get_axis_cats(histo_dict[var_name],"category"): continue
+        else: out_dict[cat] = {}
+
+        # Get the hist for the given categroy
+        if lepflav_bin is None:
+            histo_base = histo_dict[var_name][{"systematic":"nominal", "category":cat}]
+        elif lepflav_bin == "all":
+            histo_base = histo_dict[var_name][{"systematic":"nominal", "category":cat, "lepflav":sum}]
+        elif isinstance(lepflav_bin,int):
+            histo_base = histo_dict[var_name][{"systematic":"nominal", "category":cat, "lepflav": lepflav_bin}]
+        else:
+            raise Exception(f"Unknown lep flav handling: {lepflav_bin}")
+        #histo_base = histo_dict[var_name][{"systematic":"nominal", "category":cat}] # For fromnano
+        #histo_base = histo_dict[var_name][{"systematic":"nominal", "category":cat, "year": sum}] # If have years
 
         # Get values per proc
         for group_name,group_lst in groups_to_get_yields_for_dict.items():
@@ -450,6 +447,10 @@ def get_yields_per_cat(histo_dict,var_name,grp_dict,year_name_lst_to_prepend):
             yld = sum(sum(histo.values(flow=True)))
             var = sum(sum(histo.variances(flow=True)))
             out_dict[cat][group_name] = [yld,(var)**0.5]
+
+        # Blind
+        if cat not in UNBLIND_CATS:
+            out_dict[cat]["Data"] = [1e-6,1e-6]
 
         # Get the metric
         sig = out_dict[cat]["Signal"][0]
@@ -675,12 +676,33 @@ def dump_json_simple(histo_dict,out_name="vvh_yields_simple"):
     print(f"\nSaved json file: {output_name}\n")
 
 
-
-### Get the sig and bkg yields and print or dump to json ###
-def print_yields(histo_dict,grp_dict,years_to_prepend,roundat=None,print_counts=False,dump_to_json=True,quiet=False,out_name="yields"):
+### Dump a latex table of the yields
+def print_latex_yields(histo_dict,grp_dict, tag="Yields", lepflav=None, print_begin_info=True,print_end_info=True):
 
     # Get ahold of the yields
-    yld_dict    = get_yields_per_cat(histo_dict,"njets",grp_dict,years_to_prepend)
+    yld_dict    = get_yields_per_cat(histo_dict,"njets",grp_dict,None, lepflav_bin=lepflav)
+
+    group_lst_order = ['Signal', 'VBSWWH_SS', 'VBSWWH_OS', 'VBSWZH', 'VBSZZH', 'Background', 'QCD', 'DY', 'ttbar', 'single-t', 'rare-top', 'ttX', 'Vjets', 'VV', 'ewkV', 'ewkVV', 'VH', 'VVV', 'Data', 'Data/MC', 'metricX100'] # R2
+    #group_lst_order = ["Signal", "Background", "QCD", "ttbar", "single-t", "rare-top", "ttX", "Vjets", "VV", "DY", "ewkVV", "VH", "VVV","Data"] # R3
+
+    mlt.print_latex_yield_table(
+        yld_dict,
+        subkey_order=group_lst_order,
+        print_begin_info=print_begin_info,
+        print_end_info=print_end_info,
+        column_variable="keys",
+        print_errs=True,
+        tag=tag,
+        hz_line_lst=[0,4,5,17,18,19],
+        size="tiny",
+    )
+
+
+### Get the sig and bkg yields and print or dump to json ###
+def print_yields(histo_dict,grp_dict,years_to_prepend,roundat=None,print_counts=False,dump_to_json=True,quiet=False,out_name="yields", lepflavbin=None):
+
+    # Get ahold of the yields
+    yld_dict    = get_yields_per_cat(histo_dict,"njets",grp_dict,years_to_prepend, lepflavbin)
     #counts_dict = get_yields_per_cat(histo_dict,"njets_counts",grp_dict,years_to_prepend)
     #yld_dict = counts_dict
 
@@ -708,24 +730,6 @@ def print_yields(histo_dict,grp_dict,years_to_prepend,roundat=None,print_counts=
         #exit()
 
 
-        mlt.print_latex_yield_table(
-            yld_dict,
-            subkey_order=group_lst_order,
-            print_begin_info=True,
-            print_end_info=True,
-            column_variable="keys",
-            print_errs=True,
-            #tag="3l (ele cutBased$\geq$3, mu pfIsoId$\geq$3)",
-            #tag="3l (ele cutBased$\geq$3, mu pfIsoId$\geq$4)",
-            #tag="3l (ele cutBased$\geq$3, mu pfIsoId$\geq$5)",
-            #tag="3l (ele cutBased$\geq$2, mu pfIsoId$\geq$5)",
-            tag="3l (ele cutBased$\geq$4, mu pfIsoId$\geq$5)",
-            hz_line_lst=[0,4,5,17,18,19],
-            size="tiny",
-        )
-        exit()
-
-
         ### Print csv, build op as an out string ###
 
         # Append the header
@@ -743,9 +747,12 @@ def print_yields(histo_dict,grp_dict,years_to_prepend,roundat=None,print_counts=
             for group_name in group_lst_order:
                 if group_name == "metric": continue
                 yld, err = yld_dict[cat][group_name]
-                perr = 100*(err/yld)
-                #line_str = line_str + f" , {np.round(yld,roundat)} ± {np.round(perr,2)}%"
-                line_str = line_str + f" , {np.round(yld,roundat)} , ± , {np.round(err,roundat)}"
+                if err is not None:
+                    perr = 100*(err/yld)
+                    #line_str = line_str + f" , {np.round(yld,roundat)} ± {np.round(perr,2)}%"
+                    line_str = line_str + f" , {np.round(yld,roundat)} , ± , {np.round(err,roundat)}"
+                else:
+                    line_str = line_str + f" , {np.round(yld,roundat)} , ± , None"
             # And also append the metric
             metric = yld_dict[cat]["metric"][0]
             line_str = line_str + f" , {np.round(metric,3)}"
@@ -856,6 +863,7 @@ def main():
 
     # Print total raw events
     #print(histo_dict["njets"])
+    #tot = histo_dict["njets"][{"systematic":"nominal", "category":"2lOSSF_1fjx", "process":sum, "njets":sum, "lepflav":22}]
     #tot = sum(sum(histo_dict["njets"][{"systematic":"nominal", "category":"3l"}].values(flow=True)))
     #tot = sum(sum(histo_dict["njets"][{"systematic":"nominal", "category":"2lOSSF_1fjx"}].values(flow=True)))
     #print("Events:",tot)
@@ -879,9 +887,20 @@ def main():
     if args.dump_json:
         dump_json_simple(histo_dict,args.output_name)
     if args.get_yields:
-        print_yields(histo_dict,grp_dict,years_to_prepend,out_name=args.output_name+"_yields_sig_bkg",roundat=4,print_counts=False,dump_to_json=True)
+        print_yields(histo_dict,grp_dict,years_to_prepend,out_name=args.output_name+"_yields_sig_bkg",roundat=4,print_counts=False,dump_to_json=True, lepflavbin="all")
+        e = 4
+        m = 5
+        #print_latex_yields(histo_dict,grp_dict, lepflav=None, tag=f"2l (ele cutBased$\geq${e}, mu pfIsoId$\geq${m}), all flav", print_end_info=False)
+        #print_latex_yields(histo_dict,grp_dict, lepflav=999+22,   tag=f"2l (ele cutBased$\geq${e}, mu pfIsoId$\geq${m}), ee only",  print_begin_info=False,print_end_info=False)
+        #print_latex_yields(histo_dict,grp_dict, lepflav=999+26,   tag=f"2l (ele cutBased$\geq${e}, mu pfIsoId$\geq${m}), mm only",  print_begin_info=False)
+        print_latex_yields(histo_dict,grp_dict, lepflav="all", tag=f"3l (ele cutBased$\geq${e}, mu pfIsoId$\geq${m}), all flav", print_end_info=False)
+        print_latex_yields(histo_dict,grp_dict, lepflav=33,    tag=f"3l (ele cutBased$\geq${e}, mu pfIsoId$\geq${m}), eee only", print_begin_info=False,print_end_info=False)
+        print_latex_yields(histo_dict,grp_dict, lepflav=35,    tag=f"3l (ele cutBased$\geq${e}, mu pfIsoId$\geq${m}), eem only", print_begin_info=False,print_end_info=False)
+        print_latex_yields(histo_dict,grp_dict, lepflav=37,    tag=f"3l (ele cutBased$\geq${e}, mu pfIsoId$\geq${m}), emm only", print_begin_info=False,print_end_info=False)
+        print_latex_yields(histo_dict,grp_dict, lepflav=39,    tag=f"3l (ele cutBased$\geq${e}, mu pfIsoId$\geq${m}), mmm only", print_begin_info=False,print_end_info=True)
     if args.make_plots:
         make_plots(histo_dict,grp_dict,years_to_prepend)
+
 
 
 if __name__ == '__main__':
