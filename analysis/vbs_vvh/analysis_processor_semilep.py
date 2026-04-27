@@ -198,8 +198,16 @@ class AnalysisProcessor(processor.ProcessorABC):
                     raise Exception(f"Error: Cannot specify hist \"{hist_to_include}\", it is not defined in the processor.")
             self._hist_lst = hist_lst # Which hists to fill
 
-        self._ele_cutBased_val = float(ele_cutBased_val)
-        self._mu_pfIsoId_val = float(mu_pfIsoId_val)
+        if ele_cutBased_val is not None:
+            self._ele_cutBased_val = float(ele_cutBased_val)
+        else:
+            self._ele_cutBased_val = 3
+
+        if mu_pfIsoId_val is not None:
+            self._mu_pfIsoId_val = float(mu_pfIsoId_val)
+        else:
+            self._mu_pfIsoId_val = 5
+
 
     @property
     def accumulator(self):
