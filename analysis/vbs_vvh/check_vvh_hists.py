@@ -667,7 +667,10 @@ def dump_json_simple(histo_dict,out_name="vvh_yields_simple"):
     for proc_name in histo_dict[hist_to_use].axes["process"]:
         out_dict[proc_name] = {}
         for cat_name in cats_to_check:
-            yld = sum(sum(histo_dict[hist_to_use][{"systematic":"nominal", "category":cat_name}].values(flow=True)))
+            if "lepflav" in histo_dict[hist_to_use].axes.name:
+                yld = sum(sum(histo_dict[hist_to_use][{"systematic":"nominal", "category":cat_name, "lepflav":sum}].values(flow=True)))
+            else:
+                yld = sum(sum(histo_dict[hist_to_use][{"systematic":"nominal", "category":cat_name}].values(flow=True)))
             out_dict[proc_name][cat_name] = [yld,None]
 
     # Dump counts dict to json

@@ -3,11 +3,11 @@
 
 # Get the file the CI uses, and move it to the directory the JSON expects
 printf "\nDownloading root file...\n"
-wget -nc http://uaf-10.t2.ucsd.edu/~kmohrman/large_files_no_backup/for_ci/vvh/feb10_2026/merged.root
+wget -nc http://uaf-10.t2.ucsd.edu/~kmohrman/large_files_no_backup/for_ci/vvh/apr26_2026/output_0.root
 
 # Run the processor
 printf "\nRunning the processor...\n"
-time python run_analysis.py ../../input_samples/sample_jsons/test_samples/UL16APV_WWHSS_forCI.json -x iterative -o new_ref_histos -p semilep_nano
+time python run_analysis.py ../../input_samples/sample_jsons/test_samples/WZH_ForCI.json -x iterative -o new_ref_histos -p semilep
 
 # Make the JSON file of the yields
 printf "\nMaking the yields JSON file...\n"
