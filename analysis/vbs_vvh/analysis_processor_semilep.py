@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 #import sys
+import vector
 import coffea
 import numpy as np
 import awkward as ak
@@ -10,6 +11,14 @@ from hist import axis
 from coffea.analysis_tools import PackedSelection
 import ewkcoffea.modules.objects_wwz as os_ec
 #import ewkcoffea.modules.selection_wwz as es_ec
+
+def to_vec(obj):
+    return ak.zip({
+        "pt": obj.pt,
+        "eta": obj.eta,
+        "phi": obj.phi,
+        "mass": obj.mass,
+    }, with_name="PtEtaPhiMCollection")
 
 
 class AnalysisProcessor(processor.ProcessorABC):
@@ -232,7 +241,7 @@ class AnalysisProcessor(processor.ProcessorABC):
         fatjets = events.fatjet
 
         # An array of lenght events that is just 1 for each event
-        events.nom = ak.ones_like(met.pt)
+        events["nom"] = ak.ones_like(met.pt)
 
         # A mask that is all True by construction (probably there's a better way to do this...)
         pass_through = ak.full_like(met.pt,True,dtype=bool)
@@ -299,7 +308,7 @@ class AnalysisProcessor(processor.ProcessorABC):
         j0forward = goodJets_forward_ptordered_padded[:,0]
         j1forward = goodJets_forward_ptordered_padded[:,1]
 
-        goodJetsCentFwd = ak.with_name(ak.concatenate([goodJets,goodJets_forward],axis=1),'PtEtaPhiMLorentzVector')
+        goodJetsCentFwd = ak.with_name(ak.concatenate([goodJets,goodJets_forward],axis=1),'PtEtaPhiMCollection')
         goodJetsCentFwd_ptordered = goodJetsCentFwd[ak.argsort(goodJetsCentFwd.pt,axis=-1,ascending=False)]
         goodJetsCentFwd_ptordered_padded = ak.pad_none(goodJetsCentFwd_ptordered, 4)
         j0any = goodJetsCentFwd_ptordered_padded[:,0]
@@ -321,10 +330,11 @@ class AnalysisProcessor(processor.ProcessorABC):
         mjjjjany = ak.where(njets_tot>=4, (j0any+j1any+j2any+j3any).mass, 0)
         mjjjjcnt = ak.where(njets>=4, (j0+j1+j2+j3).mass, 0)
 
-        mljjjany  = ak.where(njets_tot>=3, (l0 + j0any+j1any+j2any).mass, 0)
-        mljjjcnt  = ak.where(njets>=3, (l0 + j0+j1+j2).mass, 0)
-        mljjjjany = ak.where(njets_tot>=4, (l0 + j0any+j1any+j2any+j3any).mass, 0)
-        mljjjjcnt = ak.where(njets>=4, (l0 + j0+j1+j2+j3).mass, 0)
+        l0v = to_vec(l0)
+        mljjjany  = ak.where(njets_tot>=3, (l0v + j0any+j1any+j2any).mass, 0)
+        mljjjcnt  = ak.where(njets>=3, (l0v + j0+j1+j2).mass, 0)
+        mljjjjany = ak.where(njets_tot>=4, (l0v + j0any+j1any+j2any+j3any).mass, 0)
+        mljjjjcnt = ak.where(njets>=4, (l0v + j0+j1+j2+j3).mass, 0)
 
 
         ### Bjets ###
@@ -391,7 +401,7 @@ class AnalysisProcessor(processor.ProcessorABC):
         scalarptsum_lepmetfwdjets = scalarptsum_lep + met.pt + scalarptsum_jetFwd
 
         # lb pairs (i.e. always one lep, one bjet)
-        lb_pairs = ak.cartesian({"l":l_vvh_t,"j": bjetsl})
+        lb_pairs = ak.cartesian({"l":to_vec(l_vvh_t),"j": bjetsl})
         mlb_min = ak.min((lb_pairs["l"] + lb_pairs["j"]).mass,axis=-1)
         mlb_max = ak.max((lb_pairs["l"] + lb_pairs["j"]).mass,axis=-1)
 
