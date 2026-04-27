@@ -595,7 +595,7 @@ class AnalysisProcessor(processor.ProcessorABC):
 
         # Lepton truth info (note this check assumes all events in this chunk are of the same kind, should be true)
         isData = False
-        if events.kind[0]=="data": isData == True
+        if events.kind[0]=="data": isData = True
         if not isData:
 
             lep_truth_real_mask = ((l_vvh_t.provenance == 23) | (l_vvh_t.provenance == 24) | (l_vvh_t.provenance == 33) | (l_vvh_t.provenance == 34))
