@@ -1,7 +1,7 @@
 import os
 import json
 from coffea.nanoevents import NanoEventsFactory, NanoAODSchema
-import awkward as ak
+#import awkward as ak
 
 NanoAODSchema.warn_missing_crossrefs = False
 
