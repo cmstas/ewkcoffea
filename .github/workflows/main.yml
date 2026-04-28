@@ -93,6 +93,12 @@ jobs:
           cd ../..
           conda run -n coffea-env pip install -e .
 
+          mkdir dir_for_coffea
+          cd dir_for_coffea
+          git clone -b nano_schema_patch https://github.com/kmohrman/coffea.git
+          cd coffea
+          conda run -n coffea-env pip install -e .
+
       - name: Conda list
         run: |
           conda list -n coffea-env
