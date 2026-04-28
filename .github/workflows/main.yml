@@ -98,6 +98,7 @@ jobs:
           git clone -b nano_schema_patch https://github.com/kmohrman/coffea.git
           cd coffea
           conda run -n coffea-env pip install -e .
+          cd ../..
 
       - name: Conda list
         run: |
