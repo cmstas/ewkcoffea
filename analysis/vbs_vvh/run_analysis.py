@@ -296,7 +296,15 @@ if __name__ == '__main__':
         executor = processor.WorkQueueExecutor(**executor_args)
         runner = processor.Runner(executor, schema=NanoAODSchema, chunksize=chunksize, maxchunks=nchunks, skipbadfiles=False, xrootdtimeout=180)
 
-    output = runner(flist, treename, processor_instance)
+    # Make the flist into the format the runner expects now
+    flist_dict = {}
+    for keyname in flist:
+        flist_dict[keyname] = {
+            "files" : flist[keyname],
+            "treename" : "Events",
+        }
+
+    output = runner(flist_dict, processor_instance)
 
     dt = time.time() - tstart
 
