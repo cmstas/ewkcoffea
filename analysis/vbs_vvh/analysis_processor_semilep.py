@@ -11,6 +11,14 @@ from coffea.analysis_tools import PackedSelection
 import ewkcoffea.modules.objects_wwz as os_ec
 #import ewkcoffea.modules.selection_wwz as es_ec
 
+import warnings
+warnings.filterwarnings(
+    "ignore",
+    message="Missing cross-reference index",
+    category=RuntimeWarning,
+    module="coffea.nanoevents.schemas.nanoaod"
+)
+
 def to_vec(obj):
     return ak.zip({
         "pt": obj.pt,
@@ -248,11 +256,20 @@ class AnalysisProcessor(processor.ProcessorABC):
 
         ################### Lepton selection ####################
 
-        # Apply the ID on top of RDF object
-        if self._ele_cutBased_val == None: raise Exception("No val for self._ele_cutBased_val")
-        if self._mu_pfIsoId_val   == None: raise Exception("No val for pfIsoId_val")
-        ele = ele[ele.cutBased >= self._ele_cutBased_val]
-        mu = mu[mu.pfIsoId >= self._mu_pfIsoId_val]
+        ## HERE
+        ## Apply the ID on top of RDF object
+        #if self._ele_cutBased_val == None: raise Exception("No val for self._ele_cutBased_val")
+        #if self._mu_pfIsoId_val   == None: raise Exception("No val for pfIsoId_val")
+        #if self._ele_cutBased_val == 80:
+        #    ele = ele[ele.mvaIso_WP80]
+        #elif self._ele_cutBased_val == 90:
+        #    ele = ele[ele.mvaIso_WP90]
+        #elif self._ele_cutBased_val in [2,3,4]:
+        #    ele = ele[ele.cutBased >= self._ele_cutBased_val]
+        #else:
+        #    raise Exception("Unknown value")
+        #mu = mu[mu.pfIsoId >= self._mu_pfIsoId_val]
+        ##ele = ele[ele.cutBased >= self._ele_cutBased_val]
 
         # Get tight leptons for VVH selection, using mask from RDF
         l_vvh_t = ak.with_name(ak.concatenate([ele,mu],axis=1),'PtEtaPhiMCandidate')
