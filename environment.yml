@@ -16,3 +16,4 @@ dependencies:
   - scikit-learn
   - conda-forge::setuptools
   - conda-forge::xgboost
+  - pip
