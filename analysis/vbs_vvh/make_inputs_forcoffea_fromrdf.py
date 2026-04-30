@@ -2,8 +2,9 @@ import os
 import json
 from coffea.nanoevents import NanoEventsFactory, NanoAODSchema
 #import awkward as ak
+import warnings
 
-NanoAODSchema.warn_missing_crossrefs = False
+warnings.filterwarnings( "ignore", message=".*Missing cross-reference index.*", category=RuntimeWarning)
 
 def make_json(path,name):
 
@@ -16,7 +17,7 @@ def make_json(path,name):
         fullpath_to_dir = os.path.join(path,dataset_name)
         for fname in os.listdir(fullpath_to_dir):
             fullpath = os.path.join(fullpath_to_dir,fname)
-            events = NanoEventsFactory.from_root(fullpath).events()
+            events = NanoEventsFactory.from_root( {fullpath: "Events"}, schemaclass=NanoAODSchema,).events()
             if len(events) == 0:
                 print("\nNo events!",fullpath,"\n")
             else:
