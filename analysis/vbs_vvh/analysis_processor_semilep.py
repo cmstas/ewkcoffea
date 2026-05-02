@@ -214,15 +214,11 @@ class AnalysisProcessor(processor.ProcessorABC):
                     raise Exception(f"Error: Cannot specify hist \"{hist_to_include}\", it is not defined in the processor.")
             self._hist_lst = hist_lst # Which hists to fill
 
-        if ele_cutBased_val is not None:
-            self._ele_cutBased_val = float(ele_cutBased_val)
-        else:
-            self._ele_cutBased_val = 3
+        if ele_cutBased_val is not None: self._ele_cutBased_val = float(ele_cutBased_val)
+        else: self._ele_cutBased_val = ele_cutBased_val
 
-        if mu_pfIsoId_val is not None:
-            self._mu_pfIsoId_val = float(mu_pfIsoId_val)
-        else:
-            self._mu_pfIsoId_val = 5
+        if mu_pfIsoId_val is not None: self._mu_pfIsoId_val = float(mu_pfIsoId_val)
+        else: self._mu_pfIsoId_val = mu_pfIsoId_val
 
 
     @property
@@ -256,20 +252,21 @@ class AnalysisProcessor(processor.ProcessorABC):
 
         ################### Lepton selection ####################
 
-        ## HERE
-        ## Apply the ID on top of RDF object
-        #if self._ele_cutBased_val == None: raise Exception("No val for self._ele_cutBased_val")
-        #if self._mu_pfIsoId_val   == None: raise Exception("No val for pfIsoId_val")
-        #if self._ele_cutBased_val == 80:
-        #    ele = ele[ele.mvaIso_WP80]
-        #elif self._ele_cutBased_val == 90:
-        #    ele = ele[ele.mvaIso_WP90]
-        #elif self._ele_cutBased_val in [2,3,4]:
-        #    ele = ele[ele.cutBased >= self._ele_cutBased_val]
-        #else:
-        #    raise Exception("Unknown value")
-        #mu = mu[mu.pfIsoId >= self._mu_pfIsoId_val]
-        ##ele = ele[ele.cutBased >= self._ele_cutBased_val]
+        # Apply e and m ID cuts on top of RDF object cuts
+        if self._ele_cutBased_val is not None:
+            if self._ele_cutBased_val == 80:
+                ele = ele[ele.mvaIso_WP80]
+            elif self._ele_cutBased_val == 90:
+                ele = ele[ele.mvaIso_WP90]
+            elif self._ele_cutBased_val in [2,3,4]:
+                ele = ele[ele.cutBased >= self._ele_cutBased_val]
+            else:
+                raise Exception("Unknown value")
+        if self._mu_pfIsoId_val is not None:
+            if self._mu_pfIsoId_val in [3,4,5]:
+                mu = mu[mu.pfIsoId >= self._mu_pfIsoId_val]
+            else:
+                raise Exception("Unknown value")
 
         # Get tight leptons for VVH selection, using mask from RDF
         l_vvh_t = ak.with_name(ak.concatenate([ele,mu],axis=1),'PtEtaPhiMCandidate')

@@ -968,14 +968,14 @@ def main():
         #print_yields(histo_dict,grp_dict,years_to_prepend,out_name=args.output_name+"_yields_sig_bkg",roundat=4,print_counts=False,dump_to_json=True, lepflavbin="all")
         #e = 4
         #m = 5
-        print_latex_yields(histo_dict,grp_dict, lepflav="all", tag=f"2l, all flav", print_end_info=False)
-        print_latex_yields(histo_dict,grp_dict, lepflav=22,    tag=f"2l, ee only",  print_begin_info=False,print_end_info=False)
-        print_latex_yields(histo_dict,grp_dict, lepflav=26,    tag=f"2l, mm only",  print_begin_info=False)
-        #print_latex_yields(histo_dict,grp_dict, lepflav="all", tag=f"3l (ele cutBased$\\geq${e}, mu pfIsoId$\\geq${m}), all flav", print_end_info=False)
-        #print_latex_yields(histo_dict,grp_dict, lepflav=33,    tag=f"3l (ele cutBased$\\geq${e}, mu pfIsoId$\\geq${m}), eee only", print_begin_info=False,print_end_info=False)
-        #print_latex_yields(histo_dict,grp_dict, lepflav=35,    tag=f"3l (ele cutBased$\\geq${e}, mu pfIsoId$\\geq${m}), eem only", print_begin_info=False,print_end_info=False)
-        #print_latex_yields(histo_dict,grp_dict, lepflav=37,    tag=f"3l (ele cutBased$\\geq${e}, mu pfIsoId$\\geq${m}), emm only", print_begin_info=False,print_end_info=False)
-        #print_latex_yields(histo_dict,grp_dict, lepflav=39,    tag=f"3l (ele cutBased$\\geq${e}, mu pfIsoId$\\geq${m}), mmm only", print_begin_info=False,print_end_info=True)
+        print_latex_yields(histo_dict,grp_dict, lepflav="all", tag="2l, all flav", print_end_info=False)
+        print_latex_yields(histo_dict,grp_dict, lepflav=22,    tag="2l, ee only",  print_begin_info=False,print_end_info=False)
+        print_latex_yields(histo_dict,grp_dict, lepflav=26,    tag="2l, mm only",  print_begin_info=False)
+        #print_latex_yields(histo_dict,grp_dict, lepflav="all", tag="3l (ele cutBased$\\geq${e}, mu pfIsoId$\\geq${m}), all flav", print_end_info=False)
+        #print_latex_yields(histo_dict,grp_dict, lepflav=33,    tag="3l (ele cutBased$\\geq${e}, mu pfIsoId$\\geq${m}), eee only", print_begin_info=False,print_end_info=False)
+        #print_latex_yields(histo_dict,grp_dict, lepflav=35,    tag="3l (ele cutBased$\\geq${e}, mu pfIsoId$\\geq${m}), eem only", print_begin_info=False,print_end_info=False)
+        #print_latex_yields(histo_dict,grp_dict, lepflav=37,    tag="3l (ele cutBased$\\geq${e}, mu pfIsoId$\\geq${m}), emm only", print_begin_info=False,print_end_info=False)
+        #print_latex_yields(histo_dict,grp_dict, lepflav=39,    tag="3l (ele cutBased$\\geq${e}, mu pfIsoId$\\geq${m}), mmm only", print_begin_info=False,print_end_info=True)
     if args.datacard:
         dump_datacard(histo_dict,grp_dict,name)
     if args.make_plots:
