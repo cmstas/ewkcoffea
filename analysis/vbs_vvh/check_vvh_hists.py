@@ -649,9 +649,9 @@ def make_card(in_dict,out_name):
 
     # Build up the card
     out_str = ""
-    out_str = out_str + f"\nimax *  number of channels"
-    out_str = out_str + f"\njmax *  number of backgrounds"
-    out_str = out_str + f"\nkmax *  number of nuisance parameters (sources of systematic uncertainties"
+    out_str = out_str +  "\nimax *  number of channels"
+    out_str = out_str +  "\njmax *  number of backgrounds"
+    out_str = out_str +  "\nkmax *  number of nuisance parameters (sources of systematic uncertainties"
     out_str = out_str + f"\n{divider}"
     out_str = out_str + f"\nbin {obsblock_binname_str}"
     out_str = out_str + f"\nobservation {obsblock_obs_str}"
@@ -660,7 +660,7 @@ def make_card(in_dict,out_name):
     out_str = out_str + f"\nprocess   {expblock_procname_str}"
     out_str = out_str + f"\nprocess   {expblock_procnum_str}"
     out_str = out_str + f"\nrate      {expblock_rate_str}"
-    out_str = out_str + f"\n"
+    out_str = out_str +  "\n"
 
     # Dump to screen
     print(out_str)
