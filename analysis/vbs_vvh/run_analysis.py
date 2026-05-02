@@ -168,23 +168,27 @@ if __name__ == '__main__':
             if do_systs:
                 if ("nSumOfLheWeights" not in samplesdict[sname]):
                     raise Exception(f"Sample is missing scale variations: {sname}")
+        print(f"N files for {sname}: {len(samplesdict[sname]['files'])}")
+
         # Print file info
-        print('>> '+sname)
-        print('   - isData?      : %s'   %('YES' if samplesdict[sname]['isData'] else 'NO'))
-        print('   - year         : %s'   %samplesdict[sname]['year'])
-        print('   - xsec         : %f'   %samplesdict[sname]['xsec'])
-        print('   - histAxisName : %s'   %samplesdict[sname]['histAxisName'])
-        print('   - options      : %s'   %samplesdict[sname]['options'])
-        print('   - tree         : %s'   %samplesdict[sname]['treeName'])
-        print('   - nEvents      : %i'   %samplesdict[sname]['nEvents'])
-        print('   - nGenEvents   : %i'   %samplesdict[sname]['nGenEvents'])
-        print('   - SumWeights   : %i'   %samplesdict[sname]['nSumOfWeights'])
-        if not samplesdict[sname]["isData"]:
-            if "nSumOfLheWeights" in samplesdict[sname]:
-                print(f'   - nSumOfLheWeights : {samplesdict[sname]["nSumOfLheWeights"]}')
-        print('   - Prefix       : %s'   %samplesdict[sname]['redirector'])
-        print('   - nFiles       : %i'   %len(samplesdict[sname]['files']))
-        for fname in samplesdict[sname]['files']: print('     %s'%fname)
+        quiet = True
+        if not quiet:
+            print('>> '+sname)
+            print('   - isData?      : %s'   %('YES' if samplesdict[sname]['isData'] else 'NO'))
+            print('   - year         : %s'   %samplesdict[sname]['year'])
+            print('   - xsec         : %f'   %samplesdict[sname]['xsec'])
+            print('   - histAxisName : %s'   %samplesdict[sname]['histAxisName'])
+            print('   - options      : %s'   %samplesdict[sname]['options'])
+            print('   - tree         : %s'   %samplesdict[sname]['treeName'])
+            print('   - nEvents      : %i'   %samplesdict[sname]['nEvents'])
+            print('   - nGenEvents   : %i'   %samplesdict[sname]['nGenEvents'])
+            print('   - SumWeights   : %i'   %samplesdict[sname]['nSumOfWeights'])
+            if not samplesdict[sname]["isData"]:
+                if "nSumOfLheWeights" in samplesdict[sname]:
+                    print(f'   - nSumOfLheWeights : {samplesdict[sname]["nSumOfLheWeights"]}')
+            print('   - Prefix       : %s'   %samplesdict[sname]['redirector'])
+            print('   - nFiles       : %i'   %len(samplesdict[sname]['files']))
+            for fname in samplesdict[sname]['files']: print('     %s'%fname)
 
     # Extract the list of all WCs, as long as we haven't already specified one.
     if len(wc_lst) == 0:
