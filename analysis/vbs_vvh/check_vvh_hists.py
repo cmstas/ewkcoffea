@@ -9,36 +9,256 @@ import matplotlib.pyplot as plt
 import copy
 
 import ewkcoffea.modules.plotting_tools as plt_tools
+import topcoffea.modules.MakeLatexTable as mlt
 
 
-HTML_PC = "/home/users/kmohrman/ref_scripts/html_stuff/index.php"
+#HTML_PC = "/home/users/kmohrman/ref_scripts/html_stuff/index.php"
+HTML_PC = "/home/k.mohrman/ref_scirpts/html_stuff/index.php"
 
 #CLR_LST = ['#d55e00', '#e69f00', '#f0e442', '#009e73', '#0072b2', '#56b4e9', '#cc79a7', '#6e3600', '#a17500'] #, '#a39b2f', '#00664f', '#005d87', '#999999', '#8c5d77']
-CLR_LST = ['#d55e00', '#e69f00']
+#CLR_LST = ['#d55e00', '#e69f00']
+
+UNBLIND_CATS = [
+    "all_events",
+    "2lOSSF_1fjx",
+    "3l",
+]
+
+CAT_LST_2l = [
+
+    #"all_events",
+
+    #"2l",
+    #"2lOS",
+    #"2lOSSF",
+    #"2lOSSF_1fj",
+    "2lOSSF_1fjx",
+    #"2lOSSF_1fjx_2j",
+    "2lOSSF_1fjx_HFJ",
+    "2lOSSF_1fjx_HFJtag",
+    #"2lOSSF_1fjx_HFJtag_nj2",
+    "2lOSSF_1fjx_HFJtag_nj2_mjj600",
+    "2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0",
+    #"2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0_onZ",
+    #"2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0_offZ",
+]
+
+CAT_LST_3l = [
+
+    "all_events",
+
+    "3l",
+    "3l_chsum3",
+    "3l_chsum3_mjj400",
+    "3l_chsum3_mjj400_b0p4",
+    "3l_chsum1",
+    "3l_chsum1_mll12",
+    "3l_chsum1_mll12_sfos0",
+    "3l_chsum1_mll12_sfos0_mjj400",
+    "3l_chsum1_mll12_sfos0_mjj400_b0p4",
+    "3l_chsum1_mll12_sfos1",
+    "3l_chsum1_mll12_sfos1_mjj400",
+    "3l_chsum1_mll12_sfos1_mjj400_jf0pt50",
+    "3l_chsum1_mll12_sfos2",
+    "3l_chsum1_mll12_sfos2_mjj400",
+    "3l_chsum1_mll12_sfos2_mjj400_jf0pt50",
+]
+
+
 
 GRP_DICT_FULL_R3 = {
-    "Signal" : [
-        'VBSWWH_OSWW_C2V1p0_13p6TeV_5f_LO',
-        'VBSWWH_SSWW_C2V1p0_13p6TeV_5f_LO',
-        'VBSWZH_C2V1p0_13p6TeV_5f_LO',
-        'VBSZZH_C2V1p0_13p6TeV_5f_LO'
+    "Signal": [
+        "VBSWWH_OS_c2v1p0_c3_1p0",
+        "VBSWWH_SS_c2v1p0_c3_1p0",
+        "VBSWZH_c2v1p0_c3_1p0",
+        "VBSZZH_c2v1p0_c3_1p0",
+        #"VBSWWH_OS_c2v1p0_c3_10p0",
+        #"VBSWWH_SS_c2v1p0_c3_10p0",
+        #"VBSWZH_c2v1p0_c3_10p0",
+        #"VBSZZH_c2v1p0_c3_10p0",
+        #"VBSWWH_OS_c2v1p5_c3_1p0",
+        #"VBSWWH_SS_c2v1p5_c3_1p0",
+        #"VBSWZH_c2v1p5_c3_1p0",
+        #"VBSZZH_c2v1p5_c3_1p0",
     ],
-    "ttbar" : [
-        "TTtoLNu2Q",
+    "Data":[
+        "Muon",
+        "MuonEG",
+        "EGamma",
+    ],
+    "QCD": [
+        "QCD_Bin-PT-1000to1500_TuneCP5_13p6TeV",
+        "QCD_Bin-PT-120to170_TuneCP5_13p6TeV",
+        "QCD_Bin-PT-1500to2000_TuneCP5_13p6TeV",
+        "QCD_Bin-PT-170to300_TuneCP5_13p6TeV",
+        "QCD_Bin-PT-2000to2500_TuneCP5_13p6TeV",
+        "QCD_Bin-PT-2500to3000_TuneCP5_13p6TeV",
+        "QCD_Bin-PT-3000_TuneCP5_13p6TeV",
+        "QCD_Bin-PT-300to470_TuneCP5_13p6TeV",
+        "QCD_Bin-PT-470to600_TuneCP5_13p6TeV",
+        "QCD_Bin-PT-50to80_TuneCP5_13p6TeV",
+        "QCD_Bin-PT-600to800_TuneCP5_13p6TeV",
+        "QCD_Bin-PT-800to1000_TuneCP5_13p6TeV",
+        "QCD_Bin-PT-80to120_TuneCP5_13p6TeV",
+    ],
+    "ttbar": [
+        "TTto2L2Nu_TuneCP5_13p6TeV",
+        "TTto4Q_TuneCP5_13p6TeV",
+        "TTtoLNu2Q_TuneCP5_13p6TeV",
+    ],
+    "single-t": [
+        "TBbarQto2Q-t-channel-4FS_TuneCP5_13p6TeV",
+        "TBbarQtoLNu-t-channel-4FS_TuneCP5_13p6TeV",
+        "TBbartoLNu-s-channel_TuneCP5_13p6TeV",
+        "TWminusto2L2Nu_TuneCP5_13p6TeV",
+        "TWminusto4Q_TuneCP5_13p6TeV",
+        "TWminustoLNu2Q_TuneCP5_13p6TeV",
+        "TZQB-Zto2L-4FS_Bin-MLL-30_TuneCP5_13p6TeV",
+        "TbarBQto2Q-t-channel-4FS_TuneCP5_13p6TeV",
+        "TbarBQtoLNu-t-channel-4FS_TuneCP5_13p6TeV",
+        "TbarBtoLNu-s-channel_TuneCP5_13p6TeV",
+        "TbarWplusto2L2Nu_TuneCP5_13p6TeV",
+        "TbarWplusto4Q_TuneCP5_13p6TeV",
+        "TbarWplustoLNu2Q_TuneCP5_13p6TeV",
+    ],
+    "ttX": [
+        "TTH-Hto2B_Par-M-125_TuneCP5_13p6TeV",
+        "TTH-HtoNon2B_Par-M-125_TuneCP5_13p6TeV",
+        "TTLL_Bin-MLL-4to50_TuneCP5_13p6TeV",
+        "TTLL_Bin-MLL-50_TuneCP5_13p6TeV",
+        "TTLNu-1Jets_TuneCP5_13p6TeV",
+        "TTW-WtoQQ-1Jets_TuneCP5_13p6TeV",
+    ],
+    "rare-top": [
+        "TTWW_TuneCP5_13p6TeV",
+        "TTWZ_TuneCP5_13p6TeV",
+    ],
+    "Vjets": [
+        "Wto2Q-3Jets_Bin-HT-100to400_TuneCP5_13p6TeV",
+        "Wto2Q-3Jets_Bin-HT-1500to2500_TuneCP5_13p6TeV",
+        "Wto2Q-3Jets_Bin-HT-2500_TuneCP5_13p6TeV",
+        "Wto2Q-3Jets_Bin-HT-400to800_TuneCP5_13p6TeV",
+        "Wto2Q-3Jets_Bin-HT-800to1500_TuneCP5_13p6TeV",
+        "WtoLNu-2Jets_Bin-1J-PTLNu-100to200_TuneCP5_13p6TeV",
+        "WtoLNu-2Jets_Bin-1J-PTLNu-200to400_TuneCP5_13p6TeV",
+        "WtoLNu-2Jets_Bin-1J-PTLNu-400to600_TuneCP5_13p6TeV",
+        "WtoLNu-2Jets_Bin-1J-PTLNu-40to100_TuneCP5_13p6TeV",
+        "WtoLNu-2Jets_Bin-1J-PTLNu-600_TuneCP5_13p6TeV",
+        "WtoLNu-2Jets_Bin-2J-PTLNu-100to200_TuneCP5_13p6TeV",
+        "WtoLNu-2Jets_Bin-2J-PTLNu-200to400_TuneCP5_13p6TeV",
+        "WtoLNu-2Jets_Bin-2J-PTLNu-400to600_TuneCP5_13p6TeV",
+        "WtoLNu-2Jets_Bin-2J-PTLNu-40to100_TuneCP5_13p6TeV",
+        "WtoLNu-2Jets_Bin-2J-PTLNu-600_TuneCP5_13p6TeV",
+        "WtoLNu-4Jets_Bin-1J_TuneCP5_13p6TeV",
+        "WtoLNu-4Jets_Bin-2J_TuneCP5_13p6TeV",
+        "WtoLNu-4Jets_Bin-3J_TuneCP5_13p6TeV",
+        "WtoLNu-4Jets_Bin-4J_TuneCP5_13p6TeV",
+        "Zto2Q-4Jets_Bin-HT-100to400_TuneCP5_13p6TeV",
+        "Zto2Q-4Jets_Bin-HT-1500to2500_TuneCP5_13p6TeV",
+        "Zto2Q-4Jets_Bin-HT-2500_TuneCP5_13p6TeV",
+        "Zto2Q-4Jets_Bin-HT-400to800_TuneCP5_13p6TeV",
+        "Zto2Q-4Jets_Bin-HT-800to1500_TuneCP5_13p6TeV",
+    ],
+    "DY": [
+        #"DYto2L-2Jets_Bin-1J-MLL-50-PTLL-100to200",
+        #"DYto2L-2Jets_Bin-1J-MLL-50-PTLL-200to400",
+        #"DYto2L-2Jets_Bin-1J-MLL-50-PTLL-400to600",
+        #"DYto2L-2Jets_Bin-1J-MLL-50-PTLL-40to100",
+        #"DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600",
+        #"DYto2L-2Jets_Bin-2J-MLL-50-PTLL-100to200",
+        #"DYto2L-2Jets_Bin-2J-MLL-50-PTLL-200to400",
+        #"DYto2L-2Jets_Bin-2J-MLL-50-PTLL-400to600",
+        #"DYto2L-2Jets_Bin-2J-MLL-50-PTLL-40to100",
+        #"DYto2L-2Jets_Bin-2J-MLL-50-PTLL-600",
+        "DYto2E_Bin-MLL-10to50_TuneCP5_13p6TeV",
+        "DYto2Mu_Bin-MLL-10to50_TuneCP5_13p6TeV",
+        "DYto2Tau_Bin-MLL-10to50_TuneCP5_13p6TeV",
+        "DYto2Mu-2Jets_Bin-MLL-50_TuneCP5_13p6TeV",
+        "DYto2E-2Jets_Bin-MLL-50_TuneCP5_13p6TeV",
+        "DYto2Tau-2Jets_Bin-MLL-50_TuneCP5_13p6TeV",
+    ],
+    #"ggHtoZZ": [
+    #    "GluGluH-Hto2Zto4L_Par-M-125_TuneCP5_13p6TeV",
+    #],
+    #"ggVV": [
+    #    "GluGluToContinto2Zto2E2Mu_TuneCP5_13p6TeV",
+    #    "GluGluToContinto2Zto2E2Tau_TuneCP5_13p6TeV",
+    #    "GluGluToContinto2Zto2Mu2Tau_TuneCP5_13p6TeV",
+    #    "GluGlutoContinto2Zto4E_TuneCP5_13p6TeV",
+    #    "GluGlutoContinto2Zto4Mu_TuneCP5_13p6TeV",
+    #    "GluGlutoContinto2Zto4Tau_TuneCP5_13p6TeV",
+    #],
+    "VV": [
+        "WWJJto2L2Nu-OS-noTop-EWK_TuneCP5_13p6TeV",
+        "WWJJto2L2Nu-SS-noTop-EWK_TuneCP5_13p6TeV",
+        "WW_TuneCP5_13p6TeV",
+        "WWto2L2Nu_TuneCP5_13p6TeV",
+        "WWto4Q_TuneCP5_13p6TeV",
+        "WWtoLNu2Q_TuneCP5_13p6TeV",
+        "WZ_TuneCP5_13p6TeV",
+        "WZto2L2Q_TuneCP5_13p6TeV",
+        "WZto3LNu_TuneCP5_13p6TeV",
+        "WZtoL3Nu_TuneCP5_13p6TeV",
+        "WZtoLNu2Q_TuneCP5_13p6TeV",
+        "ZZJJto4L-EWK_TuneCP5_13p6TeV",
+        "ZZJJto4L-QCD_TuneCP5_13p6TeV",
+        "ZZ_TuneCP5_13p6TeV",
+        "ZZto2L2Nu_TuneCP5_13p6TeV",
+        "ZZto2L2Q_TuneCP5_13p6TeV",
+        "ZZto2Nu2Q_TuneCP5_13p6TeV",
+        "ZZto4L_TuneCP5_13p6TeV",
+        "ZZto4Q-1Jets_TuneCP5_13p6TeV",
+    ],
+    "ewkVV": [
+        "VBS-SSWW-LL_TuneCP5_13p6TeV",
+        "VBS-SSWW-TL_TuneCP5_13p6TeV",
+    ],
+    "VH": [
+        "WminusH-HtoNon2B_Par-M-125_TuneCP5_13p6TeV",
+        "WminusH-Wto2Q-Hto2B_Par-M-125_TuneCP5_13p6TeV",
+        "WminusH-WtoLNu-Hto2B_Par-M-125_TuneCP5_13p6TeV",
+        "WplusH-HtoNon2B_Par-M-125_TuneCP5_13p6TeV",
+        "WplusH-Wto2Q-Hto2B_Par-M-125_TuneCP5_13p6TeV",
+        "WplusH-WtoLNu-Hto2B_Par-M-125_TuneCP5_13p6TeV",
+        "ZH-HtoNon2B_Par-M-125_TuneCP5_13p6TeV",
+        "ZH-Zto2L-Hto2B_Par-M-125_TuneCP5_13p6TeV",
+        "ZH-Zto2Q-Hto2B_Par-M-125_TuneCP5_13p6TeV",
+        "GluGluZH-Zto2L-Hto2B_Par-M-125_TuneCP5_13p6TeV",
+    ],
+    "VVV": [
+        "WWW-4F_TuneCP5_13p6TeV",
+        "WWZ-4F_TuneCP5_13p6TeV",
+        "WZZ-5F_TuneCP5_13p6TeV",
+        "ZZZ-5F_TuneCP5_13p6TeV",
     ],
 }
 
 
 GRP_DICT_FULL_R2 = {
     "Data" : [
-        "data",
+        #"data",
+        "DoubleMuon",
+        "MuonEG",
+        "DoubleEG",
+        "SingleMuon",
+        "SingleElectron",
+        "EGamma",
     ],
     "Signal" : [
         "VBSWWH_SS_c2v1p0_c3_1p0",
         "VBSWWH_OS_c2v1p0_c3_1p0",
         "VBSWZH_c2v1p0_c3_1p0",
         "VBSZZH_c2v1p0_c3_1p0",
+        #"VBSWWH_SS_VBSCuts_13TeV",
+        #"VBSWWH_OS_VBSCuts_13TeV",
+        #"VBSWZH_VBSCuts_13TeV",
+        #"VBSZZH_VBSCuts_13TeV",
     ],
+    "VBSWWH_SS": ["VBSWWH_SS_c2v1p0_c3_1p0"],
+    "VBSWWH_OS": ["VBSWWH_OS_c2v1p0_c3_1p0"],
+    "VBSWZH": ["VBSWZH_c2v1p0_c3_1p0"],
+    "VBSZZH": ["VBSZZH_c2v1p0_c3_1p0"],
+
     "QCD" : [
         "QCD_HT50to100_TuneCP5_PSWeights_13TeV",
         "QCD_HT100to200_TuneCP5_PSWeights_13TeV",
@@ -172,36 +392,6 @@ GRP_DICT_FULL_R2 = {
 }
 
 
-CAT_LST = [
-    "all_events",
-    "filter",
-    "filter_grl",
-    "filter_grl_trg",
-
-    ### 2l OS SF 1FJ ###
-    "2l",
-    "2lOS",
-    "2lOSSF",
-    "2lOSSF_1fj",
-    "2lOSSF_1fjx",
-    "2lOSSF_1fjx_HFJ",
-    "2lOSSF_1fjx_HFJtag",
-    "2lOSSF_1fjx_HFJtag_nj2",
-    "2lOSSF_1fjx_HFJtag_nj2_mjj600",
-    "2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0",
-    "2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0_onZ",
-    "2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0_offZ",
-
-    ### 3l ###
-    "3l",
-    "3l_2j_mjj400",
-    "3l_2j_mjj400_noSFOS",
-    "3l_2j_mjj400_noSFOS_b0p4",
-    "3l_2j_mjj400_noSFOS_b0p4_ch1",
-    "3l_2j_mjj400_noSFOS_b0p4_ch3",
-    "3l_2j_mjj400_SFOS",
-    "3l_2j_mjj400_SFOS_jf0pt50",
-]
 
 
 ########################
@@ -219,7 +409,7 @@ def append_years(sample_dict_base,year_lst):
 
 
 # Get sig and bkg yield in all categories
-def get_yields_per_cat(histo_dict,var_name,grp_dict,year_name_lst_to_prepend):
+def get_yields_per_cat(histo_dict,var_name,grp_dict,year_name_lst_to_prepend, cat_lst, lepflav_bin=None):
     out_dict = {}
 
     # Get the initial grouping dict
@@ -229,7 +419,7 @@ def get_yields_per_cat(histo_dict,var_name,grp_dict,year_name_lst_to_prepend):
     # Get list of all of the backgrounds together
     bkg_lst = []
     for grp in grouping_dict:
-        if (grp != "Signal") and (grp != "Data"):
+        if (grp != "Signal") and (grp != "Data") and (grp not in ["VBSWWH_SS","VBSWWH_OS","VBSWZH","VBSZZH"]):
             bkg_lst = bkg_lst + grouping_dict[grp]
 
     # Make the dictionary to get yields for, it includes what's in grouping_dict, plus the backgrounds grouped as one
@@ -237,10 +427,21 @@ def get_yields_per_cat(histo_dict,var_name,grp_dict,year_name_lst_to_prepend):
     groups_to_get_yields_for_dict["Background"] = bkg_lst
 
     # Loop over cats and fill dict of sig and bkg
-    for cat in CAT_LST:
-        out_dict[cat] = {}
+    for cat in cat_lst:
+        if cat not in plt_tools.get_axis_cats(histo_dict[var_name],"category"): continue
+        else: out_dict[cat] = {}
+
+        # Get the hist for the given categroy
+        if lepflav_bin is None:
+            histo_base = histo_dict[var_name][{"systematic":"nominal", "category":cat}]
+        elif lepflav_bin == "all":
+            histo_base = histo_dict[var_name][{"systematic":"nominal", "category":cat, "lepflav":sum}]
+        elif isinstance(lepflav_bin,int):
+            histo_base = histo_dict[var_name][{"systematic":"nominal", "category":cat, "lepflav": lepflav_bin}]
+        else:
+            raise Exception(f"Unknown lep flav handling: {lepflav_bin}")
         #histo_base = histo_dict[var_name][{"systematic":"nominal", "category":cat}] # For fromnano
-        histo_base = histo_dict[var_name][{"systematic":"nominal", "category":cat, "year": sum}]
+        #histo_base = histo_dict[var_name][{"systematic":"nominal", "category":cat, "year": sum}] # If have years
 
         # Get values per proc
         for group_name,group_lst in groups_to_get_yields_for_dict.items():
@@ -249,11 +450,21 @@ def get_yields_per_cat(histo_dict,var_name,grp_dict,year_name_lst_to_prepend):
             var = sum(sum(histo.variances(flow=True)))
             out_dict[cat][group_name] = [yld,(var)**0.5]
 
+        # Blind
+        if cat not in UNBLIND_CATS:
+            out_dict[cat]["Data"] = [1e-6,1e-6]
+
         # Get the metric
         sig = out_dict[cat]["Signal"][0]
         bkg = out_dict[cat]["Background"][0]
         metric = sig/(bkg)**0.5
         out_dict[cat]["metric"] = [metric,None] # Don't bother propagating error
+        out_dict[cat]["metricX100"] = [metric*100,None] # Don't bother propagating error
+
+        # Get the data/MC
+        mc = sig+bkg
+        data = out_dict[cat]["Data"][0]
+        out_dict[cat]["Data/MC"] = [data/mc,None] # Don't bother propagating error
 
     return out_dict
 
@@ -275,7 +486,7 @@ def make_vvh_fig(histo_mc,histo_mc_sig,histo_mc_bkg,histo_dat=None,title="test",
     histo_mc.plot1d(
         stack=True,
         histtype="fill",
-        color=CLR_LST,
+        #color=CLR_LST,
         ax=ax1,
         zorder=10,
     )
@@ -287,8 +498,8 @@ def make_vvh_fig(histo_mc,histo_mc_sig,histo_mc_bkg,histo_dat=None,title="test",
             histtype="errorbar",
             color="k",
             ax=ax1,
-            w2=histo_dat.variances(),
-            w2method="sqrt",
+            #w2=histo_dat.variances(),
+            #w2method="sqrt",
             #w2method="poisson",
             zorder=11,
         )
@@ -415,6 +626,51 @@ def make_vvh_fig(histo_mc,histo_mc_sig,histo_mc_bkg,histo_dat=None,title="test",
     return (fig,(extt,extr,extb,extl))
 
 
+# Dump to a datacard
+# in_dict format should be {"cat":{"sig":x.x,"bkg":y.y},...}
+def make_card(in_dict,out_name):
+
+    obsblock_binname_str  = ""
+    obsblock_obs_str      = ""
+    expblock_binname_str  = ""
+    expblock_procname_str = ""
+    expblock_procnum_str  = ""
+    expblock_rate_str     = ""
+    for i,cat in enumerate(in_dict):
+        sig = in_dict[cat]["sig"]
+        bkg = in_dict[cat]["bkg"]
+        obs = float(sig) + float(bkg)
+        obsblock_binname_str  += f" {cat} "
+        obsblock_obs_str      += f" {obs} "
+        expblock_binname_str  += f" {cat} {cat} "
+        expblock_procname_str += " sig bkg "
+        expblock_procnum_str  += " 0 1"
+        expblock_rate_str     += f" {sig} {bkg} "
+
+    divider = "-------------------------------------------"
+
+    # Build up the card
+    out_str = ""
+    out_str = out_str +  "\nimax *  number of channels"
+    out_str = out_str +  "\njmax *  number of backgrounds"
+    out_str = out_str +  "\nkmax *  number of nuisance parameters (sources of systematic uncertainties"
+    out_str = out_str + f"\n{divider}"
+    out_str = out_str + f"\nbin {obsblock_binname_str}"
+    out_str = out_str + f"\nobservation {obsblock_obs_str}"
+    out_str = out_str + f"\n{divider}"
+    out_str = out_str + f"\nbin       {expblock_binname_str}"
+    out_str = out_str + f"\nprocess   {expblock_procname_str}"
+    out_str = out_str + f"\nprocess   {expblock_procnum_str}"
+    out_str = out_str + f"\nrate      {expblock_rate_str}"
+    out_str = out_str +  "\n"
+
+    # Dump to screen
+    print(out_str)
+
+    text_file = open(f"dc_{out_name}.txt", "w")
+    text_file.write(out_str)
+    text_file.close()
+
 
 ##############################################################
 ### Wrapper functions for each of the main functionalities ###
@@ -458,7 +714,10 @@ def dump_json_simple(histo_dict,out_name="vvh_yields_simple"):
     for proc_name in histo_dict[hist_to_use].axes["process"]:
         out_dict[proc_name] = {}
         for cat_name in cats_to_check:
-            yld = sum(sum(histo_dict[hist_to_use][{"systematic":"nominal", "category":cat_name}].values(flow=True)))
+            if "lepflav" in histo_dict[hist_to_use].axes.name:
+                yld = sum(sum(histo_dict[hist_to_use][{"systematic":"nominal", "category":cat_name, "lepflav":sum}].values(flow=True)))
+            else:
+                yld = sum(sum(histo_dict[hist_to_use][{"systematic":"nominal", "category":cat_name}].values(flow=True)))
             out_dict[proc_name][cat_name] = [yld,None]
 
     # Dump counts dict to json
@@ -467,18 +726,65 @@ def dump_json_simple(histo_dict,out_name="vvh_yields_simple"):
     print(f"\nSaved json file: {output_name}\n")
 
 
-
-### Get the sig and bkg yields and print or dump to json ###
-def print_yields(histo_dict,grp_dict,years_to_prepend,roundat=None,print_counts=False,dump_to_json=True,quiet=False,out_name="yields"):
+### Dump a latex table of the yields
+def print_latex_yields(histo_dict,grp_dict, tag="Yields", lepflav=None, print_begin_info=True,print_end_info=True):
 
     # Get ahold of the yields
-    yld_dict    = get_yields_per_cat(histo_dict,"njets",grp_dict,years_to_prepend)
-    counts_dict = get_yields_per_cat(histo_dict,"njets_counts",grp_dict,years_to_prepend)
+    yld_dict = get_yields_per_cat(histo_dict,"njets",grp_dict,None, lepflav_bin=lepflav)
+
+    group_lst_order = ['Signal', 'VBSWWH_SS', 'VBSWWH_OS', 'VBSWZH', 'VBSZZH', 'Background', 'QCD', 'DY', 'ttbar', 'single-t', 'rare-top', 'ttX', 'Vjets', 'VV', 'ewkV', 'ewkVV', 'VH', 'VVV', 'Data', 'Data/MC', 'metricX100'] # R2
+    #group_lst_order = ["Signal", "Background", "QCD", "ttbar", "single-t", "rare-top", "ttX", "Vjets", "VV", "DY", "ewkVV", "VH", "VVV","Data"] # R3
+
+    mlt.print_latex_yield_table(
+        yld_dict,
+        subkey_order=group_lst_order,
+        print_begin_info=print_begin_info,
+        print_end_info=print_end_info,
+        column_variable="keys",
+        print_errs=True,
+        tag=tag,
+        hz_line_lst=[0,4,5,17,18,19],
+        size="tiny",
+    )
+
+### Dump into datacard format
+def dump_datacard(histo_dict,grp_dict,card_name):
+    ##lepflav_lst = histo_dict["njets"].axes.name
+
+    # Build up a yield dict for each non-zero lep combination
+    yld_dict = {}
+    lepflav_lst = plt_tools.get_axis_cats(histo_dict["njets"],"lepflav")
+    for lepflav in lepflav_lst:
+        yld_dict_flav = get_yields_per_cat(histo_dict,"njets",grp_dict,None, lepflav_bin=lepflav)
+        for cat in yld_dict_flav:
+            #if cat != "2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0": continue
+            if yld_dict_flav[cat]["Signal"][0] == 0: continue
+            yld_dict[f"{cat}_{lepflav}"] = yld_dict_flav[cat]
+
+    # Get just the info we need for card
+    yld_dict_for_card = {}
+    for cat in yld_dict:
+        catname_for_card = f"bin_{cat}"
+        yld_dict_for_card[catname_for_card] = {}
+        sig = yld_dict[cat]["Signal"][0]
+        bkg = yld_dict[cat]["Background"][0]
+        yld_dict_for_card[catname_for_card]["sig"] = sig
+        yld_dict_for_card[catname_for_card]["bkg"] = bkg
+
+    make_card(yld_dict_for_card,card_name)
+
+
+
+### Get the sig and bkg yields and print or dump to json ###
+def print_yields(histo_dict,grp_dict,cat_lst,years_to_prepend,roundat=None,print_counts=False,dump_to_json=True,quiet=False,out_name="yields", lepflavbin=None):
+
+    # Get ahold of the yields
+    yld_dict = get_yields_per_cat(histo_dict,"njets",grp_dict,years_to_prepend, cat_lst, lepflavbin)
+    #counts_dict = get_yields_per_cat(histo_dict,"njets_counts",grp_dict,years_to_prepend)
     #yld_dict = counts_dict
 
-    group_lst_order = ['Signal', 'Background', 'QCD', 'ttbar', 'single-t', 'rare-top', 'ttX', 'Vjets', 'VV', 'ewkV', 'ewkVV', 'VH', 'VVV', 'Data']
-    #group_lst_order = ['Signal', 'Background', 'ttbar', 'VV', 'Vjets', 'QCD', 'single-t', 'ttX', 'VH', 'VVV']
-    #group_lst_order = ['WWH_OS', 'WWH_SS', 'WZH', 'ZZH', 'Background', 'ttbar', 'VV', 'Vjets', 'QCD', 'single-t', 'ttX', 'VH', 'VVV']
+    group_lst_order = ['Signal', 'VBSWWH_SS', 'VBSWWH_OS', 'VBSWZH', 'VBSZZH', 'Background', 'QCD', 'DY', 'ttbar', 'single-t', 'rare-top', 'ttX', 'Vjets', 'VV', 'ewkV', 'ewkVV', 'VH', 'VVV', 'Data', 'Data/MC', 'metricX100'] # R2
+    #group_lst_order = ["Signal", "Background", "QCD", "ttbar", "single-t", "rare-top", "ttX", "Vjets", "VV", "DY", "ewkVV", "VH", "VVV","Data"] # R3
 
     # Print to screen
     if not quiet:
@@ -491,6 +797,8 @@ def print_yields(histo_dict,grp_dict,years_to_prepend,roundat=None,print_counts=
                 #if group_name not in ["Signal","Background"]: continue
                 if group_name not in ["Signal","Background","Data"]: continue
                 if group_name == "metric": continue
+                if group_name == "metricX100": continue
+                if group_name == "Data/MC": continue
                 yld, err = yld_dict[cat][group_name]
                 perr = 100*(err/yld)
                 print(f"    {group_name}:  {np.round(yld,roundat)} +- {np.round(perr,2)}%")
@@ -516,9 +824,12 @@ def print_yields(histo_dict,grp_dict,years_to_prepend,roundat=None,print_counts=
             for group_name in group_lst_order:
                 if group_name == "metric": continue
                 yld, err = yld_dict[cat][group_name]
-                perr = 100*(err/yld)
-                #line_str = line_str + f" , {np.round(yld,roundat)} ± {np.round(perr,2)}%"
-                line_str = line_str + f" , {np.round(yld,roundat)} , ± , {np.round(err,roundat)}"
+                if err is not None:
+                    perr = 100*(err/yld)
+                    #line_str = line_str + f" , {np.round(yld,roundat)} ± {np.round(perr,2)}%"
+                    line_str = line_str + f" , {np.round(yld,roundat)} , ± , {np.round(err,roundat)}"
+                else:
+                    line_str = line_str + f" , {np.round(yld,roundat)} , ± , None"
             # And also append the metric
             metric = yld_dict[cat]["metric"][0]
             line_str = line_str + f" , {np.round(metric,3)}"
@@ -530,6 +841,7 @@ def print_yields(histo_dict,grp_dict,years_to_prepend,roundat=None,print_counts=
         print(out_str)
 
 
+    '''
     # Dump directly to json
     if dump_to_json:
         out_dict = {"yields":yld_dict, "counts":counts_dict}
@@ -538,14 +850,13 @@ def print_yields(histo_dict,grp_dict,years_to_prepend,roundat=None,print_counts=
         if not quiet:
             print("\n\n--- Yields json formatted ---")
             print(f"\nSaved json file: {output_name}\n")
+    '''
 
 
 
 
 ### Make the plots ###
-def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend):
-
-    #cat_lst = ["exactly1lep_exactly1fj", "exactly1lep_exactly1fj550", "exactly1lep_exactly1fj550_2j", "exactly1lep_exactly1fj_2j"]
+def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend,cat_lst,lepflav_bin=None):
 
     #grouping_dict = append_years(grp_dict,year_name_lst_to_prepend) # For fromnano
     grouping_dict = copy.deepcopy(grp_dict)
@@ -558,11 +869,7 @@ def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend):
         if grp_name not in ["Data", "Signal"]:
             sample_group_names_lst_bkg.append(grp_name)
 
-    cat_lst = CAT_LST
     var_lst = histo_dict.keys()
-    #cat_lst = ["exactly1lep_exactly1fj_STmet1000"]
-    #var_lst = ["scalarptsum_lepmet"]
-
 
     for cat in cat_lst:
         print("\nCat:",cat)
@@ -570,9 +877,20 @@ def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend):
             print("\nVar:",var)
             if "fj1" in var: continue
             #if var not in ["njets","njets_counts","scalarptsum_lepmet"]: continue # TMP
-            if "truth" in var: continue
+            #if "truth" in var: continue
 
-            histo = copy.deepcopy(histo_dict[var][{"systematic":"nominal", "category":cat}])
+            # Skip empty
+            if len(histo_dict[var].values()) == 0: continue
+
+            # Get the hist for the given categroy
+            if lepflav_bin is None:
+                histo = copy.deepcopy(histo_dict[var][{"systematic":"nominal", "category":cat}])
+            elif lepflav_bin == "all":
+                histo = copy.deepcopy(histo_dict[var][{"systematic":"nominal", "category":cat, "lepflav":sum}])
+            elif isinstance(lepflav_bin,int):
+                histo = copy.deepcopy(histo_dict[var][{"systematic":"nominal", "category":cat, "lepflav":lepflav_bin}])
+            else:
+                raise Exception(f"Unknown lep flav handling: {lepflav_bin}")
 
             # Clean up a bit (rebin, regroup, and handle overflow)
             if var not in ["njets","nleps","nbtagsl","nbtagsm","njets_counts","nleps_counts","nfatjets","njets_forward","njets_tot","n_ll_sfos","abs_ch_sum_3l","l0_truth","l1_truth","l2_truth", "nlep_truth_real", "nlep_truth_fake", "abs_pdgid_sum"]:
@@ -583,8 +901,8 @@ def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend):
 
             histo_mc  = histo[{"process_grp":sample_group_names_lst_mc}]
             histo_sig = histo[{"process_grp":["Signal"]}]
-            histo_dat = histo[{"process_grp":["Data"]}]
-            #histo_dat = None
+            #histo_dat = histo[{"process_grp":["Data"]}]
+            histo_dat = None
             histo_bkg = plt_tools.group(histo,"process_grp","process_grp",{"Background": sample_group_names_lst_bkg})
 
             # Make the figure
@@ -617,16 +935,28 @@ def main():
     parser.add_argument('-y', "--get-yields", action='store_true', help = "Get yields from the pkl file")
     parser.add_argument('-p', "--make-plots", action='store_true', help = "Make plots from the pkl file")
     parser.add_argument('-j', "--dump-json", action='store_true', help = "Dump some yield numbers into a json file")
+    parser.add_argument('-d', "--datacard", action='store_true', help = "Dump yields into datacard")
     parser.add_argument('-o', "--output-name", default='vvh', help = "What to name the outputs")
     parser.add_argument('-r', "--run", default='r2', help = "Which year")
+    parser.add_argument('-c', "--channel", default='3l', help = "Which channel", choices=["2l","3l"])
     args = parser.parse_args()
+
+    if args.channel == "2l":
+        cat_lst = CAT_LST_2l
+    elif args.channel == "3l":
+        cat_lst = CAT_LST_3l
 
     # Get the dictionary of histograms from the input pkl file
     histo_dict = pickle.load(gzip.open(args.pkl_file_path))
+    name = args.pkl_file_path.split("/")[1][:-7] # Drops leading histos/ and trailing .pkl.gz
 
     # Print total raw events
-    tot_raw = sum(sum(histo_dict["njets_counts"][{"systematic":"nominal", "category":"all_events"}].values(flow=True)))
-    print("Tot raw events:",tot_raw)
+    #print(sum(histo_dict["njets_counts"][{"systematic":"nominal", "category":"all_events", "process":sum, "lepflav":sum}].values(flow=True)))
+    #print(histo_dict["njets"])
+    #tot = histo_dict["njets"][{"systematic":"nominal", "category":"2lOSSF_1fjx", "process":sum, "njets":sum, "lepflav":22}]
+    #tot = sum(sum(histo_dict["njets"][{"systematic":"nominal", "category":"3l"}].values(flow=True)))
+    #tot = sum(sum(histo_dict["njets"][{"systematic":"nominal", "category":"2lOSSF_1fjx"}].values(flow=True)))
+    #print("Events:",tot)
     #exit()
 
     # Figure out the proc naming convention
@@ -634,6 +964,8 @@ def main():
     proc_name = plt_tools.get_axis_cats(histo_dict["njets"],"process")[0]
     if args.run == "r2":
         grp_dict = GRP_DICT_FULL_R2
+        if args.channel == "3l":
+            grp_dict.pop("QCD") # We don't have QCD in Run 2 3l skims
         if proc_name.startswith("UL"):
             years_to_prepend = ["UL16APV","UL16","UL17","UL18"] # Looks like TOP-22-006 convention
         else: years_to_prepend = ["2016postVFP","2016preVFP","2017","2018"] # Otherwise from RDF convention
@@ -647,9 +979,13 @@ def main():
     if args.dump_json:
         dump_json_simple(histo_dict,args.output_name)
     if args.get_yields:
-        print_yields(histo_dict,grp_dict,years_to_prepend,out_name=args.output_name+"_yields_sig_bkg",roundat=4,print_counts=False,dump_to_json=True)
+        print_yields(histo_dict,grp_dict,cat_lst,years_to_prepend,out_name=args.output_name+"_yields_sig_bkg",roundat=4,print_counts=False,dump_to_json=True, lepflavbin="all")
+        #print_latex_yields(histo_dict,grp_dict, lepflav="all", tag="2l, all flav")
+    if args.datacard:
+        dump_datacard(histo_dict,grp_dict,name)
     if args.make_plots:
-        make_plots(histo_dict,grp_dict,years_to_prepend)
+        make_plots(histo_dict,grp_dict,years_to_prepend,cat_lst,lepflav_bin="all")
+
 
 
 if __name__ == '__main__':

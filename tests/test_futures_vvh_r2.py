@@ -8,13 +8,13 @@ def test_ewkcoffea_vvh():
         "analysis/vbs_vvh/run_analysis.py",
         "-x",
         "futures",
-        "input_samples/sample_jsons/test_samples/UL16APV_WWHSS_forCI.json",
+        "input_samples/sample_jsons/test_samples/WZH_ForCI.json",
         "-o",
         "output_check_yields",
         "--outpath",
         "analysis/vbs_vvh/histos/",
         "-p",
-        "semilep_nano",
+        "semilep",
     ]
 
     # Run ewkcoffea

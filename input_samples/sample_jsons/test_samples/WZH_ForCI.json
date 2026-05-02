@@ -1,0 +1,17 @@
+{
+    "xsec": -999,
+    "year": "",
+    "treeName": "Events",
+    "histAxisName": "",
+    "options": "",
+    "WCnames": [],
+    "nEvents": -999,
+    "nGenEvents": -999,
+    "nSumOfWeights": -999,
+    "isData": false,
+    "path": "",
+    "nSumOfLheWeights": [],
+    "files": [
+        "output_0.root"
+    ]
+}
