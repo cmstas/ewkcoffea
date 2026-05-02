@@ -17,21 +17,28 @@ Now we can install the `ewkcoffea` package into our new conda environment. This 
 ```
 pip install -e .
 ```
-Two of the packages the WWZ analysis depends on are not conda installed (i.e. they were not included in the `environment.yml` where most of the dependencies were specified), so we can go ahead and install those into our new `conda` environment via `pip`. 
-```
-pip install xgboost
-pip install mt2
-```
-The `topcoffea` package upon which this analysis also depends is not yet available on `PyPI`, so we need to clone the `topcoffea` repo and install it ourselves.
+The analysis also depends on the `topcoffea` package, so clone and install it: 
 ```
 cd /your/favorite/directory
 git clone https://github.com/TopEFT/topcoffea.git
 cd topcoffea
 pip install -e .  
 ```
+The analysis also depends on a modified version of `coffea` (to adjust the nanoAOD schema), so clone and install it: 
+```
+cd /your/favorite/directory
+git clone -b nano_schema_patch https://github.com/kmohrman/coffea.git
+cd coffea
+pip install -e .  
+```
 Now all of the dependencies have been installed and the `ewkcoffea` repository is ready to be used. The next time you want to use it, all you have to do is to activate the environment via `conda activate coffea-env`. 
 
 ## For the WWZ analysis
+
+One of the packages the WWZ analysis depends on is not conda installed (i.e. they were not included in the `environment.yml` where most of the dependencies were specified), so we can go ahead and install those into our new `conda` environment via `pip`. 
+```
+pip install mt2
+```
 
 ### Learning how to run the processor 
 
@@ -73,23 +80,22 @@ Please see the [FITTING.md]() readme.
 
 ## For the VBS VVH analysis
 
-First `cd` to the directory for this analysis:
+First `cd` to the directory for this analysis (assuming you are starting from the top level ewkcoffea directory):
 ```
 cd analysis/vbs_vvh/
 ```
-The main processor is the `analysis_processor.py` file. This can be run with the `run_analysis.py` script. The command line argument can be a json file (that points to the root files you wish to process) or a config file (that lists a set of json files). 
+The main processor is the `analysis_processor_semilep.py` file. This can be run with the `run_analysis.py` script. The command line argument can be a json file (that points to the root files you wish to process) or a config file (that lists a set of json files). 
 
-For example, to run a small test over a single file:
+For example, to run a test run over a single file:
 ```
-wget -nc http://uaf-10.t2.ucsd.edu/~mdittric/for_ci/for_wwz/WWZJetsTo4L2Nu_4F_TuneCP5_13TeV-amcatnlo-pythia8_RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v2_NANOAODSIM_WWZ_MC_2024_0811/output_2.root
-python run_analysis.py ../../input_samples/sample_jsons/test_samples/UL17_WWZJetsTo4L2Nu_forCI.json -x iterative -o vvh_test
+wget -nc http://uaf-10.t2.ucsd.edu/~kmohrman/large_files_no_backup/for_ci/vvh/apr26_2026/output_0.root
+time python run_analysis.py ../../input_samples/sample_jsons/test_samples/WZH_ForCI.json -x iterative -o new_ref_histos -p semilep
 ```
-To run at scale over Full Run 2 samples (note this assumes the site is UAF, because the paths to the root files are specific to UAF):
+To run at scale over Full Run 2 samples, the `run_wrapper.sh` script contains examples, so uncomment the one you would like and then run:
 ```
-python run_analysis.py input_cfg_r2.cfg -x futures -n 64 -o vvh_hists
+sh run_wrapper.sh
 ```
-This should take ~5-10 minutes with 64 cores (`-n 64`). The output is a pickle file containing a dictionary of histograms for all of the categories specified in the processor. 
-Next, run the `check_vvh_hists.py` script to print yields (`-y`) or make plots (`-p`) of the output histograms (note, this script generally assumes signals and backgrounds are included). E.g.:
+This should take ~5-30 minutes with 64 cores (`-n 64`), depending on how many histograms you fill (use `--hist-list` to specify a subset, or leave this option off to fill all). The output is a pickle file containing a dictionary of histograms for all of the categories specified in the processor. To explore yields or plots, run the `check_vvh_hists.py` script to print yields (`-y`) or make plots (`-p`) of the output histograms (note, this script generally assumes signals and backgrounds are included). E.g.:
 ```
-python check_vvh_hists.py histos/vvh_hists.pkl.gz -y
+python check_vvh_hists.py histos/vvh_3l.pkl.gz -y
 ```
