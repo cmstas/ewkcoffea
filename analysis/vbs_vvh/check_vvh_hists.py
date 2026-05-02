@@ -901,8 +901,8 @@ def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend,cat_lst,lepflav_bin=
 
             histo_mc  = histo[{"process_grp":sample_group_names_lst_mc}]
             histo_sig = histo[{"process_grp":["Signal"]}]
-            histo_dat = histo[{"process_grp":["Data"]}]
-            #histo_dat = None
+            #histo_dat = histo[{"process_grp":["Data"]}]
+            histo_dat = None
             histo_bkg = plt_tools.group(histo,"process_grp","process_grp",{"Background": sample_group_names_lst_bkg})
 
             # Make the figure
