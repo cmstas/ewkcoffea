@@ -252,21 +252,12 @@ class AnalysisProcessor(processor.ProcessorABC):
 
         ################### Lepton selection ####################
 
-        # Apply e and m ID cuts on top of RDF object cuts
-        if self._ele_cutBased_val is not None:
-            if self._ele_cutBased_val == 80:
-                ele = ele[ele.mvaIso_WP80]
-            elif self._ele_cutBased_val == 90:
-                ele = ele[ele.mvaIso_WP90]
-            elif self._ele_cutBased_val in [2,3,4]:
-                ele = ele[ele.cutBased >= self._ele_cutBased_val]
-            else:
-                raise Exception("Unknown value")
-        if self._mu_pfIsoId_val is not None:
-            if self._mu_pfIsoId_val in [3,4,5]:
-                mu = mu[mu.pfIsoId >= self._mu_pfIsoId_val]
-            else:
-                raise Exception("Unknown value")
+        # RDF writes out loosest selection (veto for e, loose for m), which is what we veto on
+        n_lep_veto = ak.num(ele) + ak.num(mu)
+
+        # We will use loose e and medium m for analysis, be sure to convert the 0 and 1 in the array to T and F before using as a mask
+        ele = ele[ak.values_astype(ele.isLoose,bool)]
+        mu  = mu[ak.values_astype(mu.isMedium,bool)]
 
         # Get tight leptons for VVH selection, using mask from RDF
         l_vvh_t = ak.with_name(ak.concatenate([ele,mu],axis=1),'PtEtaPhiMCandidate')
@@ -680,8 +671,8 @@ class AnalysisProcessor(processor.ProcessorABC):
         is_os = l0.pdgId*l1.pdgId<0
         is_sf = abs(l0.pdgId) == abs(l1.pdgId)
 
-        is_2l = (nleps==2) & (l0.pt>25) & (l1.pt>15)
-        is_3l = (nleps==3) & (l0.pt>25) & (l1.pt>15) & (l2.pt>10)
+        is_2l = (n_lep_veto==2) & (nleps==2) & (l0.pt>25) & (l1.pt>15)
+        is_3l = (n_lep_veto==3) & (nleps==3) & (l0.pt>25) & (l1.pt>15) & (l2.pt>10)
         #is_2l_mll12 = is_2l & (mll_min_afos>12)
         is_3l_mll12 = is_3l & (mll_min_afos>12)
 
