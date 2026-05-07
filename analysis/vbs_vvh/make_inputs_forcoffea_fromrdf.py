@@ -44,19 +44,21 @@ def make_json(path,name):
         "files": files_lst,
     }
 
-    with open(f"input_forcoffea_fromrdf/{name}.json", "w") as fp:
+    with open(f"input_jsons/{name}.json", "w") as fp:
         json.dump(out_dict, fp, indent=4)
 
 
 def main():
 
-    name = "input_2l1fj"
-    path = "/ceph/cms/store/user/kmohrman/vbsvvh/preselection/merged_2lep_1FJ_r2_20260422112528_2lep_1FJ"
+    files = {
+        "input_2l1fj" : "/ceph/cms/store/user/kmohrman/vbsvvh/preselection/merged_2lep_1FJ_r2_20260505160823_2lep_1FJ",
+        "input_3l"    : "/ceph/cms/store/user/kmohrman/vbsvvh/preselection/merged_3lep_r2_20260505160723_3lep",
+        "input_2l1fj" : "/ceph/cms/store/user/kmohrman/vbsvvh/preselection/merged_2lep_1FJ_r3_20260505161059_2lep_1FJ",
+        "input_3l"    : "/ceph/cms/store/user/kmohrman/vbsvvh/preselection/merged_3lep_r3_20260505160942_3lep",
+    }
 
-    #name = "input_3l"
-    #path = "/ceph/cms/store/user/kmohrman/vbsvvh/preselection/merged_3lep_r2_20260422112433_3lep"
-
-    make_json(path,name)
+    for name, path in files.items():
+        make_json(path,name)
 
 
 main()
