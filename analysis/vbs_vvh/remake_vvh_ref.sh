@@ -3,7 +3,7 @@
 
 # Get the file the CI uses, and move it to the directory the JSON expects
 printf "\nDownloading root file...\n"
-wget -nc http://uaf-10.t2.ucsd.edu/~kmohrman/large_files_no_backup/for_ci/vvh/apr26_2026/output_0.root
+wget -nc http://uaf-10.t2.ucsd.edu/~kmohrman/large_files_no_backup/for_ci/vvh/may06_2026_3l_wzh_ul17/output_0.root
 
 # Run the processor
 printf "\nRunning the processor...\n"
