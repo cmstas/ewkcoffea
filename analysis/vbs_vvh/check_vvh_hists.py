@@ -81,6 +81,10 @@ GRP_DICT_FULL_R3 = {
         #"VBSWZH_c2v1p5_c3_1p0",
         #"VBSZZH_c2v1p5_c3_1p0",
     ],
+    "VBSWWH_SS": ["VBSWWH_SS_c2v1p0_c3_1p0"],
+    "VBSWWH_OS": ["VBSWWH_OS_c2v1p0_c3_1p0"],
+    "VBSWZH": ["VBSWZH_c2v1p0_c3_1p0"],
+    "VBSZZH": ["VBSZZH_c2v1p0_c3_1p0"],
     "Data":[
         "Muon",
         "MuonEG",
@@ -710,7 +714,8 @@ def check_rwgt(histo_dict):
 def dump_json_simple(histo_dict,out_name="vvh_yields_simple"):
     out_dict = {}
     hist_to_use = "njets"
-    cats_to_check = ["all_events", "2lOSSF_1fjx", "3l"]
+    #cats_to_check = ["all_events", "2lOSSF_1fjx", "3l"]
+    cats_to_check = ["all_events", "3l"]
     for proc_name in histo_dict[hist_to_use].axes["process"]:
         out_dict[proc_name] = {}
         for cat_name in cats_to_check:
@@ -783,8 +788,12 @@ def print_yields(histo_dict,grp_dict,cat_lst,years_to_prepend,roundat=None,print
     #counts_dict = get_yields_per_cat(histo_dict,"njets_counts",grp_dict,years_to_prepend)
     #yld_dict = counts_dict
 
-    group_lst_order = ['Signal', 'VBSWWH_SS', 'VBSWWH_OS', 'VBSWZH', 'VBSZZH', 'Background', 'QCD', 'DY', 'ttbar', 'single-t', 'rare-top', 'ttX', 'Vjets', 'VV', 'ewkV', 'ewkVV', 'VH', 'VVV', 'Data', 'Data/MC', 'metricX100'] # R2
-    #group_lst_order = ["Signal", "Background", "QCD", "ttbar", "single-t", "rare-top", "ttX", "Vjets", "VV", "DY", "ewkVV", "VH", "VVV","Data"] # R3
+    #group_lst_order = ['Signal', 'VBSWWH_SS', 'VBSWWH_OS', 'VBSWZH', 'VBSZZH', 'Background', 'QCD', 'DY', 'ttbar', 'single-t', 'rare-top', 'ttX', 'Vjets', 'VV', 'ewkV', 'ewkVV', 'VH', 'VVV', 'Data', 'Data/MC', 'metricX100'] # R2
+    #group_lst_order = ["Signal", "Background", "VBSWWH_SS", "VBSWWH_OS", "VBSWZH", "VBSZZH", "Data", "QCD", "ttbar", "single-t", "ttX", "rare-top", "Vjets", "DY", "VV", "ewkVV", "VH", "VVV",] #R3 (commented ggHtoZZ ggVV)
+
+    # Assume all cats have same keys
+    first_key = list(yld_dict.keys())[0]
+    group_lst_order = yld_dict[first_key].keys()
 
     # Print to screen
     if not quiet:
@@ -801,13 +810,14 @@ def print_yields(histo_dict,grp_dict,cat_lst,years_to_prepend,roundat=None,print
                 if group_name == "Data/MC": continue
                 yld, err = yld_dict[cat][group_name]
                 perr = 100*(err/yld)
-                print(f"    {group_name}:  {np.round(yld,roundat)} +- {np.round(perr,2)}%")
+                print(f"    {group_name}:  {np.round(yld,roundat)} +- {np.round(err,2)}")
+                #print(f"    {group_name}:  {np.round(yld,roundat)} +- {np.round(perr,2)}%")
             #print(f"    -> Metric: {np.round(yld_dict[cat]['metric'][0],3)}")
             #print(f"    -> For copy pasting: python dump_toy_card.py {yld_dict[cat]['Signal'][0]} {yld_dict[cat]['Background'][0]}")
         #exit()
 
 
-        ### Print csv, build op as an out string ###
+        ### Print csv, build up as an out string ###
 
         # Append the header
         out_str = ""
