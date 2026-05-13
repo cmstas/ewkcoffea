@@ -51,10 +51,10 @@ def make_json(path,name):
 def main():
 
     files = {
-        "input_2l1fj" : "/ceph/cms/store/user/kmohrman/vbsvvh/preselection/merged_2lep_1FJ_r2_20260505160823_2lep_1FJ",
-        "input_3l"    : "/ceph/cms/store/user/kmohrman/vbsvvh/preselection/merged_3lep_r2_20260505160723_3lep",
-        "input_2l1fj" : "/ceph/cms/store/user/kmohrman/vbsvvh/preselection/merged_2lep_1FJ_r3_20260505161059_2lep_1FJ",
-        "input_3l"    : "/ceph/cms/store/user/kmohrman/vbsvvh/preselection/merged_3lep_r3_20260505160942_3lep",
+        "input_2l1fj_r2" : "/ceph/cms/store/user/kmohrman/vbsvvh/preselection/merged_2lep_1FJ_r2_20260505160823_2lep_1FJ",
+        "input_3l_r2"    : "/ceph/cms/store/user/kmohrman/vbsvvh/preselection/merged_3lep_r2_20260505160723_3lep",
+        "input_2l1fj_r3" : "/ceph/cms/store/user/kmohrman/vbsvvh/preselection/merged_2lep_1FJ_r3_20260505161059_2lep_1FJ",
+        "input_3l_r3"    : "/ceph/cms/store/user/kmohrman/vbsvvh/preselection/merged_3lep_r3_20260505160942_3lep",
     }
 
     for name, path in files.items():
