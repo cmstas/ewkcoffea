@@ -195,6 +195,8 @@ class AnalysisProcessor(processor.ProcessorABC):
             "nlep_truth_real"   : axis.Regular(5, 0, 5, name="nlep_truth_real",   label="Lep (truth, real) multiplicity"),
             "nlep_truth_fake"   : axis.Regular(5, 0, 5, name="nlep_truth_fake",   label="Lep (truth, fake) multiplicity"),
 
+            "dnn_score"   : axis.Regular(180, 0, 1, name="dnn_score",   label="DNN score from ABCDnet"),
+
         }
 
         # Add histograms to dictionary that will be passed on to dict_accumulator
@@ -294,41 +296,49 @@ class AnalysisProcessor(processor.ProcessorABC):
         """Build feature matrix and return DNN scores for events passing mask."""
         if not hasattr(self, '_model') or self._model is None:
             self._load_model()
+        if not hasattr(self, '_scaler_params'):
+            import json
+            scaler_path = "/home/users/kmohrman/vbs_vvh/rdf_repo/run3-vbsvvh/abcd/2l1FJ_NEW_RUN2/scaler_params_v4.json"
+            with open(scaler_path) as f:
+                self._scaler_params = json.load(f)
 
-        # Pull out the variables — these match your config's training_features order
-        # NOTE: scaling is wrong here until you save/load the fitted scalers
-        fj0  = ak.pad_none(events.fatjet[ak.argsort(events.fatjet.pt, axis=-1, ascending=False)], 1)[:,0]
-        l    = ak.pad_none(events.l_vvh_t, 2)  # assumes you've set events["l_vvh_t"] already
+        def scale(name, values):
+            params = self._scaler_params[name]
+            arr = np.array(values, dtype=np.float64)
+            if params["transform"] == "log":
+                arr = np.log(np.clip(arr, 1e-9, None))
+            lo, hi = params["min"], params["max"]
+            denom = hi - lo
+            if denom > 0:
+                arr = (arr - lo) / denom
+            return np.clip(arr, 0.0, 1.0).astype(np.float32)
 
-        features = {
-            "fj0_eta"  : ak.fill_none(fj0.eta,   0.0)[mask],
-            "fj0_phi"  : ak.fill_none(fj0.phi,   0.0)[mask],
-            "fj0_pt"   : np.log(np.clip(ak.to_numpy(ak.fill_none(fj0.pt, 1.0)[mask]), 1.0, None)),
-            "l0_eta"   : ak.fill_none(l[:,0].eta, 0.0)[mask],
-            "l0_phi"   : ak.fill_none(l[:,0].phi, 0.0)[mask],
-            "l0_pt"    : np.log(np.clip(ak.to_numpy(ak.fill_none(l[:,0].pt, 1.0)[mask]), 1.0, None)),
-            "l1_eta"   : ak.fill_none(l[:,1].eta, 0.0)[mask],
-            "l1_phi"   : ak.fill_none(l[:,1].phi, 0.0)[mask],
-            "l1_pt"    : np.log(np.clip(ak.to_numpy(ak.fill_none(l[:,1].pt, 1.0)[mask]), 1.0, None)),
-            "met"      : np.log(np.clip(ak.to_numpy(events.met.pt[mask]), 1.0, None)),
-            "nbtagsl"  : ak.to_numpy(ak.num(events.jet[events.jet.isLooseBTag][mask])),
-            "njets"    : ak.to_numpy(ak.num(events.jet[abs(events.jet.eta) <= 2.4][mask])),
-        }
+        fj0 = ak.pad_none(events.fatjet[ak.argsort(events.fatjet.pt, axis=-1, ascending=False)], 1)[:,0]
+        l   = ak.pad_none(events.l_vvh_t, 2)
 
         feature_matrix = np.column_stack([
-            ak.to_numpy(ak.Array(v)) if not isinstance(v, np.ndarray) else v
-            for v in features.values()
-        ]).astype(np.float32)
+            scale("fj0_eta",  ak.to_numpy(ak.fill_none(fj0.eta,   0.0)[mask])),
+            scale("fj0_phi",  ak.to_numpy(ak.fill_none(fj0.phi,   0.0)[mask])),
+            scale("fj0_pt",   ak.to_numpy(ak.fill_none(fj0.pt,    1.0)[mask])),
+            scale("l0_eta",   ak.to_numpy(ak.fill_none(l[:,0].eta, 0.0)[mask])),
+            scale("l0_phi",   ak.to_numpy(ak.fill_none(l[:,0].phi, 0.0)[mask])),
+            scale("l0_pt",    ak.to_numpy(ak.fill_none(l[:,0].pt,  1.0)[mask])),
+            scale("l1_eta",   ak.to_numpy(ak.fill_none(l[:,1].eta, 0.0)[mask])),
+            scale("l1_phi",   ak.to_numpy(ak.fill_none(l[:,1].phi, 0.0)[mask])),
+            scale("l1_pt",    ak.to_numpy(ak.fill_none(l[:,1].pt,  1.0)[mask])),
+            scale("met",      ak.to_numpy(events.met.pt[mask])),
+            scale("nbtagsl",  ak.to_numpy(ak.num(events.jet[events.jet.isLooseBTag][mask]))),
+            scale("njets",    ak.to_numpy(ak.num(events.jet[abs(events.jet.eta) <= 2.4][mask]))),
+        ])
 
         features_tensor = torch.from_numpy(feature_matrix).to(self._device)
-
         with torch.no_grad():
             logits = self._model(features_tensor)
             if logits.ndim == 1:
                 logits = logits.unsqueeze(-1)
             scores = torch.sigmoid(logits).cpu().numpy()[:, 0]
-
         return scores
+
     #################################################################################
 
     # Main function: run on a given dataset
@@ -896,9 +906,9 @@ class AnalysisProcessor(processor.ProcessorABC):
             #)
 
         # For ABCDnet evaluations
-        sr_mask = selections.all("2lOSSF_1fjx_2j_mjj100")
-        dnn_scores = self._run_abcd_inference(events, sr_mask)
-        print("dnn_scores",dnn_scores)
+        #sr_mask = selections.all("2lOSSF_1fjx_2j_mjj100")
+        dnn_score = self._run_abcd_inference(events, pass_through)
+        dense_variables_dict["dnn_score"] = dnn_score
 
 
         ######### Fill histos #########
