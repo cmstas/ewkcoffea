@@ -11,6 +11,11 @@ from coffea.analysis_tools import PackedSelection
 import ewkcoffea.modules.objects_wwz as os_ec
 #import ewkcoffea.modules.selection_wwz as es_ec
 
+import torch
+torch.set_num_threads(1)
+from model import ABCDLightningModule
+
+
 import warnings
 warnings.filterwarnings(
     "ignore",
@@ -35,6 +40,10 @@ class AnalysisProcessor(processor.ProcessorABC):
         self._samples = samples
         self._wc_names_lst = wc_names_lst
         self._dtype = dtype
+
+        # For ABCDnet evaluations
+        self._checkpoint_path = "/home/users/kmohrman/vbs_vvh/rdf_repo/run3-vbsvvh/abcd/2l1FJ_NEW_RUN2/single/version_3/checkpoints/single-abcdisco-epoch=999-val_loss=0.4857.ckpt"
+        self._model = None
 
         # Create the dense axes for the histograms
         self._dense_axes_dict = {
@@ -257,6 +266,70 @@ class AnalysisProcessor(processor.ProcessorABC):
     @property
     def columns(self):
         return self._columns
+
+    #################################################################################
+    ### For ABCDnet evaluations ###
+    def _load_model(self):
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self._device = device
+        self._model = ABCDLightningModule(
+            input_size=12,
+            hidden_layers=[64, 32, 16],
+            learning_rate=1e-4,
+            bce_weight=1.0,
+            disco_lambda=10.0,
+            flavor="single",
+            use_batchnorm=True,
+            dropout=0.2,
+        )
+        ckpt = torch.load(self._checkpoint_path, map_location=device)
+        if "state_dict" in ckpt:
+            self._model.load_state_dict(ckpt["state_dict"], strict=True)
+        else:
+            self._model.load_state_dict(ckpt, strict=True)
+        self._model.to(device)
+        self._model.eval()
+
+    def _run_abcd_inference(self, events, mask):
+        """Build feature matrix and return DNN scores for events passing mask."""
+        if not hasattr(self, '_model') or self._model is None:
+            self._load_model()
+
+        # Pull out the variables — these match your config's training_features order
+        # NOTE: scaling is wrong here until you save/load the fitted scalers
+        fj0  = ak.pad_none(events.fatjet[ak.argsort(events.fatjet.pt, axis=-1, ascending=False)], 1)[:,0]
+        l    = ak.pad_none(events.l_vvh_t, 2)  # assumes you've set events["l_vvh_t"] already
+
+        features = {
+            "fj0_eta"  : ak.fill_none(fj0.eta,   0.0)[mask],
+            "fj0_phi"  : ak.fill_none(fj0.phi,   0.0)[mask],
+            "fj0_pt"   : np.log(np.clip(ak.to_numpy(ak.fill_none(fj0.pt, 1.0)[mask]), 1.0, None)),
+            "l0_eta"   : ak.fill_none(l[:,0].eta, 0.0)[mask],
+            "l0_phi"   : ak.fill_none(l[:,0].phi, 0.0)[mask],
+            "l0_pt"    : np.log(np.clip(ak.to_numpy(ak.fill_none(l[:,0].pt, 1.0)[mask]), 1.0, None)),
+            "l1_eta"   : ak.fill_none(l[:,1].eta, 0.0)[mask],
+            "l1_phi"   : ak.fill_none(l[:,1].phi, 0.0)[mask],
+            "l1_pt"    : np.log(np.clip(ak.to_numpy(ak.fill_none(l[:,1].pt, 1.0)[mask]), 1.0, None)),
+            "met"      : np.log(np.clip(ak.to_numpy(events.met.pt[mask]), 1.0, None)),
+            "nbtagsl"  : ak.to_numpy(ak.num(events.jet[events.jet.isLooseBTag][mask])),
+            "njets"    : ak.to_numpy(ak.num(events.jet[abs(events.jet.eta) <= 2.4][mask])),
+        }
+
+        feature_matrix = np.column_stack([
+            ak.to_numpy(ak.Array(v)) if not isinstance(v, np.ndarray) else v
+            for v in features.values()
+        ]).astype(np.float32)
+
+        features_tensor = torch.from_numpy(feature_matrix).to(self._device)
+
+        with torch.no_grad():
+            logits = self._model(features_tensor)
+            if logits.ndim == 1:
+                logits = logits.unsqueeze(-1)
+            scores = torch.sigmoid(logits).cpu().numpy()[:, 0]
+
+        return scores
+    #################################################################################
 
     # Main function: run on a given dataset
     def process(self, events):
@@ -822,6 +895,10 @@ class AnalysisProcessor(processor.ProcessorABC):
             #    np.array([sample_name] * int(ak.sum(siphon_mask)), dtype=object)
             #)
 
+        # For ABCDnet evaluations
+        sr_mask = selections.all("2lOSSF_1fjx_2j_mjj100")
+        dnn_scores = self._run_abcd_inference(events, sr_mask)
+        print("dnn_scores",dnn_scores)
 
 
         ######### Fill histos #########
