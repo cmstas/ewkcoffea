@@ -30,7 +30,7 @@ def to_vec(obj):
 
 class AnalysisProcessor(processor.ProcessorABC):
 
-    def __init__(self, samples, wc_names_lst=[], hist_lst=None, do_systematics=False, skip_obj_systematics=False, skip_signal_regions=False, skip_control_regions=False, muonSyst='nominal', dtype=np.float32, siphon_bdt_data=False, rwgt_to_sm=False, ele_cutBased_val=None, mu_pfIsoId_val=None):
+    def __init__(self, samples, wc_names_lst=[], hist_lst=None, do_systematics=False, skip_obj_systematics=False, skip_signal_regions=False, skip_control_regions=False, muonSyst='nominal', dtype=np.float32, siphon_bdt_data=False, rwgt_to_sm=False, ele_cutBased_val=None, mu_pfIsoId_val=None, siphon_out_name="bdt_output"):
 
         self._samples = samples
         self._wc_names_lst = wc_names_lst
@@ -52,10 +52,12 @@ class AnalysisProcessor(processor.ProcessorABC):
             "scalarptsum_lepmetfwdjets" : axis.Regular(180, 0, 1500, name="scalarptsum_lepmetfwdjets", label="S_T + metpt + H_T fwd"),
             "l0_pt"  : axis.Regular(180, 0, 500, name="l0_pt", label="l0 pt"),
             "l0_eta"  : axis.Regular(180, -3,3, name="l0_eta", label="l0 eta"),
+            "l0_phi"  : axis.Regular(180, -3.1416, 3.1416, name="l0_phi", label="l0 phi"),
             "l1_pt"  : axis.Regular(180, 0, 400, name="l1_pt", label="l1 pt"),
             "l1_eta"  : axis.Regular(180, -3,3, name="l1_eta", label="l1 eta"),
             "l2_pt"  : axis.Regular(180, 0, 300, name="l2_pt", label="l2 pt"),
             "l2_eta"  : axis.Regular(180, -3,3, name="l2_eta", label="l2 eta"),
+            "l1_phi"  : axis.Regular(180, -3.1416, 3.1416, name="l1_phi", label="l1 phi"),
 
             "l0_iso"     : axis.Regular(180, 0,0.2, name="l0_iso", label="l0 pfRelIso03_all"),
             "l0_miniiso" : axis.Regular(180, 0,0.2, name="l0_miniiso", label="l0 miniPFRelIso_all"),
@@ -219,6 +221,33 @@ class AnalysisProcessor(processor.ProcessorABC):
 
         if mu_pfIsoId_val is not None: self._mu_pfIsoId_val = float(mu_pfIsoId_val)
         else: self._mu_pfIsoId_val = mu_pfIsoId_val
+
+        # Make bdt outputs
+        #self._siphon_output_path = "histos/bdt_out.root"
+        self._siphon_output_path = f"histos/{siphon_out_name}.root"
+        self._siphon_bdt_data = siphon_bdt_data
+        self._siphon_selection = ["2lOSSF_1fjx"]
+        #self._siphon_selection = ["2lOSSF_1fjx_2j_mjj100"]
+        self._bdt_vars = [
+            "l0_pt",
+            "l0_eta",
+            "l0_phi",
+            "l1_pt",
+            "l1_eta",
+            "l1_phi",
+            "fj0_pt",
+            "fj0_eta",
+            "fj0_phi",
+            "met",
+            "njets",
+            "nbtagsl",
+            "mjj_max_any",
+        ]
+        if self._siphon_bdt_data:
+            bdt_out = {var: processor.column_accumulator(np.array([], dtype=np.float32)) for var in self._bdt_vars}
+            bdt_out["weight"] = processor.column_accumulator(np.array([], dtype=np.float32))
+            #bdt_out["sample"] = processor.column_accumulator(np.array([], dtype=object))
+            self._accumulator["bdt_data"] = processor.dict_accumulator(bdt_out)
 
 
     @property
@@ -500,8 +529,10 @@ class AnalysisProcessor(processor.ProcessorABC):
             "scalarptsum_lepmetfwdjets" : scalarptsum_lepmetfwdjets,
             "l0_pt"  : l0.pt,
             "l0_eta" : l0.eta,
+            "l0_phi" : l0.phi,
             "l1_pt"  : l1.pt,
             "l1_eta" : l1.eta,
+            "l1_phi" : l1.phi,
             "l2_pt"  : l2.pt,
             "l2_eta" : l2.eta,
             "mass_l0l1" : mass_l0l1,
@@ -662,6 +693,7 @@ class AnalysisProcessor(processor.ProcessorABC):
             dense_variables_dict["nlep_truth_fake"] = nlep_truth_fake
 
 
+
         ######### Store boolean masks with PackedSelection ##########
 
         selections = PackedSelection(dtype='uint64')
@@ -693,6 +725,7 @@ class AnalysisProcessor(processor.ProcessorABC):
         selections.add("2lOSSF_1fj",                              is_2l & is_os & is_sf & (nfatjets>=1))
         selections.add("2lOSSF_1fjx",                             is_2l & is_os & is_sf & (nfatjets==1))
         selections.add("2lOSSF_1fjx_2j",                          is_2l & is_os & is_sf & (nfatjets==1) & (njets_tot>=2))
+        selections.add("2lOSSF_1fjx_2j_mjj100",                   is_2l & is_os & is_sf & (nfatjets==1) & (njets_tot>=2) & (mjj_max_any>100))
         selections.add("2lOSSF_1fjx_HFJ",                         is_2l & is_os & is_sf & (nfatjets==1) & is_HFJ)
         selections.add("2lOSSF_1fjx_HFJtag",                      is_2l & is_os & is_sf & (nfatjets==1) & is_HFJ & is_HFJTagHbb)
         selections.add("2lOSSF_1fjx_HFJtag_nj2",                  is_2l & is_os & is_sf & (nfatjets==1) & is_HFJ & is_HFJTagHbb & (njets_tot>=2))
@@ -742,6 +775,7 @@ class AnalysisProcessor(processor.ProcessorABC):
                 "2lOSSF_1fj",
                 "2lOSSF_1fjx",
                 "2lOSSF_1fjx_2j",
+                "2lOSSF_1fjx_2j_mjj100",
                 "2lOSSF_1fjx_HFJ",
                 "2lOSSF_1fjx_HFJtag",
                 "2lOSSF_1fjx_HFJtag_nj2",
@@ -769,6 +803,25 @@ class AnalysisProcessor(processor.ProcessorABC):
                 "3l_chsum1_mll12_sfos2_mjj400_jf0pt50",
             ]
         }
+
+
+        # Siphon
+        if self._siphon_bdt_data:
+            siphon_mask = selections.all(*self._siphon_selection)
+            for var in self._bdt_vars:
+                if var not in dense_variables_dict:
+                    raise Exception(f"BDT var '{var}' not found in dense_variables_dict")
+                self._accumulator["bdt_data"][var] += processor.column_accumulator(
+                    ak.to_numpy(ak.fill_none(dense_variables_dict[var][siphon_mask], -999)).astype(np.float32)
+                )
+            self._accumulator["bdt_data"]["weight"] += processor.column_accumulator(
+                ak.to_numpy(ak.fill_none(weights_obj_base.weight(None)[siphon_mask], 0)).astype(np.float32)
+            )
+            #sample_name = str(histAxisName[0])
+            #self._accumulator["bdt_data"]["sample"] += processor.column_accumulator(
+            #    np.array([sample_name] * int(ak.sum(siphon_mask)), dtype=object)
+            #)
+
 
 
         ######### Fill histos #########
@@ -840,4 +893,10 @@ class AnalysisProcessor(processor.ProcessorABC):
         return self.accumulator
 
     def postprocess(self, accumulator):
+        if self._siphon_bdt_data:
+            import uproot, os
+            out_dict = {k: v.value for k, v in accumulator["bdt_data"].items()}
+            os.makedirs(os.path.dirname(self._siphon_output_path), exist_ok=True)
+            with uproot.recreate(self._siphon_output_path) as f:
+                f["Events"] = out_dict
         return accumulator
