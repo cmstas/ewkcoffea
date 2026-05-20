@@ -19,6 +19,77 @@ import check_vvh_hists as cvh
 def get_yield(h2d, score_slice, mjj_slice):
     return h2d[score_slice, mjj_slice].sum(flow=False).value
 
+def plot_best_working_point(histo_sig, histo_bkg, results, output_dir="abcd_scan_plots"):
+
+    # Find the best working point (max significance)
+    best_idx = np.nanargmax(results["significance"])
+    best_i, best_j = np.unravel_index(best_idx, results["significance"].shape)
+
+    best_score_cut = results["score_cuts"][best_i]
+    best_mjj_cut   = results["mjj_cuts"][best_j]
+    best_sig       = results["significance"][best_i, best_j]
+    best_sig_true  = results["S"][best_i, best_j] / np.sqrt(results["B_true"][best_i, best_j]) if results["B_true"][best_i, best_j] > 0 else np.nan
+    best_S         = results["S"][best_i, best_j]
+    best_B_true    = results["B_true"][best_i, best_j]
+    best_B_est     = results["B_est"][best_i, best_j]
+    best_closure   = results["closure"][best_i, best_j]
+
+    # Print summary
+    print("\n" + "="*50)
+    print("BEST WORKING POINT (max S/sqrt(B_est))")
+    print("="*50)
+    print(f"  Score cut       : {best_score_cut:.4f}  (scan index {best_i})")
+    print(f"  mjj cut         : {best_mjj_cut:.1f} GeV  (scan index {best_j})")
+    print(f"  S               : {best_S:.4f}")
+    print(f"  B_true (MC)     : {best_B_true:.2f}")
+    print(f"  B_est (B*C/D)   : {best_B_est:.2f}")
+    print(f"  S/sqrt(B_est)   : {best_sig:.4f}")
+    print(f"  S/sqrt(B_true)  : {best_sig_true:.4f}")
+    print(f"  Closure         : {best_closure:.4f}")
+    print("="*50 + "\n")
+
+    # Make the 2D plot
+    sig_h = histo_sig[{"process_grp": sum}]
+    bkg_h = histo_bkg[{"process_grp": sum}]
+    score_edges = sig_h.axes["dnn_score"].edges
+    mjj_edges   = sig_h.axes["mjj_max_any"].edges
+    bkg_vals    = bkg_h.values(flow=False)
+
+    fig, ax = plt.subplots(figsize=(8, 6))
+    im = ax.pcolormesh(score_edges, mjj_edges, bkg_vals.T, cmap="Blues")
+    plt.colorbar(im, ax=ax, label="Background yield")
+
+    ax.axvline(best_score_cut, color="red",    linewidth=2, linestyle="--", label=f"score > {best_score_cut:.3f}")
+    ax.axhline(best_mjj_cut,   color="orange", linewidth=2, linestyle="--", label=f"mjj > {best_mjj_cut:.0f} GeV")
+
+    score_mid_lo = score_edges[0] + (best_score_cut - score_edges[0]) / 2
+    score_mid_hi = best_score_cut + (score_edges[-1] - best_score_cut) / 2
+    mjj_mid_lo   = mjj_edges[0]   + (best_mjj_cut - mjj_edges[0]) / 2
+    mjj_mid_hi   = best_mjj_cut   + (mjj_edges[-1] - best_mjj_cut) / 2
+
+    ax.text(score_mid_hi, mjj_mid_hi, "A (SR)", ha="center", va="center", color="red",   fontsize=12, fontweight="bold")
+    ax.text(score_mid_lo, mjj_mid_hi, "B",      ha="center", va="center", color="black", fontsize=12, fontweight="bold")
+    ax.text(score_mid_hi, mjj_mid_lo, "C",      ha="center", va="center", color="black", fontsize=12, fontweight="bold")
+    ax.text(score_mid_lo, mjj_mid_lo, "D",      ha="center", va="center", color="black", fontsize=12, fontweight="bold")
+
+    ax.set_xlim(score_edges[0], score_edges[-1])
+    ax.set_ylim(mjj_edges[0],   mjj_edges[-1])
+    ax.set_xlabel("DNN score")
+    ax.set_ylabel("mjj_max_any [GeV]")
+    ax.set_title(
+        f"Best working point: score>{best_score_cut:.3f}, mjj>{best_mjj_cut:.0f} GeV\n"
+        f"S={best_S:.3f}, B_true={best_B_true:.1f}, B_est={best_B_est:.1f}, "
+        f"S/sqrt(B_est)={best_sig:.3f}, closure={best_closure:.3f}",
+        fontsize=9,
+    )
+    ax.legend(loc="upper right", fontsize=8)
+    plt.tight_layout()
+    os.makedirs(output_dir, exist_ok=True)
+    plt.savefig(f"{output_dir}/best_working_point.png", dpi=150)
+    plt.close()
+    print(f"Saved {output_dir}/best_working_point.png")
+
+
 def plot_abcd_2d_snapshots(histo_sig, histo_bkg, results, output_dir="abcd_snapshots"):
     import os
     os.makedirs(output_dir, exist_ok=True)
@@ -272,6 +343,7 @@ def main():
     results = do_abcd_scan(histo_sig, histo_bkg)
     plot_abcd_scan_panels(results, "abcd_scan_plots/abcd_scan_panels.png")
     plot_abcd_2d_snapshots(histo_sig, histo_bkg, results, output_dir="abcd_scan_plots")
+    plot_best_working_point(histo_sig, histo_bkg, results, output_dir="abcd_scan_plots")
 
 
 
