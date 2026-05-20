@@ -1,0 +1,240 @@
+import argparse
+import pickle
+import gzip
+import json
+import os
+import shutil
+import numpy as np
+import matplotlib.pyplot as plt
+import copy
+
+import ewkcoffea.modules.plotting_tools as plt_tools
+import topcoffea.modules.MakeLatexTable as mlt
+
+import check_vvh_hists as cvh
+
+def get_yield(h2d, score_slice, mjj_slice):
+    return h2d[score_slice, mjj_slice].sum(flow=False).value
+
+def plot_abcd_2d_snapshots(histo_sig, histo_bkg, results, output_dir="abcd_snapshots"):
+    import os
+    os.makedirs(output_dir, exist_ok=True)
+
+    sig_h = histo_sig[{"process_grp": sum}]
+    bkg_h = histo_bkg[{"process_grp": sum}]
+
+    n_score = len(results["score_cuts"])
+    n_mjj   = len(results["mjj_cuts"])
+
+    score_edges = sig_h.axes["dnn_score"].edges
+    mjj_edges   = sig_h.axes["mjj_max_any"].edges
+
+    # Get the full 2D bkg array for plotting
+    bkg_vals = bkg_h.values(flow=False)
+
+    plot_idx = 0
+    for i in range(n_score):
+        for j in range(n_mjj):
+            score_cut = results["score_cuts"][i]
+            mjj_cut   = results["mjj_cuts"][j]
+
+            fig, ax = plt.subplots(figsize=(8, 6))
+
+            # Plot the 2D histogram
+            im = ax.pcolormesh(
+                score_edges, mjj_edges, bkg_vals.T,
+                cmap="Blues",
+            )
+            plt.colorbar(im, ax=ax, label="Background yield")
+
+            # Draw the cut lines
+            ax.axvline(score_cut, color="red",   linewidth=2, linestyle="--", label=f"score > {score_cut:.2f}")
+            ax.axhline(mjj_cut,   color="orange", linewidth=2, linestyle="--", label=f"mjj > {mjj_cut:.0f}")
+
+            # Label the four regions
+            score_mid_lo = score_edges[0]  + (score_cut - score_edges[0]) / 2
+            score_mid_hi = score_cut + (score_edges[-1] - score_cut) / 2
+            mjj_mid_lo   = mjj_edges[0]    + (mjj_cut - mjj_edges[0]) / 2
+            mjj_mid_hi   = mjj_cut + (mjj_edges[-1] - mjj_cut) / 2
+
+            ax.text(score_mid_hi, mjj_mid_hi, "A (SR)",  ha="center", va="center", color="red",   fontsize=12, fontweight="bold")
+            ax.text(score_mid_lo, mjj_mid_hi, "B",       ha="center", va="center", color="black", fontsize=12, fontweight="bold")
+            ax.text(score_mid_hi, mjj_mid_lo, "C",       ha="center", va="center", color="black", fontsize=12, fontweight="bold")
+            ax.text(score_mid_lo, mjj_mid_lo, "D",       ha="center", va="center", color="black", fontsize=12, fontweight="bold")
+
+            # Annotate with yields
+            B_est  = results["B_est"][i, j]
+            B_true = results["B_true"][i, j]
+            S      = results["S"][i, j]
+            sig_val = results["significance"][i, j]
+            closure = results["closure"][i, j]
+            ax.set_title(
+                f"Scan point {plot_idx}: score>{score_cut:.2f}, mjj>{mjj_cut:.0f}\n"
+                f"S={S:.3f}, B_true={B_true:.1f}, B_est={B_est:.1f}, "
+                f"S/sqrt(B)={sig_val:.3f}, closure={closure:.2f}",
+                fontsize=9,
+            )
+            ax.set_xlabel("DNN score")
+            ax.set_ylabel("mjj_max_any [GeV]")
+            ax.legend(loc="upper right", fontsize=8)
+
+            plt.tight_layout()
+            plt.savefig(f"{output_dir}/scan_point_{plot_idx:04d}.png", dpi=150)
+            plt.close()
+            plot_idx += 1
+
+            print(f"Saved {plot_idx} 2D snapshot plots to {output_dir}/")
+
+def do_abcd_scan(histo_sig, histo_bkg, score_axis_name="dnn_score", mjj_axis_name="mjj_max_any", n_scan=20):
+
+    # Squeeze out the process_grp axis
+    sig_h = histo_sig[{"process_grp": sum}]
+    bkg_h = histo_bkg[{"process_grp": sum}]
+
+    score_edges = sig_h.axes[score_axis_name].edges
+    mjj_edges   = sig_h.axes[mjj_axis_name].edges
+    n_score = len(score_edges) - 1
+    n_mjj   = len(mjj_edges) - 1
+
+    score_cut_bins = [int(x) for x in np.linspace(int(0.1*n_score), int(0.9*n_score), n_scan)]
+    mjj_cut_bins   = [int(x) for x in np.linspace(int(0.1*n_mjj),   int(0.9*n_mjj),   n_scan)]
+
+    closure      = np.zeros((n_scan, n_scan))
+    significance = np.zeros((n_scan, n_scan))
+    S_arr        = np.zeros((n_scan, n_scan))
+    B_true_arr   = np.zeros((n_scan, n_scan))
+    B_est_arr    = np.zeros((n_scan, n_scan))
+
+    for i, si in enumerate(score_cut_bins):
+        for j, mj in enumerate(mjj_cut_bins):
+            A_sig = get_yield(sig_h, slice(si, None), slice(mj, None))
+            A_bkg = get_yield(bkg_h, slice(si, None), slice(mj, None))
+            B_bkg = get_yield(bkg_h, slice(None, si), slice(mj, None))
+            C_bkg = get_yield(bkg_h, slice(si, None), slice(None, mj))
+            D_bkg = get_yield(bkg_h, slice(None, si), slice(None, mj))
+
+            B_est = (B_bkg * C_bkg / D_bkg) if D_bkg > 0 else np.nan
+
+            S_arr[i, j]        = A_sig
+            B_true_arr[i, j]   = A_bkg
+            B_est_arr[i, j]    = B_est
+            closure[i, j]      = (B_est / A_bkg) if (A_bkg > 0 and not np.isnan(B_est)) else np.nan
+            significance[i, j] = (A_sig / np.sqrt(B_est)) if (not np.isnan(B_est) and B_est > 0) else np.nan
+
+    return {
+        "closure"      : closure,
+        "significance" : significance,
+        "S"            : S_arr,
+        "B_true"       : B_true_arr,
+        "B_est"        : B_est_arr,
+        "score_cuts"   : score_edges[score_cut_bins],
+        "mjj_cuts"     : mjj_edges[mjj_cut_bins],
+    }
+
+def plot_abcd_scan_panels(results, output_path):
+
+    n_score = len(results["score_cuts"])
+    n_mjj   = len(results["mjj_cuts"])
+
+    scan_points  = []
+    significance = []
+    significance_true = []
+    B_true       = []
+    B_est        = []
+    closure      = []
+    labels       = []
+
+    for i in range(n_score):
+        for j in range(n_mjj):
+            scan_points.append(len(scan_points))
+            significance.append(results["significance"][i, j])
+            significance_true.append(
+                results["S"][i, j] / np.sqrt(results["B_true"][i, j]) if results["B_true"][i, j] > 0 else np.nan
+            )
+            B_true.append(results["B_true"][i, j])
+            B_est.append(results["B_est"][i, j])
+            closure.append(results["B_est"][i, j] / results["B_true"][i, j] if results["B_true"][i, j] > 0 else np.nan)
+            labels.append(f"s>{results['score_cuts'][i]:.2f},mjj>{results['mjj_cuts'][j]:.0f}")
+
+    scan_points  = np.array(scan_points)
+    significance = np.array(significance)
+    significance_true = np.array(significance_true)
+    B_true       = np.array(B_true)
+    B_est        = np.array(B_est)
+    closure      = np.array(closure)
+
+    fig, axes = plt.subplots(3, 1, figsize=(max(12, len(scan_points)//4), 12), sharex=True)
+
+    # Top panel: significance
+    axes[0].plot(scan_points, significance,      marker="o", markersize=3, linewidth=1, color="tab:blue",   label="S/sqrt(B_est)")
+    axes[0].plot(scan_points, significance_true, marker="o", markersize=3, linewidth=1, color="tab:orange", label="S/sqrt(B_true)")
+    axes[0].set_ylabel("Significance")
+    axes[0].legend()
+
+    # Middle panel: B_true and B_est
+    axes[1].plot(scan_points, B_true, marker="o", markersize=3, linewidth=1, color="tab:blue",   label="B true (MC)")
+    axes[1].plot(scan_points, B_est,  marker="o", markersize=3, linewidth=1, color="tab:orange", label="B est (B*C/D)")
+    axes[1].set_ylabel("Background yield in A")
+    axes[1].legend()
+    axes[1].grid(True, alpha=0.3)
+
+    # Bottom panel: closure ratio
+    axes[2].plot(scan_points, closure, marker="o", markersize=3, linewidth=1, color="tab:green")
+    axes[2].axhline(1.0, color="black", linestyle="--", linewidth=1)
+    axes[2].axhline(1.2, color="red",   linestyle="--", linewidth=0.8, alpha=0.5)
+    axes[2].axhline(0.8, color="red",   linestyle="--", linewidth=0.8, alpha=0.5)
+    axes[2].set_ylabel("B_est / B_true")
+    axes[2].set_xlabel("Scan point (score cut, mjj cut)")
+    axes[2].set_ylim(0, 2)
+    axes[2].grid(True, alpha=0.3)
+
+    tick_step = max(1, len(scan_points) // 20)
+    axes[2].set_xticks(scan_points[::tick_step])
+    axes[2].set_xticklabels(labels[::tick_step], rotation=90, fontsize=6)
+
+    plt.tight_layout()
+    plt.savefig(output_path, dpi=200)
+    plt.close()
+    print(f"Saved scan plot to {output_path}")
+
+
+def main():
+
+    # Set up the command line parser
+    parser = argparse.ArgumentParser()
+    parser.add_argument("pkl_file_path", help = "The path to the pkl file")
+    args = parser.parse_args()
+
+    cat_lst = cvh.CAT_LST_2l
+    grp_dict = cvh.GRP_DICT_FULL_R2
+
+    # Get the dictionary of histograms from the input pkl file
+    histo_dict = pickle.load(gzip.open(args.pkl_file_path))
+    name = args.pkl_file_path.split("/")[1][:-7] # Drops leading histos/ and trailing .pkl.gz
+
+    histo = histo_dict["abcd_histo"]
+    #print(sum(sum(histo[{"category":"2lOSSF_1fjx", "lepflav":sum, "process":sum}].values(flow=True))))
+    histo = histo[{"category":"2lOSSF_1fjx", "lepflav":sum}]
+    histo = plt_tools.group(histo,"process","process_grp",grp_dict)
+
+    sample_group_names_lst_mc = []
+    sample_group_names_lst_bkg = []
+    for grp_name in grp_dict:
+        if grp_name not in ["Data", "Signal"]:
+            sample_group_names_lst_bkg.append(grp_name)
+
+    histo_sig = histo[{"process_grp":["Signal"]}]
+    histo_dat = histo[{"process_grp":["Data"]}]
+    histo_bkg = plt_tools.group(histo,"process_grp","process_grp",{"Background": sample_group_names_lst_bkg})
+
+    print("s",histo_sig)
+    print("d",histo_dat)
+    print("b",histo_bkg)
+
+    results = do_abcd_scan(histo_sig, histo_bkg)
+    plot_abcd_scan_panels(results, "abcd_scan_panels.png")
+    plot_abcd_2d_snapshots(histo_sig, histo_bkg, results, output_dir="abcd_snapshots")
+
+
+
+main()
