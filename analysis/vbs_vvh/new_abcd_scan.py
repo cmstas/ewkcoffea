@@ -5,8 +5,11 @@ import json
 import os
 import shutil
 import numpy as np
-import matplotlib.pyplot as plt
 import copy
+
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
 
 import ewkcoffea.modules.plotting_tools as plt_tools
 import topcoffea.modules.MakeLatexTable as mlt
@@ -31,59 +34,94 @@ def plot_abcd_2d_snapshots(histo_sig, histo_bkg, results, output_dir="abcd_snaps
 
     # Get the full 2D bkg array for plotting
     bkg_vals = bkg_h.values(flow=False)
+    sig_vals = sig_h.values(flow=False)
+
+    # Overview plots: background
+    for scale, norm, suffix in [("linear", None, "lin"), ("log", matplotlib.colors.LogNorm(), "log")]:
+        fig, ax = plt.subplots(figsize=(8, 6))
+        im = ax.pcolormesh(score_edges, mjj_edges, bkg_vals.T, cmap="Blues", norm=norm)
+        #im = ax.imshow(score_edges, mjj_edges, bkg_vals.T, cmap="Blues", norm=norm)
+        plt.colorbar(im, ax=ax, label="Background yield")
+
+        # Profile line
+        score_centers = (score_edges[:-1] + score_edges[1:]) / 2
+        mjj_centers   = (mjj_edges[:-1]   + mjj_edges[1:])   / 2
+        profile = np.zeros(len(score_centers))
+        for si in range(len(score_centers)):
+            col = bkg_vals[si, :]
+            total = col.sum()
+            if total > 0:
+                profile[si] = np.average(mjj_centers, weights=col)
+            else:
+                profile[si] = np.nan
+        ax.plot(score_centers, profile, color="red", linewidth=2, marker="o", markersize=4, label="Mean mjj")
+        ax.legend(loc="upper right", fontsize=8)
+
+        ax.set_xlabel("DNN score")
+        ax.set_ylabel("mjj_max_any [GeV]")
+        ax.set_title(f"Background 2D histogram (no cuts, {scale})")
+        plt.tight_layout()
+        plt.savefig(f"{output_dir}/scan_point_overview_bkg_{suffix}.png", dpi=150)
+        plt.close()
+        print(f"Saved {output_dir}/scan_point_overview_bkg_{suffix}.png")
+
+    # Overview plots: signal
+    for scale, norm, suffix in [("linear", None, "lin"), ("log", matplotlib.colors.LogNorm(), "log")]:
+        fig, ax = plt.subplots(figsize=(8, 6))
+        im = ax.pcolormesh(score_edges, mjj_edges, sig_vals.T, cmap="Reds", norm=norm)
+        #im = ax.imshow(score_edges, mjj_edges, sig_vals.T, cmap="Reds", norm=norm)
+        plt.colorbar(im, ax=ax, label="Signal yield")
+
+        # Profile line
+        score_centers = (score_edges[:-1] + score_edges[1:]) / 2
+        mjj_centers   = (mjj_edges[:-1]   + mjj_edges[1:])   / 2
+        profile = np.zeros(len(score_centers))
+        for si in range(len(score_centers)):
+            col = sig_vals[si, :]
+            total = col.sum()
+            if total > 0:
+                profile[si] = np.average(mjj_centers, weights=col)
+            else:
+                profile[si] = np.nan
+        ax.plot(score_centers, profile, color="red", linewidth=2, marker="o", markersize=4, label="Mean mjj")
+        ax.legend(loc="upper right", fontsize=8)
+
+        ax.set_xlabel("DNN score")
+        ax.set_ylabel("mjj_max_any [GeV]")
+        ax.set_title(f"Signal 2D histogram (no cuts, {scale})")
+        plt.tight_layout()
+        plt.savefig(f"{output_dir}/scan_point_overview_sig_{suffix}.png", dpi=150)
+        plt.close()
+        print(f"Saved {output_dir}/scan_point_overview_sig_{suffix}.png")
 
     plot_idx = 0
     for i in range(n_score):
+        score_cut = results["score_cuts"][i]
+
+        fig, ax = plt.subplots(figsize=(8, 6))
+
+        # Draw the score cut line
+        ax.axvline(score_cut, color="red", linewidth=2, linestyle="--", label=f"score > {score_cut:.2f}")
+
+        # Draw all 20 mjj cut lines
         for j in range(n_mjj):
-            score_cut = results["score_cuts"][i]
-            mjj_cut   = results["mjj_cuts"][j]
+            mjj_cut = results["mjj_cuts"][j]
+            alpha = 0.2 + 0.8 * (j / (n_mjj - 1))
+            ax.axhline(mjj_cut, color="orange", linewidth=1, linestyle="--", alpha=alpha)
+            ax.text(score_edges[-1], mjj_cut, f"{j}", fontsize=7, va="bottom", ha="right", color="orange", alpha=alpha)
 
-            fig, ax = plt.subplots(figsize=(8, 6))
+        ax.set_xlim(score_edges[0], score_edges[-1])
+        ax.set_ylim(mjj_edges[0],   mjj_edges[-1])
+        ax.set_xlabel("DNN score")
+        ax.set_ylabel("mjj_max_any [GeV]")
+        ax.set_title(f"Score cut block {i}: score > {score_cut:.2f}\nmjj cuts shown as horizontal lines")
+        ax.legend(loc="upper right", fontsize=8)
 
-            # Plot the 2D histogram
-            im = ax.pcolormesh(
-                score_edges, mjj_edges, bkg_vals.T,
-                cmap="Blues",
-            )
-            plt.colorbar(im, ax=ax, label="Background yield")
-
-            # Draw the cut lines
-            ax.axvline(score_cut, color="red",   linewidth=2, linestyle="--", label=f"score > {score_cut:.2f}")
-            ax.axhline(mjj_cut,   color="orange", linewidth=2, linestyle="--", label=f"mjj > {mjj_cut:.0f}")
-
-            # Label the four regions
-            score_mid_lo = score_edges[0]  + (score_cut - score_edges[0]) / 2
-            score_mid_hi = score_cut + (score_edges[-1] - score_cut) / 2
-            mjj_mid_lo   = mjj_edges[0]    + (mjj_cut - mjj_edges[0]) / 2
-            mjj_mid_hi   = mjj_cut + (mjj_edges[-1] - mjj_cut) / 2
-
-            ax.text(score_mid_hi, mjj_mid_hi, "A (SR)",  ha="center", va="center", color="red",   fontsize=12, fontweight="bold")
-            ax.text(score_mid_lo, mjj_mid_hi, "B",       ha="center", va="center", color="black", fontsize=12, fontweight="bold")
-            ax.text(score_mid_hi, mjj_mid_lo, "C",       ha="center", va="center", color="black", fontsize=12, fontweight="bold")
-            ax.text(score_mid_lo, mjj_mid_lo, "D",       ha="center", va="center", color="black", fontsize=12, fontweight="bold")
-
-            # Annotate with yields
-            B_est  = results["B_est"][i, j]
-            B_true = results["B_true"][i, j]
-            S      = results["S"][i, j]
-            sig_val = results["significance"][i, j]
-            closure = results["closure"][i, j]
-            ax.set_title(
-                f"Scan point {plot_idx}: score>{score_cut:.2f}, mjj>{mjj_cut:.0f}\n"
-                f"S={S:.3f}, B_true={B_true:.1f}, B_est={B_est:.1f}, "
-                f"S/sqrt(B)={sig_val:.3f}, closure={closure:.2f}",
-                fontsize=9,
-            )
-            ax.set_xlabel("DNN score")
-            ax.set_ylabel("mjj_max_any [GeV]")
-            ax.legend(loc="upper right", fontsize=8)
-
-            plt.tight_layout()
-            plt.savefig(f"{output_dir}/scan_point_{plot_idx:04d}.png", dpi=150)
-            plt.close()
-            plot_idx += 1
-
-            print(f"Saved {plot_idx} 2D snapshot plots to {output_dir}/")
+        plt.tight_layout()
+        plt.savefig(f"{output_dir}/scan_block_{plot_idx:04d}.png", dpi=100)
+        plt.close()
+        print(f"Saved scan block {plot_idx}")
+        plot_idx += 1
 
 def do_abcd_scan(histo_sig, histo_bkg, score_axis_name="dnn_score", mjj_axis_name="mjj_max_any", n_scan=20):
 
@@ -214,7 +252,7 @@ def main():
 
     histo = histo_dict["abcd_histo"]
     #print(sum(sum(histo[{"category":"2lOSSF_1fjx", "lepflav":sum, "process":sum}].values(flow=True))))
-    histo = histo[{"category":"2lOSSF_1fjx", "lepflav":sum}]
+    histo = histo[{"category":"2lOSSF_1fjx_2j_mjj100", "lepflav":sum}]
     histo = plt_tools.group(histo,"process","process_grp",grp_dict)
 
     sample_group_names_lst_mc = []
@@ -232,8 +270,8 @@ def main():
     print("b",histo_bkg)
 
     results = do_abcd_scan(histo_sig, histo_bkg)
-    plot_abcd_scan_panels(results, "abcd_scan_panels.png")
-    plot_abcd_2d_snapshots(histo_sig, histo_bkg, results, output_dir="abcd_snapshots")
+    plot_abcd_scan_panels(results, "abcd_scan_plots/abcd_scan_panels.png")
+    plot_abcd_2d_snapshots(histo_sig, histo_bkg, results, output_dir="abcd_scan_plots")
 
 
 
