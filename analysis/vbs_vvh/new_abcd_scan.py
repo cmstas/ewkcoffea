@@ -373,20 +373,35 @@ def main():
     histo_sig = histo[{"process_grp":["Signal"]}]
     histo_dat = histo[{"process_grp":["Data"]}]
     histo_dy  = histo[{"process_grp":["DY"]}]
-    histo_bkg = plt_tools.group(histo,"process_grp","process_grp",{"Background": sample_group_names_lst_bkg})
+    histo_allbkg = plt_tools.group(histo,"process_grp","process_grp",{"Background": sample_group_names_lst_bkg})
 
     print("s",histo_sig)
     print("d",histo_dat)
-    print("b",histo_bkg)
+    print("b",histo_allbkg)
+    print("dy",histo_dy)
 
-    # Make a plot to check de-correlation
-    plot_mjj_score_slices(histo_bkg, output_dir="abcd_scan_plots")
+    out_dir = "abcd_scan_plots"
 
-    # Do the scan and print results
-    results = do_abcd_scan(histo_sig, histo_bkg)
-    plot_abcd_scan_panels(results, "abcd_scan_plots/abcd_scan_panels.png")
-    plot_abcd_2d_snapshots(histo_sig, histo_bkg, results, output_dir="abcd_scan_plots")
-    plot_best_working_point(histo_sig, histo_bkg, results, output_dir="abcd_scan_plots")
+    # Chek for just the bkg we trained on, and for all bkg together
+    for tag,histo_bkg in [["dy",histo_dy],["allbkg",histo_allbkg]]:
+
+        print(f"\n\n--- Running for {tag} ---\n")
+
+        # Make  the out dir
+        out_dir_with_tag = os.path.join(out_dir,tag)
+        if not os.path.exists(out_dir):
+            os.mkdir(out_dir)
+        if not os.path.exists(out_dir_with_tag):
+            os.mkdir(out_dir_with_tag)
+
+        # Make a plot to check de-correlation
+        plot_mjj_score_slices(histo_bkg, output_dir=out_dir_with_tag)
+
+        # Do the scan and print results
+        results = do_abcd_scan(histo_sig, histo_bkg)
+        plot_abcd_scan_panels(results, f"{out_dir_with_tag}/abcd_scan_panels.png")
+        plot_abcd_2d_snapshots(histo_sig, histo_bkg, results, output_dir=out_dir_with_tag)
+        plot_best_working_point(histo_sig, histo_bkg, results, output_dir=out_dir_with_tag)
 
 
 
