@@ -19,6 +19,44 @@ import check_vvh_hists as cvh
 def get_yield(h2d, score_slice, mjj_slice):
     return h2d[score_slice, mjj_slice].sum(flow=False).value
 
+def plot_mjj_score_slices(histo_bkg, output_dir="abcd_scan_plots"):
+
+    bkg_h = histo_bkg[{"process_grp": sum}]
+    score_edges = bkg_h.axes["dnn_score"].edges
+    mjj_edges   = bkg_h.axes["mjj_max_any"].edges
+    mjj_centers = (mjj_edges[:-1] + mjj_edges[1:]) / 2
+    bkg_vals    = bkg_h.values(flow=False)
+
+    n_score = len(score_edges) - 1
+    # Define a few score slices to compare
+    slice_edges = np.linspace(0, n_score, 5, dtype=int)  # 4 equal slices
+    colors = ["tab:blue", "tab:orange", "tab:green", "tab:red"]
+
+    fig, ax = plt.subplots(figsize=(8, 6))
+    for k in range(len(slice_edges) - 1):
+        lo = slice_edges[k]
+        hi = slice_edges[k + 1]
+        mjj_proj = bkg_vals[lo:hi, :].sum(axis=0)
+        total = mjj_proj.sum()
+        if total > 0:
+            mjj_proj = mjj_proj / total
+        score_lo = score_edges[lo]
+        score_hi = score_edges[hi]
+        ax.stairs(mjj_proj, mjj_edges, linewidth=2,
+            color=colors[k], label=f"score [{score_lo:.2f}, {score_hi:.2f})")
+
+    ax.set_xlabel("mjj_max_any [GeV]")
+    ax.set_ylabel("Normalized yield")
+    ax.set_title("mjj distribution in score slices (background)\nShould be similar if decorrelated")
+    #ax.set_xlim(mjj_edges[0], mjj_edges[-1])
+    ax.legend(loc="upper right", fontsize=8)
+    ax.grid(True, alpha=0.3)
+    plt.tight_layout()
+    os.makedirs(output_dir, exist_ok=True)
+    plt.savefig(f"{output_dir}/mjj_score_slices.png", dpi=150)
+    plt.close()
+    print(f"Saved {output_dir}/mjj_score_slices.png")
+
 def plot_best_working_point(histo_sig, histo_bkg, results, output_dir="abcd_scan_plots"):
 
     # Find the best working point (max significance)
@@ -319,27 +357,32 @@ def main():
 
     # Get the dictionary of histograms from the input pkl file
     histo_dict = pickle.load(gzip.open(args.pkl_file_path))
-    name = args.pkl_file_path.split("/")[1][:-7] # Drops leading histos/ and trailing .pkl.gz
 
+    # Get the hist for the categories of interest
     histo = histo_dict["abcd_histo"]
-    #print(sum(sum(histo[{"category":"2lOSSF_1fjx", "lepflav":sum, "process":sum}].values(flow=True))))
     histo = histo[{"category":"2lOSSF_1fjx_2j_mjj100", "lepflav":sum}]
     histo = plt_tools.group(histo,"process","process_grp",grp_dict)
 
-    sample_group_names_lst_mc = []
+    # Do the sample grouping
     sample_group_names_lst_bkg = []
     for grp_name in grp_dict:
-        if grp_name not in ["Data", "Signal"]:
+        if grp_name not in ["Data", "Signal", 'VBSWWH_SS', 'VBSWWH_OS', 'VBSWZH', 'VBSZZH']:
             sample_group_names_lst_bkg.append(grp_name)
 
+    # Final sig bkg and data hists
     histo_sig = histo[{"process_grp":["Signal"]}]
     histo_dat = histo[{"process_grp":["Data"]}]
+    histo_dy  = histo[{"process_grp":["DY"]}]
     histo_bkg = plt_tools.group(histo,"process_grp","process_grp",{"Background": sample_group_names_lst_bkg})
 
     print("s",histo_sig)
     print("d",histo_dat)
     print("b",histo_bkg)
 
+    # Make a plot to check de-correlation
+    plot_mjj_score_slices(histo_bkg, output_dir="abcd_scan_plots")
+
+    # Do the scan and print results
     results = do_abcd_scan(histo_sig, histo_bkg)
     plot_abcd_scan_panels(results, "abcd_scan_plots/abcd_scan_panels.png")
     plot_abcd_2d_snapshots(histo_sig, histo_bkg, results, output_dir="abcd_scan_plots")
