@@ -313,7 +313,7 @@ class AnalysisProcessor(processor.ProcessorABC):
             self._load_model()
         if not hasattr(self, '_scaler_params'):
             import json
-            scaler_path = "/home/users/kmohrman/vbs_vvh/rdf_repo/run3-vbsvvh/abcd/2l1FJ_NEW_RUN2/scaler_params_v4.json"
+            scaler_path = ewkcoffea_path("data/vvh_abcd_models/single_abcdisco_2l1fj_dy_scaler_params.json")
             with open(scaler_path) as f:
                 self._scaler_params = json.load(f)
 

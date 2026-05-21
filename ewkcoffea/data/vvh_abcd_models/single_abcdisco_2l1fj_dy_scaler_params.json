@@ -1,0 +1,67 @@
+{
+  "fj0_eta": {
+    "transform": "minmax",
+    "min": -2.4912109375,
+    "max": 2.45751953125
+  },
+  "fj0_phi": {
+    "transform": "minmax",
+    "min": -3.1416015625,
+    "max": 3.1416015625
+  },
+  "fj0_pt": {
+    "transform": "log",
+    "min": 5.521960792903897,
+    "max": 7.584264818389059
+  },
+  "l0_eta": {
+    "transform": "minmax",
+    "min": -2.93359375,
+    "max": 2.498046875
+  },
+  "l0_phi": {
+    "transform": "minmax",
+    "min": -3.14111328125,
+    "max": 3.1416015625
+  },
+  "l0_pt": {
+    "transform": "log",
+    "min": 3.2214583180487515,
+    "max": 7.179276614061762
+  },
+  "l1_eta": {
+    "transform": "minmax",
+    "min": -2.51806640625,
+    "max": 2.49951171875
+  },
+  "l1_phi": {
+    "transform": "minmax",
+    "min": -3.1416015625,
+    "max": 3.1416015625
+  },
+  "l1_pt": {
+    "transform": "log",
+    "min": 2.708135837388932,
+    "max": 6.776345378819902
+  },
+  "met": {
+    "transform": "log",
+    "min": -2.7693842710701166,
+    "max": 6.7456776439884045
+  },
+  "nbtagsl": {
+    "transform": "minmax",
+    "min": 0.0,
+    "max": 5.0
+  },
+  "njets": {
+    "transform": "minmax",
+    "min": 0.0,
+    "max": 10.0
+  },
+  "mjj_max_any": {
+    "transform": "none",
+    "min": 0.0,
+    "max": 6050.541015625
+  }
+}
