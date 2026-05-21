@@ -42,7 +42,7 @@ class AnalysisProcessor(processor.ProcessorABC):
         self._dtype = dtype
 
         # For ABCDnet evaluations
-        self._checkpoint_path = "/home/users/kmohrman/vbs_vvh/rdf_repo/run3-vbsvvh/abcd/2l1FJ_NEW_RUN2/single/version_3/checkpoints/single-abcdisco-epoch=999-val_loss=0.4857.ckpt"
+        self._checkpoint_path = "single-abcdisco-epoch=999-val_loss=0.4857.ckpt"
         self._model = None
 
         # Create the hist for the 2d abcd
