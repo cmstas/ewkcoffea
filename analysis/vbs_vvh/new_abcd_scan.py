@@ -1,18 +1,14 @@
 import argparse
 import pickle
 import gzip
-import json
 import os
-import shutil
 import numpy as np
-import copy
 
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 import ewkcoffea.modules.plotting_tools as plt_tools
-import topcoffea.modules.MakeLatexTable as mlt
 
 import check_vvh_hists as cvh
 
@@ -111,8 +107,7 @@ def plot_mjj_score_slices(histo_bkg, output_dir="abcd_scan_plots"):
             mjj_proj = mjj_proj / total
         score_lo = score_edges[lo]
         score_hi = score_edges[hi]
-        ax.stairs(mjj_proj, mjj_edges, linewidth=2,
-            color=colors[k], label=f"score [{score_lo:.2f}, {score_hi:.2f})")
+        ax.stairs(mjj_proj, mjj_edges, linewidth=2, color=colors[k], label=f"score [{score_lo:.2f}, {score_hi:.2f})")
 
     ax.set_xlabel("mjj_max_any [GeV]")
     ax.set_ylabel("Normalized yield")

@@ -1012,7 +1012,8 @@ class AnalysisProcessor(processor.ProcessorABC):
 
     def postprocess(self, accumulator):
         if self._siphon_bdt_data:
-            import uproot, os
+            import uproot
+            import os
             out_dict = {k: v.value for k, v in accumulator["bdt_data"].items()}
             os.makedirs(os.path.dirname(self._siphon_output_path), exist_ok=True)
             with uproot.recreate(self._siphon_output_path) as f:
