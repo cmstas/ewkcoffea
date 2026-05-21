@@ -2,6 +2,7 @@ import argparse
 import pickle
 import gzip
 import os
+import shutil
 import numpy as np
 
 import matplotlib
@@ -11,6 +12,9 @@ import matplotlib.pyplot as plt
 import ewkcoffea.modules.plotting_tools as plt_tools
 
 import check_vvh_hists as cvh
+
+HTML_PC = "/home/users/kmohrman/ref_scripts/html_stuff/index.php"
+#HTML_PC = "/home/k.mohrman/ref_scirpts/html_stuff/index.php"
 
 def get_yield(h2d, score_slice, mjj_slice):
     return h2d[score_slice, mjj_slice].sum(flow=False).value
@@ -23,32 +27,27 @@ def plot_mjj_score_slices_optimized(histo_bkg, best_score_cut, output_dir="abcd_
     n_score = len(score_edges) - 1
 
     # Find the bin index corresponding to best_score_cut
-    best_score_bin = np.searchsorted(score_edges, best_score_cut)
-    best_score_bin = int(np.clip(best_score_bin, 0, n_score - 1))
+    best_score_bin = int(np.clip(np.searchsorted(score_edges, best_score_cut), 1, n_score - 1))
 
-    # Helper to find equal-yield split bin within a range of score bins
     def find_equal_yield_split(lo_bin, hi_bin):
+        """Find the bin index that splits [lo_bin, hi_bin) into two equal-yield halves."""
         yields = bkg_vals[lo_bin:hi_bin, :].sum(axis=1)
         cumsum = np.cumsum(yields)
-        total = cumsum[-1]
-        # Find the split that minimizes the difference between the two halves
-        diffs = np.abs(cumsum - (total - cumsum))
-        split_idx = int(np.argmin(diffs))
+        split_idx = int(np.argmin(np.abs(cumsum - cumsum[-1] / 2)))
         return lo_bin + int(np.clip(split_idx + 1, 1, hi_bin - lo_bin - 1))
 
-    # Find the split within the low score side and the high score side
-    lo_split  = find_equal_yield_split(0, best_score_bin)
-    hi_split  = find_equal_yield_split(best_score_bin, n_score)
+    lo_split = find_equal_yield_split(0, best_score_bin)
+    hi_split = find_equal_yield_split(best_score_bin, n_score)
 
-    # Define the four slices
-    # Check if high side has enough bins to subdivide
-    if (hi_split - best_score_bin) <= 0 or (n_score - hi_split) <= 0 or hi_split >= n_score - 1:
+    # Check if the high side has enough bins to subdivide
+    high_side_ok = (hi_split > best_score_bin) and (hi_split < n_score - 1)
+
+    if not high_side_ok:
         print("WARNING: not enough bins on high score side to subdivide, using single slice")
-        hi_split = n_score
         slices = [
-            (0,              lo_split,       "tab:blue",   "low score, low yield"),
-            (lo_split,       best_score_bin, "tab:cyan",   "low score, high yield"),
-            (best_score_bin, n_score,        "tab:red",    "high score (undivided)"),
+            (0,               lo_split,       "tab:blue",   "low score, low yield"),
+            (lo_split,        best_score_bin, "tab:cyan",   "low score, high yield"),
+            (best_score_bin,  n_score,        "tab:red",    "high score (undivided)"),
         ]
     else:
         slices = [
@@ -64,9 +63,9 @@ def plot_mjj_score_slices_optimized(histo_bkg, best_score_cut, output_dir="abcd_
         total = mjj_proj.sum()
         if total > 0:
             mjj_proj = mjj_proj / total
-        score_lo = score_edges[lo]
-        score_hi = score_edges[hi]
-        total_yield = bkg_vals[lo:hi, :].sum()
+        score_lo      = score_edges[lo]
+        score_hi      = score_edges[hi]
+        total_yield   = bkg_vals[lo:hi, :].sum()
         ax.stairs(mjj_proj, mjj_edges, linewidth=2, color=color,
                   label=f"{label} [{score_lo:.2f}, {score_hi:.2f}) yield={total_yield:.1f}")
 
@@ -83,6 +82,7 @@ def plot_mjj_score_slices_optimized(histo_bkg, best_score_cut, output_dir="abcd_
     plt.savefig(f"{output_dir}/mjj_score_slices_optimized.png", dpi=150)
     plt.close()
     print(f"Saved {output_dir}/mjj_score_slices_optimized.png")
+
 
 def plot_mjj_score_slices(histo_bkg, output_dir="abcd_scan_plots"):
 
@@ -347,13 +347,13 @@ def plot_abcd_scan_panels(results, output_path):
     n_score = len(results["score_cuts"])
     n_mjj   = len(results["mjj_cuts"])
 
-    scan_points  = []
-    significance = []
+    scan_points       = []
+    significance      = []
     significance_true = []
-    B_true       = []
-    B_est        = []
-    closure      = []
-    labels       = []
+    B_true            = []
+    B_est             = []
+    closure           = []
+    labels            = []
 
     for i in range(n_score):
         for j in range(n_mjj):
@@ -364,7 +364,7 @@ def plot_abcd_scan_panels(results, output_path):
             )
             B_true.append(results["B_true"][i, j])
             B_est.append(results["B_est"][i, j])
-            closure.append(results["B_est"][i, j] / results["B_true"][i, j] if results["B_true"][i, j] > 0 else np.nan)
+            closure.append(results["closure"][i, j])
             labels.append(f"s>{results['score_cuts'][i]:.2f},mjj>{results['mjj_cuts'][j]:.0f}")
 
     scan_points  = np.array(scan_points)
@@ -462,6 +462,7 @@ def main():
             os.mkdir(out_dir)
         if not os.path.exists(out_dir_with_tag):
             os.mkdir(out_dir_with_tag)
+            shutil.copyfile(HTML_PC, os.path.join(out_dir_with_tag,"index.php"))
 
         # Make a plot to check de-correlation
         plot_mjj_score_slices(histo_bkg, output_dir=out_dir_with_tag)
