@@ -6,7 +6,7 @@ def distance_corr(
         var_2:torch.tensor,
         normedweight:torch.tensor,
         power=1,
-    )->torch.tensor:
+) -> torch.tensor:
 
     # Normalize the weights
     normedweight = normedweight/torch.sum(normedweight)*len(var_1)
