@@ -11,6 +11,8 @@ from coffea.analysis_tools import PackedSelection
 import ewkcoffea.modules.objects_wwz as os_ec
 #import ewkcoffea.modules.selection_wwz as es_ec
 
+from ewkcoffea.modules.paths import ewkcoffea_path as ewkcoffea_path
+
 import torch
 torch.set_num_threads(1)
 from model import ABCDLightningModule
@@ -42,7 +44,7 @@ class AnalysisProcessor(processor.ProcessorABC):
         self._dtype = dtype
 
         # For ABCDnet evaluations
-        self._checkpoint_path = "single-abcdisco-epoch=999-val_loss=0.4857.ckpt"
+        self._checkpoint_path =  ewkcoffea_path("data/vvh_abcd_models/single_abcdisco_2l1fj_dy.ckpt")
         self._model = None
 
         # Create the hist for the 2d abcd
