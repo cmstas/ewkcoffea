@@ -16,8 +16,96 @@ HTML_PC = "/home/users/kmohrman/ref_scripts/html_stuff/index.php"
 def get_yield(h2d, score_slice, mjj_slice):
     return h2d[score_slice, mjj_slice].sum(flow=False).value
 
+def plot_abcd_regions(score_edges, mjj_edges, bkg_vals, score_cut, mjj_cut, title, cbar_label, output_path):
+    """Plot the 2D ABCD regions for a given set of cuts and background values."""
+    score_mid_lo = score_edges[0] + (score_cut - score_edges[0]) / 2
+    score_mid_hi = score_cut      + (score_edges[-1] - score_cut) / 2
+    mjj_mid_lo   = mjj_edges[0]   + (mjj_cut - mjj_edges[0]) / 2
+    mjj_mid_hi   = mjj_cut        + (mjj_edges[-1] - mjj_cut) / 2
+
+    fig, ax = plt.subplots(figsize=(8, 6))
+    im = ax.pcolormesh(score_edges, mjj_edges, bkg_vals.T, cmap="Blues")
+    plt.colorbar(im, ax=ax, label=cbar_label)
+    ax.axvline(score_cut, color="red",    linewidth=2, linestyle="--", label=f"score > {score_cut:.3f}")
+    ax.axhline(mjj_cut,   color="orange", linewidth=2, linestyle="--", label=f"mjj > {mjj_cut:.0f} GeV")
+    ax.text(score_mid_hi, mjj_mid_hi, "A (SR)", ha="center", va="center", color="red",   fontsize=12, fontweight="bold")
+    ax.text(score_mid_lo, mjj_mid_hi, "B",      ha="center", va="center", color="black", fontsize=12, fontweight="bold")
+    ax.text(score_mid_hi, mjj_mid_lo, "C",      ha="center", va="center", color="black", fontsize=12, fontweight="bold")
+    ax.text(score_mid_lo, mjj_mid_lo, "D",      ha="center", va="center", color="black", fontsize=12, fontweight="bold")
+    ax.set_xlim(score_edges[0], score_edges[-1])
+    ax.set_ylim(mjj_edges[0],   mjj_edges[-1])
+    ax.set_xlabel("DNN score")
+    ax.set_ylabel("mjj_max_any [GeV]")
+    ax.set_title(title, fontsize=9)
+    ax.legend(loc="upper right", fontsize=8)
+    plt.tight_layout()
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    plt.savefig(output_path, dpi=150)
+    plt.close()
+    print(f"Saved {output_path}")
+
+def plot_best_working_point(histo_sig, histo_dy, histo_otherbkg, results, output_dir="abcd_scan_plots"):
+    # Find the best working point (max significance)
+    best_idx = np.nanargmax(results["significance"])
+    best_i, best_j = np.unravel_index(best_idx, results["significance"].shape)
+    best_score_cut  = results["score_cuts"][best_i]
+    best_mjj_cut    = results["mjj_cuts"][best_j]
+    best_sig        = results["significance"][best_i, best_j]
+    best_S          = results["S"][best_i, best_j]
+    best_B_dy_true  = results["B_dy_true"][best_i, best_j]
+    best_B_dy_est   = results["B_dy_est"][best_i, best_j]
+    best_B_other    = results["B_other"][best_i, best_j]
+    best_B_total    = results["B_total"][best_i, best_j]
+    best_closure    = results["closure"][best_i, best_j]
+    best_sig_true   = best_S / np.sqrt(best_B_dy_true + best_B_other) if (best_B_dy_true + best_B_other) > 0 else np.nan
+
+    # Print summary
+    print("\n" + "="*50)
+    print("BEST WORKING POINT (max S/sqrt(B_total))")
+    print("="*50)
+    print(f"  Score cut         : {best_score_cut:.4f}  (scan index {best_i})")
+    print(f"  mjj cut           : {best_mjj_cut:.1f} GeV  (scan index {best_j})")
+    print(f"  S                 : {best_S:.4f}")
+    print(f"  B_dy_true (MC)    : {best_B_dy_true:.2f}")
+    print(f"  B_dy_est (B*C/D)  : {best_B_dy_est:.2f}")
+    print(f"  B_other (MC)      : {best_B_other:.2f}")
+    print(f"  B_total           : {best_B_total:.2f}")
+    print(f"  S/sqrt(B_total)   : {best_sig:.4f}")
+    print(f"  S/sqrt(B_true)    : {best_sig_true:.4f}")
+    print(f"  DY Closure        : {best_closure:.4f}")
+    print("="*50 + "\n")
+
+    sig_h   = histo_sig[{"process_grp": sum}]
+    dy_h    = histo_dy[{"process_grp": sum}]
+    other_h = histo_otherbkg[{"process_grp": sum}]
+    score_edges = sig_h.axes["dnn_score"].edges
+    mjj_edges   = sig_h.axes["mjj_max_any"].edges
+    dy_vals     = dy_h.values(flow=False)
+    allbkg_vals = dy_vals + other_h.values(flow=False)
+
+    title_common = (
+        f"S={best_S:.3f}, B_dy_est={best_B_dy_est:.1f}, B_other={best_B_other:.1f}, "
+        f"B_total={best_B_total:.1f}, S/sqrt(B_total)={best_sig:.3f}, closure={best_closure:.3f}"
+    )
+    os.makedirs(output_dir, exist_ok=True)
+
+    plot_abcd_regions(
+        score_edges, mjj_edges, dy_vals,
+        best_score_cut, best_mjj_cut,
+        title=f"Best working point (DY): score>{best_score_cut:.3f}, mjj>{best_mjj_cut:.0f} GeV\n{title_common}",
+        cbar_label="DY yield",
+        output_path=f"{output_dir}/best_working_point_dy.png",
+    )
+    plot_abcd_regions(
+        score_edges, mjj_edges, allbkg_vals,
+        best_score_cut, best_mjj_cut,
+        title=f"Best working point (all bkg): score>{best_score_cut:.3f}, mjj>{best_mjj_cut:.0f} GeV\n{title_common}",
+        cbar_label="Total background yield (DY + other MC)",
+        output_path=f"{output_dir}/best_working_point_allbkg.png",
+    )
+
 def write_abcd_datacards(histo_sig, histo_dy, histo_otherbkg, results, output_dir="abcd_scan_plots", n_top=5):
-    os.makedirs(os.path.join(output_dir, "datacards"), exist_ok=True)
+    os.makedirs(output_dir, exist_ok=True)
 
     # Find the top n_top working points by significance
     sig_flat = results["significance"].flatten()
@@ -30,6 +118,8 @@ def write_abcd_datacards(histo_sig, histo_dy, histo_otherbkg, results, output_di
 
     score_edges = sig_h.axes["dnn_score"].edges
     mjj_edges   = sig_h.axes["mjj_max_any"].edges
+    dy_vals     = dy_h.values(flow=False)
+    allbkg_vals = dy_vals + other_h.values(flow=False)
 
     for rank, flat_idx in enumerate(top_indices):
         i, j = np.unravel_index(flat_idx, results["significance"].shape)
@@ -56,12 +146,14 @@ def write_abcd_datacards(histo_sig, histo_dy, histo_otherbkg, results, output_di
         # Observed (MC pseudodata, blinded)
         A_obs = A_dy + A_other
 
-        # Format the filename
-        score_str = f"{score_cut:.2f}".replace(".", "p")
-        mjj_str   = f"{mjj_cut:.0f}"
-        sig_str   = f"{sig_val:.2f}".replace(".", "p")
-        fpath = os.path.join(output_dir, "datacards", f"wp{rank}_sig{sig_str}_s{score_str}_mjj{mjj_str}.txt")
+        # Format the filename base
+        score_str  = f"{score_cut:.2f}".replace(".", "p")
+        mjj_str    = f"{mjj_cut:.0f}"
+        sig_str    = f"{sig_val:.2f}".replace(".", "p")
+        fname_base = f"dc_wp{rank}_sig{sig_str}_s{score_str}_mjj{mjj_str}"
 
+        # Write the datacard
+        fpath = os.path.join(output_dir, f"{fname_base}.txt")
         with open(fpath, "w") as f:
             f.write(f"# Counting experiment datacard: rank={rank}, score>{score_cut:.4f}, mjj>{mjj_cut:.1f} GeV\n")
             f.write(f"# S/sqrt(B_total)={sig_val:.4f}\n")
@@ -78,8 +170,20 @@ def write_abcd_datacards(histo_sig, histo_dy, histo_otherbkg, results, output_di
             f.write(f"process      0       1\n")
             f.write(f"rate         {A_sig:.4f}  {A_bkg:.4f}\n")
             f.write("-" * 60 + "\n")
-
         print(f"Wrote {fpath}")
+
+        # Write the companion 2D plot
+        plot_abcd_regions(
+            score_edges, mjj_edges, allbkg_vals,
+            score_cut, mjj_cut,
+            title=(
+                f"rank={rank}: score>{score_cut:.3f}, mjj>{mjj_cut:.0f} GeV\n"
+                f"S={A_sig:.3f}, B_dy_est={dy_est:.1f}, B_other={A_other:.1f}, "
+                f"B_total={A_bkg:.1f}, S/sqrt(B_total)={sig_val:.3f}"
+            ),
+            cbar_label="Total background yield (DY + other MC)",
+            output_path=os.path.join(output_dir, f"{fname_base}.png"),
+        )
 
 def plot_mjj_score_slices_optimized(histo_dy, best_score_cut, output_dir="abcd_scan_plots"):
     bkg_h = histo_dy[{"process_grp": sum}]
@@ -125,9 +229,9 @@ def plot_mjj_score_slices_optimized(histo_dy, best_score_cut, output_dir="abcd_s
         total = mjj_proj.sum()
         if total > 0:
             mjj_proj = mjj_proj / total
-        score_lo      = score_edges[lo]
-        score_hi      = score_edges[hi]
-        total_yield   = bkg_vals[lo:hi, :].sum()
+        score_lo    = score_edges[lo]
+        score_hi    = score_edges[hi]
+        total_yield = bkg_vals[lo:hi, :].sum()
         ax.stairs(mjj_proj, mjj_edges, linewidth=2, color=color,
                   label=f"{label} [{score_lo:.2f}, {score_hi:.2f}) yield={total_yield:.1f}")
 
@@ -152,7 +256,6 @@ def plot_mjj_score_slices(histo_dy, output_dir="abcd_scan_plots"):
     bkg_vals    = bkg_h.values(flow=False)
     n_score = len(score_edges) - 1
 
-    # Define a few score slices to compare
     slice_edges = np.linspace(0, n_score, 5, dtype=int)  # 4 equal slices
     colors = ["tab:blue", "tab:orange", "tab:green", "tab:red"]
 
@@ -178,99 +281,6 @@ def plot_mjj_score_slices(histo_dy, output_dir="abcd_scan_plots"):
     plt.savefig(f"{output_dir}/mjj_score_slices.png", dpi=150)
     plt.close()
     print(f"Saved {output_dir}/mjj_score_slices.png")
-
-def plot_best_working_point(histo_sig, histo_dy, histo_otherbkg, results, output_dir="abcd_scan_plots"):
-    # Find the best working point (max significance)
-    best_idx = np.nanargmax(results["significance"])
-    best_i, best_j = np.unravel_index(best_idx, results["significance"].shape)
-    best_score_cut  = results["score_cuts"][best_i]
-    best_mjj_cut    = results["mjj_cuts"][best_j]
-    best_sig        = results["significance"][best_i, best_j]
-    best_S          = results["S"][best_i, best_j]
-    best_B_dy_true  = results["B_dy_true"][best_i, best_j]
-    best_B_dy_est   = results["B_dy_est"][best_i, best_j]
-    best_B_other    = results["B_other"][best_i, best_j]
-    best_B_total    = results["B_total"][best_i, best_j]
-    best_closure    = results["closure"][best_i, best_j]
-    best_sig_true   = best_S / np.sqrt(best_B_dy_true + best_B_other) if (best_B_dy_true + best_B_other) > 0 else np.nan
-
-    # Print summary
-    print("\n" + "="*50)
-    print("BEST WORKING POINT (max S/sqrt(B_total))")
-    print("="*50)
-    print(f"  Score cut         : {best_score_cut:.4f}  (scan index {best_i})")
-    print(f"  mjj cut           : {best_mjj_cut:.1f} GeV  (scan index {best_j})")
-    print(f"  S                 : {best_S:.4f}")
-    print(f"  B_dy_true (MC)    : {best_B_dy_true:.2f}")
-    print(f"  B_dy_est (B*C/D)  : {best_B_dy_est:.2f}")
-    print(f"  B_other (MC)      : {best_B_other:.2f}")
-    print(f"  B_total           : {best_B_total:.2f}")
-    print(f"  S/sqrt(B_total)   : {best_sig:.4f}")
-    print(f"  S/sqrt(B_true)    : {best_sig_true:.4f}")
-    print(f"  DY Closure        : {best_closure:.4f}")
-    print("="*50 + "\n")
-
-    sig_h   = histo_sig[{"process_grp": sum}]
-    dy_h    = histo_dy[{"process_grp": sum}]
-    other_h = histo_otherbkg[{"process_grp": sum}]
-    score_edges = sig_h.axes["dnn_score"].edges
-    mjj_edges   = sig_h.axes["mjj_max_any"].edges
-    dy_vals     = dy_h.values(flow=False)
-    other_vals  = other_h.values(flow=False)
-    allbkg_vals = dy_vals + other_vals
-
-    score_mid_lo = score_edges[0] + (best_score_cut - score_edges[0]) / 2
-    score_mid_hi = best_score_cut + (score_edges[-1] - best_score_cut) / 2
-    mjj_mid_lo   = mjj_edges[0]   + (best_mjj_cut - mjj_edges[0]) / 2
-    mjj_mid_hi   = best_mjj_cut   + (mjj_edges[-1] - best_mjj_cut) / 2
-
-    def _add_cut_lines_and_labels(ax):
-        ax.axvline(best_score_cut, color="red",    linewidth=2, linestyle="--", label=f"score > {best_score_cut:.3f}")
-        ax.axhline(best_mjj_cut,   color="orange", linewidth=2, linestyle="--", label=f"mjj > {best_mjj_cut:.0f} GeV")
-        ax.text(score_mid_hi, mjj_mid_hi, "A (SR)", ha="center", va="center", color="red",   fontsize=12, fontweight="bold")
-        ax.text(score_mid_lo, mjj_mid_hi, "B",      ha="center", va="center", color="black", fontsize=12, fontweight="bold")
-        ax.text(score_mid_hi, mjj_mid_lo, "C",      ha="center", va="center", color="black", fontsize=12, fontweight="bold")
-        ax.text(score_mid_lo, mjj_mid_lo, "D",      ha="center", va="center", color="black", fontsize=12, fontweight="bold")
-        ax.set_xlim(score_edges[0], score_edges[-1])
-        ax.set_ylim(mjj_edges[0],   mjj_edges[-1])
-        ax.set_xlabel("DNN score")
-        ax.set_ylabel("mjj_max_any [GeV]")
-        ax.legend(loc="upper right", fontsize=8)
-
-    os.makedirs(output_dir, exist_ok=True)
-
-    # Plot 1: DY only
-    fig, ax = plt.subplots(figsize=(8, 6))
-    im = ax.pcolormesh(score_edges, mjj_edges, dy_vals.T, cmap="Blues")
-    plt.colorbar(im, ax=ax, label="DY yield")
-    _add_cut_lines_and_labels(ax)
-    ax.set_title(
-        f"Best working point (DY): score>{best_score_cut:.3f}, mjj>{best_mjj_cut:.0f} GeV\n"
-        f"S={best_S:.3f}, B_dy_est={best_B_dy_est:.1f}, B_other={best_B_other:.1f}, "
-        f"B_total={best_B_total:.1f}, S/sqrt(B_total)={best_sig:.3f}, closure={best_closure:.3f}",
-        fontsize=9,
-    )
-    plt.tight_layout()
-    plt.savefig(f"{output_dir}/best_working_point_dy.png", dpi=150)
-    plt.close()
-    print(f"Saved {output_dir}/best_working_point_dy.png")
-
-    # Plot 2: all backgrounds
-    fig, ax = plt.subplots(figsize=(8, 6))
-    im = ax.pcolormesh(score_edges, mjj_edges, allbkg_vals.T, cmap="Blues")
-    plt.colorbar(im, ax=ax, label="Total background yield (DY + other MC)")
-    _add_cut_lines_and_labels(ax)
-    ax.set_title(
-        f"Best working point (all bkg): score>{best_score_cut:.3f}, mjj>{best_mjj_cut:.0f} GeV\n"
-        f"S={best_S:.3f}, B_dy_est={best_B_dy_est:.1f}, B_other={best_B_other:.1f}, "
-        f"B_total={best_B_total:.1f}, S/sqrt(B_total)={best_sig:.3f}, closure={best_closure:.3f}",
-        fontsize=9,
-    )
-    plt.tight_layout()
-    plt.savefig(f"{output_dir}/best_working_point_allbkg.png", dpi=150)
-    plt.close()
-    print(f"Saved {output_dir}/best_working_point_allbkg.png")
-
 
 def plot_abcd_2d_snapshots(histo_sig, histo_dy, histo_otherbkg, results, output_dir="abcd_snapshots"):
     os.makedirs(output_dir, exist_ok=True)
@@ -376,15 +386,15 @@ def do_abcd_scan(histo_sig, histo_dy, histo_otherbkg, score_axis_name="dnn_score
 
     for i, si in enumerate(score_cut_bins):
         for j, mj in enumerate(mjj_cut_bins):
-            A_sig       = get_yield(sig_h,   slice(si, None), slice(mj, None))
-            A_dy        = get_yield(dy_h,    slice(si, None), slice(mj, None))
-            B_dy        = get_yield(dy_h,    slice(None, si), slice(mj, None))
-            C_dy        = get_yield(dy_h,    slice(si, None), slice(None, mj))
-            D_dy        = get_yield(dy_h,    slice(None, si), slice(None, mj))
-            A_other     = get_yield(other_h, slice(si, None), slice(mj, None))
+            A_sig   = get_yield(sig_h,   slice(si, None), slice(mj, None))
+            A_dy    = get_yield(dy_h,    slice(si, None), slice(mj, None))
+            B_dy    = get_yield(dy_h,    slice(None, si), slice(mj, None))
+            C_dy    = get_yield(dy_h,    slice(si, None), slice(None, mj))
+            D_dy    = get_yield(dy_h,    slice(None, si), slice(None, mj))
+            A_other = get_yield(other_h, slice(si, None), slice(mj, None))
 
-            dy_est      = (B_dy * C_dy / D_dy) if D_dy > 0 else np.nan
-            b_total     = (dy_est + A_other) if not np.isnan(dy_est) else np.nan
+            dy_est  = (B_dy * C_dy / D_dy) if D_dy > 0 else np.nan
+            b_total = (dy_est + A_other) if not np.isnan(dy_est) else np.nan
 
             S_arr[i, j]        = A_sig
             B_dy_true[i, j]    = A_dy
@@ -446,14 +456,12 @@ def plot_abcd_scan_panels(results, output_path):
 
     fig, axes = plt.subplots(3, 1, figsize=(min(max(12, len(scan_points)//4), 80), 12), sharex=True)
 
-    # Top panel: significance
     axes[0].plot(scan_points, significance,      marker="o", markersize=3, linewidth=1, color="tab:blue",   label="S/sqrt(B_total)")
     axes[0].plot(scan_points, significance_true, marker="o", markersize=3, linewidth=1, color="tab:orange", label="S/sqrt(B_true_total)")
     axes[0].set_ylabel("Significance")
     axes[0].legend()
     axes[0].grid(True, alpha=0.3)
 
-    # Middle panel: background yields
     axes[1].plot(scan_points, B_dy_true, marker="o", markersize=3, linewidth=1, color="tab:blue",   label="B_dy true (MC)")
     axes[1].plot(scan_points, B_dy_est,  marker="o", markersize=3, linewidth=1, color="tab:cyan",   label="B_dy est (B*C/D)")
     axes[1].plot(scan_points, B_other,   marker="o", markersize=3, linewidth=1, color="tab:green",  label="B_other (MC)")
@@ -462,7 +470,6 @@ def plot_abcd_scan_panels(results, output_path):
     axes[1].legend()
     axes[1].grid(True, alpha=0.3)
 
-    # Bottom panel: DY closure ratio
     axes[2].plot(scan_points, closure, marker="o", markersize=3, linewidth=1, color="tab:green")
     axes[2].axhline(1.0, color="black", linestyle="--", linewidth=1)
     axes[2].axhline(1.2, color="red",   linestyle="--", linewidth=0.8, alpha=0.5)
@@ -518,22 +525,18 @@ def main():
     if not os.path.exists(os.path.join(out_dir, "index.php")):
         shutil.copyfile(HTML_PC, os.path.join(out_dir, "index.php"))
 
-    # Make a plot to check decorrelation (DY only)
     plot_mjj_score_slices(histo_dy, output_dir=out_dir)
 
-    # Run the scan
     results = do_abcd_scan(histo_sig, histo_dy, histo_otherbkg, n_scan=50)
     plot_abcd_scan_panels(results, f"{out_dir}/abcd_scan_panels.png")
     plot_abcd_2d_snapshots(histo_sig, histo_dy, histo_otherbkg, results, output_dir=out_dir)
     plot_best_working_point(histo_sig, histo_dy, histo_otherbkg, results, output_dir=out_dir)
 
-    # Make the slices plot based on best point
     best_idx = np.nanargmax(results["significance"])
     best_i, best_j = np.unravel_index(best_idx, results["significance"].shape)
     best_score_cut = results["score_cuts"][best_i]
     plot_mjj_score_slices_optimized(histo_dy, best_score_cut, output_dir=out_dir)
 
-    # Write datacards for best scan points
     write_abcd_datacards(histo_sig, histo_dy, histo_otherbkg, results, output_dir=out_dir)
 
 main()
