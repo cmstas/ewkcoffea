@@ -45,6 +45,18 @@ class AnalysisProcessor(processor.ProcessorABC):
         self._checkpoint_path = "/home/users/kmohrman/vbs_vvh/rdf_repo/run3-vbsvvh/abcd/2l1FJ_NEW_RUN2/single/version_3/checkpoints/single-abcdisco-epoch=999-val_loss=0.4857.ckpt"
         self._model = None
 
+        # Create the hist for the 2d abcd
+        self.mjj_max_any_cap = 2000
+        self._abcd_histo = hist.Hist(
+            hist.axis.StrCategory([], growth=True, name="process", label="process"),
+            hist.axis.StrCategory([], growth=True, name="category", label="category"),
+            hist.axis.Integer(0,40, growth=True, name="lepflav", label="lepflav"),
+            axis.Regular(50, 0, 1, name="dnn_score",   label="DNN score from ABCDnet"),
+            axis.Regular(50, 0, self.mjj_max_any_cap, name="mjj_max_any", label="Leading mjj of pair of any (central or fwd) jets"),
+            storage="weight", # Keeps track of sumw2
+            name="Counts",
+        )
+
         # Create the dense axes for the histograms
         self._dense_axes_dict = {
             "met"   : axis.Regular(180, 0, 750, name="met",  label="met"),
@@ -212,6 +224,7 @@ class AnalysisProcessor(processor.ProcessorABC):
                 storage="weight", # Keeps track of sumw2
                 name="Counts",
             )
+        dout["abcd_histo"] = self._abcd_histo
 
         # Set the accumulator
         self._accumulator = processor.dict_accumulator(dout)
@@ -598,6 +611,7 @@ class AnalysisProcessor(processor.ProcessorABC):
 
         # Put the variables we'll plot into a dictionary for easy access later
         dense_variables_dict = {
+
             "met" : met.pt,
             "metphi" : met.phi,
             "scalarptsum_lep" : scalarptsum_lep,
@@ -912,6 +926,23 @@ class AnalysisProcessor(processor.ProcessorABC):
 
 
         ######### Fill histos #########
+
+        for sr_cat in cat_dict["lep_chan_lst"]:
+            all_cuts_mask = selections.all(sr_cat)
+            weight = weights_obj_base.weight(None)
+            mjj_max_any_flow = ak.where(mjj_max_any<self.mjj_max_any_cap,mjj_max_any,self.mjj_max_any_cap-1.0)
+            # Fill a 2d histo
+            abcd_axes_fill_info_dict = {
+                "mjj_max_any"   : ak.fill_none(mjj_max_any_flow[all_cuts_mask],0), # Don't like this fill_none
+                "dnn_score"     : ak.fill_none(dnn_score[all_cuts_mask],0),   # Don't like this fill_none
+                "weight"        : ak.fill_none(weight[all_cuts_mask],0),      # Don't like this fill_none
+                "process"       : histAxisName[all_cuts_mask],
+                "category"      : sr_cat,
+                "lepflav"       : abs_pdgid_sum[all_cuts_mask],
+            }
+            self.accumulator["abcd_histo"].fill(**abcd_axes_fill_info_dict)
+
+
 
         wgt_correction_syst_lst = []
 
