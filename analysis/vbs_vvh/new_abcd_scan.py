@@ -16,6 +16,71 @@ HTML_PC = "/home/users/kmohrman/ref_scripts/html_stuff/index.php"
 def get_yield(h2d, score_slice, mjj_slice):
     return h2d[score_slice, mjj_slice].sum(flow=False).value
 
+def write_abcd_datacards(histo_sig, histo_dy, histo_otherbkg, results, output_dir="abcd_scan_plots", n_top=5):
+    os.makedirs(os.path.join(output_dir, "datacards"), exist_ok=True)
+
+    # Find the top n_top working points by significance
+    sig_flat = results["significance"].flatten()
+    top_indices = np.argsort(sig_flat)[::-1]
+    top_indices = top_indices[~np.isnan(sig_flat[top_indices])][:n_top]
+
+    sig_h   = histo_sig[{"process_grp": sum}]
+    dy_h    = histo_dy[{"process_grp": sum}]
+    other_h = histo_otherbkg[{"process_grp": sum}]
+
+    score_edges = sig_h.axes["dnn_score"].edges
+    mjj_edges   = sig_h.axes["mjj_max_any"].edges
+
+    for rank, flat_idx in enumerate(top_indices):
+        i, j = np.unravel_index(flat_idx, results["significance"].shape)
+        score_cut = results["score_cuts"][i]
+        mjj_cut   = results["mjj_cuts"][j]
+        sig_val   = results["significance"][i, j]
+
+        # Get the bin indices corresponding to the cuts
+        si = int(np.searchsorted(score_edges, score_cut))
+        mj = int(np.searchsorted(mjj_edges,   mjj_cut))
+
+        # Get yields in region A
+        A_sig   = get_yield(sig_h,   slice(si, None), slice(mj, None))
+        A_dy    = get_yield(dy_h,    slice(si, None), slice(mj, None))
+        B_dy    = get_yield(dy_h,    slice(None, si), slice(mj, None))
+        C_dy    = get_yield(dy_h,    slice(si, None), slice(None, mj))
+        D_dy    = get_yield(dy_h,    slice(None, si), slice(None, mj))
+        A_other = get_yield(other_h, slice(si, None), slice(mj, None))
+
+        # DY ABCD estimate in region A
+        dy_est = (B_dy * C_dy / D_dy) if D_dy > 0 else 0.0
+        A_bkg  = dy_est + A_other
+
+        # Observed (MC pseudodata, blinded)
+        A_obs = A_dy + A_other
+
+        # Format the filename
+        score_str = f"{score_cut:.2f}".replace(".", "p")
+        mjj_str   = f"{mjj_cut:.0f}"
+        sig_str   = f"{sig_val:.2f}".replace(".", "p")
+        fpath = os.path.join(output_dir, "datacards", f"wp{rank}_sig{sig_str}_s{score_str}_mjj{mjj_str}.txt")
+
+        with open(fpath, "w") as f:
+            f.write(f"# Counting experiment datacard: rank={rank}, score>{score_cut:.4f}, mjj>{mjj_cut:.1f} GeV\n")
+            f.write(f"# S/sqrt(B_total)={sig_val:.4f}\n")
+            f.write(f"# A_dy_true={A_dy:.2f}, A_dy_est={dy_est:.2f}, A_other={A_other:.2f}\n\n")
+            f.write("imax 1  number of channels\n")
+            f.write("jmax 1  number of backgrounds\n")
+            f.write("kmax 0  number of nuisance parameters\n")
+            f.write("-" * 60 + "\n")
+            f.write(f"bin          A\n")
+            f.write(f"observation  {A_obs:.4f}\n")
+            f.write("-" * 60 + "\n")
+            f.write(f"bin          A       A\n")
+            f.write(f"process      sig     bkg\n")
+            f.write(f"process      0       1\n")
+            f.write(f"rate         {A_sig:.4f}  {A_bkg:.4f}\n")
+            f.write("-" * 60 + "\n")
+
+        print(f"Wrote {fpath}")
+
 def plot_mjj_score_slices_optimized(histo_dy, best_score_cut, output_dir="abcd_scan_plots"):
     bkg_h = histo_dy[{"process_grp": sum}]
     score_edges = bkg_h.axes["dnn_score"].edges
@@ -462,9 +527,13 @@ def main():
     plot_abcd_2d_snapshots(histo_sig, histo_dy, histo_otherbkg, results, output_dir=out_dir)
     plot_best_working_point(histo_sig, histo_dy, histo_otherbkg, results, output_dir=out_dir)
 
+    # Make the slices plot based on best point
     best_idx = np.nanargmax(results["significance"])
     best_i, best_j = np.unravel_index(best_idx, results["significance"].shape)
     best_score_cut = results["score_cuts"][best_i]
     plot_mjj_score_slices_optimized(histo_dy, best_score_cut, output_dir=out_dir)
+
+    # Write datacards for best scan points
+    write_abcd_datacards(histo_sig, histo_dy, histo_otherbkg, results, output_dir=out_dir)
 
 main()
