@@ -1,6 +1,7 @@
 name: coffea-env
 channels:
   - conda-forge
+  - pytorch
 dependencies:
   - conda-forge::python>=3.10
   - numpy
@@ -17,3 +18,5 @@ dependencies:
   - conda-forge::setuptools
   - conda-forge::xgboost
   - pip
+  - pytorch
+  - pytorch-lightning
