@@ -19,6 +19,75 @@ import check_vvh_hists as cvh
 def get_yield(h2d, score_slice, mjj_slice):
     return h2d[score_slice, mjj_slice].sum(flow=False).value
 
+def plot_mjj_score_slices_optimized(histo_bkg, best_score_cut, output_dir="abcd_scan_plots"):
+    bkg_h = histo_bkg[{"process_grp": sum}]
+    score_edges = bkg_h.axes["dnn_score"].edges
+    mjj_edges   = bkg_h.axes["mjj_max_any"].edges
+    bkg_vals    = bkg_h.values(flow=False)
+    n_score = len(score_edges) - 1
+
+    # Find the bin index corresponding to best_score_cut
+    best_score_bin = np.searchsorted(score_edges, best_score_cut)
+    best_score_bin = int(np.clip(best_score_bin, 0, n_score - 1))
+
+    # Helper to find equal-yield split bin within a range of score bins
+    def find_equal_yield_split(lo_bin, hi_bin):
+        yields = bkg_vals[lo_bin:hi_bin, :].sum(axis=1)
+        cumsum = np.cumsum(yields)
+        total = cumsum[-1]
+        # Find the split that minimizes the difference between the two halves
+        diffs = np.abs(cumsum - (total - cumsum))
+        split_idx = int(np.argmin(diffs))
+        return lo_bin + int(np.clip(split_idx + 1, 1, hi_bin - lo_bin - 1))
+
+    # Find the split within the low score side and the high score side
+    lo_split  = find_equal_yield_split(0, best_score_bin)
+    hi_split  = find_equal_yield_split(best_score_bin, n_score)
+
+    # Define the four slices
+    # Check if high side has enough bins to subdivide
+    if (hi_split - best_score_bin) <= 0 or (n_score - hi_split) <= 0 or hi_split >= n_score - 1:
+        print("WARNING: not enough bins on high score side to subdivide, using single slice")
+        hi_split = n_score
+        slices = [
+            (0,              lo_split,       "tab:blue",   "low score, low yield"),
+            (lo_split,       best_score_bin, "tab:cyan",   "low score, high yield"),
+            (best_score_bin, n_score,        "tab:red",    "high score (undivided)"),
+        ]
+    else:
+        slices = [
+            (0,               lo_split,       "tab:blue",   "low score, low yield"),
+            (lo_split,        best_score_bin, "tab:cyan",   "low score, high yield"),
+            (best_score_bin,  hi_split,       "tab:orange", "high score, low yield"),
+            (hi_split,        n_score,        "tab:red",    "high score, high yield"),
+        ]
+
+    fig, ax = plt.subplots(figsize=(8, 6))
+    for lo, hi, color, label in slices:
+        mjj_proj = bkg_vals[lo:hi, :].sum(axis=0)
+        total = mjj_proj.sum()
+        if total > 0:
+            mjj_proj = mjj_proj / total
+        score_lo = score_edges[lo]
+        score_hi = score_edges[hi]
+        total_yield = bkg_vals[lo:hi, :].sum()
+        ax.stairs(mjj_proj, mjj_edges, linewidth=2, color=color,
+                  label=f"{label} [{score_lo:.2f}, {score_hi:.2f}) yield={total_yield:.1f}")
+
+    ax.set_xlabel("mjj_max_any [GeV]")
+    ax.set_ylabel("Normalized yield")
+    ax.set_title(
+        f"mjj distribution in optimized score slices (background)\n"
+        f"Split at best score cut ({best_score_cut:.3f}), then equal-yield subdivisions"
+    )
+    ax.legend(loc="upper right", fontsize=8)
+    ax.grid(True, alpha=0.3)
+    plt.tight_layout()
+    os.makedirs(output_dir, exist_ok=True)
+    plt.savefig(f"{output_dir}/mjj_score_slices_optimized.png", dpi=150)
+    plt.close()
+    print(f"Saved {output_dir}/mjj_score_slices_optimized.png")
+
 def plot_mjj_score_slices(histo_bkg, output_dir="abcd_scan_plots"):
 
     bkg_h = histo_bkg[{"process_grp": sum}]
@@ -310,13 +379,14 @@ def plot_abcd_scan_panels(results, output_path):
     B_est        = np.array(B_est)
     closure      = np.array(closure)
 
-    fig, axes = plt.subplots(3, 1, figsize=(max(12, len(scan_points)//4), 12), sharex=True)
+    fig, axes = plt.subplots(3, 1, figsize=(min(max(12, len(scan_points)//4), 80), 12), sharex=True)
 
     # Top panel: significance
     axes[0].plot(scan_points, significance,      marker="o", markersize=3, linewidth=1, color="tab:blue",   label="S/sqrt(B_est)")
     axes[0].plot(scan_points, significance_true, marker="o", markersize=3, linewidth=1, color="tab:orange", label="S/sqrt(B_true)")
     axes[0].set_ylabel("Significance")
     axes[0].legend()
+    axes[0].grid(True, alpha=0.3)
 
     # Middle panel: B_true and B_est
     axes[1].plot(scan_points, B_true, marker="o", markersize=3, linewidth=1, color="tab:blue",   label="B true (MC)")
@@ -335,9 +405,13 @@ def plot_abcd_scan_panels(results, output_path):
     axes[2].set_ylim(0, 2)
     axes[2].grid(True, alpha=0.3)
 
+    axes[0].set_xlim(-10, len(scan_points) + 10)
+
     tick_step = max(1, len(scan_points) // 20)
-    axes[2].set_xticks(scan_points[::tick_step])
-    axes[2].set_xticklabels(labels[::tick_step], rotation=90, fontsize=6)
+    tick_positions = [0] + list(scan_points[::tick_step])
+    tick_labels = [labels[0]] + [labels[i] for i in range(0, len(scan_points), tick_step)]
+    axes[2].set_xticks(tick_positions)
+    axes[2].set_xticklabels(tick_labels, rotation=90, fontsize=6)
 
     plt.tight_layout()
     plt.savefig(output_path, dpi=200)
@@ -398,11 +472,15 @@ def main():
         plot_mjj_score_slices(histo_bkg, output_dir=out_dir_with_tag)
 
         # Do the scan and print results
-        results = do_abcd_scan(histo_sig, histo_bkg)
+        results = do_abcd_scan(histo_sig, histo_bkg, n_scan=50)
         plot_abcd_scan_panels(results, f"{out_dir_with_tag}/abcd_scan_panels.png")
         plot_abcd_2d_snapshots(histo_sig, histo_bkg, results, output_dir=out_dir_with_tag)
         plot_best_working_point(histo_sig, histo_bkg, results, output_dir=out_dir_with_tag)
 
+        best_idx = np.nanargmax(results["significance"])
+        best_i, best_j = np.unravel_index(best_idx, results["significance"].shape)
+        best_score_cut = results["score_cuts"][best_i]
+        plot_mjj_score_slices_optimized(histo_bkg, best_score_cut, output_dir=out_dir_with_tag)
 
 
 main()
