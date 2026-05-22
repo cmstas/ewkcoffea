@@ -144,7 +144,7 @@ def write_abcd_datacards(histo_sig, histo_dy, histo_otherbkg, results, output_di
         A_bkg  = dy_est + A_other
 
         # Observed (MC pseudodata, blinded)
-        A_obs = A_dy + A_other
+        A_obs = A_sig + A_bkg
 
         # Format the filename base
         score_str  = f"{score_cut:.2f}".replace(".", "p")
