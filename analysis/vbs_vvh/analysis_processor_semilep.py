@@ -99,6 +99,7 @@ class AnalysisProcessor(processor.ProcessorABC):
             "nleps"   : axis.Regular(5, 0, 5, name="nleps",   label="Lep multiplicity"),
             "nbtagsl" : axis.Regular(4, 0, 4, name="nbtagsl", label="Loose btag multiplicity"),
             "nbtagsm" : axis.Regular(4, 0, 4, name="nbtagsm", label="Medium btag multiplicity"),
+            "nbtagst" : axis.Regular(4, 0, 4, name="nbtagst", label="Tight btag multiplicity"),
 
             "njets_counts"   : axis.Regular(30, 0, 30, name="njets_counts",   label="Jet multiplicity counts (central)"),
             "nleps_counts"   : axis.Regular(30, 0, 30, name="nleps_counts",   label="Lep multiplicity counts (central)"),
@@ -252,22 +253,35 @@ class AnalysisProcessor(processor.ProcessorABC):
         #self._siphon_output_path = "histos/bdt_out.root"
         self._siphon_output_path = f"histos/{siphon_out_name}.root"
         self._siphon_bdt_data = siphon_bdt_data
-        self._siphon_selection = ["2lOSSF_1fjx"]
+        self._siphon_selection = ["2lOSSF_1fjx_2j"]
         #self._siphon_selection = ["2lOSSF_1fjx_2j_mjj100"]
         self._bdt_vars = [
+
             "l0_pt",
             "l0_eta",
             "l0_phi",
             "l1_pt",
             "l1_eta",
             "l1_phi",
+            "mass_l0l1",
+
             "fj0_pt",
             "fj0_eta",
             "fj0_phi",
-            "met",
+            "fj0_mparticlenet",
+
+            "j0any_pt",
+            "j0any_eta",
+            "j0any_phi",
             "njets",
+            "njets_forward",
             "nbtagsl",
+            "nbtagsm",
+            "nbtagst",
             "mjj_max_any",
+
+            "met",
+            "metphi",
         ]
         if self._siphon_bdt_data:
             bdt_out = {var: processor.column_accumulator(np.array([], dtype=np.float32)) for var in self._bdt_vars}
@@ -290,11 +304,13 @@ class AnalysisProcessor(processor.ProcessorABC):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self._device = device
         self._model = ABCDLightningModule(
-            input_size=12,
+            input_size=22,
+            #input_size=18,
             hidden_layers=[64, 32, 16],
             learning_rate=1e-4,
             bce_weight=1.0,
-            disco_lambda=10.0,
+            #disco_lambda=100.0,
+            disco_lambda=0.0,
             flavor="single",
             use_batchnorm=True,
             dropout=0.2,
@@ -307,7 +323,7 @@ class AnalysisProcessor(processor.ProcessorABC):
         self._model.to(device)
         self._model.eval()
 
-    def _run_abcd_inference(self, events, mask):
+    def _run_abcd_inference(self, events, mask, njets, njets_forward, nbtagsl, nbtagsm, nbtagst, goodJetsCentFwd_ptordered, jjCentFwd_pairs):
         """Build feature matrix and return DNN scores for events passing mask."""
         if not hasattr(self, '_model') or self._model is None:
             self._load_model()
@@ -328,22 +344,34 @@ class AnalysisProcessor(processor.ProcessorABC):
                 arr = (arr - lo) / denom
             return np.clip(arr, 0.0, 1.0).astype(np.float32)
 
-        fj0 = ak.pad_none(events.fatjet[ak.argsort(events.fatjet.pt, axis=-1, ascending=False)], 1)[:,0]
-        l   = ak.pad_none(events.l_vvh_t, 2)
+        fj0   = ak.pad_none(events.fatjet[ak.argsort(events.fatjet.pt, axis=-1, ascending=False)], 1)[:,0]
+        l     = ak.pad_none(events.l_vvh_t, 2)
+        j0any = ak.pad_none(goodJetsCentFwd_ptordered, 1)[:,0]
+        mjj_max_any = ak.fill_none(ak.max((jjCentFwd_pairs.j0 + jjCentFwd_pairs.j1).mass,axis=-1),0)
 
         feature_matrix = np.column_stack([
-            scale("fj0_eta",  ak.to_numpy(ak.fill_none(fj0.eta,   0.0)[mask])),
-            scale("fj0_phi",  ak.to_numpy(ak.fill_none(fj0.phi,   0.0)[mask])),
-            scale("fj0_pt",   ak.to_numpy(ak.fill_none(fj0.pt,    1.0)[mask])),
-            scale("l0_eta",   ak.to_numpy(ak.fill_none(l[:,0].eta, 0.0)[mask])),
-            scale("l0_phi",   ak.to_numpy(ak.fill_none(l[:,0].phi, 0.0)[mask])),
-            scale("l0_pt",    ak.to_numpy(ak.fill_none(l[:,0].pt,  1.0)[mask])),
-            scale("l1_eta",   ak.to_numpy(ak.fill_none(l[:,1].eta, 0.0)[mask])),
-            scale("l1_phi",   ak.to_numpy(ak.fill_none(l[:,1].phi, 0.0)[mask])),
-            scale("l1_pt",    ak.to_numpy(ak.fill_none(l[:,1].pt,  1.0)[mask])),
-            scale("met",      ak.to_numpy(events.met.pt[mask])),
-            scale("nbtagsl",  ak.to_numpy(ak.num(events.jet[events.jet.isLooseBTag][mask]))),
-            scale("njets",    ak.to_numpy(ak.num(events.jet[abs(events.jet.eta) <= 2.4][mask]))),
+            scale("l0_pt",            ak.to_numpy(ak.fill_none(l[:,0].pt,                    1.0)[mask])),
+            scale("l0_eta",           ak.to_numpy(ak.fill_none(l[:,0].eta,                   0.0)[mask])),
+            scale("l0_phi",           ak.to_numpy(ak.fill_none(l[:,0].phi,                   0.0)[mask])),
+            scale("l1_pt",            ak.to_numpy(ak.fill_none(l[:,1].pt,                    1.0)[mask])),
+            scale("l1_eta",           ak.to_numpy(ak.fill_none(l[:,1].eta,                   0.0)[mask])),
+            scale("l1_phi",           ak.to_numpy(ak.fill_none(l[:,1].phi,                   0.0)[mask])),
+            scale("mass_l0l1",        ak.to_numpy(ak.fill_none((l[:,0]+l[:,1]).mass,          0.0)[mask])),
+            scale("fj0_pt",           ak.to_numpy(ak.fill_none(fj0.pt,                       1.0)[mask])),
+            scale("fj0_eta",          ak.to_numpy(ak.fill_none(fj0.eta,                      0.0)[mask])),
+            scale("fj0_phi",          ak.to_numpy(ak.fill_none(fj0.phi,                      0.0)[mask])),
+            scale("fj0_mparticlenet", ak.to_numpy(ak.fill_none(fj0.particleNetLegacy_mass,   0.0)[mask])),
+            scale("j0any_pt",         ak.to_numpy(ak.fill_none(j0any.pt,                     1.0)[mask])),
+            scale("j0any_eta",        ak.to_numpy(ak.fill_none(j0any.eta,                    0.0)[mask])),
+            scale("j0any_phi",        ak.to_numpy(ak.fill_none(j0any.phi,                    0.0)[mask])),
+            scale("njets",            ak.to_numpy(njets[mask])),
+            scale("njets_forward",    ak.to_numpy(njets_forward[mask])),
+            scale("nbtagsl",          ak.to_numpy(nbtagsl[mask])),
+            scale("nbtagsm",          ak.to_numpy(nbtagsm[mask])),
+            scale("nbtagst",          ak.to_numpy(nbtagst[mask])),
+            scale("mjj_max_any",      ak.to_numpy(mjj_max_any[mask])),
+            scale("met",              ak.to_numpy(events.met.pt[mask])),
+            scale("metphi",           ak.to_numpy(events.met.phi[mask])),
         ])
 
         features_tensor = torch.from_numpy(feature_matrix).to(self._device)
@@ -663,6 +691,7 @@ class AnalysisProcessor(processor.ProcessorABC):
             "njets_counts" : njets,
             "nbtagsl_counts" : nbtagsl,
 
+            "nbtagst" : nbtagst,
             "nbtagsm" : nbtagsm,
             "nbtagsl" : nbtagsl,
 
@@ -923,12 +952,13 @@ class AnalysisProcessor(processor.ProcessorABC):
 
         # For ABCDnet evaluations
         #sr_mask = selections.all("2lOSSF_1fjx_2j_mjj100")
-        dnn_score = self._run_abcd_inference(events, pass_through)
+        dnn_score = self._run_abcd_inference(events, pass_through, njets, njets_forward, nbtagsl, nbtagsm, nbtagst, goodJetsCentFwd_ptordered, jjCentFwd_pairs)
         dense_variables_dict["dnn_score"] = dnn_score
 
 
-        ######### Fill histos #########
+        ######### Fill the 2d abcd histo #########
 
+        # 2d abcd
         for sr_cat in cat_dict["lep_chan_lst"]:
             all_cuts_mask = selections.all(sr_cat)
             weight = weights_obj_base.weight(None)
@@ -945,6 +975,7 @@ class AnalysisProcessor(processor.ProcessorABC):
             self.accumulator["abcd_histo"].fill(**abcd_axes_fill_info_dict)
 
 
+        ######### Fill 1d histos #########
 
         wgt_correction_syst_lst = []
 
