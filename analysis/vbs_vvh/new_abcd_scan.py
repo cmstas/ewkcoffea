@@ -16,6 +16,128 @@ HTML_PC = "/home/users/kmohrman/ref_scripts/html_stuff/index.php"
 def get_yield(h2d, score_slice, mjj_slice):
     return h2d[score_slice, mjj_slice].sum(flow=False).value
 
+
+def write_score_only_datacard(best, output_path):
+    A_obs = best["S"] + best["B"]
+    with open(output_path, "w") as f:
+        f.write(f"# Score-only counting experiment datacard\n")
+        f.write(f"# score > {best['score_cut']:.4f}\n")
+        f.write(f"# S/sqrt(B)={best['significance']:.4f}\n\n")
+        f.write("imax 1  number of channels\n")
+        f.write("jmax 1  number of backgrounds\n")
+        f.write("kmax 0  number of nuisance parameters\n")
+        f.write("-" * 60 + "\n")
+        f.write(f"bin          A\n")
+        f.write(f"observation  {A_obs:.4f}\n")
+        f.write("-" * 60 + "\n")
+        f.write(f"bin          A       A\n")
+        f.write(f"process      sig     bkg\n")
+        f.write(f"process      0       1\n")
+        f.write(f"rate         {best['S']:.4f}  {best['B']:.4f}\n")
+        f.write("-" * 60 + "\n")
+    print(f"Wrote {output_path}")
+
+
+def scan_score_only(histo_sig, histo_abcdbkg, histo_otherbkg, score_axis_name="dnn_score"):
+    sig_h   = histo_sig[{"process_grp": sum}]
+    abcd_h  = histo_abcdbkg[{"process_grp": sum}]
+    other_h = histo_otherbkg[{"process_grp": sum}]
+
+    score_edges = sig_h.axes[score_axis_name].edges
+    n_score     = len(score_edges) - 1
+
+    results = []
+    for si in range(1, n_score):
+        S = get_yield(sig_h,   slice(si, None), slice(None, None))
+        B = get_yield(abcd_h,  slice(si, None), slice(None, None)) + \
+            get_yield(other_h, slice(si, None), slice(None, None))
+        sig = S / np.sqrt(B) if B > 0 else np.nan
+        results.append({"score_cut": score_edges[si], "S": S, "B": B, "significance": sig})
+
+    best = max(results, key=lambda x: x["significance"] if not np.isnan(x["significance"]) else -np.inf)
+    print("\n" + "="*50)
+    print("BEST SCORE-ONLY CUT")
+    print("="*50)
+    print(f"  Score cut    : {best['score_cut']:.4f}")
+    print(f"  S            : {best['S']:.4f}")
+    print(f"  B            : {best['B']:.2f}")
+    print(f"  S/sqrt(B)    : {best['significance']:.4f}")
+    print("="*50 + "\n")
+
+    return results, best
+
+
+def plot_score_only_scan(results, best, output_path):
+    score_cuts   = [r["score_cut"]    for r in results]
+    significance = [r["significance"] for r in results]
+    S            = [r["S"]            for r in results]
+    B            = [r["B"]            for r in results]
+
+    fig, axes = plt.subplots(2, 1, figsize=(10, 8), sharex=True)
+
+    axes[0].plot(score_cuts, significance, marker="o", markersize=3, linewidth=1, color="tab:blue", label="S/sqrt(B)")
+    axes[0].axvline(best["score_cut"], color="red", linewidth=2, linestyle="--", label=f"Best cut: {best['score_cut']:.3f}, S/sqrt(B)={best['significance']:.3f}")
+    axes[0].set_ylabel("S/sqrt(B)")
+    axes[0].legend()
+    axes[0].grid(True, alpha=0.3)
+
+    axes[1].plot(score_cuts, S, marker="o", markersize=3, linewidth=1, color="tab:red",   label="S")
+    axes[1].plot(score_cuts, B, marker="o", markersize=3, linewidth=1, color="tab:green", label="B")
+    axes[1].axvline(best["score_cut"], color="red", linewidth=2, linestyle="--", label=f"Best cut: {best['score_cut']:.3f}")
+    axes[1].set_ylabel("Yield")
+    axes[1].set_xlabel("Score cut")
+    axes[1].legend()
+    axes[1].grid(True, alpha=0.3)
+
+    plt.tight_layout()
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    plt.savefig(output_path, dpi=150)
+    plt.close()
+    print(f"Saved {output_path}")
+
+
+def plot_1d_stack(histo_sig, histo_dy, histo_ttbar, histo_otherbkg, axis_name, output_path):
+    sig_h   = histo_sig[{"process_grp": sum}]
+    dy_h    = histo_dy[{"process_grp": sum}]
+    ttbar_h = histo_ttbar[{"process_grp": sum}]
+    other_h = histo_otherbkg[{"process_grp": sum}]
+
+    sig_proj   = sig_h.project(axis_name)
+    dy_proj    = dy_h.project(axis_name)
+    ttbar_proj = ttbar_h.project(axis_name)
+    other_proj = other_h.project(axis_name)
+
+    edges = sig_proj.axes[axis_name].edges
+
+    sig_vals   = sig_proj.values(flow=False)
+    dy_vals    = dy_proj.values(flow=False)
+    ttbar_vals = ttbar_proj.values(flow=False)
+    other_vals = other_proj.values(flow=False)
+
+    total_bkg  = dy_vals.sum() + ttbar_vals.sum() + other_vals.sum()
+    sig_scaled = sig_vals * (total_bkg / sig_vals.sum()) if sig_vals.sum() > 0 else sig_vals
+    scale_factor = total_bkg / sig_vals.sum() if sig_vals.sum() > 0 else 1.0
+
+    stack_dy    = other_vals + ttbar_vals + dy_vals
+    stack_ttbar = other_vals + ttbar_vals
+    stack_other = other_vals
+
+    fig, ax = plt.subplots(figsize=(8, 6))
+    ax.stairs(stack_dy,    edges, fill=True, color="tab:blue",   label="DY",        baseline=stack_ttbar)
+    ax.stairs(stack_ttbar, edges, fill=True, color="tab:orange", label="ttbar",     baseline=stack_other)
+    ax.stairs(stack_other, edges, fill=True, color="tab:green",  label="Other bkg", baseline=0)
+    ax.stairs(sig_scaled,  edges, linewidth=2, color="red", linestyle="--", label=f"Signal (x{scale_factor:.1f})")
+    ax.set_xlabel(axis_name)
+    ax.set_ylabel("Yield")
+    ax.legend(loc="upper right", fontsize=8)
+    ax.grid(True, alpha=0.3)
+    plt.tight_layout()
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    plt.savefig(output_path, dpi=150)
+    plt.close()
+    print(f"Saved {output_path}")
+
+
 def plot_abcd_regions(score_edges, mjj_edges, bkg_vals, score_cut, mjj_cut, title, cbar_label, output_path):
     """Plot the 2D ABCD regions for a given set of cuts and background values."""
     score_mid_lo = score_edges[0] + (score_cut - score_edges[0]) / 2
@@ -355,7 +477,7 @@ def plot_abcd_2d_snapshots(histo_sig, histo_dy, histo_ttbar, histo_abcdbkg, hist
             plt.close()
             print(f"Saved scan block {i}")
 
-def do_abcd_scan(histo_sig, histo_abcdbkg, histo_otherbkg, score_axis_name="dnn_score", mjj_axis_name="mjj_max_any", n_scan=20):
+def do_abcd_scan(histo_sig, histo_abcdbkg, histo_otherbkg, score_axis_name="dnn_score", mjj_axis_name="mjj_max_any"):
     sig_h   = histo_sig[{"process_grp": sum}]
     abcd_h  = histo_abcdbkg[{"process_grp": sum}]
     other_h = histo_otherbkg[{"process_grp": sum}]
@@ -365,36 +487,48 @@ def do_abcd_scan(histo_sig, histo_abcdbkg, histo_otherbkg, score_axis_name="dnn_
     n_score = len(score_edges) - 1
     n_mjj   = len(mjj_edges) - 1
 
-    score_cut_bins = [int(x) for x in np.linspace(int(0.1*n_score), int(0.9*n_score), n_scan)]
-    mjj_cut_bins   = [int(x) for x in np.linspace(int(0.1*n_mjj),   int(0.9*n_mjj),   n_scan)]
+    score_cut_bins = list(range(1, n_score))
+    mjj_cut_bins   = list(range(1, n_mjj))
+    n_scan_score = len(score_cut_bins)
+    n_scan_mjj   = len(mjj_cut_bins)
 
-    closure      = np.zeros((n_scan, n_scan))
-    significance = np.zeros((n_scan, n_scan))
-    S_arr        = np.zeros((n_scan, n_scan))
-    B_abcd_true  = np.zeros((n_scan, n_scan))
-    B_abcd_est   = np.zeros((n_scan, n_scan))
-    B_other      = np.zeros((n_scan, n_scan))
-    B_total      = np.zeros((n_scan, n_scan))
+    closure      = np.zeros((n_scan_score, n_scan_mjj))
+    significance = np.zeros((n_scan_score, n_scan_mjj))
+    S_arr        = np.zeros((n_scan_score, n_scan_mjj))
+    B_abcd_true  = np.zeros((n_scan_score, n_scan_mjj))
+    B_abcd_est   = np.zeros((n_scan_score, n_scan_mjj))
+    B_other      = np.zeros((n_scan_score, n_scan_mjj))
+    B_total      = np.zeros((n_scan_score, n_scan_mjj))
 
     for i, si in enumerate(score_cut_bins):
         for j, mj in enumerate(mjj_cut_bins):
-            A_sig    = get_yield(sig_h,   slice(si, None), slice(mj, None))
-            A_abcd   = get_yield(abcd_h,  slice(si, None), slice(mj, None))
-            B_abcd   = get_yield(abcd_h,  slice(None, si), slice(mj, None))
-            C_abcd   = get_yield(abcd_h,  slice(si, None), slice(None, mj))
-            D_abcd   = get_yield(abcd_h,  slice(None, si), slice(None, mj))
-            A_other  = get_yield(other_h, slice(si, None), slice(mj, None))
+            A_sig   = get_yield(sig_h,   slice(si, None), slice(mj, None))
+            A_abcd  = get_yield(abcd_h,  slice(si, None), slice(mj, None))
+            B_abcd  = get_yield(abcd_h,  slice(None, si), slice(mj, None))
+            C_abcd  = get_yield(abcd_h,  slice(si, None), slice(None, mj))
+            D_abcd  = get_yield(abcd_h,  slice(None, si), slice(None, mj))
+            A_other = get_yield(other_h, slice(si, None), slice(mj, None))
 
-            abcd_est = (B_abcd * C_abcd / D_abcd) if D_abcd > 0 else np.nan
-            b_total  = (abcd_est + A_other) if not np.isnan(abcd_est) else np.nan
+            if D_abcd == 0:
+                closure[i, j]      = np.nan
+                significance[i, j] = np.nan
+                S_arr[i, j]        = np.nan
+                B_abcd_true[i, j]  = np.nan
+                B_abcd_est[i, j]   = np.nan
+                B_other[i, j]      = np.nan
+                B_total[i, j]      = np.nan
+                continue
 
-            S_arr[i, j]       = A_sig
-            B_abcd_true[i, j] = A_abcd
-            B_abcd_est[i, j]  = abcd_est
-            B_other[i, j]     = A_other
-            B_total[i, j]     = b_total
-            closure[i, j]     = (abcd_est / A_abcd) if (A_abcd > 0 and not np.isnan(abcd_est)) else np.nan
-            significance[i, j] = (A_sig / np.sqrt(b_total)) if (not np.isnan(b_total) and b_total > 0) else np.nan
+            abcd_est = B_abcd * C_abcd / D_abcd
+            b_total  = abcd_est + A_other
+
+            S_arr[i, j]        = A_sig
+            B_abcd_true[i, j]  = A_abcd
+            B_abcd_est[i, j]   = abcd_est
+            B_other[i, j]      = A_other
+            B_total[i, j]      = b_total
+            closure[i, j]      = (abcd_est / A_abcd) if A_abcd > 0 else np.nan
+            significance[i, j] = (A_sig / np.sqrt(b_total)) if b_total > 0 else np.nan
 
     return {
         "closure"      : closure,
@@ -488,7 +622,6 @@ def main():
     parser.add_argument("pkl_file_path", help="The path to the pkl file")
     args = parser.parse_args()
 
-    cat_lst  = cvh.CAT_LST_2l
     grp_dict = cvh.GRP_DICT_FULL_R2
 
     histo_dict = pickle.load(gzip.open(args.pkl_file_path))
@@ -521,12 +654,21 @@ def main():
     if not os.path.exists(os.path.join(out_dir, "index.php")):
         shutil.copyfile(HTML_PC, os.path.join(out_dir, "index.php"))
 
+    # Make 1d plots of the score and mjj
+    plot_1d_stack(histo_sig, histo_dy, histo_ttbar, histo_otherbkg, "dnn_score", f"{out_dir}/stack_dnn_score.png")
+    plot_1d_stack(histo_sig, histo_dy, histo_ttbar, histo_otherbkg, "mjj_max_any", f"{out_dir}/stack_mjj_max_any.png")
+
+    # Try to do a scan over just score
+    score_only_results, score_only_best = scan_score_only(histo_sig, histo_abcdbkg, histo_otherbkg)
+    plot_score_only_scan(score_only_results, score_only_best, f"{out_dir}/dc_score_only_scan.png")
+    write_score_only_datacard(score_only_best, f"{out_dir}/dc_score_only_scan.txt")
+
     # Decorrelation slices plots for each ABCD background sample and combined
     for histo, tag in [(histo_dy, "dy"), (histo_ttbar, "ttbar"), (histo_abcdbkg, "abcdbkg")]:
         plot_mjj_score_slices(histo, tag, output_dir=out_dir)
 
     # Run the scan
-    results = do_abcd_scan(histo_sig, histo_abcdbkg, histo_otherbkg, n_scan=50)
+    results = do_abcd_scan(histo_sig, histo_abcdbkg, histo_otherbkg)
     plot_abcd_scan_panels(results, f"{out_dir}/abcd_scan_panels.png")
     plot_abcd_2d_snapshots(histo_sig, histo_dy, histo_ttbar, histo_abcdbkg, histo_otherbkg, results, output_dir=out_dir, make_scan_blocks=False)
     plot_best_working_point(histo_sig, histo_dy, histo_ttbar, histo_abcdbkg, histo_otherbkg, results, output_dir=out_dir)
