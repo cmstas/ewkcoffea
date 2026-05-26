@@ -254,34 +254,34 @@ class AnalysisProcessor(processor.ProcessorABC):
         self._siphon_bdt_data = siphon_bdt_data
         self._siphon_selection = ["2lOSSF_1fjx_2j"]
         #self._siphon_selection = ["2lOSSF_1fjx_2j_mjj100"]
-        self._bdt_vars = [
+        self._bdt_vars = [ "met" , "metphi" , "scalarptsum_lep" , "scalarptsum_jetCentFwd" , "scalarptsum_jetCent" , "scalarptsum_jetFwd" , "scalarptsum_lepmet" , "scalarptsum_lepmetFJ" , "scalarptsum_lepmetFJ10" , "scalarptsum_lepmetalljets" , "scalarptsum_lepmetcentjets" , "scalarptsum_lepmetfwdjets" , "l0_pt"  , "l0_eta" , "l0_phi" , "l1_pt"  , "l1_eta" , "l1_phi" , "l2_pt"  , "l2_eta" , "mass_l0l1" , "dr_l0l1" , "l0_iso"     , "l0_miniiso" , "l1_iso"     , "l1_miniiso" , "l2_iso"     , "l2_miniiso" , "j0central_pt"  , "j0central_eta" , "j0central_phi" , "j0forward_pt"  , "j0forward_eta" , "j0forward_phi" , "j0any_pt"  , "j0any_eta" , "j0any_phi" , "nleps" , "njets" , "nbtagsl" , "nbtagsm", "nbtagst" , "nfatjets" , "njets_forward" , "njets_tot" , "fj0_pt" , "fj0_mass" , "fj0_msoftdrop" , "fj0_eta" , "fj0_phi" , "j0_pt" , "j0_eta" , "j0_phi" , "dr_fj0l0" , "dr_j0fwdj1fwd" , "dr_j0centj1cent" , "dr_j0anyj1any" , "absdphi_j0fwdj1fwd"   , "absdphi_j0centj1cent" , "absdphi_j0anyj1any"   , "mass_j0centj1cent" , "mass_j0fwdj1fwd" , "mass_j0anyj1any" , "mass_b0b1" , "fj0_pNetH4qvsQCD" , "fj0_pNetHbbvsQCD" , "fj0_pNetHccvsQCD" , "fj0_pNetQCD"      , "fj0_pNetTvsQCD"   , "fj0_pNetWvsQCD"   , "fj0_pNetZvsQCD"   , "fj0_mparticlenet" , "jj_pairs_atmindr_mjj" , "bbscore0_bscore" , "bbscore1_bscore" , "mass_bbscore0bbscore1", "mass_bmbscore0bmbscore1" , "absdeta_max_fwd" , "absdeta_max_any" , "mjjjall_nearest_t", "mjjjcnt_nearest_t", "mjjjany" , "mjjjcnt" , "mjjjjany" , "mjjjjcnt" , "mljjjany" , "mljjjcnt" , "mljjjjany" , "mljjjjcnt" , "n_ll_sfos", "abs_ch_sum_3l", "abs_pdgid_sum", "mll_min_afos" , "mll_z" , "mjj_max_any"]
+        #self._bdt_vars = [
+        #    "l0_pt",
+        #    "l0_eta",
+        #    "l0_phi",
+        #    "l1_pt",
+        #    "l1_eta",
+        #    "l1_phi",
+        #    "mass_l0l1",
 
-            "l0_pt",
-            "l0_eta",
-            "l0_phi",
-            "l1_pt",
-            "l1_eta",
-            "l1_phi",
-            "mass_l0l1",
+        #    "fj0_pt",
+        #    "fj0_eta",
+        #    "fj0_phi",
+        #    "fj0_mparticlenet",
 
-            "fj0_pt",
-            "fj0_eta",
-            "fj0_phi",
-            "fj0_mparticlenet",
+        #    #"j0any_pt",
+        #    #"j0any_eta",
+        #    #"j0any_phi",
+        #    "njets",
+        #    "njets_forward",
+        #    "nbtagsl",
+        #    "nbtagsm",
+        #    "nbtagst",
+        #    #"mjj_max_any",
 
-            #"j0any_pt",
-            #"j0any_eta",
-            #"j0any_phi",
-            "njets",
-            "njets_forward",
-            "nbtagsl",
-            "nbtagsm",
-            "nbtagst",
-            #"mjj_max_any",
-
-            "met",
-            "metphi",
-        ]
+        #    "met",
+        #    "metphi",
+        #]
         if self._siphon_bdt_data:
             bdt_out = {var: processor.column_accumulator(np.array([], dtype=np.float32)) for var in self._bdt_vars}
             bdt_out["weight"] = processor.column_accumulator(np.array([], dtype=np.float32))
@@ -916,20 +916,20 @@ class AnalysisProcessor(processor.ProcessorABC):
         ######### Fill the 2d abcd histo #########
 
         # 2d abcd
-        #for sr_cat in cat_dict["lep_chan_lst"]:
-        #    all_cuts_mask = selections.all(sr_cat)
-        #    weight = weights_obj_base.weight(None)
-        #    mjj_max_any_flow = ak.where(mjj_max_any<self.mjj_max_any_cap,mjj_max_any,self.mjj_max_any_cap-1.0)
-        #    # Fill a 2d histo
-        #    abcd_axes_fill_info_dict = {
-        #        "mjj_max_any"   : ak.fill_none(mjj_max_any_flow[all_cuts_mask],0), # Don't like this fill_none
-        #        "dnn_score"     : ak.fill_none(dnn_score[all_cuts_mask],0),   # Don't like this fill_none
-        #        "weight"        : ak.fill_none(weight[all_cuts_mask],0),      # Don't like this fill_none
-        #        "process"       : histAxisName[all_cuts_mask],
-        #        "category"      : sr_cat,
-        #        "lepflav"       : abs_pdgid_sum[all_cuts_mask],
-        #    }
-        #    self.accumulator["abcd_histo"].fill(**abcd_axes_fill_info_dict)
+        for sr_cat in cat_dict["lep_chan_lst"]:
+            all_cuts_mask = selections.all(sr_cat)
+            weight = weights_obj_base.weight(None)
+            mjj_max_any_flow = ak.where(mjj_max_any<self.mjj_max_any_cap,mjj_max_any,self.mjj_max_any_cap-1.0)
+            # Fill a 2d histo
+            abcd_axes_fill_info_dict = {
+                "mjj_max_any"   : ak.fill_none(mjj_max_any_flow[all_cuts_mask],0), # Don't like this fill_none
+                "dnn_score"     : ak.fill_none(dnn_score[all_cuts_mask],0),   # Don't like this fill_none
+                "weight"        : ak.fill_none(weight[all_cuts_mask],0),      # Don't like this fill_none
+                "process"       : histAxisName[all_cuts_mask],
+                "category"      : sr_cat,
+                "lepflav"       : abs_pdgid_sum[all_cuts_mask],
+            }
+            self.accumulator["abcd_histo"].fill(**abcd_axes_fill_info_dict)
 
 
         ######### Fill 1d histos #########
