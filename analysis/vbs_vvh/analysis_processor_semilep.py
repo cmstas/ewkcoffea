@@ -17,7 +17,6 @@ import torch
 torch.set_num_threads(1)
 from model import ABCDLightningModule
 
-
 import warnings
 warnings.filterwarnings(
     "ignore",
@@ -270,15 +269,15 @@ class AnalysisProcessor(processor.ProcessorABC):
             "fj0_phi",
             "fj0_mparticlenet",
 
-            "j0any_pt",
-            "j0any_eta",
-            "j0any_phi",
+            #"j0any_pt",
+            #"j0any_eta",
+            #"j0any_phi",
             "njets",
             "njets_forward",
             "nbtagsl",
             "nbtagsm",
             "nbtagst",
-            "mjj_max_any",
+            #"mjj_max_any",
 
             "met",
             "metphi",
@@ -303,28 +302,11 @@ class AnalysisProcessor(processor.ProcessorABC):
     def _load_model(self):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self._device = device
-        self._model = ABCDLightningModule(
-            input_size=22,
-            #input_size=18,
-            hidden_layers=[64, 32, 16],
-            learning_rate=1e-4,
-            bce_weight=1.0,
-            #disco_lambda=100.0,
-            disco_lambda=0.0,
-            flavor="single",
-            use_batchnorm=True,
-            dropout=0.2,
-        )
-        ckpt = torch.load(self._checkpoint_path, map_location=device)
-        if "state_dict" in ckpt:
-            self._model.load_state_dict(ckpt["state_dict"], strict=True)
-        else:
-            self._model.load_state_dict(ckpt, strict=True)
+        self._model = ABCDLightningModule.load_from_checkpoint(self._checkpoint_path, map_location=device)
         self._model.to(device)
         self._model.eval()
 
-    def _run_abcd_inference(self, events, mask, njets, njets_forward, nbtagsl, nbtagsm, nbtagst, goodJetsCentFwd_ptordered, jjCentFwd_pairs):
-        """Build feature matrix and return DNN scores for events passing mask."""
+    def _run_abcd_inference(self, events, mask, dense_variables_dict):
         if not hasattr(self, '_model') or self._model is None:
             self._load_model()
         if not hasattr(self, '_scaler_params'):
@@ -344,34 +326,9 @@ class AnalysisProcessor(processor.ProcessorABC):
                 arr = (arr - lo) / denom
             return np.clip(arr, 0.0, 1.0).astype(np.float32)
 
-        fj0   = ak.pad_none(events.fatjet[ak.argsort(events.fatjet.pt, axis=-1, ascending=False)], 1)[:,0]
-        l     = ak.pad_none(events.l_vvh_t, 2)
-        j0any = ak.pad_none(goodJetsCentFwd_ptordered, 1)[:,0]
-        mjj_max_any = ak.fill_none(ak.max((jjCentFwd_pairs.j0 + jjCentFwd_pairs.j1).mass,axis=-1),0)
-
         feature_matrix = np.column_stack([
-            scale("l0_pt",            ak.to_numpy(ak.fill_none(l[:,0].pt,                    1.0)[mask])),
-            scale("l0_eta",           ak.to_numpy(ak.fill_none(l[:,0].eta,                   0.0)[mask])),
-            scale("l0_phi",           ak.to_numpy(ak.fill_none(l[:,0].phi,                   0.0)[mask])),
-            scale("l1_pt",            ak.to_numpy(ak.fill_none(l[:,1].pt,                    1.0)[mask])),
-            scale("l1_eta",           ak.to_numpy(ak.fill_none(l[:,1].eta,                   0.0)[mask])),
-            scale("l1_phi",           ak.to_numpy(ak.fill_none(l[:,1].phi,                   0.0)[mask])),
-            scale("mass_l0l1",        ak.to_numpy(ak.fill_none((l[:,0]+l[:,1]).mass,          0.0)[mask])),
-            scale("fj0_pt",           ak.to_numpy(ak.fill_none(fj0.pt,                       1.0)[mask])),
-            scale("fj0_eta",          ak.to_numpy(ak.fill_none(fj0.eta,                      0.0)[mask])),
-            scale("fj0_phi",          ak.to_numpy(ak.fill_none(fj0.phi,                      0.0)[mask])),
-            scale("fj0_mparticlenet", ak.to_numpy(ak.fill_none(fj0.particleNetLegacy_mass,   0.0)[mask])),
-            scale("j0any_pt",         ak.to_numpy(ak.fill_none(j0any.pt,                     1.0)[mask])),
-            scale("j0any_eta",        ak.to_numpy(ak.fill_none(j0any.eta,                    0.0)[mask])),
-            scale("j0any_phi",        ak.to_numpy(ak.fill_none(j0any.phi,                    0.0)[mask])),
-            scale("njets",            ak.to_numpy(njets[mask])),
-            scale("njets_forward",    ak.to_numpy(njets_forward[mask])),
-            scale("nbtagsl",          ak.to_numpy(nbtagsl[mask])),
-            scale("nbtagsm",          ak.to_numpy(nbtagsm[mask])),
-            scale("nbtagst",          ak.to_numpy(nbtagst[mask])),
-            scale("mjj_max_any",      ak.to_numpy(mjj_max_any[mask])),
-            scale("met",              ak.to_numpy(events.met.pt[mask])),
-            scale("metphi",           ak.to_numpy(events.met.phi[mask])),
+            scale(feat, ak.to_numpy(ak.fill_none(dense_variables_dict[feat][mask], 0.0)))
+            for feat in self._scaler_params["_training_features"]
         ])
 
         features_tensor = torch.from_numpy(feature_matrix).to(self._device)
@@ -952,27 +909,27 @@ class AnalysisProcessor(processor.ProcessorABC):
 
         # For ABCDnet evaluations
         #sr_mask = selections.all("2lOSSF_1fjx_2j_mjj100")
-        dnn_score = self._run_abcd_inference(events, pass_through, njets, njets_forward, nbtagsl, nbtagsm, nbtagst, goodJetsCentFwd_ptordered, jjCentFwd_pairs)
+        dnn_score = self._run_abcd_inference(events, pass_through, dense_variables_dict)
         dense_variables_dict["dnn_score"] = dnn_score
 
 
         ######### Fill the 2d abcd histo #########
 
         # 2d abcd
-        for sr_cat in cat_dict["lep_chan_lst"]:
-            all_cuts_mask = selections.all(sr_cat)
-            weight = weights_obj_base.weight(None)
-            mjj_max_any_flow = ak.where(mjj_max_any<self.mjj_max_any_cap,mjj_max_any,self.mjj_max_any_cap-1.0)
-            # Fill a 2d histo
-            abcd_axes_fill_info_dict = {
-                "mjj_max_any"   : ak.fill_none(mjj_max_any_flow[all_cuts_mask],0), # Don't like this fill_none
-                "dnn_score"     : ak.fill_none(dnn_score[all_cuts_mask],0),   # Don't like this fill_none
-                "weight"        : ak.fill_none(weight[all_cuts_mask],0),      # Don't like this fill_none
-                "process"       : histAxisName[all_cuts_mask],
-                "category"      : sr_cat,
-                "lepflav"       : abs_pdgid_sum[all_cuts_mask],
-            }
-            self.accumulator["abcd_histo"].fill(**abcd_axes_fill_info_dict)
+        #for sr_cat in cat_dict["lep_chan_lst"]:
+        #    all_cuts_mask = selections.all(sr_cat)
+        #    weight = weights_obj_base.weight(None)
+        #    mjj_max_any_flow = ak.where(mjj_max_any<self.mjj_max_any_cap,mjj_max_any,self.mjj_max_any_cap-1.0)
+        #    # Fill a 2d histo
+        #    abcd_axes_fill_info_dict = {
+        #        "mjj_max_any"   : ak.fill_none(mjj_max_any_flow[all_cuts_mask],0), # Don't like this fill_none
+        #        "dnn_score"     : ak.fill_none(dnn_score[all_cuts_mask],0),   # Don't like this fill_none
+        #        "weight"        : ak.fill_none(weight[all_cuts_mask],0),      # Don't like this fill_none
+        #        "process"       : histAxisName[all_cuts_mask],
+        #        "category"      : sr_cat,
+        #        "lepflav"       : abs_pdgid_sum[all_cuts_mask],
+        #    }
+        #    self.accumulator["abcd_histo"].fill(**abcd_axes_fill_info_dict)
 
 
         ######### Fill 1d histos #########
