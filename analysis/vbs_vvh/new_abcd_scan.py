@@ -42,10 +42,8 @@ def scan_score_only(histo_sig, histo_abcdbkg, histo_otherbkg, score_axis_name="d
     sig_h   = histo_sig[{"process_grp": sum}]
     abcd_h  = histo_abcdbkg[{"process_grp": sum}]
     other_h = histo_otherbkg[{"process_grp": sum}]
-
     score_edges = sig_h.axes[score_axis_name].edges
     n_score     = len(score_edges) - 1
-
     results = []
     for si in range(1, n_score):
         S = get_yield(sig_h,   slice(si, None), slice(None, None))
@@ -53,8 +51,8 @@ def scan_score_only(histo_sig, histo_abcdbkg, histo_otherbkg, score_axis_name="d
             get_yield(other_h, slice(si, None), slice(None, None))
         sig = S / np.sqrt(B) if B > 0 else np.nan
         results.append({"score_cut": score_edges[si], "S": S, "B": B, "significance": sig})
-
-    best = max(results, key=lambda x: x["significance"] if not np.isnan(x["significance"]) else -np.inf)
+    results_sorted = sorted(results, key=lambda x: x["significance"] if not np.isnan(x["significance"]) else -np.inf, reverse=True)
+    best = results_sorted[0]
     print("\n" + "="*50)
     print("BEST SCORE-ONLY CUT")
     print("="*50)
@@ -63,9 +61,7 @@ def scan_score_only(histo_sig, histo_abcdbkg, histo_otherbkg, score_axis_name="d
     print(f"  B            : {best['B']:.2f}")
     print(f"  S/sqrt(B)    : {best['significance']:.4f}")
     print("="*50 + "\n")
-
-    return results, best
-
+    return results_sorted, best
 
 def plot_score_only_scan(results, best, output_path):
     score_cuts   = [r["score_cut"]    for r in results]
@@ -661,7 +657,11 @@ def main():
     # Try to do a scan over just score
     score_only_results, score_only_best = scan_score_only(histo_sig, histo_abcdbkg, histo_otherbkg)
     plot_score_only_scan(score_only_results, score_only_best, f"{out_dir}/dc_score_only_scan.png")
-    write_score_only_datacard(score_only_best, f"{out_dir}/dc_score_only_scan.txt")
+    for rank, result in enumerate(score_only_results[:25]):
+        score_str = f"{result['score_cut']:.2f}".replace(".", "p")
+        sig_str   = f"{result['significance']:.2f}".replace(".", "p")
+        fname     = f"{out_dir}/dc_score_only_rank{rank:02d}_sig{sig_str}_s{score_str}.txt"
+        write_score_only_datacard(result, fname)
 
     # Decorrelation slices plots for each ABCD background sample and combined
     for histo, tag in [(histo_dy, "dy"), (histo_ttbar, "ttbar"), (histo_abcdbkg, "abcdbkg")]:
