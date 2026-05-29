@@ -52,8 +52,8 @@ class AnalysisProcessor(processor.ProcessorABC):
             hist.axis.StrCategory([], growth=True, name="process", label="process"),
             hist.axis.StrCategory([], growth=True, name="category", label="category"),
             hist.axis.Integer(0,40, growth=True, name="lepflav", label="lepflav"),
-            axis.Regular(50, 0, 1, name="dnn_score",   label="DNN score from ABCDnet"),
-            axis.Regular(50, 0, self.mjj_max_any_cap, name="mjj_max_any", label="Leading mjj of pair of any (central or fwd) jets"),
+            axis.Regular(500, 0, 1, name="dnn_score",   label="DNN score from ABCDnet"),
+            axis.Regular(5, 0, self.mjj_max_any_cap, name="mjj_max_any", label="Leading mjj of pair of any (central or fwd) jets"),
             storage="weight", # Keeps track of sumw2
             name="Counts",
         )
@@ -211,6 +211,10 @@ class AnalysisProcessor(processor.ProcessorABC):
 
             "dnn_score"   : axis.Regular(180, 0, 1, name="dnn_score",   label="DNN score from ABCDnet"),
 
+            "vbs_mjj"       : axis.Regular(180, 0, 4000, name="vbs_mjj",       label="VBS candidate mjj [GeV]"),
+            "vbs_absdetajj" : axis.Regular(180, 0, 10,   name="vbs_absdetajj", label="VBS candidate abs delta eta jj"),
+            "vbs_score"     : axis.Regular(180, 0, 1,    name="vbs_score",     label="VBS BDT score"),
+
         }
 
         # Add histograms to dictionary that will be passed on to dict_accumulator
@@ -354,6 +358,8 @@ class AnalysisProcessor(processor.ProcessorABC):
         jets    = events.jet
         met     = events.met
         fatjets = events.fatjet
+
+        vbsjets    = events.vbs
 
         # An array of lenght events that is just 1 for each event
         events["nom"] = ak.ones_like(met.pt)
@@ -729,6 +735,10 @@ class AnalysisProcessor(processor.ProcessorABC):
             "mll_min_afos" : mll_min_afos,
             "mll_z" : mll_z,
 
+            "vbs_mjj"    : vbsjets.mjj,
+            "vbs_absdetajj" : vbsjets.detajj,
+            "vbs_score"  : vbsjets.score,
+
         }
 
         # Lepton truth info (note this check assumes all events in this chunk are of the same kind, should be true)
@@ -819,6 +829,48 @@ class AnalysisProcessor(processor.ProcessorABC):
         selections.add("2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0_onZ",  is_2l & is_os & is_sf & (nfatjets==1) & is_HFJ & is_HFJTagHbb & (njets_tot>=2) & (mjj_max_any>600) & (nbtagsm==0) & is_onZ)
         selections.add("2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0_offZ", is_2l & is_os & is_sf & (nfatjets==1) & is_HFJ & is_HFJTagHbb & (njets_tot>=2) & (mjj_max_any>600) & (nbtagsm==0) & ~is_onZ)
 
+        ###
+        def delta_r(eta1, phi1, eta2, phi2):
+            deta = eta1 - eta2
+            dphi = np.arctan2(np.sin(phi1 - phi2), np.cos(phi1 - phi2))
+            return np.sqrt(deta**2 + dphi**2)
+        dR_fj0_vbs1 = delta_r(fj0.eta, fj0.phi, vbsjets.jet1_eta, vbsjets.jet1_phi)
+        dR_fj0_vbs2 = delta_r(fj0.eta, fj0.phi, vbsjets.jet2_eta, vbsjets.jet2_phi)
+        fj0_overlaps_vbs = (dR_fj0_vbs1 < 0.8) | (dR_fj0_vbs2 < 0.8)
+
+        selections.add("2lOSSF_1fjx_ejj3",  is_2l & is_os & is_sf & (nfatjets==1) & (vbsjets.detajj > 3))
+        selections.add("2lOSSF_1fjx_ejj3_C",is_2l & is_os & is_sf & (nfatjets==1) & (vbsjets.detajj > 3) & ~ak.fill_none(fj0_overlaps_vbs, False))
+        selections.add("2lOSSF_1fjx_C",     is_2l & is_os & is_sf & (nfatjets==1) & ~ak.fill_none(fj0_overlaps_vbs, False))
+
+        ### Gen matching ###
+        isSig = events.kind[0]=="sig"
+
+        if isSig:
+            gen_h  = ak.zip({"pt": ak.ones_like(events.gen.h_eta), "eta": events.gen.h_eta,  "phi": events.gen.h_phi,  "mass": ak.ones_like(events.gen.h_eta)}, with_name="PtEtaPhiMCollection")
+            gen_v1 = ak.zip({"pt": ak.ones_like(events.gen.v1_eta), "eta": events.gen.v1_eta, "phi": events.gen.v1_phi, "mass": ak.ones_like(events.gen.v1_eta)}, with_name="PtEtaPhiMCollection")
+            gen_v2 = ak.zip({"pt": ak.ones_like(events.gen.v2_eta), "eta": events.gen.v2_eta, "phi": events.gen.v2_phi, "mass": ak.ones_like(events.gen.v2_eta)}, with_name="PtEtaPhiMCollection")
+            dR_fj0_h  = fj0.delta_r(gen_h)
+            dR_fj0_v1 = fj0.delta_r(gen_v1)
+            dR_fj0_v2 = fj0.delta_r(gen_v2)
+            dR_threshold = 0.8
+            fj0_matchedH  = (dR_fj0_h < dR_threshold)  & (dR_fj0_h  < dR_fj0_v1) & (dR_fj0_h  < dR_fj0_v2)
+            fj0_matchedV1 = (dR_fj0_v1 < dR_threshold) & (dR_fj0_v1 < dR_fj0_h)  & (dR_fj0_v1 < dR_fj0_v2)
+            fj0_matchedV2 = (dR_fj0_v2 < dR_threshold) & (dR_fj0_v2 < dR_fj0_h)  & (dR_fj0_v2 < dR_fj0_v1)
+            fj0_matchedV  = fj0_matchedV1 | fj0_matchedV2
+            fj0_noMatch   = ~(dR_fj0_h < dR_threshold) & ~(dR_fj0_v1 < dR_threshold) & ~(dR_fj0_v2 < dR_threshold)
+            selections.add("2lOSSF_1fjx_fj0matchH",  is_2l & is_os & is_sf & (nfatjets==1) & ak.fill_none(fj0_matchedH,  False))
+            selections.add("2lOSSF_1fjx_fj0matchV1", is_2l & is_os & is_sf & (nfatjets==1) & ak.fill_none(fj0_matchedV1, False))
+            selections.add("2lOSSF_1fjx_fj0matchV2", is_2l & is_os & is_sf & (nfatjets==1) & ak.fill_none(fj0_matchedV2, False))
+            selections.add("2lOSSF_1fjx_fj0matchV",  is_2l & is_os & is_sf & (nfatjets==1) & ak.fill_none(fj0_matchedV, False))
+            selections.add("2lOSSF_1fjx_fj0noMatch", is_2l & is_os & is_sf & (nfatjets==1) & ak.fill_none(fj0_noMatch, False))
+
+            selections.add("2lOSSF_1fjx_ejj3_fj0matchH",  is_2l & is_os & is_sf & (nfatjets==1) & (vbsjets.detajj > 3) & ak.fill_none(fj0_matchedH,  False))
+            selections.add("2lOSSF_1fjx_ejj3_fj0matchV1", is_2l & is_os & is_sf & (nfatjets==1) & (vbsjets.detajj > 3) & ak.fill_none(fj0_matchedV1, False))
+            selections.add("2lOSSF_1fjx_ejj3_fj0matchV2", is_2l & is_os & is_sf & (nfatjets==1) & (vbsjets.detajj > 3) & ak.fill_none(fj0_matchedV2, False))
+            selections.add("2lOSSF_1fjx_ejj3_fj0matchV",  is_2l & is_os & is_sf & (nfatjets==1) & (vbsjets.detajj > 3) & ak.fill_none(fj0_matchedV, False))
+            selections.add("2lOSSF_1fjx_ejj3_fj0noMatch", is_2l & is_os & is_sf & (nfatjets==1) & (vbsjets.detajj > 3) & ak.fill_none(fj0_noMatch, False))
+        ###
+
 
         ### 3l ###
 
@@ -869,6 +921,11 @@ class AnalysisProcessor(processor.ProcessorABC):
                 "2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0_onZ",
                 "2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0_offZ",
 
+                "2lOSSF_1fjx_ejj3",
+                "2lOSSF_1fjx_ejj3_C",
+                "2lOSSF_1fjx_C",
+
+
                 ### 3l ###
 
                 "3l",
@@ -888,6 +945,19 @@ class AnalysisProcessor(processor.ProcessorABC):
                 "3l_chsum1_mll12_sfos2_mjj400_jf0pt50",
             ]
         }
+
+        if isSig:
+            cat_dict["lep_chan_lst"].append("2lOSSF_1fjx_fj0matchH")
+            cat_dict["lep_chan_lst"].append("2lOSSF_1fjx_fj0matchV1")
+            cat_dict["lep_chan_lst"].append("2lOSSF_1fjx_fj0matchV2")
+            cat_dict["lep_chan_lst"].append("2lOSSF_1fjx_fj0matchV")
+            cat_dict["lep_chan_lst"].append("2lOSSF_1fjx_fj0noMatch")
+            cat_dict["lep_chan_lst"].append("2lOSSF_1fjx_ejj3_fj0matchH")
+            cat_dict["lep_chan_lst"].append("2lOSSF_1fjx_ejj3_fj0matchV1")
+            cat_dict["lep_chan_lst"].append("2lOSSF_1fjx_ejj3_fj0matchV2")
+            cat_dict["lep_chan_lst"].append("2lOSSF_1fjx_ejj3_fj0matchV")
+            cat_dict["lep_chan_lst"].append("2lOSSF_1fjx_ejj3_fj0noMatch")
+
 
 
         # Siphon
