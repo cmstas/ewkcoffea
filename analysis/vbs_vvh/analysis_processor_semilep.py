@@ -52,8 +52,8 @@ class AnalysisProcessor(processor.ProcessorABC):
             hist.axis.StrCategory([], growth=True, name="process", label="process"),
             hist.axis.StrCategory([], growth=True, name="category", label="category"),
             hist.axis.Integer(0,40, growth=True, name="lepflav", label="lepflav"),
-            axis.Regular(500, 0, 1, name="dnn_score",   label="DNN score from ABCDnet"),
-            axis.Regular(5, 0, self.mjj_max_any_cap, name="mjj_max_any", label="Leading mjj of pair of any (central or fwd) jets"),
+            axis.Regular(50, 0, 1, name="dnn_score",   label="DNN score from ABCDnet"),
+            axis.Regular(50, 0, self.mjj_max_any_cap, name="mjj_max_any", label="Leading mjj of pair of any (central or fwd) jets"),
             storage="weight", # Keeps track of sumw2
             name="Counts",
         )
@@ -253,43 +253,13 @@ class AnalysisProcessor(processor.ProcessorABC):
         else: self._mu_pfIsoId_val = mu_pfIsoId_val
 
         # Make bdt outputs
-        #self._siphon_output_path = "histos/bdt_out.root"
         self._siphon_output_path = f"histos/{siphon_out_name}.root"
         self._siphon_bdt_data = siphon_bdt_data
         self._siphon_selection = ["2lOSSF_1fjx_2j"]
-        #self._siphon_selection = ["2lOSSF_1fjx_2j_mjj100"]
         self._bdt_vars = [ "met" , "metphi" , "scalarptsum_lep" , "scalarptsum_jetCentFwd" , "scalarptsum_jetCent" , "scalarptsum_jetFwd" , "scalarptsum_lepmet" , "scalarptsum_lepmetFJ" , "scalarptsum_lepmetFJ10" , "scalarptsum_lepmetalljets" , "scalarptsum_lepmetcentjets" , "scalarptsum_lepmetfwdjets" , "l0_pt"  , "l0_eta" , "l0_phi" , "l1_pt"  , "l1_eta" , "l1_phi" , "l2_pt"  , "l2_eta" , "mass_l0l1" , "dr_l0l1" , "l0_iso"     , "l0_miniiso" , "l1_iso"     , "l1_miniiso" , "l2_iso"     , "l2_miniiso" , "j0central_pt"  , "j0central_eta" , "j0central_phi" , "j0forward_pt"  , "j0forward_eta" , "j0forward_phi" , "j0any_pt"  , "j0any_eta" , "j0any_phi" , "nleps" , "njets" , "nbtagsl" , "nbtagsm", "nbtagst" , "nfatjets" , "njets_forward" , "njets_tot" , "fj0_pt" , "fj0_mass" , "fj0_msoftdrop" , "fj0_eta" , "fj0_phi" , "j0_pt" , "j0_eta" , "j0_phi" , "dr_fj0l0" , "dr_j0fwdj1fwd" , "dr_j0centj1cent" , "dr_j0anyj1any" , "absdphi_j0fwdj1fwd"   , "absdphi_j0centj1cent" , "absdphi_j0anyj1any"   , "mass_j0centj1cent" , "mass_j0fwdj1fwd" , "mass_j0anyj1any" , "mass_b0b1" , "fj0_pNetH4qvsQCD" , "fj0_pNetHbbvsQCD" , "fj0_pNetHccvsQCD" , "fj0_pNetQCD"      , "fj0_pNetTvsQCD"   , "fj0_pNetWvsQCD"   , "fj0_pNetZvsQCD"   , "fj0_mparticlenet" , "jj_pairs_atmindr_mjj" , "bbscore0_bscore" , "bbscore1_bscore" , "mass_bbscore0bbscore1", "mass_bmbscore0bmbscore1" , "absdeta_max_fwd" , "absdeta_max_any" , "mjjjall_nearest_t", "mjjjcnt_nearest_t", "mjjjany" , "mjjjcnt" , "mjjjjany" , "mjjjjcnt" , "mljjjany" , "mljjjcnt" , "mljjjjany" , "mljjjjcnt" , "n_ll_sfos", "abs_ch_sum_3l", "abs_pdgid_sum", "mll_min_afos" , "mll_z" , "mjj_max_any"]
-        #self._bdt_vars = [
-        #    "l0_pt",
-        #    "l0_eta",
-        #    "l0_phi",
-        #    "l1_pt",
-        #    "l1_eta",
-        #    "l1_phi",
-        #    "mass_l0l1",
-
-        #    "fj0_pt",
-        #    "fj0_eta",
-        #    "fj0_phi",
-        #    "fj0_mparticlenet",
-
-        #    #"j0any_pt",
-        #    #"j0any_eta",
-        #    #"j0any_phi",
-        #    "njets",
-        #    "njets_forward",
-        #    "nbtagsl",
-        #    "nbtagsm",
-        #    "nbtagst",
-        #    #"mjj_max_any",
-
-        #    "met",
-        #    "metphi",
-        #]
         if self._siphon_bdt_data:
             bdt_out = {var: processor.column_accumulator(np.array([], dtype=np.float32)) for var in self._bdt_vars}
             bdt_out["weight"] = processor.column_accumulator(np.array([], dtype=np.float32))
-            #bdt_out["sample"] = processor.column_accumulator(np.array([], dtype=object))
             self._accumulator["bdt_data"] = processor.dict_accumulator(bdt_out)
 
 
@@ -300,6 +270,7 @@ class AnalysisProcessor(processor.ProcessorABC):
     @property
     def columns(self):
         return self._columns
+
 
     #################################################################################
     ### For ABCDnet evaluations ###
@@ -342,10 +313,10 @@ class AnalysisProcessor(processor.ProcessorABC):
                 logits = logits.unsqueeze(-1)
             scores = torch.sigmoid(logits).cpu().numpy()[:, 0]
         return scores
-
     #################################################################################
 
-    # Main function: run on a given dataset
+
+    # Main function: run on a given chunk
     def process(self, events):
 
         histAxisName = events.shortname
@@ -358,8 +329,11 @@ class AnalysisProcessor(processor.ProcessorABC):
         jets    = events.jet
         met     = events.met
         fatjets = events.fatjet
+        vbsjets = events.vbs
 
-        vbsjets    = events.vbs
+        # Kind of of chunk (note this check assumes all events in this chunk are of the same kind, should be true)
+        isSig  = events.kind[0]=="sig"
+        isData = events.kind[0]=="data"
 
         # An array of lenght events that is just 1 for each event
         events["nom"] = ak.ones_like(met.pt)
@@ -602,6 +576,8 @@ class AnalysisProcessor(processor.ProcessorABC):
         # NOTE Only defind for exactly 2 and 3 lep
         abs_pdgid_sum = ak.fill_none(ak.where(nleps==3,abs(l0.pdgId) + abs(l1.pdgId) + abs(l2.pdgId),abs(l0.pdgId) + abs(l1.pdgId)),0)
 
+
+
         # Put the variables we'll plot into a dictionary for easy access later
         dense_variables_dict = {
 
@@ -741,9 +717,14 @@ class AnalysisProcessor(processor.ProcessorABC):
 
         }
 
-        # Lepton truth info (note this check assumes all events in this chunk are of the same kind, should be true)
-        isData = False
-        if events.kind[0]=="data": isData = True
+        # For ABCDnet evaluations
+        # This must come after dense_variables_dict since pass all vars from dense_variables_dict to evaluation since any/all might be needed (depending on which model we're using)
+        # Once we finish evaluating, add the score to the dense_variables_dict too
+        dnn_score = self._run_abcd_inference(events, pass_through, dense_variables_dict)
+        dense_variables_dict["dnn_score"] = dnn_score
+
+
+        ### Lepton truth variables ###
         if not isData:
 
             lep_truth_real_mask = ((l_vvh_t.provenance == 23) | (l_vvh_t.provenance == 24) | (l_vvh_t.provenance == 33) | (l_vvh_t.provenance == 34))
@@ -820,7 +801,6 @@ class AnalysisProcessor(processor.ProcessorABC):
         selections.add("2lOSSF_1fj",                              is_2l & is_os & is_sf & (nfatjets>=1))
         selections.add("2lOSSF_1fjx",                             is_2l & is_os & is_sf & (nfatjets==1))
         selections.add("2lOSSF_1fjx_2j",                          is_2l & is_os & is_sf & (nfatjets==1) & (njets_tot>=2))
-        selections.add("2lOSSF_1fjx_2j_mjj100",                   is_2l & is_os & is_sf & (nfatjets==1) & (njets_tot>=2) & (mjj_max_any>100))
         selections.add("2lOSSF_1fjx_HFJ",                         is_2l & is_os & is_sf & (nfatjets==1) & is_HFJ)
         selections.add("2lOSSF_1fjx_HFJtag",                      is_2l & is_os & is_sf & (nfatjets==1) & is_HFJ & is_HFJTagHbb)
         selections.add("2lOSSF_1fjx_HFJtag_nj2",                  is_2l & is_os & is_sf & (nfatjets==1) & is_HFJ & is_HFJTagHbb & (njets_tot>=2))
@@ -828,49 +808,7 @@ class AnalysisProcessor(processor.ProcessorABC):
         selections.add("2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0",      is_2l & is_os & is_sf & (nfatjets==1) & is_HFJ & is_HFJTagHbb & (njets_tot>=2) & (mjj_max_any>600) & (nbtagsm==0))
         selections.add("2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0_onZ",  is_2l & is_os & is_sf & (nfatjets==1) & is_HFJ & is_HFJTagHbb & (njets_tot>=2) & (mjj_max_any>600) & (nbtagsm==0) & is_onZ)
         selections.add("2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0_offZ", is_2l & is_os & is_sf & (nfatjets==1) & is_HFJ & is_HFJTagHbb & (njets_tot>=2) & (mjj_max_any>600) & (nbtagsm==0) & ~is_onZ)
-
-        ###
-        def delta_r(eta1, phi1, eta2, phi2):
-            deta = eta1 - eta2
-            dphi = np.arctan2(np.sin(phi1 - phi2), np.cos(phi1 - phi2))
-            return np.sqrt(deta**2 + dphi**2)
-        dR_fj0_vbs1 = delta_r(fj0.eta, fj0.phi, vbsjets.jet1_eta, vbsjets.jet1_phi)
-        dR_fj0_vbs2 = delta_r(fj0.eta, fj0.phi, vbsjets.jet2_eta, vbsjets.jet2_phi)
-        fj0_overlaps_vbs = (dR_fj0_vbs1 < 0.8) | (dR_fj0_vbs2 < 0.8)
-
         selections.add("2lOSSF_1fjx_ejj3",  is_2l & is_os & is_sf & (nfatjets==1) & (vbsjets.detajj > 3))
-        selections.add("2lOSSF_1fjx_ejj3_C",is_2l & is_os & is_sf & (nfatjets==1) & (vbsjets.detajj > 3) & ~ak.fill_none(fj0_overlaps_vbs, False))
-        selections.add("2lOSSF_1fjx_C",     is_2l & is_os & is_sf & (nfatjets==1) & ~ak.fill_none(fj0_overlaps_vbs, False))
-
-        ### Gen matching ###
-        isSig = events.kind[0]=="sig"
-
-        if isSig:
-            gen_h  = ak.zip({"pt": ak.ones_like(events.gen.h_eta), "eta": events.gen.h_eta,  "phi": events.gen.h_phi,  "mass": ak.ones_like(events.gen.h_eta)}, with_name="PtEtaPhiMCollection")
-            gen_v1 = ak.zip({"pt": ak.ones_like(events.gen.v1_eta), "eta": events.gen.v1_eta, "phi": events.gen.v1_phi, "mass": ak.ones_like(events.gen.v1_eta)}, with_name="PtEtaPhiMCollection")
-            gen_v2 = ak.zip({"pt": ak.ones_like(events.gen.v2_eta), "eta": events.gen.v2_eta, "phi": events.gen.v2_phi, "mass": ak.ones_like(events.gen.v2_eta)}, with_name="PtEtaPhiMCollection")
-            dR_fj0_h  = fj0.delta_r(gen_h)
-            dR_fj0_v1 = fj0.delta_r(gen_v1)
-            dR_fj0_v2 = fj0.delta_r(gen_v2)
-            dR_threshold = 0.8
-            fj0_matchedH  = (dR_fj0_h < dR_threshold)  & (dR_fj0_h  < dR_fj0_v1) & (dR_fj0_h  < dR_fj0_v2)
-            fj0_matchedV1 = (dR_fj0_v1 < dR_threshold) & (dR_fj0_v1 < dR_fj0_h)  & (dR_fj0_v1 < dR_fj0_v2)
-            fj0_matchedV2 = (dR_fj0_v2 < dR_threshold) & (dR_fj0_v2 < dR_fj0_h)  & (dR_fj0_v2 < dR_fj0_v1)
-            fj0_matchedV  = fj0_matchedV1 | fj0_matchedV2
-            fj0_noMatch   = ~(dR_fj0_h < dR_threshold) & ~(dR_fj0_v1 < dR_threshold) & ~(dR_fj0_v2 < dR_threshold)
-            selections.add("2lOSSF_1fjx_fj0matchH",  is_2l & is_os & is_sf & (nfatjets==1) & ak.fill_none(fj0_matchedH,  False))
-            selections.add("2lOSSF_1fjx_fj0matchV1", is_2l & is_os & is_sf & (nfatjets==1) & ak.fill_none(fj0_matchedV1, False))
-            selections.add("2lOSSF_1fjx_fj0matchV2", is_2l & is_os & is_sf & (nfatjets==1) & ak.fill_none(fj0_matchedV2, False))
-            selections.add("2lOSSF_1fjx_fj0matchV",  is_2l & is_os & is_sf & (nfatjets==1) & ak.fill_none(fj0_matchedV, False))
-            selections.add("2lOSSF_1fjx_fj0noMatch", is_2l & is_os & is_sf & (nfatjets==1) & ak.fill_none(fj0_noMatch, False))
-
-            selections.add("2lOSSF_1fjx_ejj3_fj0matchH",  is_2l & is_os & is_sf & (nfatjets==1) & (vbsjets.detajj > 3) & ak.fill_none(fj0_matchedH,  False))
-            selections.add("2lOSSF_1fjx_ejj3_fj0matchV1", is_2l & is_os & is_sf & (nfatjets==1) & (vbsjets.detajj > 3) & ak.fill_none(fj0_matchedV1, False))
-            selections.add("2lOSSF_1fjx_ejj3_fj0matchV2", is_2l & is_os & is_sf & (nfatjets==1) & (vbsjets.detajj > 3) & ak.fill_none(fj0_matchedV2, False))
-            selections.add("2lOSSF_1fjx_ejj3_fj0matchV",  is_2l & is_os & is_sf & (nfatjets==1) & (vbsjets.detajj > 3) & ak.fill_none(fj0_matchedV, False))
-            selections.add("2lOSSF_1fjx_ejj3_fj0noMatch", is_2l & is_os & is_sf & (nfatjets==1) & (vbsjets.detajj > 3) & ak.fill_none(fj0_noMatch, False))
-        ###
-
 
         ### 3l ###
 
@@ -897,8 +835,7 @@ class AnalysisProcessor(processor.ProcessorABC):
         selections.add("3l_chsum1_mll12_sfos2_mjj400_jf0pt50", is_3l_mll12 & (abs_ch_sum_3l==1) & (n_ll_sfos==2) & (mjj_max_any>400) & (j0forward.pt>50))
 
 
-
-        # Keep track of the ones we want to actually fill
+        # Keep track of the cats we want to actually fill
         cat_dict = {
             "lep_chan_lst" : [
 
@@ -912,7 +849,6 @@ class AnalysisProcessor(processor.ProcessorABC):
                 "2lOSSF_1fj",
                 "2lOSSF_1fjx",
                 "2lOSSF_1fjx_2j",
-                "2lOSSF_1fjx_2j_mjj100",
                 "2lOSSF_1fjx_HFJ",
                 "2lOSSF_1fjx_HFJtag",
                 "2lOSSF_1fjx_HFJtag_nj2",
@@ -920,10 +856,7 @@ class AnalysisProcessor(processor.ProcessorABC):
                 "2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0",
                 "2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0_onZ",
                 "2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0_offZ",
-
                 "2lOSSF_1fjx_ejj3",
-                "2lOSSF_1fjx_ejj3_C",
-                "2lOSSF_1fjx_C",
 
 
                 ### 3l ###
@@ -946,21 +879,48 @@ class AnalysisProcessor(processor.ProcessorABC):
             ]
         }
 
+
+        ### Gen truth matched categories for signal ###
         if isSig:
-            cat_dict["lep_chan_lst"].append("2lOSSF_1fjx_fj0matchH")
-            cat_dict["lep_chan_lst"].append("2lOSSF_1fjx_fj0matchV1")
-            cat_dict["lep_chan_lst"].append("2lOSSF_1fjx_fj0matchV2")
-            cat_dict["lep_chan_lst"].append("2lOSSF_1fjx_fj0matchV")
-            cat_dict["lep_chan_lst"].append("2lOSSF_1fjx_fj0noMatch")
-            cat_dict["lep_chan_lst"].append("2lOSSF_1fjx_ejj3_fj0matchH")
-            cat_dict["lep_chan_lst"].append("2lOSSF_1fjx_ejj3_fj0matchV1")
-            cat_dict["lep_chan_lst"].append("2lOSSF_1fjx_ejj3_fj0matchV2")
-            cat_dict["lep_chan_lst"].append("2lOSSF_1fjx_ejj3_fj0matchV")
-            cat_dict["lep_chan_lst"].append("2lOSSF_1fjx_ejj3_fj0noMatch")
+            gen_h  = ak.zip({"pt": ak.ones_like(events.gen.h_eta), "eta": events.gen.h_eta,  "phi": events.gen.h_phi,  "mass": ak.ones_like(events.gen.h_eta)}, with_name="PtEtaPhiMCollection")
+            gen_v1 = ak.zip({"pt": ak.ones_like(events.gen.v1_eta), "eta": events.gen.v1_eta, "phi": events.gen.v1_phi, "mass": ak.ones_like(events.gen.v1_eta)}, with_name="PtEtaPhiMCollection")
+            gen_v2 = ak.zip({"pt": ak.ones_like(events.gen.v2_eta), "eta": events.gen.v2_eta, "phi": events.gen.v2_phi, "mass": ak.ones_like(events.gen.v2_eta)}, with_name="PtEtaPhiMCollection")
+            dR_fj0_h  = fj0.delta_r(gen_h)
+            dR_fj0_v1 = fj0.delta_r(gen_v1)
+            dR_fj0_v2 = fj0.delta_r(gen_v2)
+            dR_threshold = 0.8
+            fj0_matchedH  = (dR_fj0_h < dR_threshold)  & (dR_fj0_h  < dR_fj0_v1) & (dR_fj0_h  < dR_fj0_v2)
+            fj0_matchedV1 = (dR_fj0_v1 < dR_threshold) & (dR_fj0_v1 < dR_fj0_h)  & (dR_fj0_v1 < dR_fj0_v2)
+            fj0_matchedV2 = (dR_fj0_v2 < dR_threshold) & (dR_fj0_v2 < dR_fj0_h)  & (dR_fj0_v2 < dR_fj0_v1)
+            fj0_matchedV  = fj0_matchedV1 | fj0_matchedV2
+            fj0_noMatch   = ~(dR_fj0_h < dR_threshold) & ~(dR_fj0_v1 < dR_threshold) & ~(dR_fj0_v2 < dR_threshold)
+            selections.add("2lOSSF_1fjx_fj0matchH",  is_2l & is_os & is_sf & (nfatjets==1) & ak.fill_none(fj0_matchedH,  False))
+            selections.add("2lOSSF_1fjx_fj0matchV1", is_2l & is_os & is_sf & (nfatjets==1) & ak.fill_none(fj0_matchedV1, False))
+            selections.add("2lOSSF_1fjx_fj0matchV2", is_2l & is_os & is_sf & (nfatjets==1) & ak.fill_none(fj0_matchedV2, False))
+            selections.add("2lOSSF_1fjx_fj0matchV",  is_2l & is_os & is_sf & (nfatjets==1) & ak.fill_none(fj0_matchedV, False))
+            selections.add("2lOSSF_1fjx_fj0noMatch", is_2l & is_os & is_sf & (nfatjets==1) & ak.fill_none(fj0_noMatch, False))
+            selections.add("2lOSSF_1fjx_ejj3_fj0matchH",  is_2l & is_os & is_sf & (nfatjets==1) & (vbsjets.detajj > 3) & ak.fill_none(fj0_matchedH,  False))
+            selections.add("2lOSSF_1fjx_ejj3_fj0matchV1", is_2l & is_os & is_sf & (nfatjets==1) & (vbsjets.detajj > 3) & ak.fill_none(fj0_matchedV1, False))
+            selections.add("2lOSSF_1fjx_ejj3_fj0matchV2", is_2l & is_os & is_sf & (nfatjets==1) & (vbsjets.detajj > 3) & ak.fill_none(fj0_matchedV2, False))
+            selections.add("2lOSSF_1fjx_ejj3_fj0matchV",  is_2l & is_os & is_sf & (nfatjets==1) & (vbsjets.detajj > 3) & ak.fill_none(fj0_matchedV, False))
+            selections.add("2lOSSF_1fjx_ejj3_fj0noMatch", is_2l & is_os & is_sf & (nfatjets==1) & (vbsjets.detajj > 3) & ak.fill_none(fj0_noMatch, False))
+
+            #cat_dict["lep_chan_lst"].append("2lOSSF_1fjx_fj0matchH")
+            #cat_dict["lep_chan_lst"].append("2lOSSF_1fjx_fj0matchV1")
+            #cat_dict["lep_chan_lst"].append("2lOSSF_1fjx_fj0matchV2")
+            #cat_dict["lep_chan_lst"].append("2lOSSF_1fjx_fj0matchV")
+            #cat_dict["lep_chan_lst"].append("2lOSSF_1fjx_fj0noMatch")
+            #cat_dict["lep_chan_lst"].append("2lOSSF_1fjx_ejj3_fj0matchH")
+            #cat_dict["lep_chan_lst"].append("2lOSSF_1fjx_ejj3_fj0matchV1")
+            #cat_dict["lep_chan_lst"].append("2lOSSF_1fjx_ejj3_fj0matchV2")
+            #cat_dict["lep_chan_lst"].append("2lOSSF_1fjx_ejj3_fj0matchV")
+            #cat_dict["lep_chan_lst"].append("2lOSSF_1fjx_ejj3_fj0noMatch")
 
 
 
-        # Siphon
+
+        ######### Siphon outputs for ABCDnet training #########
+
         if self._siphon_bdt_data:
             siphon_mask = selections.all(*self._siphon_selection)
             for var in self._bdt_vars:
@@ -972,34 +932,26 @@ class AnalysisProcessor(processor.ProcessorABC):
             self._accumulator["bdt_data"]["weight"] += processor.column_accumulator(
                 ak.to_numpy(ak.fill_none(weights_obj_base.weight(None)[siphon_mask], 0)).astype(np.float32)
             )
-            #sample_name = str(histAxisName[0])
-            #self._accumulator["bdt_data"]["sample"] += processor.column_accumulator(
-            #    np.array([sample_name] * int(ak.sum(siphon_mask)), dtype=object)
-            #)
-
-        # For ABCDnet evaluations
-        #sr_mask = selections.all("2lOSSF_1fjx_2j_mjj100")
-        dnn_score = self._run_abcd_inference(events, pass_through, dense_variables_dict)
-        dense_variables_dict["dnn_score"] = dnn_score
 
 
-        ######### Fill the 2d abcd histo #########
+        ######### Fill the 2d ABCDnet histo #########
 
-        # 2d abcd
-        for sr_cat in cat_dict["lep_chan_lst"]:
-            all_cuts_mask = selections.all(sr_cat)
-            weight = weights_obj_base.weight(None)
-            mjj_max_any_flow = ak.where(mjj_max_any<self.mjj_max_any_cap,mjj_max_any,self.mjj_max_any_cap-1.0)
-            # Fill a 2d histo
-            abcd_axes_fill_info_dict = {
-                "mjj_max_any"   : ak.fill_none(mjj_max_any_flow[all_cuts_mask],0), # Don't like this fill_none
-                "dnn_score"     : ak.fill_none(dnn_score[all_cuts_mask],0),   # Don't like this fill_none
-                "weight"        : ak.fill_none(weight[all_cuts_mask],0),      # Don't like this fill_none
-                "process"       : histAxisName[all_cuts_mask],
-                "category"      : sr_cat,
-                "lepflav"       : abs_pdgid_sum[all_cuts_mask],
-            }
-            self.accumulator["abcd_histo"].fill(**abcd_axes_fill_info_dict)
+        fill_abcd_2d = False  # At some point should make this an option
+        if fill_abcd_2d:
+            for sr_cat in cat_dict["lep_chan_lst"]:
+                all_cuts_mask = selections.all(sr_cat)
+                weight = weights_obj_base.weight(None)
+                mjj_max_any_flow = ak.where(mjj_max_any<self.mjj_max_any_cap,mjj_max_any,self.mjj_max_any_cap-1.0)
+                # Fill a 2d histo
+                abcd_axes_fill_info_dict = {
+                    "mjj_max_any"   : ak.fill_none(mjj_max_any_flow[all_cuts_mask],0), # Don't like this fill_none
+                    "dnn_score"     : ak.fill_none(dnn_score[all_cuts_mask],0),   # Don't like this fill_none
+                    "weight"        : ak.fill_none(weight[all_cuts_mask],0),      # Don't like this fill_none
+                    "process"       : histAxisName[all_cuts_mask],
+                    "category"      : sr_cat,
+                    "lepflav"       : abs_pdgid_sum[all_cuts_mask],
+                }
+                self.accumulator["abcd_histo"].fill(**abcd_axes_fill_info_dict)
 
 
         ######### Fill 1d histos #########

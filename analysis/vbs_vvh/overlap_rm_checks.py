@@ -1,7 +1,7 @@
 import argparse
 import pickle
 import gzip
-#import numpy as np
+import numpy as np
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -19,23 +19,19 @@ def main():
     sig_procs = ['VBSZZH_c2v1p0_c3_1p0', 'VBSWWH_SS_c2v1p0_c3_1p0', 'VBSWWH_OS_c2v1p0_c3_1p0', 'VBSWZH_c2v1p0_c3_1p0']
     tt_procs = ['TTTo2L2Nu_TuneCP5_13TeV']
     dy_procs = ['DYJetsToLL_M-50_TuneCP5_13TeV']
-    proc_lst = sig_procs + dy_procs + tt_procs
-    bkg_procs = dy_procs + tt_procs
     #tt_processes = ['TTTo2L2Nu_TuneCP5_13TeV', 'TTToSemiLeptonic_TuneCP5_13TeV', 'TTToHadronic_TuneCP5_13TeV']
     #dy_processes = ['DYJetsToLL_M-50_TuneCP5_13TeV', 'DYJetsToLL_M-10to50_TuneCP5_13TeV']
+    proc_lst = sig_procs + dy_procs + tt_procs
+    bkg_procs = dy_procs + tt_procs
 
     # Get the dictionary of histograms from the input pkl file
     histo_dict = pickle.load(gzip.open(args.pkl_file_path))
     name = args.pkl_file_path.split("/")[1][:-7] # Drops leading histos/ and trailing .pkl.gz
 
-    #print(histo_dict["fj0_mparticlenet"][{"systematic":"nominal", "category":"2lOSSF_1fjx", "lepflav":sum}])
-    #for x in histo_dict["fj0_mparticlenet"][{"systematic":"nominal", "category":"2lOSSF_1fjx", "lepflav":sum}].values(flow=True): print(x)
-    #exit()
-
-    cat_lst = ["2lOSSF_1fjx", "2lOSSF_1fjx_ejj3", "2lOSSF_1fjx_ejj3_C", "2lOSSF_1fjx_C"]
+    cat_lst = ["2lOSSF_1fjx", "2lOSSF_1fjx_ejj3"]
 
 
-    ### Distributions ###
+    ###### Distributions ######
     for cat in cat_lst:
         for var in ["vbs_mjj", "vbs_absdetajj", "vbs_score", "fj0_mparticlenet"]:
             fig, (ax, ax_ratio) = plt.subplots(2, 1, figsize=(6, 5), gridspec_kw={"height_ratios": [3, 1]}, sharex=True)
@@ -60,8 +56,7 @@ def main():
             histo_sig_scaled.plot1d(ax=ax, stack=False, histtype="step")
             histo_sig_scaled_sum.plot1d(ax=ax, stack=False, histtype="step", color="red", linewidth=2, label="VBS VVH SM total")
 
-            # Ratio plot
-            # Cumulative s/sqrt(b) from right to left
+            # Ratio plot: Cumulative s/sqrt(b) from right to left
             bkg_vals = sum(histo_bkg[{"process":p}].values() for p in bkg_procs)
             sig_vals = sum(histo_sig[{"process":p}].values() for p in sig_procs)
             sig_cumulative = np.cumsum(sig_vals[::-1])[::-1]
@@ -93,12 +88,9 @@ def main():
             plt.close()
 
 
-    ### Truth plots ###
+    ###### Truth plots ######
 
-    #thiscat = "2lOSSF_1fjx_C"
-    #thiscat = "2lOSSF_1fjx"
-    thiscat = "3l"
-    #thiscat = "2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0"
+    thiscat = "2lOSSF_1fjx"
     procs = sig_procs
     print("tot",sum(sum(histo_dict["njets"][{"systematic":"nominal", "category":f"{thiscat}", "process":procs, "lepflav":sum}].values(flow=True))))
     print("h",  sum(sum(histo_dict["njets"][{"systematic":"nominal", "category":f"{thiscat}_fj0matchH", "process":procs, "lepflav":sum}].values(flow=True))))
@@ -106,9 +98,6 @@ def main():
     print("v2", sum(sum(histo_dict["njets"][{"systematic":"nominal", "category":f"{thiscat}_fj0matchV2", "process":procs, "lepflav":sum}].values(flow=True))))
     print("v",  sum(sum(histo_dict["njets"][{"systematic":"nominal", "category":f"{thiscat}_fj0matchV", "process":procs, "lepflav":sum}].values(flow=True))))
     print("n",  sum(sum(histo_dict["njets"][{"systematic":"nominal", "category":f"{thiscat}_fj0noMatch", "process":procs, "lepflav":sum}].values(flow=True))))
-    exit()
-    #histo = histo_dict["njets"][{"systematic":"nominal", "category":"2lOSSF_1fjx", "lepflav":sum}]
-    #print(histo)
 
     fig, ax = plt.subplots(figsize=(8, 5))
     cat_lst = ["2lOSSF_1fjx", "2lOSSF_1fjx_ejj3"]
@@ -118,8 +107,6 @@ def main():
             "V-matched"   : f"{cat}_fj0matchV",
             "Unmatched"   : f"{cat}_fj0noMatch",
         }
-        #if  cat != "2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0":
-            #categories["Unmatched"] = f"{cat}_fj0noMatch"
 
         for normalize in [True, False]:
             fig, ax = plt.subplots(figsize=(8, 5))
