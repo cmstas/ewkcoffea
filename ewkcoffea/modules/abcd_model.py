@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import pytorch_lightning as pl
 
-from utilities import distance_corr
+from ewkcoffea.modules.abcd_utilities import distance_corr
 
 class MLP(nn.Module):
     def __init__(self, input_size, hidden_layers, use_batchnorm=True, dropout=0.0):

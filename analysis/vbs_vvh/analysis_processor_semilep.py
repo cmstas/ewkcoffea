@@ -15,7 +15,7 @@ from ewkcoffea.modules.paths import ewkcoffea_path as ewkcoffea_path
 
 import torch
 torch.set_num_threads(1)
-from model import ABCDLightningModule
+from ewkcoffea.modules.abcd_model import ABCDLightningModule
 
 import warnings
 warnings.filterwarnings(
