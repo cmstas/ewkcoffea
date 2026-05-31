@@ -164,7 +164,7 @@ class AnalysisProcessor(processor.ProcessorABC):
 
             "mjj_max_cent" : axis.Regular(180, 0, 250, name="mjj_max_cent", label="Leading mjj of pair of non-forward jets"),
             "mjj_max_fwd" : axis.Regular(180, 0, 2500, name="mjj_max_fwd", label="Leading mjj of pair of forward jets"),
-            "mjj_max_any" : axis.Regular(180, 0, 1500, name="mjj_max_any", label="Leading mjj of pair of any (central or fwd) jets"),
+            "mjj_max_any" : axis.Regular(180, 0, 3000, name="mjj_max_any", label="Leading mjj of pair of any (central or fwd) jets"),
             "absdeta_max_fwd" : axis.Regular(180, 0, 10, name="absdeta_max_fwd", label="Largest abs(delta eta) of pair of forward jets"),
             "absdeta_max_any" : axis.Regular(180, 0, 10, name="absdeta_max_any", label="Largest abs(delta eta) of pair of any (central or fwd) jets"),
 
@@ -211,7 +211,7 @@ class AnalysisProcessor(processor.ProcessorABC):
 
             "dnn_score"   : axis.Regular(180, 0, 1, name="dnn_score",   label="DNN score from ABCDnet"),
 
-            "vbs_mjj"       : axis.Regular(180, 0, 4000, name="vbs_mjj",       label="VBS candidate mjj [GeV]"),
+            "vbs_mjj"       : axis.Regular(180, 0, 3000, name="vbs_mjj",       label="VBS candidate mjj [GeV]"),
             "vbs_absdetajj" : axis.Regular(180, 0, 10,   name="vbs_absdetajj", label="VBS candidate abs delta eta jj"),
             "vbs_score"     : axis.Regular(180, 0, 1,    name="vbs_score",     label="VBS BDT score"),
 
@@ -326,7 +326,8 @@ class AnalysisProcessor(processor.ProcessorABC):
         # Initialize objects
         ele     = events.electron
         mu      = events.muon
-        jets    = events.jet
+        #jets    = events.jet
+        jets    = events.jetOR
         met     = events.met
         fatjets = events.fatjet
         vbsjets = events.vbs
@@ -786,7 +787,7 @@ class AnalysisProcessor(processor.ProcessorABC):
 
         is_VFJ       = (fj0_mparticlenet <= 100.) & (fj0_mparticlenet > 65)
         is_HFJ       = (fj0_mparticlenet >  110.) & (fj0_mparticlenet <= 150.)
-        is_HFJTagHbb = (fj0_pNetHbbvsQCD > 0.98)
+        is_HFJTagHbb = (fj0_pNetHbbvsQCD > 0.95)
 
         is_onZ = abs(mass_l0l1 - 91.1876) < 20
 
@@ -795,44 +796,32 @@ class AnalysisProcessor(processor.ProcessorABC):
 
         ### 2lOS + 1FJ ###
 
-        selections.add("2l",                                      is_2l)
-        selections.add("2lOS",                                    is_2l & is_os)
-        selections.add("2lOSSF",                                  is_2l & is_os & is_sf)
-        selections.add("2lOSSF_1fj",                              is_2l & is_os & is_sf & (nfatjets>=1))
-        selections.add("2lOSSF_1fjx",                             is_2l & is_os & is_sf & (nfatjets==1))
-        selections.add("2lOSSF_1fjx_2j",                          is_2l & is_os & is_sf & (nfatjets==1) & (njets_tot>=2))
-        selections.add("2lOSSF_1fjx_HFJ",                         is_2l & is_os & is_sf & (nfatjets==1) & is_HFJ)
-        selections.add("2lOSSF_1fjx_HFJtag",                      is_2l & is_os & is_sf & (nfatjets==1) & is_HFJ & is_HFJTagHbb)
-        selections.add("2lOSSF_1fjx_HFJtag_nj2",                  is_2l & is_os & is_sf & (nfatjets==1) & is_HFJ & is_HFJTagHbb & (njets_tot>=2))
-        selections.add("2lOSSF_1fjx_HFJtag_nj2_mjj600",           is_2l & is_os & is_sf & (nfatjets==1) & is_HFJ & is_HFJTagHbb & (njets_tot>=2) & (mjj_max_any>600))
-        selections.add("2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0",      is_2l & is_os & is_sf & (nfatjets==1) & is_HFJ & is_HFJTagHbb & (njets_tot>=2) & (mjj_max_any>600) & (nbtagsm==0))
-        selections.add("2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0_onZ",  is_2l & is_os & is_sf & (nfatjets==1) & is_HFJ & is_HFJTagHbb & (njets_tot>=2) & (mjj_max_any>600) & (nbtagsm==0) & is_onZ)
-        selections.add("2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0_offZ", is_2l & is_os & is_sf & (nfatjets==1) & is_HFJ & is_HFJTagHbb & (njets_tot>=2) & (mjj_max_any>600) & (nbtagsm==0) & ~is_onZ)
-        selections.add("2lOSSF_1fjx_ejj3",  is_2l & is_os & is_sf & (nfatjets==1) & (vbsjets.detajj > 3))
+        selections.add("2l",                                     is_2l)
+        selections.add("2lOS",                                   is_2l & is_os)
+        selections.add("2lOSSF",                                 is_2l & is_os & is_sf)
+        selections.add("2lOSSF_nFJ1",                            is_2l & is_os & is_sf & (nfatjets==1))
+        selections.add("2lOSSF_nFJ1_mjj1k",                      is_2l & is_os & is_sf & (nfatjets==1) & (vbsjets.mjj>1000))
+        selections.add("2lOSSF_nFJ1_mjj1k_HFJ",                  is_2l & is_os & is_sf & (nfatjets==1) & (vbsjets.mjj>1000) & is_HFJ)
+        selections.add("2lOSSF_nFJ1_mjj1k_HFJtag",               is_2l & is_os & is_sf & (nfatjets==1) & (vbsjets.mjj>1000) & is_HFJ & is_HFJTagHbb)
+        selections.add("2lOSSF_nFJ1_mjj1k_HFJtag_nb0",           is_2l & is_os & is_sf & (nfatjets==1) & (vbsjets.mjj>1000) & is_HFJ & is_HFJTagHbb & (nbtagst==0))
 
         ### 3l ###
 
-        selections.add("3l",                                   is_3l)
+        selections.add("3l",                              is_3l)
 
-        selections.add("3l_chsum3",                            is_3l       & (abs_ch_sum_3l==3))
+        selections.add("3l_chsum3",                       is_3l       & (abs_ch_sum_3l==3))
+        selections.add("3l_chsum3_mjj500",                is_3l       & (abs_ch_sum_3l==3) & (vbsjets.mjj>500))
+        selections.add("3l_chsum3_mjj500_nb0",            is_3l       & (abs_ch_sum_3l==3) & (vbsjets.mjj>500) & (nbtagst==0))
 
-        selections.add("3l_chsum3_mjj400",                     is_3l       & (abs_ch_sum_3l==3) & (mjj_max_any>400))
-        selections.add("3l_chsum3_mjj400_b0p4",                is_3l       & (abs_ch_sum_3l==3) & (mjj_max_any>400) & (bbscore0_bscore<0.4))
-
-        selections.add("3l_chsum1",                            is_3l       & (abs_ch_sum_3l==1))
-        selections.add("3l_chsum1_mll12",                      is_3l_mll12 & (abs_ch_sum_3l==1))
-
-        selections.add("3l_chsum1_mll12_sfos0",                is_3l_mll12 & (abs_ch_sum_3l==1) & (n_ll_sfos==0))
-        selections.add("3l_chsum1_mll12_sfos0_mjj400",         is_3l_mll12 & (abs_ch_sum_3l==1) & (n_ll_sfos==0) & (mjj_max_any>400))
-        selections.add("3l_chsum1_mll12_sfos0_mjj400_b0p4",    is_3l_mll12 & (abs_ch_sum_3l==1) & (n_ll_sfos==0) & (mjj_max_any>400) & (bbscore0_bscore<0.4))
-
-        selections.add("3l_chsum1_mll12_sfos1",                is_3l_mll12 & (abs_ch_sum_3l==1) & (n_ll_sfos==1))
-        selections.add("3l_chsum1_mll12_sfos1_mjj400",         is_3l_mll12 & (abs_ch_sum_3l==1) & (n_ll_sfos==1) & (mjj_max_any>400))
-        selections.add("3l_chsum1_mll12_sfos1_mjj400_jf0pt50", is_3l_mll12 & (abs_ch_sum_3l==1) & (n_ll_sfos==1) & (mjj_max_any>400) & (j0forward.pt>50))
-
-        selections.add("3l_chsum1_mll12_sfos2",                is_3l_mll12 & (abs_ch_sum_3l==1) & (n_ll_sfos==2))
-        selections.add("3l_chsum1_mll12_sfos2_mjj400",         is_3l_mll12 & (abs_ch_sum_3l==1) & (n_ll_sfos==2) & (mjj_max_any>400))
-        selections.add("3l_chsum1_mll12_sfos2_mjj400_jf0pt50", is_3l_mll12 & (abs_ch_sum_3l==1) & (n_ll_sfos==2) & (mjj_max_any>400) & (j0forward.pt>50))
+        selections.add("3l_chsum1",                       is_3l_mll12 & (abs_ch_sum_3l==1))
+        selections.add("3l_chsum1_nFJg0",                 is_3l_mll12 & (abs_ch_sum_3l==1) & (nfatjets>=1))
+        selections.add("3l_chsum1_nFJg0_mjj500",          is_3l_mll12 & (abs_ch_sum_3l==1) & (nfatjets>=1) & (vbsjets.mjj>500))
+        selections.add("3l_chsum1_nFJ0",                  is_3l_mll12 & (abs_ch_sum_3l==1) & (nfatjets==0))
+        selections.add("3l_chsum1_nFJ0_nSFOSg0",          is_3l_mll12 & (abs_ch_sum_3l==1) & (nfatjets==0) & (n_ll_sfos>=1))
+        selections.add("3l_chsum1_nFJ0_nSFOSg0_mjj2k",    is_3l_mll12 & (abs_ch_sum_3l==1) & (nfatjets==0) & (n_ll_sfos>=1) & (vbsjets.mjj>2000))
+        selections.add("3l_chsum1_nFJ0_nSFOS0",           is_3l_mll12 & (abs_ch_sum_3l==1) & (nfatjets==0) & (n_ll_sfos==0))
+        selections.add("3l_chsum1_nFJ0_nSFOS0_mjj1k",     is_3l_mll12 & (abs_ch_sum_3l==1) & (nfatjets==0) & (n_ll_sfos==0) & (vbsjets.mjj>1000))
+        selections.add("3l_chsum1_nFJ0_nSFOS0_mjj1k_nb0", is_3l_mll12 & (abs_ch_sum_3l==1) & (nfatjets==0) & (n_ll_sfos==0) & (vbsjets.mjj>1000) & (nbtagst==0))
 
 
         # Keep track of the cats we want to actually fill
@@ -846,36 +835,30 @@ class AnalysisProcessor(processor.ProcessorABC):
                 "2l",
                 "2lOS",
                 "2lOSSF",
-                "2lOSSF_1fj",
-                "2lOSSF_1fjx",
-                "2lOSSF_1fjx_2j",
-                "2lOSSF_1fjx_HFJ",
-                "2lOSSF_1fjx_HFJtag",
-                "2lOSSF_1fjx_HFJtag_nj2",
-                "2lOSSF_1fjx_HFJtag_nj2_mjj600",
-                "2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0",
-                "2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0_onZ",
-                "2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0_offZ",
-                "2lOSSF_1fjx_ejj3",
-
+                "2lOSSF_nFJ1",
+                "2lOSSF_nFJ1_mjj1k",
+                "2lOSSF_nFJ1_mjj1k_HFJ",
+                "2lOSSF_nFJ1_mjj1k_HFJtag",
+                "2lOSSF_nFJ1_mjj1k_HFJtag_nb0",
 
                 ### 3l ###
 
                 "3l",
+
                 "3l_chsum3",
-                "3l_chsum3_mjj400",
-                "3l_chsum3_mjj400_b0p4",
+                "3l_chsum3_mjj500",
+                "3l_chsum3_mjj500_nb0",
+
                 "3l_chsum1",
-                "3l_chsum1_mll12",
-                "3l_chsum1_mll12_sfos0",
-                "3l_chsum1_mll12_sfos0_mjj400",
-                "3l_chsum1_mll12_sfos0_mjj400_b0p4",
-                "3l_chsum1_mll12_sfos1",
-                "3l_chsum1_mll12_sfos1_mjj400",
-                "3l_chsum1_mll12_sfos1_mjj400_jf0pt50",
-                "3l_chsum1_mll12_sfos2",
-                "3l_chsum1_mll12_sfos2_mjj400",
-                "3l_chsum1_mll12_sfos2_mjj400_jf0pt50",
+                "3l_chsum1_nFJg0",
+                "3l_chsum1_nFJg0_mjj500",
+                "3l_chsum1_nFJ0",
+                "3l_chsum1_nFJ0_nSFOSg0",
+                "3l_chsum1_nFJ0_nSFOSg0_mjj2k",
+                "3l_chsum1_nFJ0_nSFOS0",
+                "3l_chsum1_nFJ0_nSFOS0_mjj1k",
+                "3l_chsum1_nFJ0_nSFOS0_mjj1k_nb0",
+
             ]
         }
 
