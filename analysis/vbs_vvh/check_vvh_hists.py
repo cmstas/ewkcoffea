@@ -5,6 +5,8 @@ import json
 import os
 import shutil
 import numpy as np
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import copy
 
@@ -12,8 +14,8 @@ import ewkcoffea.modules.plotting_tools as plt_tools
 import topcoffea.modules.MakeLatexTable as mlt
 
 
-#HTML_PC = "/home/users/kmohrman/ref_scripts/html_stuff/index.php"
-HTML_PC = "/home/k.mohrman/ref_scirpts/html_stuff/index.php"
+HTML_PC = "/home/users/kmohrman/ref_scripts/html_stuff/index.php"
+#HTML_PC = "/home/k.mohrman/ref_scirpts/html_stuff/index.php"
 
 #CLR_LST = ['#d55e00', '#e69f00', '#f0e442', '#009e73', '#0072b2', '#56b4e9', '#cc79a7', '#6e3600', '#a17500'] #, '#a39b2f', '#00664f', '#005d87', '#999999', '#8c5d77']
 #CLR_LST = ['#d55e00', '#e69f00']
@@ -25,43 +27,34 @@ UNBLIND_CATS = [
 ]
 
 CAT_LST_2l = [
-
     #"all_events",
-
     #"2l",
     #"2lOS",
     #"2lOSSF",
-    #"2lOSSF_1fj",
-    "2lOSSF_1fjx",
-    #"2lOSSF_1fjx_2j",
-    "2lOSSF_1fjx_HFJ",
-    "2lOSSF_1fjx_HFJtag",
-    #"2lOSSF_1fjx_HFJtag_nj2",
-    "2lOSSF_1fjx_HFJtag_nj2_mjj600",
-    "2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0",
-    #"2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0_onZ",
-    #"2lOSSF_1fjx_HFJtag_nj2_mjj600_nbm0_offZ",
+    "2lOSSF_nFJ1",
+    "2lOSSF_nFJ1_mjj1k",
+    "2lOSSF_nFJ1_mjj1k_HFJ",
+    "2lOSSF_nFJ1_mjj1k_HFJtag",
+    "2lOSSF_nFJ1_mjj1k_HFJtag_nb0",
 ]
 
 CAT_LST_3l = [
-
-    "all_events",
-
+    #"all_events",
     "3l",
+
     "3l_chsum3",
-    "3l_chsum3_mjj400",
-    "3l_chsum3_mjj400_b0p4",
+    "3l_chsum3_mjj500",
+    "3l_chsum3_mjj500_nb0",
+
     "3l_chsum1",
-    "3l_chsum1_mll12",
-    "3l_chsum1_mll12_sfos0",
-    "3l_chsum1_mll12_sfos0_mjj400",
-    "3l_chsum1_mll12_sfos0_mjj400_b0p4",
-    "3l_chsum1_mll12_sfos1",
-    "3l_chsum1_mll12_sfos1_mjj400",
-    "3l_chsum1_mll12_sfos1_mjj400_jf0pt50",
-    "3l_chsum1_mll12_sfos2",
-    "3l_chsum1_mll12_sfos2_mjj400",
-    "3l_chsum1_mll12_sfos2_mjj400_jf0pt50",
+    "3l_chsum1_nFJg0",
+    "3l_chsum1_nFJg0_mjj500",
+    "3l_chsum1_nFJ0",
+    "3l_chsum1_nFJ0_nSFOSg0",
+    "3l_chsum1_nFJ0_nSFOSg0_mjj2k",
+    "3l_chsum1_nFJ0_nSFOS0",
+    "3l_chsum1_nFJ0_nSFOS0_mjj1k",
+    "3l_chsum1_nFJ0_nSFOS0_mjj1k_nb0",
 ]
 
 
@@ -72,19 +65,23 @@ GRP_DICT_FULL_R3 = {
         "VBSWWH_SS_c2v1p0_c3_1p0",
         "VBSWZH_c2v1p0_c3_1p0",
         "VBSZZH_c2v1p0_c3_1p0",
-        #"VBSWWH_OS_c2v1p0_c3_10p0",
-        #"VBSWWH_SS_c2v1p0_c3_10p0",
-        #"VBSWZH_c2v1p0_c3_10p0",
-        #"VBSZZH_c2v1p0_c3_10p0",
-        #"VBSWWH_OS_c2v1p5_c3_1p0",
-        #"VBSWWH_SS_c2v1p5_c3_1p0",
-        #"VBSWZH_c2v1p5_c3_1p0",
-        #"VBSZZH_c2v1p5_c3_1p0",
     ],
-    "VBSWWH_SS": ["VBSWWH_SS_c2v1p0_c3_1p0"],
-    "VBSWWH_OS": ["VBSWWH_OS_c2v1p0_c3_1p0"],
-    "VBSWZH": ["VBSWZH_c2v1p0_c3_1p0"],
-    "VBSZZH": ["VBSZZH_c2v1p0_c3_1p0"],
+    #"SignalC2V": [
+    #    "VBSWWH_OS_c2v1p5_c3_1p0",
+    #    "VBSWWH_SS_c2v1p5_c3_1p0",
+    #    "VBSWZH_c2v1p5_c3_1p0",
+    #    "VBSZZH_c2v1p5_c3_1p0",
+    #],
+    #"SignalC3": [
+    #    "VBSWWH_OS_c2v1p0_c3_10p0",
+    #    "VBSWWH_SS_c2v1p0_c3_10p0",
+    #    "VBSWZH_c2v1p0_c3_10p0",
+    #    "VBSZZH_c2v1p0_c3_10p0",
+    #],
+    #"VBSWWH_SS": ["VBSWWH_SS_c2v1p0_c3_1p0"],
+    #"VBSWWH_OS": ["VBSWWH_OS_c2v1p0_c3_1p0"],
+    #"VBSWZH": ["VBSWZH_c2v1p0_c3_1p0"],
+    #"VBSZZH": ["VBSZZH_c2v1p0_c3_1p0"],
     "Data":[
         "Muon",
         "MuonEG",
@@ -239,6 +236,29 @@ GRP_DICT_FULL_R3 = {
 
 
 GRP_DICT_FULL_R2 = {
+    "Signal" : [
+        "VBSWWH_SS_c2v1p0_c3_1p0",
+        "VBSWWH_OS_c2v1p0_c3_1p0",
+        "VBSWZH_c2v1p0_c3_1p0",
+        "VBSZZH_c2v1p0_c3_1p0",
+    ],
+    #"SignalC2V": [
+    #    "VBSWWH_OS_c2v1p5_c3_1p0",
+    #    "VBSWWH_SS_c2v1p5_c3_1p0",
+    #    "VBSWZH_c2v1p5_c3_1p0",
+    #    "VBSZZH_c2v1p5_c3_1p0",
+    #],
+    #"SignalC3": [
+    #    "VBSWWH_OS_c2v1p0_c3_10p0",
+    #    "VBSWWH_SS_c2v1p0_c3_10p0",
+    #    "VBSWZH_c2v1p0_c3_10p0",
+    #    "VBSZZH_c2v1p0_c3_10p0",
+    #],
+    #"VBSWWH_SS": ["VBSWWH_SS_c2v1p0_c3_1p0"],
+    #"VBSWWH_OS": ["VBSWWH_OS_c2v1p0_c3_1p0"],
+    #"VBSWZH": ["VBSWZH_c2v1p0_c3_1p0"],
+    #"VBSZZH": ["VBSZZH_c2v1p0_c3_1p0"],
+
     "Data" : [
         #"data",
         "DoubleMuon",
@@ -248,20 +268,6 @@ GRP_DICT_FULL_R2 = {
         "SingleElectron",
         "EGamma",
     ],
-    "Signal" : [
-        "VBSWWH_SS_c2v1p0_c3_1p0",
-        "VBSWWH_OS_c2v1p0_c3_1p0",
-        "VBSWZH_c2v1p0_c3_1p0",
-        "VBSZZH_c2v1p0_c3_1p0",
-        #"VBSWWH_SS_VBSCuts_13TeV",
-        #"VBSWWH_OS_VBSCuts_13TeV",
-        #"VBSWZH_VBSCuts_13TeV",
-        #"VBSZZH_VBSCuts_13TeV",
-    ],
-    "VBSWWH_SS": ["VBSWWH_SS_c2v1p0_c3_1p0"],
-    "VBSWWH_OS": ["VBSWWH_OS_c2v1p0_c3_1p0"],
-    "VBSWZH": ["VBSWZH_c2v1p0_c3_1p0"],
-    "VBSZZH": ["VBSZZH_c2v1p0_c3_1p0"],
 
     "QCD" : [
         "QCD_HT50to100_TuneCP5_PSWeights_13TeV",
@@ -423,7 +429,7 @@ def get_yields_per_cat(histo_dict,var_name,grp_dict,year_name_lst_to_prepend, ca
     # Get list of all of the backgrounds together
     bkg_lst = []
     for grp in grouping_dict:
-        if (grp != "Signal") and (grp != "Data") and (grp not in ["VBSWWH_SS","VBSWWH_OS","VBSWZH","VBSZZH"]):
+        if (grp != "Signal") and (grp != "Data") and (grp not in ["VBSWWH_SS","VBSWWH_OS","VBSWZH","VBSZZH", "SignalC2V", "SignalC3"]):
             bkg_lst = bkg_lst + grouping_dict[grp]
 
     # Make the dictionary to get yields for, it includes what's in grouping_dict, plus the backgrounds grouped as one
@@ -600,6 +606,7 @@ def make_vvh_fig(histo_mc,histo_mc_sig,histo_mc_bkg,histo_dat=None,title="test",
     extb = ax3.set_xlabel(None)
     # Plot a dummy hist on ax4 to get the label to show up
     histo_mc.plot1d(alpha=0, ax=ax4)
+    ax4.get_legend().remove()
 
     extl = ax2.set_ylabel('Shapes')
     ax3.set_ylabel('Significance')
@@ -804,7 +811,8 @@ def print_yields(histo_dict,grp_dict,cat_lst,years_to_prepend,roundat=None,print
             print(f"\n{cat}")
             for group_name in group_lst_order:
                 #if group_name not in ["Signal","Background"]: continue
-                if group_name not in ["Signal","Background","Data"]: continue
+                #if group_name not in ["Signal","Background","Data"]: continue
+                if group_name not in ["Signal","SignalC2V","SignalC3","Background","Data"]: continue
                 if group_name == "metric": continue
                 if group_name == "metricX100": continue
                 if group_name == "Data/MC": continue
@@ -887,7 +895,7 @@ def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend,cat_lst,lepflav_bin=
             print("\nVar:",var)
             if "fj1" in var: continue
             #if var not in ["njets","njets_counts","scalarptsum_lepmet"]: continue # TMP
-            #if "truth" in var: continue
+            if "truth" in var: continue
 
             # Skip empty
             if len(histo_dict[var].values()) == 0: continue
@@ -903,7 +911,7 @@ def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend,cat_lst,lepflav_bin=
                 raise Exception(f"Unknown lep flav handling: {lepflav_bin}")
 
             # Clean up a bit (rebin, regroup, and handle overflow)
-            if var not in ["njets","nleps","nbtagsl","nbtagsm","njets_counts","nleps_counts","nfatjets","njets_forward","njets_tot","n_ll_sfos","abs_ch_sum_3l","l0_truth","l1_truth","l2_truth", "nlep_truth_real", "nlep_truth_fake", "abs_pdgid_sum"]:
+            if var not in ["njets","nleps","nbtagsl","nbtagsm","nbtagst","njets_counts","nleps_counts","nfatjets","njets_forward","njets_tot","n_ll_sfos","abs_ch_sum_3l","l0_truth","l1_truth","l2_truth", "nlep_truth_real", "nlep_truth_fake", "abs_pdgid_sum"]:
                 histo = plt_tools.rebin(histo,6)
             #histo = plt_tools.group(histo,"process","process_grp",grouping_dict_mc)
             histo = plt_tools.group(histo,"process","process_grp",grouping_dict)

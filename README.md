@@ -88,7 +88,7 @@ The main processor is the `analysis_processor_semilep.py` file. This can be run 
 
 For example, to run a test run over a single file:
 ```
-wget -nc http://uaf-10.t2.ucsd.edu/~kmohrman/large_files_no_backup/for_ci/vvh/apr26_2026/output_0.root
+wget -nc http://uaf-10.t2.ucsd.edu/~kmohrman/large_files_no_backup/for_ci/vvh/may29_2026_3l_wzh_ul17/output_0.root
 time python run_analysis.py ../../input_samples/sample_jsons/test_samples/WZH_ForCI.json -x iterative -o new_ref_histos -p semilep
 ```
 To run at scale over Full Run 2 samples, the `run_wrapper.sh` script contains examples, so uncomment the one you would like and then run:

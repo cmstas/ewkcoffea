@@ -1,5 +1,10 @@
 #!/usr/bin/env python
 
+import os
+os.environ["OPENBLAS_NUM_THREADS"] = "1"
+os.environ["OMP_NUM_THREADS"] = "1"
+os.environ["MKL_NUM_THREADS"] = "1"
+
 import argparse
 import json
 import time
@@ -209,7 +214,7 @@ if __name__ == '__main__':
     else:
         print('No Wilson coefficients specified')
 
-    processor_instance = analysis_processor.AnalysisProcessor(samplesdict,wc_lst,hist_lst,do_systs,skip_obj_systs,skip_sr,skip_cr,siphon_bdt_data=siphon,rwgt_to_sm=rwgt_to_sm, ele_cutBased_val=args.ele_cutBased_val, mu_pfIsoId_val=args.mu_pfIsoId_val)
+    processor_instance = analysis_processor.AnalysisProcessor(samplesdict,wc_lst,hist_lst,do_systs,skip_obj_systs,skip_sr,skip_cr,siphon_bdt_data=siphon,rwgt_to_sm=rwgt_to_sm, ele_cutBased_val=args.ele_cutBased_val, mu_pfIsoId_val=args.mu_pfIsoId_val,siphon_out_name=outname)
 
     if executor == "work_queue":
         executor_args = {

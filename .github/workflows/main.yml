@@ -19,7 +19,7 @@ jobs:
       - name: flake8 Lint
         uses: py-actions/flake8@v2
         with:
-          ignore: "E116,E201,E202,E203,E211,E221,E222,E226,E225,E227,E228,E231,E241,E251,E261,E262,E265,E266,E271,E272,E301,E302,E303,E305,E402,F403,F405,E501,W504,E701,E702,E711,E713,E714,E722,E731,E741,F841,W391,W605"
+          ignore: "E116,E201,E202,E203,E211,E221,E222,E226,E225,E227,E228,E231,E241,E251,E261,E262,E265,E266,E271,E272,E301,E302,E303,E305,E402,F403,F405,E501,W504,E701,E702,E711,E713,E714,E722,E731,E741,F841,W391,W605,W503"
           # E116 unexpected indentation (comment)
           # E201 whitespace after '('
           # E202 whitespace before ')'
@@ -60,6 +60,7 @@ jobs:
           # F841 local variable is assigned to but never used
           # W391 blank line at end of file
           # W605 invalid escape sequence '\s'
+          # W503 line break before binary operator
 
   Full_Analyses:
     runs-on: ubuntu-latest
@@ -114,7 +115,7 @@ jobs:
         run: |
           wget --no-verbose http://uaf-4.t2.ucsd.edu/~mdittric/for_ci/for_wwz/WWZto4L2Nu_4F_TuneCP5_13p6TeV_amcatnlo-pythia8_Run3Summer22NanoAODv12-130X_mcRun3_2022_realistic_v5-v2_NANOAODSIM_WWZ_MC_2024_0811/output_9.root
           wget --no-verbose http://uaf-4.t2.ucsd.edu/~mdittric/for_ci/for_wwz/WWZJetsTo4L2Nu_4F_TuneCP5_13TeV-amcatnlo-pythia8_RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v2_NANOAODSIM_WWZ_MC_2024_0811/output_2.root
-          wget --no-verbose http://uaf-10.t2.ucsd.edu/~kmohrman/large_files_no_backup/for_ci/vvh/may06_2026_3l_wzh_ul17/output_0.root
+          wget --no-verbose http://uaf-10.t2.ucsd.edu/~kmohrman/large_files_no_backup/for_ci/vvh/may29_2026_3l_wzh_ul17/output_0.root
 
       - name: Pytest setup
         run: |
