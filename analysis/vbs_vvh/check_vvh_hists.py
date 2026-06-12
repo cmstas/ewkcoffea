@@ -32,6 +32,7 @@ CAT_LST_2l = [
     #"2lOS",
     #"2lOSSF",
     "2lOSSF_nFJ1",
+    #"2lOSSF_nFJ1_HFJ",
     "2lOSSF_nFJ1_mjj1k",
     "2lOSSF_nFJ1_mjj1k_HFJ",
     "2lOSSF_nFJ1_mjj1k_HFJtag",
@@ -874,7 +875,7 @@ def print_yields(histo_dict,grp_dict,cat_lst,years_to_prepend,roundat=None,print
 
 
 ### Make the plots ###
-def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend,cat_lst,lepflav_bin=None):
+def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend,cat_lst,lepflav_bin=None,save_dir_path="plots",make_cat_subdirs=True):
 
     #grouping_dict = append_years(grp_dict,year_name_lst_to_prepend) # For fromnano
     grouping_dict = copy.deepcopy(grp_dict)
@@ -896,6 +897,7 @@ def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend,cat_lst,lepflav_bin=
             if "fj1" in var: continue
             #if var not in ["njets","njets_counts","scalarptsum_lepmet"]: continue # TMP
             if "truth" in var: continue
+            if var == "abcd_histo": continue # This one is 2d, can't plot it here
 
             # Skip empty
             if len(histo_dict[var].values()) == 0: continue
@@ -934,9 +936,11 @@ def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend,cat_lst,lepflav_bin=
             )
 
             # Save
-            save_dir_path = "plots"
-            if not os.path.exists("./plots"): os.mkdir("./plots")
-            save_dir_path_cat = os.path.join(save_dir_path,cat)
+            if not os.path.exists(f"./{save_dir_path}"): os.mkdir(f"./{save_dir_path}")
+            if make_cat_subdirs:
+                save_dir_path_cat = os.path.join(save_dir_path,cat)
+            else:
+                save_dir_path_cat = save_dir_path
             if not os.path.exists(save_dir_path_cat): os.mkdir(save_dir_path_cat)
             fig.savefig(os.path.join(save_dir_path_cat,title+".png"),bbox_extra_artists=ext_tup,bbox_inches='tight')
             shutil.copyfile(HTML_PC, os.path.join(save_dir_path_cat,"index.php"))
