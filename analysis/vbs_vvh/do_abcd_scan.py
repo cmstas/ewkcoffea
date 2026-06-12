@@ -50,6 +50,7 @@ def scan_score_only(histo_sig, histo_abcdbkg, histo_otherbkg, score_axis_name="d
         B = get_yield(abcd_h,  slice(si, None), slice(None, None)) + \
             get_yield(other_h, slice(si, None), slice(None, None))
         sig = S / np.sqrt(B) if B > 0 else np.nan
+        print(f"  score>{score_edges[si]:.4f}  S={S:.4f}  B={B:.2f}  S/sqrt(B)={sig:.4f}")
         results.append({"score_cut": score_edges[si], "S": S, "B": B, "significance": sig})
     results_sorted = sorted(results, key=lambda x: x["significance"] if not np.isnan(x["significance"]) else -np.inf, reverse=True)
     best = results_sorted[0]
@@ -620,9 +621,12 @@ def main():
 
     grp_dict = cvh.GRP_DICT_FULL_R2
 
+    cat_for_dnn = "2lOSSF_nFJ1_HFJ"
+
     histo_dict = pickle.load(gzip.open(args.pkl_file_path))
     histo = histo_dict["abcd_histo"]
-    histo = histo[{"category": "2lOSSF_1fjx_2j_mjj100", "lepflav": sum}]
+    #histo = histo[{"category": "2lOSSF_1fjx_2j_mjj100", "lepflav": sum}]
+    histo = histo[{"category": cat_for_dnn}]
     histo = plt_tools.group(histo, "process", "process_grp", grp_dict)
 
     # Build the list of non-ABCD background group names
@@ -649,6 +653,10 @@ def main():
     os.makedirs(out_dir, exist_ok=True)
     if not os.path.exists(os.path.join(out_dir, "index.php")):
         shutil.copyfile(HTML_PC, os.path.join(out_dir, "index.php"))
+
+    # Make the stack plot, borrowing from check_vvh_hists
+    years_to_prepend = ["2016postVFP","2016preVFP","2017","2018"]
+    cvh.make_plots(histo_dict,grp_dict,years_to_prepend,[cat_for_dnn],lepflav_bin="all",save_dir_path=out_dir,make_cat_subdirs=False)
 
     # Make 1d plots of the score and mjj
     plot_1d_stack(histo_sig, histo_dy, histo_ttbar, histo_otherbkg, "dnn_score", f"{out_dir}/stack_dnn_score.png")
