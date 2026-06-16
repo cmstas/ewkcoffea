@@ -875,7 +875,7 @@ def print_yields(histo_dict,grp_dict,cat_lst,years_to_prepend,roundat=None,print
 
 
 ### Make the plots ###
-def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend,cat_lst,lepflav_bin=None,save_dir_path="plots",make_cat_subdirs=True):
+def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend,cat_lst,lepflav_bin=None,save_dir_path="plots",make_cat_subdirs=True,vars_to_plot=None):
 
     #grouping_dict = append_years(grp_dict,year_name_lst_to_prepend) # For fromnano
     grouping_dict = copy.deepcopy(grp_dict)
@@ -893,6 +893,7 @@ def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend,cat_lst,lepflav_bin=
     for cat in cat_lst:
         print("\nCat:",cat)
         for var in var_lst:
+            if (vars_to_plot is not None) and (var not in vars_to_plot): continue # Only make plots for the ones in the list, if we have a list
             print("\nVar:",var)
             if "fj1" in var: continue
             #if var not in ["njets","njets_counts","scalarptsum_lepmet"]: continue # TMP
@@ -975,7 +976,7 @@ def main():
     # Print total raw events
     #print(sum(histo_dict["njets_counts"][{"systematic":"nominal", "category":"all_events", "process":sum, "lepflav":sum}].values(flow=True)))
     #print(histo_dict["njets"])
-    #tot = histo_dict["njets"][{"systematic":"nominal", "category":"2lOSSF_1fjx", "process":sum, "njets":sum, "lepflav":22}]
+    #tot = histo_dict["njets"][{"systematic":"nominal", "category":"3l", "process":["VBSWWH_OS_c2v1p0_c3_1p0", "VBSWWH_SS_c2v1p0_c3_1p0", "VBSWZH_c2v1p0_c3_1p0", "VBSZZH_c2v1p0_c3_1p0"], "njets":sum, "lepflav":sum}]
     #tot = sum(sum(histo_dict["njets"][{"systematic":"nominal", "category":"3l"}].values(flow=True)))
     #tot = sum(sum(histo_dict["njets"][{"systematic":"nominal", "category":"2lOSSF_1fjx"}].values(flow=True)))
     #print("Events:",tot)
