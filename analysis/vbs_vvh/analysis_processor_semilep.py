@@ -395,6 +395,7 @@ class AnalysisProcessor(processor.ProcessorABC):
         # Clean with dr (though another option is to use jetIdx)
         cleanedJets = os_ec.get_cleaned_collection(l_vvh_t,jets) # Clean against leps
         cleanedJets = os_ec.get_cleaned_collection(goodfatjets,cleanedJets,drcut=0.8) # Clean against fat jets
+        #cleanedJets = jets
 
         # Selecting jets and cleaning them (already in RDF)
         goodJets = cleanedJets[(abs(cleanedJets.eta) <= 2.4)]
