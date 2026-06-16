@@ -17,6 +17,33 @@ def get_yield(h2d, score_slice, mjj_slice):
     return h2d[score_slice, mjj_slice].sum(flow=False).value
 
 
+def eval_at_fixed_cut(histo_sig, histo_abcdbkg, histo_otherbkg, score_cut, label="", score_axis_name="dnn_score"):
+    """Evaluate S, B and significance at a fixed score cut, with stat uncertainties."""
+    sig_h   = histo_sig[{"process_grp": sum}]
+    abcd_h  = histo_abcdbkg[{"process_grp": sum}]
+    other_h = histo_otherbkg[{"process_grp": sum}]
+    score_edges = sig_h.axes[score_axis_name].edges
+    si = int(np.searchsorted(score_edges, score_cut))
+    S     = get_yield(sig_h,   slice(si, None), slice(None, None))
+    B     = get_yield(abcd_h,  slice(si, None), slice(None, None)) + get_yield(other_h, slice(si, None), slice(None, None))
+    S_err = np.sqrt(sig_h[slice(si, None),   slice(None, None)].sum(flow=False).variance)
+    B_err = np.sqrt(
+        abcd_h[slice(si, None),  slice(None, None)].sum(flow=False).variance +
+        other_h[slice(si, None), slice(None, None)].sum(flow=False).variance
+    )
+    sig = S / np.sqrt(B) if B > 0 else np.nan
+    tag = f" ({label})" if label else ""
+    print("\n" + "="*50)
+    print(f"FIXED CUT EVALUATION{tag}")
+    print("="*50)
+    print(f"  Score cut    : {score_cut:.4f}")
+    print(f"  S            : {S:.4f} +/- {S_err:.4f}")
+    print(f"  B            : {B:.2f} +/- {B_err:.2f}")
+    print(f"  S/sqrt(B)    : {sig:.4f}")
+    print("="*50 + "\n")
+    return {"score_cut": score_cut, "S": S, "B": B, "S_err": S_err, "B_err": B_err, "significance": sig}
+
+
 def write_score_only_datacard(best, output_path):
     A_obs = best["S"] + best["B"]
     with open(output_path, "w") as f:
@@ -49,9 +76,23 @@ def scan_score_only(histo_sig, histo_abcdbkg, histo_otherbkg, score_axis_name="d
         S = get_yield(sig_h,   slice(si, None), slice(None, None))
         B = get_yield(abcd_h,  slice(si, None), slice(None, None)) + \
             get_yield(other_h, slice(si, None), slice(None, None))
+        S_err = np.sqrt(sig_h[slice(si, None), slice(None, None)].sum(flow=False).variance)
+        B_err = np.sqrt(
+            abcd_h[slice(si, None), slice(None, None)].sum(flow=False).variance +
+            other_h[slice(si, None), slice(None, None)].sum(flow=False).variance
+        )
         sig = S / np.sqrt(B) if B > 0 else np.nan
-        results.append({"score_cut": score_edges[si], "S": S, "B": B, "significance": sig})
+        results.append({"score_cut": score_edges[si], "S": S, "B": B, "significance": sig, "S_err": S_err, "B_err": B_err})
+
+    # Sort by significance to assign ranks
     results_sorted = sorted(results, key=lambda x: x["significance"] if not np.isnan(x["significance"]) else -np.inf, reverse=True)
+    sig_rank = {r["score_cut"]: rank for rank, r in enumerate(results_sorted)}
+
+    # Print in score-cut order with significance rank annotation (for the 30 last cuts)
+    for r in list(reversed(results))[:30]:
+        rank = sig_rank[r["score_cut"]]
+        print(f"  sig_rank={rank:03d}  score>{r['score_cut']:.4f}  S={r['S']:.4f}+/-{r['S_err']:.4f}  B={r['B']:.2f}+/-{r['B_err']:.2f}  S/sqrt(B)={r['significance']:.4f}")
+
     best = results_sorted[0]
     print("\n" + "="*50)
     print("BEST SCORE-ONLY CUT")
@@ -62,6 +103,7 @@ def scan_score_only(histo_sig, histo_abcdbkg, histo_otherbkg, score_axis_name="d
     print(f"  S/sqrt(B)    : {best['significance']:.4f}")
     print("="*50 + "\n")
     return results_sorted, best
+
 
 def plot_score_only_scan(results, best, output_path):
     score_cuts   = [r["score_cut"]    for r in results]
@@ -620,9 +662,11 @@ def main():
 
     grp_dict = cvh.GRP_DICT_FULL_R2
 
+    cat_for_dnn = "2lOSSF_nFJ1_HFJ"
+
     histo_dict = pickle.load(gzip.open(args.pkl_file_path))
     histo = histo_dict["abcd_histo"]
-    histo = histo[{"category": "2lOSSF_1fjx_2j_mjj100", "lepflav": sum}]
+    histo = histo[{"category": cat_for_dnn}]
     histo = plt_tools.group(histo, "process", "process_grp", grp_dict)
 
     # Build the list of non-ABCD background group names
@@ -638,17 +682,26 @@ def main():
     histo_abcdbkg  = plt_tools.group(histo, "process_grp", "process_grp", {"ABCDBkg": ["DY", "ttbar"]})
     histo_otherbkg = plt_tools.group(histo, "process_grp", "process_grp", {"OtherBkg": other_bkg_names})
 
-    print("sig",      histo_sig)
-    print("data",     histo_dat)
-    print("dy",       histo_dy)
-    print("ttbar",    histo_ttbar)
-    print("abcdbkg",  histo_abcdbkg)
-    print("otherbkg", histo_otherbkg)
+    #print("sig",      histo_sig)
+    #print("data",     histo_dat)
+    #print("dy",       histo_dy)
+    #print("ttbar",    histo_ttbar)
+    #print("abcdbkg",  histo_abcdbkg)
+    #print("otherbkg", histo_otherbkg)
 
     out_dir = "abcd_scan_plots"
     os.makedirs(out_dir, exist_ok=True)
     if not os.path.exists(os.path.join(out_dir, "index.php")):
         shutil.copyfile(HTML_PC, os.path.join(out_dir, "index.php"))
+
+    ### Just plot stack hist ###
+
+    # Make the stack plot, borrowing from check_vvh_hists
+    years_to_prepend = ["2016postVFP","2016preVFP","2017","2018"]
+    cvh.make_plots(histo_dict,grp_dict,years_to_prepend,[cat_for_dnn],lepflav_bin="all",save_dir_path=out_dir,make_cat_subdirs=False,vars_to_plot=["dnn_score","njets","njets_counts"])
+
+
+    ### Scan over 1d ###
 
     # Make 1d plots of the score and mjj
     plot_1d_stack(histo_sig, histo_dy, histo_ttbar, histo_otherbkg, "dnn_score", f"{out_dir}/stack_dnn_score.png")
@@ -657,11 +710,17 @@ def main():
     # Try to do a scan over just score
     score_only_results, score_only_best = scan_score_only(histo_sig, histo_abcdbkg, histo_otherbkg)
     plot_score_only_scan(score_only_results, score_only_best, f"{out_dir}/dc_score_only_scan.png")
-    for rank, result in enumerate(score_only_results[:25]):
+    for rank, result in enumerate(score_only_results[:30]):
         score_str = f"{result['score_cut']:.2f}".replace(".", "p")
         sig_str   = f"{result['significance']:.2f}".replace(".", "p")
-        fname     = f"{out_dir}/dc_score_only_rank{rank:02d}_sig{sig_str}_s{score_str}.txt"
+        fname     = f"{out_dir}/dc_score_only_rank{rank:02d}.txt"
         write_score_only_datacard(result, fname)
+
+    # Evaluate at a fixed given score
+    eval_at_fixed_cut(histo_sig, histo_abcdbkg, histo_otherbkg, score_cut=0.996, label="")
+
+    #exit()
+    ### Scan over 2d ###
 
     # Decorrelation slices plots for each ABCD background sample and combined
     for histo, tag in [(histo_dy, "dy"), (histo_ttbar, "ttbar"), (histo_abcdbkg, "abcdbkg")]:
