@@ -25,8 +25,7 @@ def eval_at_fixed_cut(histo_sig, histo_abcdbkg, histo_otherbkg, score_cut, label
     score_edges = sig_h.axes[score_axis_name].edges
     si = int(np.searchsorted(score_edges, score_cut))
     S     = get_yield(sig_h,   slice(si, None), slice(None, None))
-    B     = get_yield(abcd_h,  slice(si, None), slice(None, None)) + \
-            get_yield(other_h, slice(si, None), slice(None, None))
+    B     = get_yield(abcd_h,  slice(si, None), slice(None, None)) + get_yield(other_h, slice(si, None), slice(None, None))
     S_err = np.sqrt(sig_h[slice(si, None),   slice(None, None)].sum(flow=False).variance)
     B_err = np.sqrt(
         abcd_h[slice(si, None),  slice(None, None)].sum(flow=False).variance +
