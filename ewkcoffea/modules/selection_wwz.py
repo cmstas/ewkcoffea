@@ -366,6 +366,49 @@ def add4lmask_wwz(events, year, isData, sample_name,is2022,is2023):
 
     events['is4lWWZ'] = ak.fill_none(mask,False)
 
+# For the HH bbZZ 4l analysis checks
+def add4lmask_bbzz(events, year, isData, sample_name,is2022,is2023):
+
+    # Leptons and padded leptons
+    leps = events.l_wwz_t
+    leps_padded = ak.pad_none(leps,4)
+
+    # Filters
+    filter_flags = events.Flag
+    if (is2022 or is2023):
+        filters = filter_flags.goodVertices & filter_flags.globalSuperTightHalo2016Filter & filter_flags.EcalDeadCellTriggerPrimitiveFilter & filter_flags.BadPFMuonFilter & filter_flags.ecalBadCalibFilter & filter_flags.BadPFMuonDzFilter & filter_flags.hfNoisyHitsFilter & filter_flags.eeBadScFilter
+    elif year in ["2016","2016APV"]:
+        filters = filter_flags.goodVertices & filter_flags.globalSuperTightHalo2016Filter & filter_flags.HBHENoiseFilter & filter_flags.HBHENoiseIsoFilter & filter_flags.EcalDeadCellTriggerPrimitiveFilter & filter_flags.BadPFMuonFilter & filter_flags.BadPFMuonDzFilter & filter_flags.eeBadScFilter
+    else:
+        filters = filter_flags.goodVertices & filter_flags.globalSuperTightHalo2016Filter & filter_flags.HBHENoiseFilter & filter_flags.HBHENoiseIsoFilter & filter_flags.EcalDeadCellTriggerPrimitiveFilter & filter_flags.BadPFMuonFilter & filter_flags.BadPFMuonDzFilter & filter_flags.eeBadScFilter & filter_flags.ecalBadCalibFilter
+
+    # Lep multiplicity
+    nlep_4 = (ak.num(leps) == 4)
+
+    # Remove low mass resonances
+    cleanup = (events.min_mll_afos > 12)
+
+    #mask = filters & nlep_4 & on_z & cleanup
+    mask = filters & nlep_4  & cleanup
+
+    # Do gen cleanups
+    if sample_name in get_ec_param("vh_list"):
+        genparts = events.GenPart
+        is_zh = (abs(genparts[:,2].pdgId) == 23) # 3rd genparticle should be v for these samples
+        is_w_from_h = ((abs(genparts.pdgId)==24) & (abs(genparts.distinctParent.pdgId) == 25))
+        gen_mask = ~(is_zh & ak.any(is_w_from_h,axis=-1))
+        mask = mask & gen_mask
+
+    # SFs:
+    events['sf_4l_muon'] = leps_padded[:,0].sf_nom_muon*leps_padded[:,1].sf_nom_muon*leps_padded[:,2].sf_nom_muon*leps_padded[:,3].sf_nom_muon
+    events['sf_4l_elec'] = leps_padded[:,0].sf_nom_elec*leps_padded[:,1].sf_nom_elec*leps_padded[:,2].sf_nom_elec*leps_padded[:,3].sf_nom_elec
+    events['sf_4l_hi_muon'] = leps_padded[:,0].sf_hi_muon*leps_padded[:,1].sf_hi_muon*leps_padded[:,2].sf_hi_muon*leps_padded[:,3].sf_hi_muon
+    events['sf_4l_hi_elec'] = leps_padded[:,0].sf_hi_elec*leps_padded[:,1].sf_hi_elec*leps_padded[:,2].sf_hi_elec*leps_padded[:,3].sf_hi_elec
+    events['sf_4l_lo_muon'] = leps_padded[:,0].sf_lo_muon*leps_padded[:,1].sf_lo_muon*leps_padded[:,2].sf_lo_muon*leps_padded[:,3].sf_lo_muon
+    events['sf_4l_lo_elec'] = leps_padded[:,0].sf_lo_elec*leps_padded[:,1].sf_lo_elec*leps_padded[:,2].sf_lo_elec*leps_padded[:,3].sf_lo_elec
+
+    events['is4lbbzz'] = ak.fill_none(mask,False)
+
 
 # Takes as input the lep collection
 # Finds SFOS pair that is closest to the Z peak
