@@ -31,7 +31,7 @@ def eval_at_fixed_cut(histo_sig, histo_abcdbkg, histo_otherbkg, score_cut, label
         abcd_h[slice(si, None),  slice(None, None)].sum(flow=False).variance +
         other_h[slice(si, None), slice(None, None)].sum(flow=False).variance
     )
-    sig = S / np.sqrt(B) if B > 0 else np.nan
+    significance = S / np.sqrt(B) if B > 0 else np.nan
     tag = f" ({label})" if label else ""
     print("\n" + "="*50)
     print(f"FIXED CUT EVALUATION{tag}")
@@ -39,9 +39,27 @@ def eval_at_fixed_cut(histo_sig, histo_abcdbkg, histo_otherbkg, score_cut, label
     print(f"  Score cut    : {score_cut:.4f}")
     print(f"  S            : {S:.4f} +/- {S_err:.4f}")
     print(f"  B            : {B:.2f} +/- {B_err:.2f}")
-    print(f"  S/sqrt(B)    : {sig:.4f}")
+    print(f"  S/sqrt(B)    : {significance:.4f}")
     print("="*50 + "\n")
-    return {"score_cut": score_cut, "S": S, "B": B, "S_err": S_err, "B_err": B_err, "significance": sig}
+    return {"score_cut": score_cut, "S": S, "B": B, "S_err": S_err, "B_err": B_err, "significance": significance}
+
+def write_single_datacard(A_sig, A_bkg, score_cut, mjj_cut, output_path):
+    A_obs = A_sig + A_bkg
+    with open(output_path, "w") as f:
+        f.write(f"# Counting experiment datacard: score>{score_cut:.4f}, mjj>{mjj_cut:.1f} GeV\n")
+        f.write( "imax 1  number of channels\n")
+        f.write( "jmax 1  number of backgrounds\n")
+        f.write( "kmax 0  number of nuisance parameters\n")
+        f.write( "-" * 60 + "\n")
+        f.write( "bin          A\n")
+        f.write(f"observation  {A_obs:.4f}\n")
+        f.write( "-" * 60 + "\n")
+        f.write( "bin          A       A\n")
+        f.write( "process      sig     bkg\n")
+        f.write( "process      0       1\n")
+        f.write(f"rate         {A_sig:.4f}  {A_bkg:.4f}\n")
+        f.write( "-" * 60 + "\n")
+    print(f"Wrote {output_path}")
 
 
 def write_score_only_datacard(best, output_path):
@@ -81,8 +99,8 @@ def scan_score_only(histo_sig, histo_abcdbkg, histo_otherbkg, score_axis_name="d
             abcd_h[slice(si, None), slice(None, None)].sum(flow=False).variance +
             other_h[slice(si, None), slice(None, None)].sum(flow=False).variance
         )
-        sig = S / np.sqrt(B) if B > 0 else np.nan
-        results.append({"score_cut": score_edges[si], "S": S, "B": B, "significance": sig, "S_err": S_err, "B_err": B_err})
+        significance = S / np.sqrt(B) if B > 0 else np.nan
+        results.append({"score_cut": score_edges[si], "S": S, "B": B, "significance": significance, "S_err": S_err, "B_err": B_err})
 
     # Sort by significance to assign ranks
     results_sorted = sorted(results, key=lambda x: x["significance"] if not np.isnan(x["significance"]) else -np.inf, reverse=True)
@@ -176,7 +194,7 @@ def plot_1d_stack(histo_sig, histo_dy, histo_ttbar, histo_otherbkg, axis_name, o
     print(f"Saved {output_path}")
 
 
-def plot_abcd_regions(score_edges, mjj_edges, bkg_vals, score_cut, mjj_cut, constrain_var, title, cbar_label, output_path):
+def plot_abcd_regions(score_edges, mjj_edges, bkg_vals, score_cut, mjj_cut, constrain_var, title, cbar_label, output_path, extra_text=""):
     """Plot the 2D ABCD regions for a given set of cuts and background values."""
     score_mid_lo = score_edges[0] + (score_cut - score_edges[0]) / 2
     score_mid_hi = score_cut      + (score_edges[-1] - score_cut) / 2
@@ -188,6 +206,8 @@ def plot_abcd_regions(score_edges, mjj_edges, bkg_vals, score_cut, mjj_cut, cons
     plt.colorbar(im, ax=ax, label=cbar_label)
     ax.axvline(score_cut, color="red",    linewidth=2, linestyle="--", label=f"score > {score_cut:.3f}")
     ax.axhline(mjj_cut,   color="orange", linewidth=2, linestyle="--", label=f"mjj > {mjj_cut:.0f} GeV")
+
+    ax.text(0.02, 0.85, extra_text, fontsize=8, transform=ax.transAxes)
     ax.text(score_mid_hi, mjj_mid_hi, "A (SR)", ha="center", va="center", color="red",   fontsize=12, fontweight="bold")
     ax.text(score_mid_lo, mjj_mid_hi, "B",      ha="center", va="center", color="black", fontsize=12, fontweight="bold")
     ax.text(score_mid_hi, mjj_mid_lo, "C",      ha="center", va="center", color="black", fontsize=12, fontweight="bold")
@@ -302,10 +322,12 @@ def plot_mjj_score_slices_optimized(histo, tag, best_score_cut, constrain_var, o
     plt.close()
     print(f"Saved {output_dir}/mjj_score_slices_optimized_{tag}.png")
 
-def plot_best_working_point(histo_sig, histo_dy, histo_ttbar, histo_abcdbkg, histo_otherbkg, results, constrain_var, output_dir="abcd_scan_plots"):
+def plot_best_working_point(histo_sig, histo_dy, histo_ttbar, histo_abcdbkg, histo_otherbkg, results, constrain_var, output_dir="abcd_scan_plots", guardrails={}):
     # Find the best working point (max significance)
-    best_idx = np.nanargmax(results["significance"])
+    top_indices = get_top_scan_indices(results, n_top=1, **guardrails)
+    best_idx = top_indices[0]
     best_i, best_j = np.unravel_index(best_idx, results["significance"].shape)
+
     best_score_cut    = results["score_cuts"][best_i]
     best_mjj_cut      = results["mjj_cuts"][best_j]
     best_sig          = results["significance"][best_i, best_j]
@@ -345,34 +367,52 @@ def plot_best_working_point(histo_sig, histo_dy, histo_ttbar, histo_abcdbkg, his
     abcdbkg_vals = abcd_h.values(flow=False)
     allbkg_vals  = abcdbkg_vals + other_h.values(flow=False)
 
-    title_common = (
-        f"S={best_S:.3f}, B_abcd_est={best_B_abcd_est:.1f}, B_other={best_B_other:.1f}, "
-        f"B_total={best_B_total:.1f}, S/sqrt(B_total)={best_sig:.3f}, closure={best_closure:.3f}"
+    # We will want to write this text on to the plot
+    best_S_err           = results["S_err"][best_i, best_j]
+    best_B_abcd_true_err = results["B_abcd_true_err"][best_i, best_j]
+    best_B_abcd_est_err  = results["B_abcd_est_err"][best_i, best_j]
+    best_B_other_err     = results["B_other_err"][best_i, best_j]
+    best_B_total_err     = results["B_total_err"][best_i, best_j]
+    abcd_closure_sigma = (best_B_abcd_est - best_B_abcd_true) / np.sqrt(best_B_abcd_true_err**2 + best_B_abcd_est_err**2) if (best_B_abcd_true_err**2 + best_B_abcd_est_err**2) > 0 else np.nan
+    extra_text = (
+        f"Sig in A: {best_S:.4f} +/- {best_S_err:.4f}\n"
+        f"Est ABCD bkg in A: {best_B_abcd_est:.4f} +/- {best_B_abcd_est_err:.4f}\n"
+        f"Truth ABCD bkg in A: {best_B_abcd_true:.4f} +/- {best_B_abcd_true_err:.4f}\n"
+        f"Other bkg in A: {best_B_other:.4f} +/- {best_B_other_err:.4f}\n"
+        f"Tot bkg in A: {best_B_total:.4f} +/- {best_B_total_err:.4f}\n"
+        f"Closure of ABCD bkgs: {abcd_closure_sigma:.4f} s.d."
     )
+
     os.makedirs(output_dir, exist_ok=True)
 
     for vals, tag, cbar_label in [
-        (dy_vals,      "dy",      "DY yield"),
-        (ttbar_vals,   "ttbar",   "ttbar yield"),
-        (abcdbkg_vals, "abcdbkg", "ABCD background yield (DY + ttbar)"),
+        #(dy_vals,      "dy",      "DY yield"),
+        #(ttbar_vals,   "ttbar",   "ttbar yield"),
+        #(abcdbkg_vals, "abcdbkg", "ABCD background yield (DY + ttbar)"),
         (allbkg_vals,  "allbkg",  "Total background yield (DY + ttbar + other MC)"),
     ]:
         plot_abcd_regions(
             score_edges, mjj_edges, vals,
             best_score_cut, best_mjj_cut,
             constrain_var,
-            title=f"Best working point ({tag}): score>{best_score_cut:.3f}, mjj>{best_mjj_cut:.0f} GeV\n{title_common}",
+            title=f"Best working point ({tag}): score>{best_score_cut:.3f}, mjj>{best_mjj_cut:.0f} GeV",
             cbar_label=cbar_label,
             output_path=f"{output_dir}/best_working_point_{tag}.png",
+            extra_text = extra_text,
         )
 
-def write_abcd_datacards(histo_sig, histo_abcdbkg, histo_otherbkg, results, constrain_var, output_dir="abcd_scan_plots", n_top=5):
+    write_single_datacard(
+        best_S, best_B_total,
+        best_score_cut, best_mjj_cut,
+        output_path=f"{output_dir}/best_working_point_allbkg.txt",
+    )
+
+
+def write_abcd_datacards(histo_sig, histo_abcdbkg, histo_otherbkg, results, constrain_var, output_dir="abcd_scan_plots", n_top=5, min_significance=0, guardrails={}):
     os.makedirs(output_dir, exist_ok=True)
 
     # Find the top n_top working points by significance
-    sig_flat = results["significance"].flatten()
-    top_indices = np.argsort(sig_flat)[::-1]
-    top_indices = top_indices[~np.isnan(sig_flat[top_indices])][:n_top]
+    top_indices = get_top_scan_indices(results, n_top=n_top, **guardrails)
 
     sig_h     = histo_sig[{"process_grp": sum}]
     abcd_h    = histo_abcdbkg[{"process_grp": sum}]
@@ -412,7 +452,18 @@ def write_abcd_datacards(histo_sig, histo_abcdbkg, histo_otherbkg, results, cons
         score_str  = f"{score_cut:.2f}".replace(".", "p")
         mjj_str    = f"{mjj_cut:.0f}"
         sig_str    = f"{sig_val:.2f}".replace(".", "p")
-        fname_base = f"dc_wp{rank}_sig{sig_str}_s{score_str}_mjj{mjj_str}"
+        #fname_base = f"dc_wp{rank}_sig{sig_str}_s{score_str}_mjj{mjj_str}"
+        fname_base = f"dc_wp{rank}"
+
+        # Compute errors for this working point
+        A_sig_err    = results["S_err"][i, j]
+        A_abcd_err   = results["B_abcd_true_err"][i, j]
+        abcd_est_err = results["B_abcd_est_err"][i, j]
+        A_other_err  = results["B_other_err"][i, j]
+        A_bkg_err    = results["B_total_err"][i, j]
+        A_abcd       = results["B_abcd_true"][i, j]
+        denom        = np.sqrt(A_abcd_err**2 + abcd_est_err**2)
+        closure_sd   = (abcd_est - A_abcd) / denom if denom > 0 else np.nan
 
         # Write the datacard
         fpath = os.path.join(output_dir, f"{fname_base}.txt")
@@ -420,6 +471,13 @@ def write_abcd_datacards(histo_sig, histo_abcdbkg, histo_otherbkg, results, cons
             f.write(f"# Counting experiment datacard: rank={rank}, score>{score_cut:.4f}, mjj>{mjj_cut:.1f} GeV\n")
             f.write(f"# S/sqrt(B_total)={sig_val:.4f}\n")
             f.write(f"# A_abcd_true={A_abcd:.2f}, A_abcd_est={abcd_est:.2f}, A_other={A_other:.2f}\n\n")
+            f.write(f"# Details:\n")
+            f.write(f"#   Sig in A: {A_sig:.4f} +/- {A_sig_err:.4f}\n")
+            f.write(f"#   Est ABCD bkg in A: {abcd_est:.4f} +/- {abcd_est_err:.4f}\n")
+            f.write(f"#   Truth ABCD bkg in A: {A_abcd:.4f} +/- {A_abcd_err:.4f}\n")
+            f.write(f"#   Other bkg in A: {A_other:.4f} +/- {A_other_err:.4f}\n")
+            f.write(f"#   Tot bkg in A: {A_bkg:.4f} +/- {A_bkg_err:.4f}\n")
+            f.write(f"#   Closure of ABCD bkgs: {closure_sd:.4f} s.d.\n\n")
             f.write( "imax 1  number of channels\n")
             f.write( "jmax 1  number of backgrounds\n")
             f.write( "kmax 0  number of nuisance parameters\n")
@@ -434,7 +492,16 @@ def write_abcd_datacards(histo_sig, histo_abcdbkg, histo_otherbkg, results, cons
             f.write( "-" * 60 + "\n")
         print(f"Wrote {fpath}")
 
+
         # Write the companion 2D plot
+        extra_text = (
+            f"Sig in A: {A_sig:.4f} +/- {A_sig_err:.4f}\n"
+            f"Est ABCD bkg in A: {abcd_est:.4f} +/- {abcd_est_err:.4f}\n"
+            f"Truth ABCD bkg in A: {A_abcd:.4f} +/- {A_abcd_err:.4f}\n"
+            f"Other bkg in A: {A_other:.4f} +/- {A_other_err:.4f}\n"
+            f"Tot bkg in A: {A_bkg:.4f} +/- {A_bkg_err:.4f}\n"
+            f"Closure of ABCD bkgs: {closure_sd:.4f} s.d."
+        )
         plot_abcd_regions(
             score_edges, mjj_edges, allbkg_vals,
             score_cut, mjj_cut,
@@ -446,6 +513,7 @@ def write_abcd_datacards(histo_sig, histo_abcdbkg, histo_otherbkg, results, cons
             ),
             cbar_label="Total background yield (DY + ttbar + other MC)",
             output_path=os.path.join(output_dir, f"{fname_base}.png"),
+            extra_text = extra_text,
         )
 
 def plot_abcd_2d_snapshots(histo_sig, histo_dy, histo_ttbar, histo_abcdbkg, histo_otherbkg, results, constrain_var, output_dir="abcd_snapshots", make_scan_blocks=True):
@@ -517,21 +585,46 @@ def plot_abcd_2d_snapshots(histo_sig, histo_dy, histo_ttbar, histo_abcdbkg, hist
             plt.close()
             print(f"Saved scan block {i}")
 
+
+def get_top_scan_indices(results, n_top=1, min_significance=0.0, max_closure_sd=np.inf, min_S=0.0, max_B_total=np.inf):
+    sig_flat             = results["significance"].flatten()
+    S_flat               = results["S"].flatten()
+    B_total_flat         = results["B_total"].flatten()
+    B_abcd_true_err_flat = results["B_abcd_true_err"].flatten()
+    B_abcd_est_err_flat  = results["B_abcd_est_err"].flatten()
+    B_abcd_true_flat     = results["B_abcd_true"].flatten()
+    B_abcd_est_flat      = results["B_abcd_est"].flatten()
+
+    denom = np.sqrt(B_abcd_true_err_flat**2 + B_abcd_est_err_flat**2)
+    closure_sd_flat = np.where(denom > 0, np.abs(B_abcd_est_flat - B_abcd_true_flat) / denom, np.nan)
+
+    valid_mask = (
+        ~np.isnan(sig_flat)                &
+        (sig_flat     >= min_significance) &
+        (S_flat       >= min_S)            &
+        (B_total_flat <= max_B_total)      &
+        (~np.isnan(closure_sd_flat))       &
+        (closure_sd_flat <= max_closure_sd)
+    )
+
+    valid_indices = np.where(valid_mask)[0]
+    top_indices = valid_indices[np.argsort(sig_flat[valid_indices])[::-1]][:n_top]
+    print(f"  {len(valid_indices)} scan points pass guard rails, returning top {len(top_indices)}")
+    return top_indices
+
+
 def do_abcd_scan(histo_sig, histo_abcdbkg, histo_otherbkg, constrain_axis_name, score_axis_name="dnn_score"):
     sig_h   = histo_sig[{"process_grp": sum}]
     abcd_h  = histo_abcdbkg[{"process_grp": sum}]
     other_h = histo_otherbkg[{"process_grp": sum}]
-
     score_edges = sig_h.axes[score_axis_name].edges
     mjj_edges   = sig_h.axes[constrain_axis_name].edges
     n_score = len(score_edges) - 1
     n_mjj   = len(mjj_edges) - 1
-
     score_cut_bins = list(range(1, n_score))
     mjj_cut_bins   = list(range(1, n_mjj))
     n_scan_score = len(score_cut_bins)
     n_scan_mjj   = len(mjj_cut_bins)
-
     closure      = np.zeros((n_scan_score, n_scan_mjj))
     significance = np.zeros((n_scan_score, n_scan_mjj))
     S_arr        = np.zeros((n_scan_score, n_scan_mjj))
@@ -539,7 +632,11 @@ def do_abcd_scan(histo_sig, histo_abcdbkg, histo_otherbkg, constrain_axis_name, 
     B_abcd_est   = np.zeros((n_scan_score, n_scan_mjj))
     B_other      = np.zeros((n_scan_score, n_scan_mjj))
     B_total      = np.zeros((n_scan_score, n_scan_mjj))
-
+    S_err_arr        = np.zeros((n_scan_score, n_scan_mjj))
+    B_abcd_true_err  = np.zeros((n_scan_score, n_scan_mjj))
+    B_abcd_est_err   = np.zeros((n_scan_score, n_scan_mjj))
+    B_other_err      = np.zeros((n_scan_score, n_scan_mjj))
+    B_total_err      = np.zeros((n_scan_score, n_scan_mjj))
     for i, si in enumerate(score_cut_bins):
         for j, mj in enumerate(mjj_cut_bins):
             A_sig   = get_yield(sig_h,   slice(si, None), slice(mj, None))
@@ -549,6 +646,14 @@ def do_abcd_scan(histo_sig, histo_abcdbkg, histo_otherbkg, constrain_axis_name, 
             D_abcd  = get_yield(abcd_h,  slice(None, si), slice(None, mj))
             A_other = get_yield(other_h, slice(si, None), slice(mj, None))
 
+            # Stat errors
+            A_sig_err  = np.sqrt(sig_h[slice(si, None),   slice(mj, None)].sum(flow=False).variance)
+            A_abcd_err = np.sqrt(abcd_h[slice(si, None),  slice(mj, None)].sum(flow=False).variance)
+            B_abcd_err = np.sqrt(abcd_h[slice(None, si),  slice(mj, None)].sum(flow=False).variance)
+            C_abcd_err = np.sqrt(abcd_h[slice(si, None),  slice(None, mj)].sum(flow=False).variance)
+            D_abcd_err = np.sqrt(abcd_h[slice(None, si),  slice(None, mj)].sum(flow=False).variance)
+            A_other_err = np.sqrt(other_h[slice(si, None), slice(mj, None)].sum(flow=False).variance)
+
             if D_abcd == 0:
                 closure[i, j]      = np.nan
                 significance[i, j] = np.nan
@@ -557,10 +662,17 @@ def do_abcd_scan(histo_sig, histo_abcdbkg, histo_otherbkg, constrain_axis_name, 
                 B_abcd_est[i, j]   = np.nan
                 B_other[i, j]      = np.nan
                 B_total[i, j]      = np.nan
+                #print(f"  score>{score_edges[si]:.3f} mjj>{mjj_edges[mj]:.0f}  SKIPPED (D=0)")
                 continue
 
             abcd_est = B_abcd * C_abcd / D_abcd
-            b_total  = abcd_est + A_other
+            # Error on B*C/D via standard error propagation
+            abcd_est_err = abcd_est * np.sqrt(
+                (B_abcd_err / B_abcd)**2 + (C_abcd_err / C_abcd)**2 + (D_abcd_err / D_abcd)**2
+            ) if (B_abcd > 0 and C_abcd > 0) else 0.0
+
+            b_total     = abcd_est + A_other
+            b_total_err = np.sqrt(abcd_est_err**2 + A_other_err**2)
 
             S_arr[i, j]        = A_sig
             B_abcd_true[i, j]  = A_abcd
@@ -569,6 +681,25 @@ def do_abcd_scan(histo_sig, histo_abcdbkg, histo_otherbkg, constrain_axis_name, 
             B_total[i, j]      = b_total
             closure[i, j]      = (abcd_est / A_abcd) if A_abcd > 0 else np.nan
             significance[i, j] = (A_sig / np.sqrt(b_total)) if b_total > 0 else np.nan
+
+            S_err_arr[i, j]       = A_sig_err
+            B_abcd_true_err[i, j] = A_abcd_err
+            B_abcd_est_err[i, j]  = abcd_est_err
+            B_other_err[i, j]     = A_other_err
+            B_total_err[i, j]     = b_total_err
+
+            # Adjust this as you wish for exploring around particular WPs
+            closes = abs(A_abcd - abcd_est) < 1.5 * np.sqrt(A_abcd_err**2 + abcd_est_err**2)
+            if closes and abs(b_total<30) and (abs(A_sig - 0.07) < 0.01):
+                print(
+                    f"  score>{score_edges[si]:.3f} mjj>{mjj_edges[mj]:.0f}"
+                    f"  S={A_sig:.3f}+-{A_sig_err:.3f}"
+                    f"  B_true={A_abcd:.2f}+-{A_abcd_err:.2f}"
+                    f"  B_est={abcd_est:.2f}+-{abcd_est_err:.2f}"
+                    f"  B_other={A_other:.2f}+-{A_other_err:.2f}"
+                    f"  B_total={b_total:.2f}+-{b_total_err:.2f}"
+                    #f"  S/sqrt(B_total)={significance[i,j]:.4f}"
+                )
 
     return {
         "closure"      : closure,
@@ -580,6 +711,11 @@ def do_abcd_scan(histo_sig, histo_abcdbkg, histo_otherbkg, constrain_axis_name, 
         "B_total"      : B_total,
         "score_cuts"   : score_edges[score_cut_bins],
         "mjj_cuts"     : mjj_edges[mjj_cut_bins],
+        "S_err"           : S_err_arr,
+        "B_abcd_true_err" : B_abcd_true_err,
+        "B_abcd_est_err"  : B_abcd_est_err,
+        "B_other_err"     : B_other_err,
+        "B_total_err"     : B_total_err,
     }
 
 def plot_abcd_scan_panels(results, output_path):
@@ -657,19 +793,26 @@ def plot_abcd_scan_panels(results, output_path):
     plt.close()
     print(f"Saved scan plot to {output_path}")
 
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("pkl_file_path", help="The path to the pkl file")
     args = parser.parse_args()
-
     grp_dict = cvh.GRP_DICT_FULL_R2
 
-    cat_for_dnn = "2lOSSF_nFJ1_massLo_Zp2"
-    abcd_hist_name = "abcd_2lV"
-    #cat_for_dnn = "2lOSSF_nFJ1_massHi_Zp2"
-    #abcd_hist_name = "abcd_2lH"
+    # Hard code the options for this run
+    cat_for_dnn = "2lOSSF_nFJ1_massHi_Zp2"
+    abcd_hist_name = "abcd_2lH"
     constrain_var = "vbs_mjj"
+    guardrails = {
+        "min_significance" : 0.0,
+        "max_closure_sd"   : 1.5,
+        "min_S"            : 0.03,
+        "max_B_total"      : 1e99,
+    }
 
+    # Get the histo from the pkl
     histo_dict = pickle.load(gzip.open(args.pkl_file_path))
     histo = histo_dict[abcd_hist_name]
     histo = histo[{"category": cat_for_dnn}]
@@ -681,13 +824,13 @@ def main():
         if grp_name not in ["Data", "Signal", "DY", "ttbar", 'VBSWWH_SS', 'VBSWWH_OS', 'VBSWZH', 'VBSZZH']:
             other_bkg_names.append(grp_name)
 
+    # Hists for all the relevatn groupings
     histo_sig      = histo[{"process_grp": ["Signal"]}]
     histo_dat      = histo[{"process_grp": ["Data"]}]
     histo_dy       = histo[{"process_grp": ["DY"]}]
     histo_ttbar    = histo[{"process_grp": ["ttbar"]}]
     histo_abcdbkg  = plt_tools.group(histo, "process_grp", "process_grp", {"ABCDBkg": ["DY", "ttbar"]})
     histo_otherbkg = plt_tools.group(histo, "process_grp", "process_grp", {"OtherBkg": other_bkg_names})
-
     #print("sig",      histo_sig)
     #print("data",     histo_dat)
     #print("dy",       histo_dy)
@@ -695,38 +838,45 @@ def main():
     #print("abcdbkg",  histo_abcdbkg)
     #print("otherbkg", histo_otherbkg)
 
-    out_dir = "abcd_scan_plots"
+    # Set the out dir
+    out_dir = "abcd_scan_outputs_plots"
+    out_dir_dc = "abcd_scan_outputs_datacards"
     os.makedirs(out_dir, exist_ok=True)
-    if not os.path.exists(os.path.join(out_dir, "index.php")):
-        shutil.copyfile(HTML_PC, os.path.join(out_dir, "index.php"))
+    os.makedirs(out_dir_dc, exist_ok=True)
+    if not os.path.exists(os.path.join(out_dir, "index.php")):    shutil.copyfile(HTML_PC, os.path.join(out_dir, "index.php"))
+    if not os.path.exists(os.path.join(out_dir_dc, "index.php")): shutil.copyfile(HTML_PC, os.path.join(out_dir_dc, "index.php"))
 
-    ### Just plot some hists for ref ###
+
+
+    ####################### Just plot some hists #######################
 
     # Make the stack plot, borrowing from check_vvh_hists
-    years_to_prepend = ["2016postVFP","2016preVFP","2017","2018"]
-    cvh.make_plots(histo_dict,grp_dict,years_to_prepend,["2lOSSF_nFJ1_massHi_Zp2","2lOSSF_nFJ1_massLo_Zp2"],lepflav_bin="all",save_dir_path=out_dir,make_cat_subdirs=False,vars_to_plot=["njets","njets_counts","vbs_mjj","dnn_score_2lH","dnn_score_2lV"])
+    #years_to_prepend = ["2016postVFP","2016preVFP","2017","2018"]
+    #cvh.make_plots(histo_dict,grp_dict,years_to_prepend,["2lOSSF_nFJ1_massHi_Zp2","2lOSSF_nFJ1_massLo_Zp2"],lepflav_bin="all",save_dir_path=out_dir,make_cat_subdirs=False,vars_to_plot=["njets","njets_counts","vbs_mjj","dnn_score_2lH","dnn_score_2lV"])
 
     # Just simple make 1d plots of the score
     #plot_1d_stack(histo_sig, histo_dy, histo_ttbar, histo_otherbkg, "dnn_score_2lH", f"{out_dir}/stack_dnn_score.png")
     #plot_1d_stack(histo_sig, histo_dy, histo_ttbar, histo_otherbkg, "dnn_score_2lV", f"{out_dir}/stack_dnn_score.png")
  
 
-    ### Scan over 1d ###
+    ####################### Scan over 1d #######################
 
-    ## Try to do a scan over just score
-    #score_only_results, score_only_best = scan_score_only(histo_sig, histo_abcdbkg, histo_otherbkg)
-    #plot_score_only_scan(score_only_results, score_only_best, f"{out_dir}/dc_score_only_scan.png")
-    #for rank, result in enumerate(score_only_results[:30]):
-    #    score_str = f"{result['score_cut']:.2f}".replace(".", "p")
-    #    sig_str   = f"{result['significance']:.2f}".replace(".", "p")
-    #    fname     = f"{out_dir}/dc_score_only_rank{rank:02d}.txt"
-    #    write_score_only_datacard(result, fname)
+    if 0:
+        # Try to do a scan over just score
+        score_only_results, score_only_best = scan_score_only(histo_sig, histo_abcdbkg, histo_otherbkg)
+        plot_score_only_scan(score_only_results, score_only_best, f"{out_dir}/dc_score_only_scan.png")
+        for rank, result in enumerate(score_only_results[:30]):
+            score_str = f"{result['score_cut']:.2f}".replace(".", "p")
+            sig_str   = f"{result['significance']:.2f}".replace(".", "p")
+            fname     = f"{out_dir}/dc_score_only_rank{rank:02d}.txt"
+            write_score_only_datacard(result, fname)
 
-    ## Evaluate at a fixed given score
-    #eval_at_fixed_cut(histo_sig, histo_abcdbkg, histo_otherbkg, score_cut=0.996, label="")
+        # Evaluate at a fixed given score
+        eval_at_fixed_cut(histo_sig, histo_abcdbkg, histo_otherbkg, score_cut=0.996, label="")
 
-    ##exit()
-    #### Scan over 2d ###
+
+
+    ####################### Scan over 2d #######################
 
     # Decorrelation slices plots for each ABCD background sample and combined
     for histo, tag in [(histo_dy, "dy"), (histo_ttbar, "ttbar"), (histo_abcdbkg, "abcdbkg")]:
@@ -736,15 +886,38 @@ def main():
     results = do_abcd_scan(histo_sig, histo_abcdbkg, histo_otherbkg, constrain_var)
     plot_abcd_scan_panels(results, f"{out_dir}/abcd_scan_panels.png")
     plot_abcd_2d_snapshots(histo_sig, histo_dy, histo_ttbar, histo_abcdbkg, histo_otherbkg, results, constrain_var, output_dir=out_dir, make_scan_blocks=False)
-    plot_best_working_point(histo_sig, histo_dy, histo_ttbar, histo_abcdbkg, histo_otherbkg, results, constrain_var, output_dir=out_dir)
+    plot_best_working_point(histo_sig, histo_dy, histo_ttbar, histo_abcdbkg, histo_otherbkg, results, constrain_var, output_dir=out_dir, guardrails=guardrails)
 
     # Optimized slices plots at best working point
-    best_idx = np.nanargmax(results["significance"])
+    best_idx = get_top_scan_indices(results, n_top=1, **guardrails)[0]
     best_i, best_j = np.unravel_index(best_idx, results["significance"].shape)
     best_score_cut = results["score_cuts"][best_i]
     for histo, tag in [(histo_dy, "dy"), (histo_ttbar, "ttbar"), (histo_abcdbkg, "abcdbkg")]:
         plot_mjj_score_slices_optimized(histo, tag, best_score_cut, constrain_var, output_dir=out_dir)
 
-    write_abcd_datacards(histo_sig, histo_abcdbkg, histo_otherbkg, results, constrain_var, output_dir=out_dir)
+    # Write datacards
+    write_abcd_datacards(histo_sig, histo_abcdbkg, histo_otherbkg, results, constrain_var, output_dir=out_dir_dc, n_top=200, guardrails=guardrails)
+
+
+
+    ####################### Plot ABCD regions for a specific working point #######################
+
+    if 0:
+        my_score_cut = 0.840
+        my_mjj_cut   = 960
+        sig_h   = histo_sig[{"process_grp": sum}]
+        abcd_h  = histo_abcdbkg[{"process_grp": sum}]
+        other_h = histo_otherbkg[{"process_grp": sum}]
+        score_edges  = sig_h.axes["dnn_score"].edges
+        mjj_edges    = sig_h.axes[constrain_var].edges
+        allbkg_vals  = abcd_h.values(flow=False) + other_h.values(flow=False)
+        plot_abcd_regions(
+            score_edges, mjj_edges, allbkg_vals,
+            my_score_cut, my_mjj_cut,
+            constrain_var,
+            title=f"score>{my_score_cut:.3f}, mjj>{my_mjj_cut:.0f} GeV",
+            cbar_label="Total background yield",
+            output_path=f"{out_dir}/custom_wp_score{my_score_cut:.3f}_mjj{my_mjj_cut:.0f}.png",
+        )
 
 main()
