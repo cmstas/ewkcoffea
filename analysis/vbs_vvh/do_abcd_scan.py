@@ -664,12 +664,14 @@ def main():
 
     grp_dict = cvh.GRP_DICT_FULL_R2
 
-    #cat_for_dnn = "2lOSSF_nFJ1_HFJ"
-    cat_for_dnn = "2lOSSF_nFJ1_massHi_Zp2"
+    cat_for_dnn = "2lOSSF_nFJ1_massLo_Zp2"
+    abcd_hist_name = "abcd_2lV"
+    #cat_for_dnn = "2lOSSF_nFJ1_massHi_Zp2"
+    #abcd_hist_name = "abcd_2lH"
     constrain_var = "vbs_mjj"
 
     histo_dict = pickle.load(gzip.open(args.pkl_file_path))
-    histo = histo_dict["abcd_histo"]
+    histo = histo_dict[abcd_hist_name]
     histo = histo[{"category": cat_for_dnn}]
     histo = plt_tools.group(histo, "process", "process_grp", grp_dict)
 
@@ -698,18 +700,18 @@ def main():
     if not os.path.exists(os.path.join(out_dir, "index.php")):
         shutil.copyfile(HTML_PC, os.path.join(out_dir, "index.php"))
 
-    ### Just plot stack hist ###
+    ### Just plot some hists for ref ###
 
     # Make the stack plot, borrowing from check_vvh_hists
     years_to_prepend = ["2016postVFP","2016preVFP","2017","2018"]
-    cvh.make_plots(histo_dict,grp_dict,years_to_prepend,[cat_for_dnn],lepflav_bin="all",save_dir_path=out_dir,make_cat_subdirs=False,vars_to_plot=["dnn_score","njets","njets_counts"])
+    cvh.make_plots(histo_dict,grp_dict,years_to_prepend,["2lOSSF_nFJ1_massHi_Zp2","2lOSSF_nFJ1_massLo_Zp2"],lepflav_bin="all",save_dir_path=out_dir,make_cat_subdirs=False,vars_to_plot=["njets","njets_counts","vbs_mjj","dnn_score_2lH","dnn_score_2lV"])
 
+    # Just simple make 1d plots of the score
+    #plot_1d_stack(histo_sig, histo_dy, histo_ttbar, histo_otherbkg, "dnn_score_2lH", f"{out_dir}/stack_dnn_score.png")
+    #plot_1d_stack(histo_sig, histo_dy, histo_ttbar, histo_otherbkg, "dnn_score_2lV", f"{out_dir}/stack_dnn_score.png")
+ 
 
     ### Scan over 1d ###
-
-    # Make 1d plots of the score and mjj
-    plot_1d_stack(histo_sig, histo_dy, histo_ttbar, histo_otherbkg, "dnn_score", f"{out_dir}/stack_dnn_score.png")
-    #plot_1d_stack(histo_sig, histo_dy, histo_ttbar, histo_otherbkg, "mjj_max_any", f"{out_dir}/stack_mjj_max_any.png")
 
     ## Try to do a scan over just score
     #score_only_results, score_only_best = scan_score_only(histo_sig, histo_abcdbkg, histo_otherbkg)
