@@ -45,21 +45,26 @@ class AnalysisProcessor(processor.ProcessorABC):
         self._dtype = dtype
 
         # For ABCDnet evaluations
-        self._checkpoint_path =  ewkcoffea_path("data/vvh_abcd_models/single_abcdisco_2l1fj_dy.ckpt")
         self._model = None
 
         # Create the hist for the 2d abcd
-        self.mjj_max_any_cap = 2000
-        self._abcd_histo = hist.Hist(
-            hist.axis.StrCategory([], growth=True, name="process", label="process"),
-            hist.axis.StrCategory([], growth=True, name="category", label="category"),
-            #hist.axis.Integer(0,40, growth=True, name="lepflav", label="lepflav"),
-            axis.Regular(500, 0, 1, name="dnn_score",   label="DNN score from ABCDnet"),
-            #axis.Regular(2, 0, self.mjj_max_any_cap, name="mjj_max_any", label="Leading mjj of pair of any (central or fwd) jets"),
-            axis.Regular(50, 0, self.mjj_max_any_cap, name="mjj_max_any", label="Leading mjj of pair of any (central or fwd) jets"),
-            storage="weight", # Keeps track of sumw2
-            name="Counts",
-        )
+        self.mjj_cap = 3000
+        self._abcd_histo_dict = {
+            "abcd_2lH": hist.Hist(
+                hist.axis.StrCategory([], growth=True, name="process", label="process"),
+                hist.axis.StrCategory([], growth=True, name="category", label="category"),
+                axis.Regular(50, 0, 1, name="dnn_score",   label="DNN score from ABCDnet"),
+                axis.Regular(50, 0, self.mjj_cap, name="vbs_mjj", label="Mjj of vbs"),
+                storage="weight", name="Counts",
+            ),
+            "abcd_2lV": hist.Hist(
+                hist.axis.StrCategory([], growth=True, name="process", label="process"),
+                hist.axis.StrCategory([], growth=True, name="category", label="category"),
+                axis.Regular(100, 0, 1, name="dnn_score",   label="DNN score from ABCDnet"),
+                axis.Regular(100, 0, self.mjj_cap, name="vbs_mjj", label="Mjj of vbs"),
+                storage="weight", name="Counts",
+            ),
+        }
 
         # Create the dense axes for the histograms
         self._dense_axes_dict = {
@@ -132,6 +137,7 @@ class AnalysisProcessor(processor.ProcessorABC):
             "fj0_gptHvsQCD": axis.Regular(180, 0, 1, name="fj0_gptHvsQCD", label="fj0 gloparT H"),
             "fj0_gptWvsQCD": axis.Regular(180, 0, 1, name="fj0_gptWvsQCD", label="fj0 gloparT W"),
             "fj0_gptZvsQCD": axis.Regular(180, 0, 1, name="fj0_gptZvsQCD", label="fj0 gloparT Z"),
+            "fj0_gptVvsQCD": axis.Regular(180, 0, 1, name="fj0_gptVvsQCD", label="fj0 gloparT Z"),
 
             "fj0_pNetH4qvsQCD": axis.Regular(180, 0, 1, name="fj0_pNetH4qvsQCD", label="fj0 pNet H4qvsQCD"),
             "fj0_pNetHbbvsQCD": axis.Regular(180, 0, 1, name="fj0_pNetHbbvsQCD", label="fj0 pNet HbbvsQCD"),
@@ -147,9 +153,9 @@ class AnalysisProcessor(processor.ProcessorABC):
             "fj0_gpt_Wsf" : axis.Regular(180, 0, 1, name="fj0_gpt_Wsf",   label="W softmax score (exp(gptW) / (exp(gptH) + exp(gptW) + exp(gptZ)))"),
             "fj0_gpt_Zsf" : axis.Regular(180, 0, 1, name="fj0_gpt_Zsf",   label="Z softmax score (exp(gptZ) / (exp(gptH) + exp(gptW) + exp(gptZ)))"),
 
-            "j0central_pt"  : axis.Regular(180, 0, 250, name="j0central_pt", label="j0 pt (central jets)"), # Naming
-            "j0central_eta" : axis.Regular(180, 0, 5, name="j0central_eta", label="j0 abs eta (central jets)"), # Naming
-            "j0central_phi" : axis.Regular(180, -3.1416, 3.1416, name="j0central_phi", label="j0 phi (central jets)"), # Naming
+            "j0central_pt"  : axis.Regular(180, 0, 250, name="j0central_pt", label="j0 pt (central jets)"),
+            "j0central_eta" : axis.Regular(180, 0, 5, name="j0central_eta", label="j0 abs eta (central jets)"),
+            "j0central_phi" : axis.Regular(180, -3.1416, 3.1416, name="j0central_phi", label="j0 phi (central jets)"),
 
             "j0forward_pt"  : axis.Regular(180, 0, 150, name="j0forward_pt", label="j0 pt (forward jets)"),
             "j0forward_eta" : axis.Regular(180, 0, 5, name="j0forward_eta", label="j0 abs eta (forward jets)"),
@@ -235,7 +241,8 @@ class AnalysisProcessor(processor.ProcessorABC):
             "nlep_truth_real"   : axis.Regular(5, 0, 5, name="nlep_truth_real",   label="Lep (truth, real) multiplicity"),
             "nlep_truth_fake"   : axis.Regular(5, 0, 5, name="nlep_truth_fake",   label="Lep (truth, fake) multiplicity"),
 
-            "dnn_score"   : axis.Regular(180, 0, 1, name="dnn_score",   label="DNN score from ABCDnet"),
+            "dnn_score_2lH"   : axis.Regular(180, 0, 1, name="dnn_score_2lH",   label="DNN ABCDnet score for 2l1FJ H region"),
+            "dnn_score_2lV"   : axis.Regular(180, 0, 1, name="dnn_score_2lV",   label="DNN ABCDnet score for 1l1FJ V region"),
 
             "vbs_mjj"       : axis.Regular(180, 0, 4000, name="vbs_mjj",       label="VBS candidate mjj [GeV]"),
             "vbs_absdetajj" : axis.Regular(180, 0, 10,   name="vbs_absdetajj", label="VBS candidate abs delta eta jj"),
@@ -264,7 +271,8 @@ class AnalysisProcessor(processor.ProcessorABC):
                 storage="weight", # Keeps track of sumw2
                 name="Counts",
             )
-        dout["abcd_histo"] = self._abcd_histo
+        for abcd_hist_name in self._abcd_histo_dict:
+            dout[abcd_hist_name] = self._abcd_histo_dict[abcd_hist_name]
 
         # Set the accumulator
         self._accumulator = processor.dict_accumulator(dout)
@@ -290,10 +298,12 @@ class AnalysisProcessor(processor.ProcessorABC):
         self._siphon_output_path = f"histos/{siphon_out_name}.root"
         self._siphon_bdt_data = siphon_bdt_data
         #self._siphon_selection = ["2lOSSF_nFJ1"]
-        self._siphon_selection = ["2lOSSF_nFJ1_HFJ"]
+        #self._siphon_selection = ["2lOSSF_nFJ1_HFJ"]
+        #self._siphon_selection = ["2lOSSF_nFJ1_massHi_Zp2"]
+        self._siphon_selection = ["2lOSSF_nFJ1_massLo_Zp2"]
         self._bdt_vars = []
         for varname in list(self._dense_axes_dict.keys()):
-            if varname == "dnn_score": continue
+            if "dnn_score" in varname: continue
             else: self._bdt_vars.append(varname)
         if self._siphon_bdt_data:
             bdt_out = {var: processor.column_accumulator(np.array([], dtype=np.float32)) for var in self._bdt_vars}
@@ -312,24 +322,41 @@ class AnalysisProcessor(processor.ProcessorABC):
 
     #################################################################################
     ### For ABCDnet evaluations ###
-    def _load_model(self):
+    def _load_model(self, checkpoint_path, model_key):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self._device = device
-        self._model = ABCDLightningModule.load_from_checkpoint(self._checkpoint_path, map_location=device)
-        self._model.to(device)
-        self._model.eval()
+        if not hasattr(self, '_models'):
+            self._models = {}
+        self._models[model_key] = ABCDLightningModule.load_from_checkpoint(checkpoint_path, map_location=device)
+        self._models[model_key].to(device)
+        self._models[model_key].eval()
 
-    def _run_abcd_inference(self, events, mask, dense_variables_dict):
-        if not hasattr(self, '_model') or self._model is None:
-            self._load_model()
-        if not hasattr(self, '_scaler_params'):
+    def _run_abcd_inference(self, events, dense_variables_dict, model):
+        if model == "2lH":
+            scaler_path = ewkcoffea_path("data/vvh_abcd_models/single_abcdisco_2l1fj_forH_scaler_params.json")
+            checkpoint_path = ewkcoffea_path("data/vvh_abcd_models/single_abcdisco_2l1fj_forH.ckpt")
+        elif model == "2lV":
+            scaler_path = ewkcoffea_path("data/vvh_abcd_models/single_abcdisco_2l1fj_forV_scaler_params.json")
+            checkpoint_path = ewkcoffea_path("data/vvh_abcd_models/single_abcdisco_2l1fj_forV.ckpt")
+        else:
+            raise Exception(f"Unknown model {model}")
+
+        if not hasattr(self, '_models'):
+            self._models = {}
+        if model not in self._models:
+            self._load_model(checkpoint_path, model)
+
+        if not hasattr(self, '_scaler_params_dict'):
+            self._scaler_params_dict = {}
+        if model not in self._scaler_params_dict:
             import json
-            scaler_path = ewkcoffea_path("data/vvh_abcd_models/single_abcdisco_2l1fj_dy_scaler_params.json")
             with open(scaler_path) as f:
-                self._scaler_params = json.load(f)
+                self._scaler_params_dict[model] = json.load(f)
+
+        scaler_params = self._scaler_params_dict[model]
 
         def scale(name, values):
-            params = self._scaler_params[name]
+            params = scaler_params[name]
             arr = np.array(values, dtype=np.float64)
             if params["transform"] == "log":
                 arr = np.log(np.clip(arr, 1e-9, None))
@@ -340,13 +367,13 @@ class AnalysisProcessor(processor.ProcessorABC):
             return np.clip(arr, 0.0, 1.0).astype(np.float32)
 
         feature_matrix = np.column_stack([
-            scale(feat, ak.to_numpy(ak.fill_none(dense_variables_dict[feat][mask], -1.0)))
-            for feat in self._scaler_params["_training_features"]
+            scale(feat, ak.to_numpy(ak.fill_none(dense_variables_dict[feat], -1.0)))
+            for feat in scaler_params["_training_features"]
         ])
 
         features_tensor = torch.from_numpy(feature_matrix).to(self._device)
         with torch.no_grad():
-            logits = self._model(features_tensor)
+            logits = self._models[model](features_tensor)
             if logits.ndim == 1:
                 logits = logits.unsqueeze(-1)
             scores = torch.sigmoid(logits).cpu().numpy()[:, 0]
@@ -760,6 +787,7 @@ class AnalysisProcessor(processor.ProcessorABC):
             "fj0_gptHvsQCD"    : fj0.gptHvsQCD,
             "fj0_gptWvsQCD"    : fj0.gptWvsQCD,
             "fj0_gptZvsQCD"    : fj0.gptZvsQCD,
+            "fj0_gptVvsQCD"    : fj0.gptVvsQCD,
             "fj0_gpt_Hsf"      : fj0.gpt_Hsf,
             "fj0_gpt_Wsf"      : fj0.gpt_Wsf,
             "fj0_gpt_Zsf"      : fj0.gpt_Zsf,
@@ -835,9 +863,10 @@ class AnalysisProcessor(processor.ProcessorABC):
         # For ABCDnet evaluations
         # This must come after dense_variables_dict since pass all vars from dense_variables_dict to evaluation since any/all might be needed (depending on which model we're using)
         # Once we finish evaluating, add the score to the dense_variables_dict too
-        #dnn_score = self._run_abcd_inference(events, pass_through, dense_variables_dict)
-        dnn_score = fj0.pt
-        dense_variables_dict["dnn_score"] = dnn_score
+        dnn_score_2lH = self._run_abcd_inference(events, dense_variables_dict,"2lH")
+        dnn_score_2lV = self._run_abcd_inference(events, dense_variables_dict,"2lV")
+        dense_variables_dict["dnn_score_2lH"] = dnn_score_2lH
+        dense_variables_dict["dnn_score_2lV"] = dnn_score_2lV
 
 
         ### Lepton truth variables ###
@@ -917,8 +946,11 @@ class AnalysisProcessor(processor.ProcessorABC):
         selections.add("2lOSSF_nFJ1",                            is_2l & is_os & is_sf & (nfatjets==1))
         selections.add("2lOSSF_nFJ1_massLo",                     is_2l & is_os & is_sf & (nfatjets==1) & (fj0_mparticlenet < 110))
         selections.add("2lOSSF_nFJ1_massHi",                     is_2l & is_os & is_sf & (nfatjets==1) & (fj0_mparticlenet >= 110))
-        selections.add("2lOSSF_nFJ1_scoreH",                     is_2l & is_os & is_sf & (nfatjets==1) & (fj0.gpt_Hfrac>=0.5))
-        selections.add("2lOSSF_nFJ1_scoreV",                     is_2l & is_os & is_sf & (nfatjets==1) & (fj0.gpt_Hfrac<0.5))
+        selections.add("2lOSSF_nFJ1_massLo_Zp2",                 is_2l & is_os & is_sf & (nfatjets==1) & (fj0_mparticlenet < 110) & (fj0.gptZvsQCD>0.2))
+        selections.add("2lOSSF_nFJ1_massHi_Zp2",                 is_2l & is_os & is_sf & (nfatjets==1) & (fj0_mparticlenet >= 110) & (fj0.gptZvsQCD>0.2))
+
+        #selections.add("2lOSSF_nFJ1_scoreH",                     is_2l & is_os & is_sf & (nfatjets==1) & (fj0.gpt_Hfrac>=0.5))
+        #selections.add("2lOSSF_nFJ1_scoreV",                     is_2l & is_os & is_sf & (nfatjets==1) & (fj0.gpt_Hfrac<0.5))
 
         selections.add("2lOSSF_nFJ1_mjj1k",                      is_2l & is_os & is_sf & (nfatjets==1) & (vbsjets.mjj>1000))
         selections.add("2lOSSF_nFJ1_mjj1k_HFJ",                  is_2l & is_os & is_sf & (nfatjets==1) & (vbsjets.mjj>1000) & is_HFJ)
@@ -954,22 +986,24 @@ class AnalysisProcessor(processor.ProcessorABC):
 
                 ### 2l OS SF 1FJ ###
 
-                #"2l",
-                #"2lOS",
-                #"2lOSSF",
+                ##"2l",
+                ##"2lOS",
+                ##"2lOSSF",
                 "2lOSSF_nFJ1",
 
                 "2lOSSF_nFJ1_massLo",
                 "2lOSSF_nFJ1_massHi",
-                "2lOSSF_nFJ1_scoreH",
-                "2lOSSF_nFJ1_scoreV",
+                "2lOSSF_nFJ1_massLo_Zp2",
+                "2lOSSF_nFJ1_massHi_Zp2",
 
-                #"2lOSSF_nFJ1_mjj1k",
-                #"2lOSSF_nFJ1_mjj1k_HFJ",
-                #"2lOSSF_nFJ1_mjj1k_HFJtag",
-                #"2lOSSF_nFJ1_mjj1k_HFJtag_nb0",
+                #"2lOSSF_nFJ1_scoreH",
+                #"2lOSSF_nFJ1_scoreV",
 
-                #"2lOSSF_nFJ1_HFJ",
+                ##"2lOSSF_nFJ1_mjj1k",
+                ##"2lOSSF_nFJ1_mjj1k_HFJ",
+                ##"2lOSSF_nFJ1_mjj1k_HFJtag",
+                ##"2lOSSF_nFJ1_mjj1k_HFJtag_nb0",
+                ##"2lOSSF_nFJ1_HFJ",
 
                 #### 3l ###
 
@@ -1049,96 +1083,32 @@ class AnalysisProcessor(processor.ProcessorABC):
 
         ######### Fill the 2d ABCDnet histo #########
 
-        fill_abcd_2d = False  # At some point should make this an option
-        #fill_abcd_2d = True # At some point should make this an option
+        #fill_abcd_2d = False  # At some point should make this an option
+        fill_abcd_2d = True # At some point should make this an option
+        vbs_mjj_flow = ak.where(vbsjets.mjj<self.mjj_cap,vbsjets.mjj,self.mjj_cap-0.01)
         if fill_abcd_2d:
-            #for sr_cat in cat_dict["lep_chan_lst"]:
-            for sr_cat in ["2lOSSF_nFJ1_HFJ"]:
-                all_cuts_mask = selections.all(sr_cat)
-                weight = weights_obj_base.weight(None)
-                mjj_max_any_flow = ak.where(mjj_max_any<self.mjj_max_any_cap,mjj_max_any,self.mjj_max_any_cap-1.0)
-                # Fill a 2d histo
-                abcd_axes_fill_info_dict = {
-                    "mjj_max_any"   : ak.fill_none(mjj_max_any_flow[all_cuts_mask],0), # Don't like this fill_none
-                    "dnn_score"     : ak.fill_none(dnn_score[all_cuts_mask],0),   # Don't like this fill_none
-                    "weight"        : ak.fill_none(weight[all_cuts_mask],0),      # Don't like this fill_none
-                    "process"       : histAxisName[all_cuts_mask],
-                    "category"      : sr_cat,
-                    #"lepflav"       : abs_pdgid_sum[all_cuts_mask],
-                }
-                self.accumulator["abcd_histo"].fill(**abcd_axes_fill_info_dict)
+            # 2l1FJ H region
+            catH = "2lOSSF_nFJ1_massHi_Zp2"
+            catV = "2lOSSF_nFJ1_massLo_Zp2"
+            all_cuts_mask_H = selections.all(catH)
+            all_cuts_mask_V = selections.all(catV)
+            self.accumulator["abcd_2lH"].fill(
+                vbs_mjj   = vbs_mjj_flow[all_cuts_mask_H],
+                dnn_score = dnn_score_2lH[all_cuts_mask_H],
+                weight    = weights_obj_base.weight(None)[all_cuts_mask_H],
+                process   = histAxisName[all_cuts_mask_H],
+                category  = catH,
+            )
+            self.accumulator["abcd_2lV"].fill(
+                vbs_mjj   = vbs_mjj_flow[all_cuts_mask_V],
+                dnn_score = dnn_score_2lV[all_cuts_mask_V],
+                weight    = weights_obj_base.weight(None)[all_cuts_mask_V],
+                process   = histAxisName[all_cuts_mask_V],
+                category  = catV,
+            )
 
 
         ######### Fill 1d histos #########
-
-
-        vars_to_actually_fill = [
-            "njets",
-            "njets_counts",
-            "fj0_pNetHbbvsQCD",
-            "fj0_pNetWvsQCD",
-            "fj0_pNetZvsQCD",
-
-            "l0_pt",
-            "l0_eta",
-            "l0_phi",
-            "l1_pt",
-            "l1_eta",
-            "l1_phi",
-
-            "fj0_pt",
-            "fj0_mass",
-            "fj0_msoftdrop",
-            "fj0_mparticlenet",
-            "fj0_eta",
-            "fj0_phi",
-
-            "fj0_gptHvsQCD",
-            "fj0_gptWvsQCD",
-            "fj0_gptZvsQCD",
-            "fj0_gptVvsQCD",
-            "fj0_gpt_Hsf",
-            "fj0_gpt_Wsf",
-            "fj0_gpt_Zsf",
-            "fj0_gpt_Hfrac",
-            "fj0_gpt_Wfrac",
-            "fj0_gpt_Zfrac",
-
-            "met",
-            "metphi",
-
-            "vbs_mjj",
-            "vbs_absdetajj",
-            "vbs_score",
-
-            "vbs1_pt",
-            "vbs2_pt",
-            "vbs1_eta",
-            "vbs2_eta",
-            "vbs1_phi",
-            "vbs2_phi",
-
-            "scalarptsum_lepmet",
-            "scalarptsum_lepmetFJ0",
-            "scalarptsum_lepmetvbsFJ0",
-            "vectorsum_lepmetvbsFJ0_pt",
-
-            "mass_l0l1",
-            "dr_l0l1" ,
-            "pt_l0l1" ,
-            "absdphi_l0l1",
-            "absdphi_lepmet",
-            "dr_lepmet",
-
-            "mass_jFJ_min",
-            "mass_jFJ_max",
-            "mass_lj_min",
-            "mass_lj_max",
-
-            "absdphi_FJ0lepmet",
-
-        ]
-
 
         # Checks of our input dicts
         vlst = dense_variables_dict.keys()
@@ -1161,7 +1131,6 @@ class AnalysisProcessor(processor.ProcessorABC):
             if dense_axis_name not in self._hist_lst:
                 #print(f"Skipping \"{dense_axis_name}\", it is not in the list of hists to include.")
                 continue
-            if dense_axis_name not in vars_to_actually_fill: continue
 
             # Loop over weight fluctuations
             for wgt_fluct in wgt_var_lst:
