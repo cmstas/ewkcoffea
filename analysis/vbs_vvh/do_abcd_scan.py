@@ -688,18 +688,18 @@ def do_abcd_scan(histo_sig, histo_abcdbkg, histo_otherbkg, constrain_axis_name, 
             B_other_err[i, j]     = A_other_err
             B_total_err[i, j]     = b_total_err
 
-            # Adjust this as you wish for exploring around particular WPs
-            closes = abs(A_abcd - abcd_est) < 1.5 * np.sqrt(A_abcd_err**2 + abcd_est_err**2)
-            if closes and abs(b_total<30) and (abs(A_sig - 0.07) < 0.01):
-                print(
-                    f"  score>{score_edges[si]:.3f} mjj>{mjj_edges[mj]:.0f}"
-                    f"  S={A_sig:.3f}+-{A_sig_err:.3f}"
-                    f"  B_true={A_abcd:.2f}+-{A_abcd_err:.2f}"
-                    f"  B_est={abcd_est:.2f}+-{abcd_est_err:.2f}"
-                    f"  B_other={A_other:.2f}+-{A_other_err:.2f}"
-                    f"  B_total={b_total:.2f}+-{b_total_err:.2f}"
-                    #f"  S/sqrt(B_total)={significance[i,j]:.4f}"
-                )
+            # Uncomment and adjust this as you wish for exploring around particular WPs
+            #closes = abs(A_abcd - abcd_est) < 1.5 * np.sqrt(A_abcd_err**2 + abcd_est_err**2)
+            #if closes and abs(b_total<30) and (abs(A_sig - 0.07) < 0.01):
+            #    print(
+            #        f"  score>{score_edges[si]:.3f} mjj>{mjj_edges[mj]:.0f}"
+            #        f"  S={A_sig:.3f}+-{A_sig_err:.3f}"
+            #        f"  B_true={A_abcd:.2f}+-{A_abcd_err:.2f}"
+            #        f"  B_est={abcd_est:.2f}+-{abcd_est_err:.2f}"
+            #        f"  B_other={A_other:.2f}+-{A_other_err:.2f}"
+            #        f"  B_total={b_total:.2f}+-{b_total_err:.2f}"
+            #        #f"  S/sqrt(B_total)={significance[i,j]:.4f}"
+            #    )
 
     return {
         "closure"      : closure,
@@ -802,12 +802,13 @@ def main():
     grp_dict = cvh.GRP_DICT_FULL_R2
 
     # Hard code the options for this run
-    cat_for_dnn = "2lOSSF_nFJ1_massHi_Zp2"
+    #cat_for_dnn = "2lOSSF_nFJ1_massLo_Zp2"
+    cat_for_dnn = "2lOSSF_nFJ1_massHi_Zp6Hp6VBSp6"
     abcd_hist_name = "abcd_2lH"
     constrain_var = "vbs_mjj"
     guardrails = {
         "min_significance" : 0.0,
-        "max_closure_sd"   : 1.5,
+        "max_closure_sd"   : 1.2,
         "min_S"            : 0.03,
         "max_B_total"      : 1e99,
     }
@@ -831,12 +832,14 @@ def main():
     histo_ttbar    = histo[{"process_grp": ["ttbar"]}]
     histo_abcdbkg  = plt_tools.group(histo, "process_grp", "process_grp", {"ABCDBkg": ["DY", "ttbar"]})
     histo_otherbkg = plt_tools.group(histo, "process_grp", "process_grp", {"OtherBkg": other_bkg_names})
-    #print("sig",      histo_sig)
-    #print("data",     histo_dat)
-    #print("dy",       histo_dy)
-    #print("ttbar",    histo_ttbar)
-    #print("abcdbkg",  histo_abcdbkg)
-    #print("otherbkg", histo_otherbkg)
+
+    # Print yields
+    val_sig,      err_sig      = histo_sig.values(flow=True).sum(),      np.sqrt(histo_sig.variances(flow=True).sum())
+    val_data,     err_data     = histo_dat.values(flow=True).sum(),      np.sqrt(histo_dat.variances(flow=True).sum())
+    val_dy,       err_dy       = histo_dy.values(flow=True).sum(),       np.sqrt(histo_dy.variances(flow=True).sum())
+    val_ttbar,    err_ttbar    = histo_ttbar.values(flow=True).sum(),    np.sqrt(histo_ttbar.variances(flow=True).sum())
+    val_abcdbkg,  err_abcdbkg  = histo_abcdbkg.values(flow=True).sum(),  np.sqrt(histo_abcdbkg.variances(flow=True).sum())
+    val_otherbkg, err_otherbkg = histo_otherbkg.values(flow=True).sum(), np.sqrt(histo_otherbkg.variances(flow=True).sum())
 
     # Set the out dir
     out_dir = "abcd_scan_outputs_plots"
@@ -851,8 +854,8 @@ def main():
     ####################### Just plot some hists #######################
 
     # Make the stack plot, borrowing from check_vvh_hists
-    #years_to_prepend = ["2016postVFP","2016preVFP","2017","2018"]
-    #cvh.make_plots(histo_dict,grp_dict,years_to_prepend,["2lOSSF_nFJ1_massHi_Zp2","2lOSSF_nFJ1_massLo_Zp2"],lepflav_bin="all",save_dir_path=out_dir,make_cat_subdirs=False,vars_to_plot=["njets","njets_counts","vbs_mjj","dnn_score_2lH","dnn_score_2lV"])
+    years_to_prepend = ["2016postVFP","2016preVFP","2017","2018"]
+    cvh.make_plots(histo_dict,grp_dict,years_to_prepend,["2lOSSF_nFJ1_massHi_Zp6Hp6VBSp6"],lepflav_bin="all",save_dir_path=out_dir,make_cat_subdirs=False,vars_to_plot=["njets","njets_counts","vbs_mjj","dnn_score_2lH","dnn_score_2lV"])
 
     # Just simple make 1d plots of the score
     #plot_1d_stack(histo_sig, histo_dy, histo_ttbar, histo_otherbkg, "dnn_score_2lH", f"{out_dir}/stack_dnn_score.png")
