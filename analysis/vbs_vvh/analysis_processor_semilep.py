@@ -8,7 +8,7 @@ from coffea import processor
 import hist
 from hist import axis
 from coffea.analysis_tools import PackedSelection
-import ewkcoffea.modules.objects_wwz as os_ec
+#import ewkcoffea.modules.objects_wwz as os_ec
 #import ewkcoffea.modules.selection_wwz as es_ec
 
 from ewkcoffea.modules.paths import ewkcoffea_path as ewkcoffea_path
@@ -50,18 +50,20 @@ class AnalysisProcessor(processor.ProcessorABC):
         # Create the hist for the 2d abcd
         self.mjj_cap = 3000
         self._abcd_histo_dict = {
-            "abcd_2lH": hist.Hist(
+            "abcd2d_2lH": hist.Hist(
                 hist.axis.StrCategory([], growth=True, name="process", label="process"),
                 hist.axis.StrCategory([], growth=True, name="category", label="category"),
                 axis.Regular(50, 0, 1, name="dnn_score",   label="DNN score from ABCDnet"),
                 axis.Regular(50, 0, self.mjj_cap, name="vbs_mjj", label="Mjj of vbs"),
+                #axis.Regular(50, 0, 1, name="vbs_score", label="Score of vbs"),
                 storage="weight", name="Counts",
             ),
-            "abcd_2lV": hist.Hist(
+            "abcd2d_2lV": hist.Hist(
                 hist.axis.StrCategory([], growth=True, name="process", label="process"),
                 hist.axis.StrCategory([], growth=True, name="category", label="category"),
                 axis.Regular(100, 0, 1, name="dnn_score",   label="DNN score from ABCDnet"),
                 axis.Regular(100, 0, self.mjj_cap, name="vbs_mjj", label="Mjj of vbs"),
+                #axis.Regular(50, 0, 1, name="vbs_score", label="Score of vbs"),
                 storage="weight", name="Counts",
             ),
         }
@@ -117,12 +119,12 @@ class AnalysisProcessor(processor.ProcessorABC):
             "nbtagsm" : axis.Regular(4, 0, 4, name="nbtagsm", label="Medium btag multiplicity"),
             "nbtagst" : axis.Regular(4, 0, 4, name="nbtagst", label="Tight btag multiplicity"),
 
-            "njets_counts"   : axis.Regular(30, 0, 30, name="njets_counts",   label="Jet multiplicity counts (central)"),
-            "nleps_counts"   : axis.Regular(30, 0, 30, name="nleps_counts",   label="Lep multiplicity counts (central)"),
+            "njets_counts"   : axis.Regular(30, 0, 30, name="njets_counts",   label="Jet multiplicity counts (total)"),
+            "nleps_counts"   : axis.Regular(30, 0, 30, name="nleps_counts",   label="Lep multiplicity counts (total)"),
 
             "nfatjets"   : axis.Regular(8, 0, 8, name="nfatjets",   label="Fat jet multiplicity"),
             "njets_forward"   : axis.Regular(8, 0, 8, name="njets_forward",   label="Jet multiplicity (forward)"),
-            "njets_central"   : axis.Regular(8, 0, 8, name="njets_central",   label="Jet multiplicity (central and forward)"),
+            "njets_central"   : axis.Regular(8, 0, 8, name="njets_central",   label="Jet multiplicity (central)"),
 
             "n_ll_sfos"   : axis.Regular(5, 0, 5, name="n_ll_sfos",   label="Number of SF OS lepton pairs"),
             "abs_ch_sum_3l" : axis.Regular(4, 0, 4, name="abs_ch_sum_3l",   label="Abs sum of charges of the 3l"),
@@ -195,9 +197,9 @@ class AnalysisProcessor(processor.ProcessorABC):
             "bbscore0_bscore"  : axis.Regular(180, 0, 1, name="bbscore0_bscore", label="Btag score of b jet with highest btag score"),
             "bbscore1_bscore"  : axis.Regular(180, 0, 1, name="bbscore1_bscore", label="Btag score of b jet with second highest btag score"),
 
-            "mass_jbscore0jbscore1" : axis.Regular(180, 0, 250, name="mass_jbscore0jbscore1", label="mjj of two leading (in score) central jets"),
-            "jbscore0_bscore"  : axis.Regular(180, 0, 1, name="jbscore0_bscore", label="Btag score of central jet with highest btag score"),
-            "jbscore1_bscore"  : axis.Regular(180, 0, 1, name="jbscore1_bscore", label="Btag score of central jet with second highest btag score"),
+            "mass_jbscore0jbscore1" : axis.Regular(180, 0, 250, name="mass_jbscore0jbscore1", label="mjj of two leading (in score) jets"),
+            "jbscore0_bscore"  : axis.Regular(180, 0, 1, name="jbscore0_bscore", label="Btag score of jet with highest btag score"),
+            "jbscore1_bscore"  : axis.Regular(180, 0, 1, name="jbscore1_bscore", label="Btag score of jet with second highest btag score"),
 
             "mjj_max_cent" : axis.Regular(180, 0, 250, name="mjj_max_cent", label="Leading mjj of pair of non-forward jets"),
             "mjj_max_fwd" : axis.Regular(180, 0, 2500, name="mjj_max_fwd", label="Leading mjj of pair of forward jets"),
@@ -294,13 +296,10 @@ class AnalysisProcessor(processor.ProcessorABC):
         if mu_pfIsoId_val is not None: self._mu_pfIsoId_val = float(mu_pfIsoId_val)
         else: self._mu_pfIsoId_val = mu_pfIsoId_val
 
-        # Make bdt outputs
+        # Siphon the outputs (these outputs are the inputs for the ML training)
         self._siphon_output_path = f"histos/{siphon_out_name}.root"
         self._siphon_bdt_data = siphon_bdt_data
-        #self._siphon_selection = ["2lOSSF_nFJ1"]
-        #self._siphon_selection = ["2lOSSF_nFJ1_HFJ"]
-        #self._siphon_selection = ["2lOSSF_nFJ1_massHi_Zp2"]
-        self._siphon_selection = ["2lOSSF_nFJ1_massLo_Zp2"]
+        self._siphon_selection = ["2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5"] # NOTE this is hard coded
         self._bdt_vars = []
         for varname in list(self._dense_axes_dict.keys()):
             if "dnn_score" in varname: continue
@@ -397,7 +396,11 @@ class AnalysisProcessor(processor.ProcessorABC):
         fatjets = events.fatjet
         vbsjets = events.vbs
 
-        # Put the relevant tagging scores in fatjets
+        # Identify the kind of of chunk that this is (note this check assumes all events in this chunk are of the same kind, should be true)
+        isSig  = events.kind[0]=="sig"
+        isData = events.kind[0]=="data"
+
+        # Put the relevant tagging scores in fatjets object (this should be in RDF in the future)
         fatjets["gptHvsQCD"] = fatjets.globalParT3_Xbb / (fatjets.globalParT3_Xbb + fatjets.globalParT3_QCD)
         fatjets["gptWvsQCD"] = (fatjets.globalParT3_Xqq/3 + fatjets.globalParT3_Xcs) / (fatjets.globalParT3_Xqq/3 + fatjets.globalParT3_Xcs + fatjets.globalParT3_QCD)
         fatjets["gptZvsQCD"] = (fatjets.globalParT3_Xbb + fatjets.globalParT3_Xcc + fatjets.globalParT3_Xqq) / (fatjets.globalParT3_Xbb + fatjets.globalParT3_Xcc + fatjets.globalParT3_Xqq + fatjets.globalParT3_QCD)
@@ -431,9 +434,6 @@ class AnalysisProcessor(processor.ProcessorABC):
             behavior=met.behavior,
         )
 
-        # Kind of of chunk (note this check assumes all events in this chunk are of the same kind, should be true)
-        isSig  = events.kind[0]=="sig"
-        isData = events.kind[0]=="data"
 
         # An array of lenght events that is just 1 for each event
         events["nom"] = ak.ones_like(met.pt)
@@ -638,10 +638,10 @@ class AnalysisProcessor(processor.ProcessorABC):
         bmbscore1 = bjetsm_bscoreordered_padded[:,1]
         mass_bmbscore0bmbscore1 = ak.fill_none((bmbscore0+bmbscore1).mass,0)
 
-        # Variables related to leading b jet score of central jets
-        centraljets_bscoreordered = goodJets_ptordered_padded[ak.argsort(goodJets_ptordered_padded.btagDeepFlavB,axis=-1,ascending=False)]
-        jbscore0 = centraljets_bscoreordered[:,0]
-        jbscore1 = centraljets_bscoreordered[:,1]
+        # Variables related to leading b jet score of jets
+        jets_bscoreordered = goodJets_ptordered_padded[ak.argsort(goodJets_ptordered_padded.btagDeepFlavB,axis=-1,ascending=False)]
+        jbscore0 = jets_bscoreordered[:,0]
+        jbscore1 = jets_bscoreordered[:,1]
         mass_jbscore0jbscore1 = ak.fill_none((jbscore0+jbscore1).mass,0)
         jbscore0_bscore = ak.fill_none(jbscore0.btagDeepFlavB,0)
         jbscore1_bscore = ak.fill_none(jbscore1.btagDeepFlavB,0)
@@ -926,7 +926,6 @@ class AnalysisProcessor(processor.ProcessorABC):
 
         is_2l = (n_lep_veto==2) & (nleps==2) & (l0.pt>25) & (l1.pt>15)
         is_3l = (n_lep_veto==3) & (nleps==3) & (l0.pt>25) & (l1.pt>15) & (l2.pt>10)
-        #is_2l_mll12 = is_2l & (mll_min_afos>12)
         is_3l_mll12 = is_3l & (mll_min_afos>12)
 
         is_VFJ       = (fj0_mparticlenet <= 100.) & (fj0_mparticlenet > 65)
@@ -944,20 +943,20 @@ class AnalysisProcessor(processor.ProcessorABC):
         selections.add("2lOS",                                   is_2l & is_os)
         selections.add("2lOSSF",                                 is_2l & is_os & is_sf)
         selections.add("2lOSSF_nFJ1",                            is_2l & is_os & is_sf & (nfatjets==1))
-        selections.add("2lOSSF_nFJ1_massLo",                     is_2l & is_os & is_sf & (nfatjets==1) & (fj0_mparticlenet < 110))
+        selections.add("2lOSSF_nFJ1_massLo",                     is_2l & is_os & is_sf & (nfatjets==1) & (fj0_mparticlenet <  110))
         selections.add("2lOSSF_nFJ1_massHi",                     is_2l & is_os & is_sf & (nfatjets==1) & (fj0_mparticlenet >= 110))
-        selections.add("2lOSSF_nFJ1_massLo_Zp2",                 is_2l & is_os & is_sf & (nfatjets==1) & (fj0_mparticlenet < 110) & (fj0.gptZvsQCD>0.2))
+        selections.add("2lOSSF_nFJ1_massLo_Zp2",                 is_2l & is_os & is_sf & (nfatjets==1) & (fj0_mparticlenet <  110) & (fj0.gptZvsQCD>0.2))
         selections.add("2lOSSF_nFJ1_massHi_Zp2",                 is_2l & is_os & is_sf & (nfatjets==1) & (fj0_mparticlenet >= 110) & (fj0.gptZvsQCD>0.2))
-
-        #selections.add("2lOSSF_nFJ1_scoreH",                     is_2l & is_os & is_sf & (nfatjets==1) & (fj0.gpt_Hfrac>=0.5))
-        #selections.add("2lOSSF_nFJ1_scoreV",                     is_2l & is_os & is_sf & (nfatjets==1) & (fj0.gpt_Hfrac<0.5))
+        selections.add("2lOSSF_nFJ1_massHi_Zp2_A",               is_2l & is_os & is_sf & (nfatjets==1) & (fj0_mparticlenet >= 110) & (fj0.gptZvsQCD>0.2) & (vbsjets.mjj>1560) & (dnn_score_2lH>0.88))
+        selections.add("2lOSSF_nFJ1_massLo_Zp2_A",               is_2l & is_os & is_sf & (nfatjets==1) & (fj0_mparticlenet <  110) & (fj0.gptZvsQCD>0.2) & (vbsjets.mjj>1080) & (dnn_score_2lH>0.73))
+        selections.add("2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5",         is_2l & is_os & is_sf & (nfatjets==1) & (fj0_mparticlenet >= 110) & (fj0.gptZvsQCD>0.5) & (fj0.gptHvsQCD>0.5) & (vbsjets.score>0.5))
+        selections.add("2lOSSF_nFJ1_massLo_Zp4VBSp6",            is_2l & is_os & is_sf & (nfatjets==1) & (fj0_mparticlenet <  110) & (fj0.gptZvsQCD>0.4) & (vbsjets.score>0.6))
 
         selections.add("2lOSSF_nFJ1_mjj1k",                      is_2l & is_os & is_sf & (nfatjets==1) & (vbsjets.mjj>1000))
         selections.add("2lOSSF_nFJ1_mjj1k_HFJ",                  is_2l & is_os & is_sf & (nfatjets==1) & (vbsjets.mjj>1000) & is_HFJ)
         selections.add("2lOSSF_nFJ1_mjj1k_HFJtag",               is_2l & is_os & is_sf & (nfatjets==1) & (vbsjets.mjj>1000) & is_HFJ & is_HFJTagHbb)
         selections.add("2lOSSF_nFJ1_mjj1k_HFJtag_nb0",           is_2l & is_os & is_sf & (nfatjets==1) & (vbsjets.mjj>1000) & is_HFJ & is_HFJTagHbb & (nbtagst==0))
 
-        selections.add("2lOSSF_nFJ1_HFJ",                            is_2l & is_os & is_sf & (nfatjets==1) & is_HFJ)
 
         ### 3l ###
 
@@ -986,33 +985,27 @@ class AnalysisProcessor(processor.ProcessorABC):
 
                 ### 2l OS SF 1FJ ###
 
-                ##"2l",
-                ##"2lOS",
-                ##"2lOSSF",
                 "2lOSSF_nFJ1",
-
                 "2lOSSF_nFJ1_massLo",
                 "2lOSSF_nFJ1_massHi",
-                "2lOSSF_nFJ1_massLo_Zp2",
-                "2lOSSF_nFJ1_massHi_Zp2",
+                "2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5",
+                "2lOSSF_nFJ1_massLo_Zp4VBSp6",
 
-                #"2lOSSF_nFJ1_scoreH",
-                #"2lOSSF_nFJ1_scoreV",
-
-                ##"2lOSSF_nFJ1_mjj1k",
-                ##"2lOSSF_nFJ1_mjj1k_HFJ",
-                ##"2lOSSF_nFJ1_mjj1k_HFJtag",
-                ##"2lOSSF_nFJ1_mjj1k_HFJtag_nb0",
-                ##"2lOSSF_nFJ1_HFJ",
+                # From cut based optimization
+                #"2lOSSF_nFJ1_mjj1k",
+                #"2lOSSF_nFJ1_mjj1k_HFJ",
+                #"2lOSSF_nFJ1_mjj1k_HFJtag",
+                #"2lOSSF_nFJ1_mjj1k_HFJtag_nb0",
+                #"2lOSSF_nFJ1_HFJ",
 
                 #### 3l ###
 
-                #"3l",
+                "3l",
 
+                # From cut based optimization
                 #"3l_chsum3",
                 #"3l_chsum3_mjj500",
                 #"3l_chsum3_mjj500_nb0",
-
                 #"3l_chsum1",
                 #"3l_chsum1_nFJg0",
                 #"3l_chsum1_nFJg0_mjj500",
@@ -1083,28 +1076,30 @@ class AnalysisProcessor(processor.ProcessorABC):
 
         ######### Fill the 2d ABCDnet histo #########
 
-        #fill_abcd_2d = False  # At some point should make this an option
-        fill_abcd_2d = True # At some point should make this an option
+        fill_abcd_2d = False  # At some point should make this an option
+        #fill_abcd_2d = True # At some point should make this an option
         vbs_mjj_flow = ak.where(vbsjets.mjj<self.mjj_cap,vbsjets.mjj,self.mjj_cap-0.01)
         if fill_abcd_2d:
-            # 2l1FJ H region
-            catH = "2lOSSF_nFJ1_massHi_Zp2"
-            catV = "2lOSSF_nFJ1_massLo_Zp2"
-            all_cuts_mask_H = selections.all(catH)
-            all_cuts_mask_V = selections.all(catV)
-            self.accumulator["abcd_2lH"].fill(
+            # Specify the regions to use for 2d hists (NOTE these are hard coded)
+            cat2lH = "2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5"
+            cat2lV = "2lOSSF_nFJ1_massLo_Zp2"
+            all_cuts_mask_H = selections.all(cat2lH)
+            all_cuts_mask_V = selections.all(cat2lV)
+            self.accumulator["abcd2d_2lH"].fill(
+                #vbs_score = vbsjets.score[all_cuts_mask_H],
                 vbs_mjj   = vbs_mjj_flow[all_cuts_mask_H],
                 dnn_score = dnn_score_2lH[all_cuts_mask_H],
                 weight    = weights_obj_base.weight(None)[all_cuts_mask_H],
                 process   = histAxisName[all_cuts_mask_H],
-                category  = catH,
+                category  = cat2lH,
             )
-            self.accumulator["abcd_2lV"].fill(
+            self.accumulator["abcd2d_2lV"].fill(
+                #vbs_score = vbsjets.score[all_cuts_mask_V],
                 vbs_mjj   = vbs_mjj_flow[all_cuts_mask_V],
                 dnn_score = dnn_score_2lV[all_cuts_mask_V],
                 weight    = weights_obj_base.weight(None)[all_cuts_mask_V],
                 process   = histAxisName[all_cuts_mask_V],
-                category  = catV,
+                category  = cat2lV,
             )
 
 
