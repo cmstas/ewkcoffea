@@ -471,7 +471,7 @@ def write_abcd_datacards(histo_sig, histo_abcdbkg, histo_otherbkg, results, cons
             f.write(f"# Counting experiment datacard: rank={rank}, score>{score_cut:.4f}, mjj>{mjj_cut:.1f} GeV\n")
             f.write(f"# S/sqrt(B_total)={sig_val:.4f}\n")
             f.write(f"# A_abcd_true={A_abcd:.2f}, A_abcd_est={abcd_est:.2f}, A_other={A_other:.2f}\n\n")
-            f.write(f"# Details:\n")
+            f.write( "# Details:\n")
             f.write(f"#   Sig in A: {A_sig:.4f} +/- {A_sig_err:.4f}\n")
             f.write(f"#   Est ABCD bkg in A: {abcd_est:.4f} +/- {abcd_est_err:.4f}\n")
             f.write(f"#   Truth ABCD bkg in A: {A_abcd:.4f} +/- {A_abcd_err:.4f}\n")
@@ -803,8 +803,10 @@ def main():
 
     # Hard code the options for this run
     #cat_for_dnn = "2lOSSF_nFJ1_massLo_Zp2"
-    cat_for_dnn = "2lOSSF_nFJ1_massHi_Zp6Hp6VBSp6"
+    #cat_for_dnn = "2lOSSF_nFJ1_massHi_Zp6Hp6VBSp6"
+    cat_for_dnn = "2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5"
     abcd_hist_name = "abcd_2lH"
+    #constrain_var = "vbs_score"
     constrain_var = "vbs_mjj"
     guardrails = {
         "min_significance" : 0.0,
@@ -840,6 +842,10 @@ def main():
     val_ttbar,    err_ttbar    = histo_ttbar.values(flow=True).sum(),    np.sqrt(histo_ttbar.variances(flow=True).sum())
     val_abcdbkg,  err_abcdbkg  = histo_abcdbkg.values(flow=True).sum(),  np.sqrt(histo_abcdbkg.variances(flow=True).sum())
     val_otherbkg, err_otherbkg = histo_otherbkg.values(flow=True).sum(), np.sqrt(histo_otherbkg.variances(flow=True).sum())
+    print(f"sig: {val_sig} +- {err_sig}")
+    print(f"dy: {val_dy} +- {err_dy}")
+    print(f"ttbar: {val_ttbar} +- {err_ttbar}")
+    print(f"otherbkg: {val_otherbkg} +- {err_otherbkg}")
 
     # Set the out dir
     out_dir = "abcd_scan_outputs_plots"
@@ -855,12 +861,12 @@ def main():
 
     # Make the stack plot, borrowing from check_vvh_hists
     years_to_prepend = ["2016postVFP","2016preVFP","2017","2018"]
-    cvh.make_plots(histo_dict,grp_dict,years_to_prepend,["2lOSSF_nFJ1_massHi_Zp6Hp6VBSp6"],lepflav_bin="all",save_dir_path=out_dir,make_cat_subdirs=False,vars_to_plot=["njets","njets_counts","vbs_mjj","dnn_score_2lH","dnn_score_2lV"])
+    cvh.make_plots(histo_dict,grp_dict,years_to_prepend,["2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5"],lepflav_bin="all",save_dir_path=out_dir,make_cat_subdirs=False,vars_to_plot=["njets","njets_counts","vbs_mjj","dnn_score_2lH","dnn_score_2lV"])
 
     # Just simple make 1d plots of the score
     #plot_1d_stack(histo_sig, histo_dy, histo_ttbar, histo_otherbkg, "dnn_score_2lH", f"{out_dir}/stack_dnn_score.png")
     #plot_1d_stack(histo_sig, histo_dy, histo_ttbar, histo_otherbkg, "dnn_score_2lV", f"{out_dir}/stack_dnn_score.png")
- 
+
 
     ####################### Scan over 1d #######################
 
