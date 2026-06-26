@@ -13,14 +13,9 @@
     "fj0_mparticlenet",
     "fj0_eta",
     "fj0_phi",
-    "fj0_gptHvsQCD",
-    "fj0_gptWvsQCD",
-    "fj0_gptZvsQCD",
-    "fj0_gptVvsQCD",
     "met",
     "metphi",
     "vbs_absdetajj",
-    "vbs_score",
     "vbs1_pt",
     "vbs2_pt",
     "vbs1_eta",
@@ -41,222 +36,203 @@
     "mass_jFJ_max",
     "mass_lj_min",
     "mass_lj_max",
-    "absdphi_FJ0lepmet"
+    "absdphi_FJ0lepmet",
+    "nbtagst"
   ],
   "_constraint_var": "vbs_mjj",
   "njets": {
     "transform": "minmax,",
     "min": 2.0,
-    "max": 12.0
+    "max": 13.0
   },
   "l0_pt": {
     "transform": "log,",
-    "min": 25.002689361572266,
-    "max": 1697.39990234375
+    "min": 25.04368782043457,
+    "max": 1668.9547119140625
   },
   "l0_eta": {
     "transform": "minmax,",
-    "min": -2.4990234375,
-    "max": 2.50244140625
+    "min": -2.50927734375,
+    "max": 2.5029296875
   },
   "l0_phi": {
     "transform": "minmax,",
-    "min": -3.141510009765625,
+    "min": -3.141448974609375,
     "max": 3.1416015625
   },
   "l1_pt": {
     "transform": "log,",
-    "min": 15.000432014465332,
-    "max": 1146.3057861328125
+    "min": 15.000288963317871,
+    "max": 697.468994140625
   },
   "l1_eta": {
     "transform": "minmax,",
-    "min": -2.49853515625,
-    "max": 2.51318359375
+    "min": -2.498046875,
+    "max": 2.49951171875
   },
   "l1_phi": {
     "transform": "minmax,",
-    "min": -3.141571044921875,
-    "max": 3.1416015625
+    "min": -3.14111328125,
+    "max": 3.141571044921875
   },
   "fj0_pt": {
     "transform": "log,",
     "min": 250.125,
-    "max": 2214.0
+    "max": 2294.0
   },
   "fj0_mass": {
     "transform": "minmax,",
-    "min": 44.59375,
-    "max": 603.0
+    "min": 39.84375,
+    "max": 465.5
   },
   "fj0_msoftdrop": {
     "transform": "minmax,",
     "min": 40.03125,
-    "max": 600.5
+    "max": 468.5
   },
   "fj0_mparticlenet": {
     "transform": "minmax,",
-    "min": 110.0,
-    "max": 254.125
+    "min": 9.078125,
+    "max": 109.9375
   },
   "fj0_eta": {
     "transform": "minmax,",
-    "min": -2.48876953125,
-    "max": 2.478515625
+    "min": -2.45654296875,
+    "max": 2.44775390625
   },
   "fj0_phi": {
     "transform": "minmax,",
-    "min": -3.1416015625,
+    "min": -3.14111328125,
     "max": 3.1416015625
-  },
-  "fj0_gptHvsQCD": {
-    "transform": "minmax,",
-    "min": 8.094240229183924e-07,
-    "max": 0.999841034412384
-  },
-  "fj0_gptWvsQCD": {
-    "transform": "minmax,",
-    "min": 4.283943155769521e-08,
-    "max": 0.998871386051178
-  },
-  "fj0_gptZvsQCD": {
-    "transform": "minmax,",
-    "min": 0.2000081092119217,
-    "max": 0.999841034412384
-  },
-  "fj0_gptVvsQCD": {
-    "transform": "minmax,",
-    "min": 0.2000081092119217,
-    "max": 0.999841034412384
   },
   "met": {
     "transform": "log,",
-    "min": 0.2681899070739746,
-    "max": 1742.6103515625
+    "min": 0.8085578083992004,
+    "max": 1331.740478515625
   },
   "metphi": {
     "transform": "minmax,",
-    "min": -3.1415834426879883,
-    "max": 3.1415393352508545
+    "min": -3.141068935394287,
+    "max": 3.141357660293579
   },
   "vbs_absdetajj": {
     "transform": "minmax,",
-    "min": 0.0,
-    "max": 9.2890625
-  },
-  "vbs_score": {
-    "transform": "minmax,",
-    "min": 0.0003400371933821589,
-    "max": 0.9942827820777893
+    "min": 2.13427734375,
+    "max": 9.3759765625
   },
   "vbs1_pt": {
     "transform": "log,",
-    "min": 20.46875,
-    "max": 1805.0
+    "min": 22.578125,
+    "max": 1483.0
   },
   "vbs2_pt": {
     "transform": "log,",
     "min": 20.015625,
-    "max": 755.0
+    "max": 573.0
   },
   "vbs1_eta": {
     "transform": "minmax,",
-    "min": -4.9921875,
-    "max": 4.9990234375
+    "min": -4.8271484375,
+    "max": 4.953125
   },
   "vbs2_eta": {
     "transform": "minmax,",
-    "min": -4.998046875,
-    "max": 4.9853515625
+    "min": -4.9716796875,
+    "max": 4.9970703125
   },
   "vbs1_phi": {
     "transform": "minmax,",
     "min": -3.1416015625,
-    "max": 3.1416015625
+    "max": 3.14111328125
   },
   "vbs2_phi": {
     "transform": "minmax,",
-    "min": -3.1416015625,
-    "max": 3.1416015625
+    "min": -3.14111328125,
+    "max": 3.14111328125
   },
   "scalarptsum_lepmet": {
     "transform": "log,",
-    "min": 52.41636276245117,
-    "max": 2653.3564453125
+    "min": 52.45817184448242,
+    "max": 2771.519287109375
   },
   "scalarptsum_lepmetFJ0": {
     "transform": "log,",
-    "min": 327.3942565917969,
-    "max": 4236.3564453125
+    "min": 313.841552734375,
+    "max": 4257.96337890625
   },
   "scalarptsum_lepmetvbsFJ0": {
     "transform": "log,",
-    "min": 406.298095703125,
-    "max": 4863.9013671875
+    "min": 412.8414306640625,
+    "max": 4352.74462890625
   },
   "vectorsum_lepmetvbsFJ0_pt": {
     "transform": "log,",
-    "min": 0.08231976628303528,
-    "max": 1705.45556640625
+    "min": 0.5008682608604431,
+    "max": 2126.106201171875
   },
   "mass_l0l1": {
     "transform": "log,",
-    "min": 0.21194781363010406,
-    "max": 2213.818359375
+    "min": 0.19764235615730286,
+    "max": 1430.802978515625
   },
   "dr_l0l1": {
     "transform": "minmax ,",
-    "min": 0.0002850577002391219,
-    "max": 5.537643909454346
+    "min": 0.0012810115003958344,
+    "max": 5.433599948883057
   },
   "pt_l0l1": {
     "transform": "log,",
-    "min": 0.5554289817810059,
-    "max": 1869.0618896484375
+    "min": 0.2084507793188095,
+    "max": 1913.062255859375
   },
   "absdphi_l0l1": {
     "transform": "minmax,",
     "min": 0.0,
-    "max": 3.1414616107940674
+    "max": 3.140991449356079
   },
   "absdphi_lepmet": {
     "transform": "minmax,",
-    "min": 6.074371412978508e-06,
-    "max": 3.141591787338257
+    "min": 0.00017460617527831346,
+    "max": 3.1412997245788574
   },
   "dr_lepmet": {
     "transform": "minmax,",
-    "min": 0.009080136194825172,
-    "max": 6.214711666107178
+    "min": 0.0028808959759771824,
+    "max": 6.507872581481934
   },
   "mass_jFJ_min": {
     "transform": "log,",
-    "min": 106.98200225830078,
-    "max": 3368.247802734375
+    "min": 88.12207794189453,
+    "max": 2124.962646484375
   },
   "mass_jFJ_max": {
     "transform": "log,",
-    "min": 146.52879333496094,
-    "max": 6780.15673828125
+    "min": 366.81219482421875,
+    "max": 5670.85693359375
   },
   "mass_lj_min": {
     "transform": "log,",
-    "min": 9.137526512145996,
-    "max": 1591.57568359375
+    "min": 8.714212417602539,
+    "max": 1395.5615234375
   },
   "mass_lj_max": {
     "transform": "log,",
-    "min": 37.18096160888672,
-    "max": 5671.72021484375
+    "min": 124.90702819824219,
+    "max": 4127.802734375
   },
   "absdphi_FJ0lepmet": {
     "transform": "minmax,",
-    "min": 7.911178545327857e-05,
-    "max": 3.1415786743164062
+    "min": 0.00010231420310446993,
+    "max": 3.1415743827819824
+  },
+  "nbtagst": {
+    "transform": "minmax,",
+    "min": 0.0,
+    "max": 4.0
   },
   "vbs_mjj": {
     "transform": "none",
-    "min": 11.749565124511719,
-    "max": 7197.70263671875
+    "min": 405.7698059082031,
+    "max": 8342.650390625
   }
 }
