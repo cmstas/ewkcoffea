@@ -8,7 +8,7 @@ from coffea import processor
 import hist
 from hist import axis
 from coffea.analysis_tools import PackedSelection
-import ewkcoffea.modules.objects_wwz as os_ec
+#import ewkcoffea.modules.objects_wwz as os_ec
 #import ewkcoffea.modules.selection_wwz as es_ec
 
 from ewkcoffea.modules.paths import ewkcoffea_path as ewkcoffea_path
@@ -25,13 +25,15 @@ warnings.filterwarnings(
     module="coffea.nanoevents.schemas.nanoaod"
 )
 
-def to_vec(obj):
+def to_vec(obj,with_name="PtEtaPhiMCollection"):
     return ak.zip({
         "pt": obj.pt,
         "eta": obj.eta,
         "phi": obj.phi,
         "mass": obj.mass,
-    }, with_name="PtEtaPhiMCollection")
+    }, with_name=with_name)
+    #}, with_name="PtEtaPhiMLorentzVector")
+    #}, with_name="PtEtaPhiMCollection")
 
 
 class AnalysisProcessor(processor.ProcessorABC):
@@ -43,44 +45,55 @@ class AnalysisProcessor(processor.ProcessorABC):
         self._dtype = dtype
 
         # For ABCDnet evaluations
-        self._checkpoint_path =  ewkcoffea_path("data/vvh_abcd_models/single_abcdisco_2l1fj_dy.ckpt")
         self._model = None
 
         # Create the hist for the 2d abcd
-        self.mjj_max_any_cap = 2000
-        self._abcd_histo = hist.Hist(
-            hist.axis.StrCategory([], growth=True, name="process", label="process"),
-            hist.axis.StrCategory([], growth=True, name="category", label="category"),
-            #hist.axis.Integer(0,40, growth=True, name="lepflav", label="lepflav"),
-            axis.Regular(500, 0, 1, name="dnn_score",   label="DNN score from ABCDnet"),
-            #axis.Regular(2, 0, self.mjj_max_any_cap, name="mjj_max_any", label="Leading mjj of pair of any (central or fwd) jets"),
-            axis.Regular(50, 0, self.mjj_max_any_cap, name="mjj_max_any", label="Leading mjj of pair of any (central or fwd) jets"),
-            storage="weight", # Keeps track of sumw2
-            name="Counts",
-        )
+        self.mjj_cap = 3000
+        self._abcd_histo_dict = {
+            "abcd2d_2lH": hist.Hist(
+                hist.axis.StrCategory([], growth=True, name="process", label="process"),
+                hist.axis.StrCategory([], growth=True, name="category", label="category"),
+                axis.Regular(50, 0, 1, name="dnn_score",   label="DNN score from ABCDnet"),
+                axis.Regular(50, 0, self.mjj_cap, name="vbs_mjj", label="Mjj of vbs"),
+                #axis.Regular(50, 0, 1, name="vbs_score", label="Score of vbs"),
+                storage="weight", name="Counts",
+            ),
+            "abcd2d_2lV": hist.Hist(
+                hist.axis.StrCategory([], growth=True, name="process", label="process"),
+                hist.axis.StrCategory([], growth=True, name="category", label="category"),
+                axis.Regular(100, 0, 1, name="dnn_score",   label="DNN score from ABCDnet"),
+                axis.Regular(100, 0, self.mjj_cap, name="vbs_mjj", label="Mjj of vbs"),
+                #axis.Regular(50, 0, 1, name="vbs_score", label="Score of vbs"),
+                storage="weight", name="Counts",
+            ),
+        }
 
         # Create the dense axes for the histograms
         self._dense_axes_dict = {
             "met"   : axis.Regular(180, 0, 750, name="met",  label="met"),
             "metphi": axis.Regular(180, -3.1416, 3.1416, name="metphi", label="met phi"),
-            "scalarptsum_jetCentFwd" : axis.Regular(180, 0, 2000, name="scalarptsum_jetCentFwd", label="H_T small radius"),
+            "scalarptsum_jet" : axis.Regular(180, 0, 2000, name="scalarptsum_jet", label="H_T small radius"),
             "scalarptsum_jetFwd" : axis.Regular(180, 0, 1000, name="scalarptsum_jetFwd", label="H_T forward"),
             "scalarptsum_jetCent" : axis.Regular(180, 0, 2000, name="scalarptsum_jetCent", label="H_T central"),
             "scalarptsum_lep" : axis.Regular(180, 0, 2000, name="scalarptsum_lep", label="S_T"),
             "scalarptsum_lepmet" : axis.Regular(180, 0, 1500, name="scalarptsum_lepmet", label="S_T + metpt"),
-            "scalarptsum_lepmetFJ" : axis.Regular(180, 0, 3500, name="scalarptsum_lepmetFJ", label="S_T + metpt + FJ pt"),
-            "scalarptsum_lepmetFJ10" : axis.Regular(180, 0, 3500, name="scalarptsum_lepmetFJ10", label="S_T + metpt + FJ0 + FJ1 pt"),
+            "scalarptsum_lepmetFJ0" : axis.Regular(180, 0, 3500, name="scalarptsum_lepmetFJ0", label="S_T + metpt + FJ0 pt"),
+            "scalarptsum_lepmetFJ01" : axis.Regular(180, 0, 3500, name="scalarptsum_lepmetFJ01", label="S_T + metpt + FJ0 pt + FJ1 pt"),
+            "scalarptsum_lepmetvbsFJ0" : axis.Regular(180, 0, 3500, name="scalarptsum_lepmetvbsFJ0", label="S_T + metpt + vbs1pt + vbs2pt + FJ0pt"),
             "scalarptsum_lepmetalljets" : axis.Regular(180, 0, 2500, name="scalarptsum_lepmetalljets", label="S_T + metpt + H_T all"),
             "scalarptsum_lepmetcentjets" : axis.Regular(180, 0, 2500, name="scalarptsum_lepmetcentjets", label="S_T + metpt + H_T cent"),
             "scalarptsum_lepmetfwdjets" : axis.Regular(180, 0, 1500, name="scalarptsum_lepmetfwdjets", label="S_T + metpt + H_T fwd"),
+            "vectorsum_lepmetvbsFJ0_pt" : axis.Regular(180, 0, 2000, name="vectorsum_lepmetvbsFJ0_pt", label="Pt of vector sum of lep0+lep1+MET+vbs1+vbs2+FJ0"),
+
             "l0_pt"  : axis.Regular(180, 0, 500, name="l0_pt", label="l0 pt"),
             "l0_eta"  : axis.Regular(180, -3,3, name="l0_eta", label="l0 eta"),
             "l0_phi"  : axis.Regular(180, -3.1416, 3.1416, name="l0_phi", label="l0 phi"),
             "l1_pt"  : axis.Regular(180, 0, 400, name="l1_pt", label="l1 pt"),
             "l1_eta"  : axis.Regular(180, -3,3, name="l1_eta", label="l1 eta"),
+            "l1_phi"  : axis.Regular(180, -3.1416, 3.1416, name="l1_phi", label="l1 phi"),
             "l2_pt"  : axis.Regular(180, 0, 300, name="l2_pt", label="l2 pt"),
             "l2_eta"  : axis.Regular(180, -3,3, name="l2_eta", label="l2 eta"),
-            "l1_phi"  : axis.Regular(180, -3.1416, 3.1416, name="l1_phi", label="l1 phi"),
+            "l2_phi"  : axis.Regular(180, -3.1416, 3.1416, name="l2_phi", label="l1 phi"),
 
             "l0_iso"     : axis.Regular(180, 0,0.2, name="l0_iso", label="l0 pfRelIso03_all"),
             "l0_miniiso" : axis.Regular(180, 0,0.2, name="l0_miniiso", label="l0 miniPFRelIso_all"),
@@ -89,8 +102,13 @@ class AnalysisProcessor(processor.ProcessorABC):
             "l2_iso"     : axis.Regular(180, 0,0.2, name="l2_iso", label="l2 pfRelIso03_all"),
             "l2_miniiso" : axis.Regular(180, 0,0.2, name="l2_miniiso", label="l2 miniPFRelIso_all"),
 
-            "mass_l0l1"  : axis.Regular(180, 0,500, name="mass_l0l1", label="mll of leading two leptons"),
-            "dr_l0l1" : axis.Regular(180, 0, 6, name="dr_l0l1", label="dr between leading two leptons"),
+            "mass_l0l1"      : axis.Regular(180, 0,500, name="mass_l0l1", label="mll of leading two leptons"),
+            "dr_l0l1"        : axis.Regular(180, 0, 6, name="dr_l0l1", label="dr between leading two leptons"),
+            "pt_l0l1"        : axis.Regular(180, 0, 1000, name="pt_l0l1", label="pt of pair of leading two leptons"),
+            "absdphi_l0l1"   : axis.Regular(180, 0, 3.1416, name="absdphi_l0l1", label="abs delta phi between leading two leptons"),
+            "absdphi_lepmet" : axis.Regular(180, 0, 3.1416, name="absdphi_lepmet", label="abs delta phi between met and pair of leading leptons"),
+            "dr_lepmet"      : axis.Regular(180, 0, 6, name="dr_lepmet", label="dr between met and pair of leading leptons"),
+            "absdphi_FJ0lepmet" : axis.Regular(180, 0, 3.1416, name="absdphi_FJ0lepmet", label="abs delta phi between FJ0 and (met + leptons)"),
 
             "mlb_min" : axis.Regular(180, 0, 300, name="mlb_min",  label="min mass(b+l)"),
             "mlb_max" : axis.Regular(180, 0, 1000, name="mlb_max",  label="max mass(b+l)"),
@@ -101,12 +119,12 @@ class AnalysisProcessor(processor.ProcessorABC):
             "nbtagsm" : axis.Regular(4, 0, 4, name="nbtagsm", label="Medium btag multiplicity"),
             "nbtagst" : axis.Regular(4, 0, 4, name="nbtagst", label="Tight btag multiplicity"),
 
-            "njets_counts"   : axis.Regular(30, 0, 30, name="njets_counts",   label="Jet multiplicity counts (central)"),
-            "nleps_counts"   : axis.Regular(30, 0, 30, name="nleps_counts",   label="Lep multiplicity counts (central)"),
+            "njets_counts"   : axis.Regular(30, 0, 30, name="njets_counts",   label="Jet multiplicity counts (total)"),
+            "nleps_counts"   : axis.Regular(30, 0, 30, name="nleps_counts",   label="Lep multiplicity counts (total)"),
 
             "nfatjets"   : axis.Regular(8, 0, 8, name="nfatjets",   label="Fat jet multiplicity"),
             "njets_forward"   : axis.Regular(8, 0, 8, name="njets_forward",   label="Jet multiplicity (forward)"),
-            "njets_tot"   : axis.Regular(8, 0, 8, name="njets_tot",   label="Jet multiplicity (central and forward)"),
+            "njets_central"   : axis.Regular(8, 0, 8, name="njets_central",   label="Jet multiplicity (central)"),
 
             "n_ll_sfos"   : axis.Regular(5, 0, 5, name="n_ll_sfos",   label="Number of SF OS lepton pairs"),
             "abs_ch_sum_3l" : axis.Regular(4, 0, 4, name="abs_ch_sum_3l",   label="Abs sum of charges of the 3l"),
@@ -115,8 +133,13 @@ class AnalysisProcessor(processor.ProcessorABC):
             "fj0_mass"  : axis.Regular(180, 0, 250, name="fj0_mass", label="fj0 mass"),
             "fj0_msoftdrop"  : axis.Regular(180, 0, 250, name="fj0_msoftdrop", label="fj0 softdrop mass"),
             "fj0_mparticlenet"  : axis.Regular(180, 0, 250, name="fj0_mparticlenet", label="fj0 particleNet mass"),
-            "fj0_abseta" : axis.Regular(180, 0, 5, name="fj0_abseta", label="fj0 abs eta"),
+            "fj0_eta" : axis.Regular(180, -5, 5, name="fj0_eta", label="fj0 eta"),
             "fj0_phi" : axis.Regular(180, -3.1416, 3.1416, name="fj0_phi", label="j0 phi"),
+
+            "fj0_gptHvsQCD": axis.Regular(180, 0, 1, name="fj0_gptHvsQCD", label="fj0 gloparT H"),
+            "fj0_gptWvsQCD": axis.Regular(180, 0, 1, name="fj0_gptWvsQCD", label="fj0 gloparT W"),
+            "fj0_gptZvsQCD": axis.Regular(180, 0, 1, name="fj0_gptZvsQCD", label="fj0 gloparT Z"),
+            "fj0_gptVvsQCD": axis.Regular(180, 0, 1, name="fj0_gptVvsQCD", label="fj0 gloparT Z"),
 
             "fj0_pNetH4qvsQCD": axis.Regular(180, 0, 1, name="fj0_pNetH4qvsQCD", label="fj0 pNet H4qvsQCD"),
             "fj0_pNetHbbvsQCD": axis.Regular(180, 0, 1, name="fj0_pNetHbbvsQCD", label="fj0 pNet HbbvsQCD"),
@@ -125,24 +148,34 @@ class AnalysisProcessor(processor.ProcessorABC):
             "fj0_pNetTvsQCD"  : axis.Regular(180, 0, 1, name="fj0_pNetTvsQCD", label="fj0 pNet TvsQCD"),
             "fj0_pNetWvsQCD"  : axis.Regular(180, 0, 1, name="fj0_pNetWvsQCD", label="fj0 pNet WvsQCD"),
             "fj0_pNetZvsQCD"  : axis.Regular(180, 0, 1, name="fj0_pNetZvsQCD", label="fj0 pNet ZvsQCD"),
+            "fj0_gpt_Hfrac" : axis.Regular(180, 0, 1, name="fj0_gpt_Hfrac",   label="H score frac (gptH / (gptH + gptW + gptZ))"),
+            "fj0_gpt_Wfrac" : axis.Regular(180, 0, 1, name="fj0_gpt_Wfrac",   label="W score frac (gptW / (gptH + gptW + gptZ))"),
+            "fj0_gpt_Zfrac" : axis.Regular(180, 0, 1, name="fj0_gpt_Zfrac",   label="Z score frac (gptZ / (gptH + gptW + gptZ))"),
+            "fj0_gpt_Hsf" : axis.Regular(180, 0, 1, name="fj0_gpt_Hsf",   label="H softmax score (exp(gptH) / (exp(gptH) + exp(gptW) + exp(gptZ)))"),
+            "fj0_gpt_Wsf" : axis.Regular(180, 0, 1, name="fj0_gpt_Wsf",   label="W softmax score (exp(gptW) / (exp(gptH) + exp(gptW) + exp(gptZ)))"),
+            "fj0_gpt_Zsf" : axis.Regular(180, 0, 1, name="fj0_gpt_Zsf",   label="Z softmax score (exp(gptZ) / (exp(gptH) + exp(gptW) + exp(gptZ)))"),
 
-            "j0central_pt"  : axis.Regular(180, 0, 250, name="j0central_pt", label="j0 pt (central jets)"), # Naming
-            "j0central_abseta" : axis.Regular(180, 0, 5, name="j0central_abseta", label="j0 abs eta (central jets)"), # Naming
-            "j0central_phi" : axis.Regular(180, -3.1416, 3.1416, name="j0central_phi", label="j0 phi (central jets)"), # Naming
-
+            "j0central_pt"  : axis.Regular(180, 0, 250, name="j0central_pt", label="j0 pt (central jets)"),
+            "j0central_eta" : axis.Regular(180, 0, 5, name="j0central_eta", label="j0 abs eta (central jets)"),
+            "j0central_phi" : axis.Regular(180, -3.1416, 3.1416, name="j0central_phi", label="j0 phi (central jets)"),
 
             "j0forward_pt"  : axis.Regular(180, 0, 150, name="j0forward_pt", label="j0 pt (forward jets)"),
-            "j0forward_abseta" : axis.Regular(180, 0, 5, name="j0forward_abseta", label="j0 abs eta (forward jets)"),
+            "j0forward_eta" : axis.Regular(180, 0, 5, name="j0forward_eta", label="j0 abs eta (forward jets)"),
             "j0forward_phi" : axis.Regular(180, -3.1416, 3.1416, name="j0forward_phi", label="j0 phi (forward jets)"),
 
-            "j0any_pt"  : axis.Regular(180, 0, 250, name="j0any_pt", label="j0 pt (all regular jets)"),
-            "j0any_abseta" : axis.Regular(180, 0, 5, name="j0any_abseta", label="j0 abs eta (all regular jets)"),
-            "j0any_phi" : axis.Regular(180, -3.1416, 3.1416, name="j0any_phi", label="j0 phi (all regular jets)"),
+            "j0_pt"  : axis.Regular(180, 0, 250, name="j0_pt", label="j0 pt (all regular jets)"),
+            "j0_eta" : axis.Regular(180, 0, 5, name="j0_eta", label="j0 abs eta (all regular jets)"),
+            "j0_phi" : axis.Regular(180, -3.1416, 3.1416, name="j0_phi", label="j0 phi (all regular jets)"),
 
             "dr_fj0l0" : axis.Regular(180, 0, 6, name="dr_fj0l0", label="dr between FJ and lepton"),
             "dr_j0fwdj1fwd" : axis.Regular(180, 0, 6, name="dr_j0fwdj1fwd", label="dr between leading two forward jets"),
             "dr_j0centj1cent" : axis.Regular(180, 0, 6, name="dr_j0centj1cent", label="dr between leading two central jets"),
-            "dr_j0anyj1any" : axis.Regular(180, 0, 6, name="dr_j0anyj1any", label="dr between leading two jets"),
+            "dr_j0j1" : axis.Regular(180, 0, 6, name="dr_j0j1", label="dr between leading two jets"),
+
+            "mass_jFJ_min" : axis.Regular(180, 0, 1500, name="mass_jFJ_min", label="Min mass of jet and FJ pair"),
+            "mass_jFJ_max" : axis.Regular(180, 0, 4000, name="mass_jFJ_max", label="Max mass of jet and FJ pair"),
+            "mass_lj_min" : axis.Regular(180, 0, 1000, name="mass_lj_min", label="Min mass of jet and lepton pair"),
+            "mass_lj_max" : axis.Regular(180, 0, 4000, name="mass_lj_max", label="Max mass of jet and lepton pair"),
 
             "dr_lj_min" : axis.Regular(180, 0, 6, name="dr_lj_min", label="Min dr between a jet and lepton"),
             "dr_lj_max" : axis.Regular(180, 0, 6, name="dr_lj_max", label="Max dr between a jet and lepton"),
@@ -151,11 +184,11 @@ class AnalysisProcessor(processor.ProcessorABC):
 
             "absdphi_j0fwdj1fwd"   : axis.Regular(180, 0, 3.1416, name="absdphi_j0fwdj1fwd", label="abs dphi between leading two forward jets"),
             "absdphi_j0centj1cent" : axis.Regular(180, 0, 3.1416, name="absdphi_j0centj1cent", label="abs dphi between leading two central jets"),
-            "absdphi_j0anyj1any"   : axis.Regular(180, 0, 3.1416, name="absdphi_j0anyj1any", label="abs dphi between leading two jets"),
+            "absdphi_j0j1"   : axis.Regular(180, 0, 3.1416, name="absdphi_j0j1", label="abs dphi between leading two jets"),
 
             "mass_j0centj1cent" : axis.Regular(180, 0, 250, name="mass_j0centj1cent", label="mjj of two leading (in pt) non-forward jets"),
             "mass_j0fwdj1fwd" : axis.Regular(180, 0, 2500, name="mass_j0fwdj1fwd", label="mjj of two leading (in pt) forward jets"),
-            "mass_j0anyj1any" : axis.Regular(180, 0, 1500, name="mass_j0anyj1any", label="mjj of two leading (in pt) jets"),
+            "mass_j0j1" : axis.Regular(180, 0, 1500, name="mass_j0j1", label="mjj of two leading (in pt) jets"),
 
             "mass_b0b1" : axis.Regular(180, 0, 250, name="mass_b0b1", label="mjj of two leading (pt) b jets"),
 
@@ -164,9 +197,9 @@ class AnalysisProcessor(processor.ProcessorABC):
             "bbscore0_bscore"  : axis.Regular(180, 0, 1, name="bbscore0_bscore", label="Btag score of b jet with highest btag score"),
             "bbscore1_bscore"  : axis.Regular(180, 0, 1, name="bbscore1_bscore", label="Btag score of b jet with second highest btag score"),
 
-            "mass_jbscore0jbscore1" : axis.Regular(180, 0, 250, name="mass_jbscore0jbscore1", label="mjj of two leading (in score) central jets"),
-            "jbscore0_bscore"  : axis.Regular(180, 0, 1, name="jbscore0_bscore", label="Btag score of central jet with highest btag score"),
-            "jbscore1_bscore"  : axis.Regular(180, 0, 1, name="jbscore1_bscore", label="Btag score of central jet with second highest btag score"),
+            "mass_jbscore0jbscore1" : axis.Regular(180, 0, 250, name="mass_jbscore0jbscore1", label="mjj of two leading (in score) jets"),
+            "jbscore0_bscore"  : axis.Regular(180, 0, 1, name="jbscore0_bscore", label="Btag score of jet with highest btag score"),
+            "jbscore1_bscore"  : axis.Regular(180, 0, 1, name="jbscore1_bscore", label="Btag score of jet with second highest btag score"),
 
             "mjj_max_cent" : axis.Regular(180, 0, 250, name="mjj_max_cent", label="Leading mjj of pair of non-forward jets"),
             "mjj_max_fwd" : axis.Regular(180, 0, 2500, name="mjj_max_fwd", label="Leading mjj of pair of forward jets"),
@@ -181,20 +214,15 @@ class AnalysisProcessor(processor.ProcessorABC):
 
             "mjjjany" : axis.Regular(180, 0, 3000, name="mjjjany", label="mjjj of leading (in pt) three central or fwd jets"),
             "mjjjcnt" : axis.Regular(180, 0, 3000, name="mjjjcnt", label="mjjj of leading (in pt) three central jets"),
-            "mjjjjany" : axis.Regular(180, 0, 4000, name="mjjjjany", label="mjjjj of leading (in pt) four central or fwd jets"),
-            "mjjjjcnt" : axis.Regular(180, 0, 4000, name="mjjjjcnt", label="mjjjj of leading (in pt) four central jets"),
 
             "mljjjany" : axis.Regular(180, 0, 4000, name="mljjjany", label="mljjj of leading (in pt) lep and three central or fwd jets"),
-            "mljjjcnt" : axis.Regular(180, 0, 4000, name="mljjjcnt", label="mljjj of leading (in pt) lep and three central jets"),
-            "mljjjjany" : axis.Regular(180, 0, 4000, name="mljjjjany", label="mljjjj of leading (in pt) lep and four central or fwd jets"),
-            "mljjjjcnt" : axis.Regular(180, 0, 4000, name="mljjjjcnt", label="mljjjj of leading (in pt) lep and four central jets"),
 
             "abs_pdgid_sum" : axis.Regular(20, 20, 40, name="abs_pdgid_sum", label="Sum of abs pdgId for the 3 lep"),
 
             #"ghiggs0_pt" : axis.Regular(180, 0, 1500, name="ghiggs0_pt", label="Gen higgs pt"),
             #"gvectorboson0_pt" : axis.Regular(180, 0, 1500, name="gvectorboson0_pt", label="Gen V pt"),
 
-            "mll_min_afos" : axis.Regular(180, 0, 50, name="mll_min_afos",  label="min mll of all OS pairs"),
+            "mll_min_afos" : axis.Regular(180, -2, 48, name="mll_min_afos",  label="min mll of all OS pairs"),
             "mll_z" : axis.Regular(180, 0, 150, name="mll_z",  label="mll of the pair of leptons closest to z"),
 
             "l0_truth"          : axis.Regular(36, -1, 34, name="l0_truth", label="l0 truth flag"),
@@ -215,11 +243,20 @@ class AnalysisProcessor(processor.ProcessorABC):
             "nlep_truth_real"   : axis.Regular(5, 0, 5, name="nlep_truth_real",   label="Lep (truth, real) multiplicity"),
             "nlep_truth_fake"   : axis.Regular(5, 0, 5, name="nlep_truth_fake",   label="Lep (truth, fake) multiplicity"),
 
-            "dnn_score"   : axis.Regular(180, 0, 1, name="dnn_score",   label="DNN score from ABCDnet"),
+            "dnn_score_2lH"   : axis.Regular(180, 0, 1, name="dnn_score_2lH",   label="DNN ABCDnet score for 2l1FJ H region"),
+            "dnn_score_2lV"   : axis.Regular(180, 0, 1, name="dnn_score_2lV",   label="DNN ABCDnet score for 1l1FJ V region"),
 
-            "vbs_mjj"       : axis.Regular(180, 0, 3000, name="vbs_mjj",       label="VBS candidate mjj [GeV]"),
+            "vbs_mjj"       : axis.Regular(180, 0, 4000, name="vbs_mjj",       label="VBS candidate mjj [GeV]"),
             "vbs_absdetajj" : axis.Regular(180, 0, 10,   name="vbs_absdetajj", label="VBS candidate abs delta eta jj"),
             "vbs_score"     : axis.Regular(180, 0, 1,    name="vbs_score",     label="VBS BDT score"),
+
+            "vbs1_pt"  : axis.Regular(180, 0, 400,          name="vbs1_pt",  label="VBS jet 1 pt"),
+            "vbs2_pt"  : axis.Regular(180, 0, 400,          name="vbs2_pt",  label="VBS jet 2 pt"),
+            "vbs1_eta" : axis.Regular(180, -5, 5,           name="vbs1_eta", label="VBS jet 1 eta"),
+            "vbs2_eta" : axis.Regular(180, -5, 5,           name="vbs2_eta", label="VBS jet 2 eta"),
+            "vbs1_phi" : axis.Regular(180, -3.1416, 3.1416, name="vbs1_phi", label="VBS jet 1 phi"),
+            "vbs2_phi" : axis.Regular(180, -3.1416, 3.1416, name="vbs2_phi", label="VBS jet 2 phi"),
+
 
         }
 
@@ -236,7 +273,8 @@ class AnalysisProcessor(processor.ProcessorABC):
                 storage="weight", # Keeps track of sumw2
                 name="Counts",
             )
-        dout["abcd_histo"] = self._abcd_histo
+        for abcd_hist_name in self._abcd_histo_dict:
+            dout[abcd_hist_name] = self._abcd_histo_dict[abcd_hist_name]
 
         # Set the accumulator
         self._accumulator = processor.dict_accumulator(dout)
@@ -258,14 +296,13 @@ class AnalysisProcessor(processor.ProcessorABC):
         if mu_pfIsoId_val is not None: self._mu_pfIsoId_val = float(mu_pfIsoId_val)
         else: self._mu_pfIsoId_val = mu_pfIsoId_val
 
-        # Make bdt outputs
+        # Siphon the outputs (these outputs are the inputs for the ML training)
         self._siphon_output_path = f"histos/{siphon_out_name}.root"
         self._siphon_bdt_data = siphon_bdt_data
-        #self._siphon_selection = ["2lOSSF_nFJ1"]
-        self._siphon_selection = ["2lOSSF_nFJ1_HFJ"]
+        self._siphon_selection = ["2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5"] # NOTE this is hard coded
         self._bdt_vars = []
         for varname in list(self._dense_axes_dict.keys()):
-            if varname == "dnn_score": continue
+            if "dnn_score" in varname: continue
             else: self._bdt_vars.append(varname)
         if self._siphon_bdt_data:
             bdt_out = {var: processor.column_accumulator(np.array([], dtype=np.float32)) for var in self._bdt_vars}
@@ -284,24 +321,41 @@ class AnalysisProcessor(processor.ProcessorABC):
 
     #################################################################################
     ### For ABCDnet evaluations ###
-    def _load_model(self):
+    def _load_model(self, checkpoint_path, model_key):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self._device = device
-        self._model = ABCDLightningModule.load_from_checkpoint(self._checkpoint_path, map_location=device)
-        self._model.to(device)
-        self._model.eval()
+        if not hasattr(self, '_models'):
+            self._models = {}
+        self._models[model_key] = ABCDLightningModule.load_from_checkpoint(checkpoint_path, map_location=device)
+        self._models[model_key].to(device)
+        self._models[model_key].eval()
 
-    def _run_abcd_inference(self, events, mask, dense_variables_dict):
-        if not hasattr(self, '_model') or self._model is None:
-            self._load_model()
-        if not hasattr(self, '_scaler_params'):
+    def _run_abcd_inference(self, events, dense_variables_dict, model):
+        if model == "2lH":
+            scaler_path = ewkcoffea_path("data/vvh_abcd_models/single_abcdisco_2l1fj_forH_scaler_params.json")
+            checkpoint_path = ewkcoffea_path("data/vvh_abcd_models/single_abcdisco_2l1fj_forH.ckpt")
+        elif model == "2lV":
+            scaler_path = ewkcoffea_path("data/vvh_abcd_models/single_abcdisco_2l1fj_forV_scaler_params.json")
+            checkpoint_path = ewkcoffea_path("data/vvh_abcd_models/single_abcdisco_2l1fj_forV.ckpt")
+        else:
+            raise Exception(f"Unknown model {model}")
+
+        if not hasattr(self, '_models'):
+            self._models = {}
+        if model not in self._models:
+            self._load_model(checkpoint_path, model)
+
+        if not hasattr(self, '_scaler_params_dict'):
+            self._scaler_params_dict = {}
+        if model not in self._scaler_params_dict:
             import json
-            scaler_path = ewkcoffea_path("data/vvh_abcd_models/single_abcdisco_2l1fj_dy_scaler_params.json")
             with open(scaler_path) as f:
-                self._scaler_params = json.load(f)
+                self._scaler_params_dict[model] = json.load(f)
+
+        scaler_params = self._scaler_params_dict[model]
 
         def scale(name, values):
-            params = self._scaler_params[name]
+            params = scaler_params[name]
             arr = np.array(values, dtype=np.float64)
             if params["transform"] == "log":
                 arr = np.log(np.clip(arr, 1e-9, None))
@@ -312,13 +366,13 @@ class AnalysisProcessor(processor.ProcessorABC):
             return np.clip(arr, 0.0, 1.0).astype(np.float32)
 
         feature_matrix = np.column_stack([
-            scale(feat, ak.to_numpy(ak.fill_none(dense_variables_dict[feat][mask], -1.0)))
-            for feat in self._scaler_params["_training_features"]
+            scale(feat, ak.to_numpy(ak.fill_none(dense_variables_dict[feat], -1.0)))
+            for feat in scaler_params["_training_features"]
         ])
 
         features_tensor = torch.from_numpy(feature_matrix).to(self._device)
         with torch.no_grad():
-            logits = self._model(features_tensor)
+            logits = self._models[model](features_tensor)
             if logits.ndim == 1:
                 logits = logits.unsqueeze(-1)
             scores = torch.sigmoid(logits).cpu().numpy()[:, 0]
@@ -342,13 +396,44 @@ class AnalysisProcessor(processor.ProcessorABC):
         fatjets = events.fatjet
         vbsjets = events.vbs
 
+        # Identify the kind of of chunk that this is (note this check assumes all events in this chunk are of the same kind, should be true)
+        isSig  = events.kind[0]=="sig"
+        isData = events.kind[0]=="data"
+
+        # Put the relevant tagging scores in fatjets object (this should be in RDF in the future)
+        fatjets["gptHvsQCD"] = fatjets.globalParT3_Xbb / (fatjets.globalParT3_Xbb + fatjets.globalParT3_QCD)
+        fatjets["gptWvsQCD"] = (fatjets.globalParT3_Xqq/3 + fatjets.globalParT3_Xcs) / (fatjets.globalParT3_Xqq/3 + fatjets.globalParT3_Xcs + fatjets.globalParT3_QCD)
+        fatjets["gptZvsQCD"] = (fatjets.globalParT3_Xbb + fatjets.globalParT3_Xcc + fatjets.globalParT3_Xqq) / (fatjets.globalParT3_Xbb + fatjets.globalParT3_Xcc + fatjets.globalParT3_Xqq + fatjets.globalParT3_QCD)
+        fatjets["gptVvsQCD"] = ak.where(fatjets.gptZvsQCD>fatjets.gptWvsQCD,fatjets.gptZvsQCD,fatjets.gptWvsQCD) # Max of the W and Z score
+        gpt_denom_sf  = np.exp(fatjets.gptHvsQCD) + np.exp(fatjets.gptWvsQCD) + np.exp(fatjets.gptZvsQCD)
+        gpt_denom_tot = fatjets.gptHvsQCD + fatjets.gptWvsQCD + fatjets.gptZvsQCD
+        fatjets["gpt_Hsf"] = np.exp(fatjets.gptHvsQCD) / gpt_denom_sf
+        fatjets["gpt_Wsf"] = np.exp(fatjets.gptWvsQCD) / gpt_denom_sf
+        fatjets["gpt_Zsf"] = np.exp(fatjets.gptZvsQCD) / gpt_denom_sf
+        fatjets["gpt_Hfrac"] = fatjets.gptHvsQCD / gpt_denom_tot
+        fatjets["gpt_Wfrac"] = fatjets.gptWvsQCD / gpt_denom_tot
+        fatjets["gpt_Zfrac"] = fatjets.gptZvsQCD / gpt_denom_tot
+
         # Form the collection of non-vbs jets by masking out the vbs ones
         mask_nvbsjet = (ak.local_index(jets)!=vbsjets.jet1_idx) & (ak.local_index(jets)!=vbsjets.jet2_idx)
         nvbsjets = jets[mask_nvbsjet]
 
-        # Kind of of chunk (note this check assumes all events in this chunk are of the same kind, should be true)
-        isSig  = events.kind[0]=="sig"
-        isData = events.kind[0]=="data"
+        # Grab the vbs jet objects
+        vbs1 = ak.flatten(jets[ak.local_index(jets)==vbsjets.jet1_idx])
+        vbs2 = ak.flatten(jets[ak.local_index(jets)==vbsjets.jet2_idx])
+
+        # "4-vector" for met
+        met4 = ak.zip(
+            {
+                "pt": met.pt,
+                "eta": ak.zeros_like(met.pt),
+                "phi": met.phi,
+                "mass": ak.zeros_like(met.pt),
+            },
+            with_name="PtEtaPhiMLorentzVector",
+            behavior=met.behavior,
+        )
+
 
         # An array of lenght events that is just 1 for each event
         events["nom"] = ak.ones_like(met.pt)
@@ -378,6 +463,17 @@ class AnalysisProcessor(processor.ProcessorABC):
         nleps = ak.num(l_vvh_t)
         abs_ch_sum_3l = abs(l0.charge + l1.charge + l2.charge)
 
+        # Get leptons into other types, why do we need to do this :/
+        l_vvh_t_vecsLZ = to_vec(l_vvh_t,"PtEtaPhiMLorentzVector")  # convert the whole collection first
+        l_vvh_t_vecsLZ_padded = ak.pad_none(l_vvh_t_vecsLZ, 4)
+        l0vLZ = l_vvh_t_vecsLZ_padded[:, 0]
+        l1vLZ = l_vvh_t_vecsLZ_padded[:, 1]
+        l_vvh_t_vecs = to_vec(l_vvh_t)  # convert the whole collection first
+        l_vvh_t_vecs_padded = ak.pad_none(l_vvh_t_vecs, 4)
+        l0v = l_vvh_t_vecs_padded[:, 0]
+        l1v = l_vvh_t_vecs_padded[:, 1]
+
+
 
         ######### Normalization and weights ###########
 
@@ -389,23 +485,19 @@ class AnalysisProcessor(processor.ProcessorABC):
 
         #################### Jets ####################
 
-        # Fat jets
-        goodfatjets = fatjets
-
-        # Clean with dr (though another option is to use jetIdx)
-        cleanedJets = os_ec.get_cleaned_collection(l_vvh_t,jets) # Clean against leps
-        cleanedJets = os_ec.get_cleaned_collection(goodfatjets,cleanedJets,drcut=0.8) # Clean against fat jets
-        #cleanedJets = jets
-
-        # Selecting jets and cleaning them (already in RDF)
-        goodJets = cleanedJets[(abs(cleanedJets.eta) <= 2.4)]
+        # Jet selection
+        #cleanedJets = os_ec.get_cleaned_collection(l_vvh_t,jets) # Clean against leps
+        #cleanedJets = os_ec.get_cleaned_collection(fatjets,cleanedJets,drcut=0.8) # Clean against fat jets
+        cleanedJets = jets
+        goodJets = cleanedJets
+        goodJets_central = cleanedJets[(abs(cleanedJets.eta) <= 2.4)]
         goodJets_forward = cleanedJets[(abs(cleanedJets.eta) > 2.4)]
 
         # Count jets
         njets = ak.num(goodJets)
         njets_forward = ak.num(goodJets_forward)
-        njets_tot = njets + njets_forward
-        nfatjets = ak.num(goodfatjets)
+        njets_central = ak.num(goodJets_central)
+        nfatjets = ak.num(fatjets)
         ht = ak.sum(goodJets.pt,axis=-1)
 
         goodJets_ptordered = goodJets[ak.argsort(goodJets.pt,axis=-1,ascending=False)]
@@ -420,33 +512,26 @@ class AnalysisProcessor(processor.ProcessorABC):
         j0forward = goodJets_forward_ptordered_padded[:,0]
         j1forward = goodJets_forward_ptordered_padded[:,1]
 
-        goodJetsCentFwd = ak.with_name(ak.concatenate([goodJets,goodJets_forward],axis=1),'PtEtaPhiMCollection')
-        goodJetsCentFwd_ptordered = goodJetsCentFwd[ak.argsort(goodJetsCentFwd.pt,axis=-1,ascending=False)]
-        goodJetsCentFwd_ptordered_padded = ak.pad_none(goodJetsCentFwd_ptordered, 4)
-        j0any = goodJetsCentFwd_ptordered_padded[:,0]
-        j1any = goodJetsCentFwd_ptordered_padded[:,1]
-        j2any = goodJetsCentFwd_ptordered_padded[:,2]
-        j3any = goodJetsCentFwd_ptordered_padded[:,3]
+        goodJets_central_ptordered = goodJets_central[ak.argsort(goodJets_central.pt,axis=-1,ascending=False)]
+        goodJets_central_ptordered_padded = ak.pad_none(goodJets_central_ptordered, 4)
+        j0cent = goodJets_central_ptordered_padded[:,0]
+        j1cent = goodJets_central_ptordered_padded[:,1]
+        j2cent = goodJets_central_ptordered_padded[:,2]
+        j3cent = goodJets_central_ptordered_padded[:,3]
 
-        goodfatjets_ptordered = goodfatjets[ak.argsort(goodfatjets.pt,axis=-1,ascending=False)]
+        goodfatjets_ptordered = fatjets[ak.argsort(fatjets.pt,axis=-1,ascending=False)]
         goodfatjets_ptordered_padded = ak.pad_none(goodfatjets_ptordered, 2)
         fj0 = goodfatjets_ptordered_padded[:,0]
         fj1 = goodfatjets_ptordered_padded[:,1]
 
-        scalarptsum_jetCentFwd = ak.sum(goodJetsCentFwd.pt,axis=-1)
-        scalarptsum_jetCent = ak.sum(goodJets.pt,axis=-1)
+        scalarptsum_jet = ak.sum(goodJets.pt,axis=-1)
+        scalarptsum_jetCent = ak.sum(goodJets_central.pt,axis=-1)
         scalarptsum_jetFwd = ak.sum(goodJets_forward.pt,axis=-1)
 
-        mjjjany  = ak.where(njets_tot>=3, (j0any+j1any+j2any).mass, -1)
-        mjjjcnt  = ak.where(njets>=3, (j0+j1+j2).mass, -1)
-        mjjjjany = ak.where(njets_tot>=4, (j0any+j1any+j2any+j3any).mass, -1)
-        mjjjjcnt = ak.where(njets>=4, (j0+j1+j2+j3).mass, -1)
-
-        l0v = to_vec(l0)
-        mljjjany  = ak.where(njets_tot>=3, (l0v + j0any+j1any+j2any).mass, -1)
-        mljjjcnt  = ak.where(njets>=3, (l0v + j0+j1+j2).mass, -1)
-        mljjjjany = ak.where(njets_tot>=4, (l0v + j0any+j1any+j2any+j3any).mass, -1)
-        mljjjjcnt = ak.where(njets>=4, (l0v + j0+j1+j2+j3).mass, -1)
+        mjjjany  = ak.where(njets>=3, (j0+j1+j2).mass, -1)
+        mjjjcnt  = ak.where(njets>=3, (j0cent+j1cent+j2cent).mass, -1)
+        #mljjjany  = ak.where(njets>=3, (l0+j0+j1+j2).mass, -1)
+        mljjjany  = ak.where(njets>=3, (l0v + j0+j1+j2).mass, -1)
 
 
         ### Bjets ###
@@ -473,10 +558,6 @@ class AnalysisProcessor(processor.ProcessorABC):
 
         j0forward_eta = ak.where(njets_forward>0,j0forward.eta,-1)
 
-        j0any_pt = j0any.pt
-
-        mass_j0anyj1any = (j0any+j1any).mass
-
         mass_j0fwdj1fwd = ak.where(njets_forward>1,(j0forward+j1forward).mass,-1)
 
         # Count lepton pairs
@@ -485,7 +566,7 @@ class AnalysisProcessor(processor.ProcessorABC):
         n_ll_sfos = ak.num(ll_pairs[sfos_mask])
 
         # Find the mjj of the pair of jets (central + fwd) that have the min delta R
-        jj_pairs = ak.combinations(goodJetsCentFwd_ptordered_padded, 2, fields=["j0", "j1"] )
+        jj_pairs = ak.combinations(goodJets_ptordered_padded, 2, fields=["j0", "j1"] )
         jj_pairs_dr = jj_pairs.j0.delta_r(jj_pairs.j1)
         jj_pairs_idx_mindr = ak.argmin(jj_pairs_dr,axis=1,keepdims=True)
         jj_pairs_atmindr = jj_pairs[jj_pairs_idx_mindr]
@@ -493,8 +574,8 @@ class AnalysisProcessor(processor.ProcessorABC):
         jj_pairs_atmindr_mjj = ak.flatten(ak.fill_none(jj_pairs_atmindr_mjj,-999)) # Replace Nones, flatten (so e.g. [[None],[x],[y]] -> [-999,x,y])
 
         # Find jet triplets clost to top mass
-        jetall_triplets = ak.combinations(goodJetsCentFwd_ptordered_padded, 3, fields=["j0", "j1", "j2"] )
-        jetcnt_triplets = ak.combinations(goodJets_ptordered_padded,        3, fields=["j0", "j1", "j2"] )
+        jetall_triplets = ak.combinations(goodJets_ptordered_padded, 3, fields=["j0", "j1", "j2"] )
+        jetcnt_triplets = ak.combinations(goodJets_central_ptordered_padded, 3, fields=["j0", "j1", "j2"] )
         jjjall_4vec = jetall_triplets.j0 + jetall_triplets.j1 + jetall_triplets.j2
         jjjcnt_4vec = jetcnt_triplets.j0 + jetcnt_triplets.j1 + jetcnt_triplets.j2
         tpeak_jall_idx = ak.argmin(abs(jjjall_4vec.mass - 173),keepdims=True,axis=1)
@@ -506,11 +587,13 @@ class AnalysisProcessor(processor.ProcessorABC):
         dr_l0l1 = l0.delta_r(l1)
         scalarptsum_lep = ak.sum(l_vvh_t.pt,axis=-1)
         scalarptsum_lepmet = scalarptsum_lep + met.pt
-        scalarptsum_lepmetFJ = scalarptsum_lep + met.pt + fj0.pt
-        scalarptsum_lepmetFJ10 = scalarptsum_lep + met.pt + fj0.pt + fj1.pt
-        scalarptsum_lepmetalljets = scalarptsum_lep + met.pt + scalarptsum_jetCentFwd
+        scalarptsum_lepmetFJ0 = scalarptsum_lep + met.pt + fj0.pt
+        scalarptsum_lepmetFJ01 = scalarptsum_lep + met.pt + fj0.pt + fj1.pt
+        scalarptsum_lepmetalljets = scalarptsum_lep + met.pt + scalarptsum_jet
         scalarptsum_lepmetcentjets = scalarptsum_lep + met.pt + scalarptsum_jetCent
         scalarptsum_lepmetfwdjets = scalarptsum_lep + met.pt + scalarptsum_jetFwd
+        scalarptsum_lepmetvbsFJ0 = scalarptsum_lep + met.pt + vbs1.pt + vbs2.pt + fj0.pt
+        vectorsum_lepmetvbsFJ0_pt = (l0v + l1v + vbs1 + vbs2 + met4 + fj0).pt
 
         # lb pairs (i.e. always one lep, one bjet)
         lb_pairs = ak.cartesian({"l":to_vec(l_vvh_t),"j": bjetsm})
@@ -522,8 +605,15 @@ class AnalysisProcessor(processor.ProcessorABC):
         ljnvbs_pairs = ak.cartesian({"l":to_vec(l_vvh_t),"j": nvbsjets})
         dr_lj_min     = ak.min(lj_pairs["l"].delta_r(lj_pairs["j"]),axis=-1)
         dr_lj_max     = ak.max(lj_pairs["l"].delta_r(lj_pairs["j"]),axis=-1)
+        mass_lj_min   = ak.min((lj_pairs["l"]+lj_pairs["j"]).mass,axis=-1)
+        mass_lj_max   = ak.max((lj_pairs["l"]+lj_pairs["j"]).mass,axis=-1)
         dr_ljnvbs_min = ak.min(ljnvbs_pairs["l"].delta_r(ljnvbs_pairs["j"]),axis=-1)
         dr_ljnvbs_max = ak.max(ljnvbs_pairs["l"].delta_r(ljnvbs_pairs["j"]),axis=-1)
+
+        # FJj pairs (i.e. always one FJ, one jet)
+        FJj_pairs     = ak.cartesian({"fj":fatjets,"j": jets})
+        mass_jFJ_min   = ak.min((FJj_pairs["fj"]+FJj_pairs["j"]).mass,axis=-1)
+        mass_jFJ_max   = ak.max((FJj_pairs["fj"]+FJj_pairs["j"]).mass,axis=-1)
 
         bjets_ptordered = bjetsl[ak.argsort( bjetsl.pt,axis=-1,ascending=False)]
         bjets_ptordered_padded = ak.pad_none(bjets_ptordered, 2)
@@ -548,16 +638,16 @@ class AnalysisProcessor(processor.ProcessorABC):
         bmbscore1 = bjetsm_bscoreordered_padded[:,1]
         mass_bmbscore0bmbscore1 = ak.fill_none((bmbscore0+bmbscore1).mass,0)
 
-        # Variables related to leading b jet score of central jets
-        centraljets_bscoreordered = goodJets_ptordered_padded[ak.argsort(goodJets_ptordered_padded.btagDeepFlavB,axis=-1,ascending=False)]
-        jbscore0 = centraljets_bscoreordered[:,0]
-        jbscore1 = centraljets_bscoreordered[:,1]
+        # Variables related to leading b jet score of jets
+        jets_bscoreordered = goodJets_ptordered_padded[ak.argsort(goodJets_ptordered_padded.btagDeepFlavB,axis=-1,ascending=False)]
+        jbscore0 = jets_bscoreordered[:,0]
+        jbscore1 = jets_bscoreordered[:,1]
         mass_jbscore0jbscore1 = ak.fill_none((jbscore0+jbscore1).mass,0)
         jbscore0_bscore = ak.fill_none(jbscore0.btagDeepFlavB,0)
         jbscore1_bscore = ak.fill_none(jbscore1.btagDeepFlavB,0)
 
         # Mjj max from any jets
-        jjCentFwd_pairs = ak.combinations( goodJetsCentFwd_ptordered_padded, 2, fields=["j0", "j1"] )
+        jjCentFwd_pairs = ak.combinations( goodJets_ptordered_padded, 2, fields=["j0", "j1"] )
         mjj_max_any     = ak.fill_none(ak.max((jjCentFwd_pairs.j0 + jjCentFwd_pairs.j1).mass,axis=-1),0)
         absdeta_max_any = ak.fill_none(ak.max(abs(jjCentFwd_pairs.j0.eta - jjCentFwd_pairs.j1.eta),axis=-1),0)
 
@@ -601,22 +691,23 @@ class AnalysisProcessor(processor.ProcessorABC):
         abs_pdgid_sum = ak.fill_none(ak.where(nleps==3,abs(l0.pdgId) + abs(l1.pdgId) + abs(l2.pdgId),abs(l0.pdgId) + abs(l1.pdgId)),0)
 
 
-
         # Put the variables we'll plot into a dictionary for easy access later
         dense_variables_dict = {
 
             "met" : met.pt,
             "metphi" : met.phi,
             "scalarptsum_lep" : scalarptsum_lep,
-            "scalarptsum_jetCentFwd" : scalarptsum_jetCentFwd,
+            "scalarptsum_jet" : scalarptsum_jet,
             "scalarptsum_jetCent" : scalarptsum_jetCent,
             "scalarptsum_jetFwd" : scalarptsum_jetFwd,
             "scalarptsum_lepmet" : scalarptsum_lepmet,
-            "scalarptsum_lepmetFJ" : scalarptsum_lepmetFJ,
-            "scalarptsum_lepmetFJ10" : scalarptsum_lepmetFJ10,
+            "scalarptsum_lepmetFJ0" : scalarptsum_lepmetFJ0,
+            "scalarptsum_lepmetFJ01" : scalarptsum_lepmetFJ01,
             "scalarptsum_lepmetalljets" : scalarptsum_lepmetalljets,
             "scalarptsum_lepmetcentjets" : scalarptsum_lepmetcentjets,
             "scalarptsum_lepmetfwdjets" : scalarptsum_lepmetfwdjets,
+            "scalarptsum_lepmetvbsFJ0" : scalarptsum_lepmetvbsFJ0,
+            "vectorsum_lepmetvbsFJ0_pt" : vectorsum_lepmetvbsFJ0_pt,
             "l0_pt"  : l0.pt,
             "l0_eta" : l0.eta,
             "l0_phi" : l0.phi,
@@ -625,8 +716,14 @@ class AnalysisProcessor(processor.ProcessorABC):
             "l1_phi" : l1.phi,
             "l2_pt"  : l2.pt,
             "l2_eta" : l2.eta,
+            "l2_phi" : l2.phi,
             "mass_l0l1" : mass_l0l1,
             "dr_l0l1" : dr_l0l1,
+            "pt_l0l1" : (l0+l1).pt,
+            "absdphi_l0l1" : abs(l0.delta_phi(l1)),
+            "absdphi_lepmet" : abs(met4.delta_phi(l0+l1)),
+            "absdphi_FJ0lepmet" : abs(fj0.delta_phi(met4+l0vLZ+l1vLZ)),
+            "dr_lepmet" : met4.delta_r(l0+l1),
             "l0_iso"     : l0.pfRelIso03_all,
             "l0_miniiso" : l0.miniPFRelIso_all,
             "l1_iso"     : l1.pfRelIso03_all,
@@ -634,17 +731,17 @@ class AnalysisProcessor(processor.ProcessorABC):
             "l2_iso"     : l2.pfRelIso03_all,
             "l2_miniiso" : l2.miniPFRelIso_all,
 
-            "j0central_pt"  : j0.pt,
-            "j0central_abseta" : abs(j0.eta),
-            "j0central_phi" : j0.phi,
+            "j0central_pt"  : j0cent.pt,
+            "j0central_eta" : j0cent.eta,
+            "j0central_phi" : j0cent.phi,
 
             "j0forward_pt"  : j0forward.pt,
-            "j0forward_abseta" : abs(j0forward_eta),
+            "j0forward_eta" : j0forward_eta,
             "j0forward_phi" : j0forward.phi,
 
-            "j0any_pt"  : j0any_pt,
-            "j0any_abseta" : abs(j0any.eta),
-            "j0any_phi" : j0any.phi,
+            "j0_pt"  : j0.pt,
+            "j0_eta" : j0.eta,
+            "j0_phi" : j0.phi,
 
             "nleps" : nleps,
             "njets" : njets,
@@ -658,24 +755,24 @@ class AnalysisProcessor(processor.ProcessorABC):
 
             "nfatjets" : nfatjets,
             "njets_forward" : njets_forward,
-            "njets_tot" : njets_tot,
+            "njets_central" : njets_central,
             "fj0_pt" : fj0.pt,
             "fj0_mass" : fj0.mass,
             "fj0_msoftdrop" : fj0.msoftdrop,
-            "fj0_abseta" : abs(fj0.eta),
+            "fj0_eta" : fj0.eta,
             "fj0_phi" : fj0.phi,
 
             "dr_fj0l0" : fj0.delta_r(l0),
             "dr_j0fwdj1fwd" : j0forward.delta_r(j1forward),
-            "dr_j0centj1cent" : j0.delta_r(j1),
-            "dr_j0anyj1any" : j0any.delta_r(j1any),
+            "dr_j0centj1cent" : j0cent.delta_r(j1cent),
+            "dr_j0j1" : j0.delta_r(j1),
             "absdphi_j0fwdj1fwd"   : abs(j0forward.delta_phi(j1forward)),
-            "absdphi_j0centj1cent" : abs(j0.delta_phi(j1)),
-            "absdphi_j0anyj1any"   : abs(j0any.delta_phi(j1any)),
+            "absdphi_j0centj1cent" : abs(j0cent.delta_phi(j1cent)),
+            "absdphi_j0j1"   : abs(j0.delta_phi(j1)),
 
             "mass_j0centj1cent" : mass_j0centj1cent,
             "mass_j0fwdj1fwd" : mass_j0fwdj1fwd,
-            "mass_j0anyj1any" : mass_j0anyj1any,
+            "mass_j0j1" : (j0+j1).mass,
 
             "mass_b0b1" : mass_b0b1,
 
@@ -687,6 +784,16 @@ class AnalysisProcessor(processor.ProcessorABC):
             "fj0_pNetWvsQCD"   : fj0_pNetWvsQCD,
             "fj0_pNetZvsQCD"   : fj0_pNetZvsQCD,
             "fj0_mparticlenet" : fj0_mparticlenet,
+            "fj0_gptHvsQCD"    : fj0.gptHvsQCD,
+            "fj0_gptWvsQCD"    : fj0.gptWvsQCD,
+            "fj0_gptZvsQCD"    : fj0.gptZvsQCD,
+            "fj0_gptVvsQCD"    : fj0.gptVvsQCD,
+            "fj0_gpt_Hsf"      : fj0.gpt_Hsf,
+            "fj0_gpt_Wsf"      : fj0.gpt_Wsf,
+            "fj0_gpt_Zsf"      : fj0.gpt_Zsf,
+            "fj0_gpt_Hfrac"    : fj0.gpt_Hfrac,
+            "fj0_gpt_Wfrac"    : fj0.gpt_Wfrac,
+            "fj0_gpt_Zfrac"    : fj0.gpt_Zfrac,
 
             "jj_pairs_atmindr_mjj" : jj_pairs_atmindr_mjj,
 
@@ -711,16 +818,19 @@ class AnalysisProcessor(processor.ProcessorABC):
 
             "mjjjany" : mjjjany,
             "mjjjcnt" : mjjjcnt,
-            "mjjjjany" : mjjjjany,
-            "mjjjjcnt" : mjjjjcnt,
 
             "mljjjany" : mljjjany,
-            "mljjjcnt" : mljjjcnt,
-            "mljjjjany" : mljjjjany,
-            "mljjjjcnt" : mljjjjcnt,
 
             "mlb_min" : mlb_min,
             "mlb_max" : mlb_max,
+
+            "mass_jFJ_min" :  mass_jFJ_min,
+            "mass_jFJ_max" :  mass_jFJ_max,
+            "mass_lj_min" :  mass_lj_min,
+            "mass_lj_max" :  mass_lj_max,
+
+            "mass_jFJ_min" :  mass_jFJ_min,
+            "mass_jFJ_max" :  mass_jFJ_max,
 
             "dr_lj_min" : dr_lj_min,
             "dr_lj_max" : dr_lj_max,
@@ -741,13 +851,22 @@ class AnalysisProcessor(processor.ProcessorABC):
             "vbs_absdetajj" : vbsjets.detajj,
             "vbs_score"  : vbsjets.score,
 
+            "vbs1_pt": vbs1.pt,
+            "vbs2_pt": vbs2.pt,
+            "vbs1_eta": vbs1.eta,
+            "vbs2_eta": vbs2.eta,
+            "vbs1_phi": vbs1.phi,
+            "vbs2_phi": vbs2.phi,
+
         }
 
         # For ABCDnet evaluations
         # This must come after dense_variables_dict since pass all vars from dense_variables_dict to evaluation since any/all might be needed (depending on which model we're using)
         # Once we finish evaluating, add the score to the dense_variables_dict too
-        dnn_score = self._run_abcd_inference(events, pass_through, dense_variables_dict)
-        dense_variables_dict["dnn_score"] = dnn_score
+        dnn_score_2lH = self._run_abcd_inference(events, dense_variables_dict,"2lH")
+        dnn_score_2lV = self._run_abcd_inference(events, dense_variables_dict,"2lV")
+        dense_variables_dict["dnn_score_2lH"] = dnn_score_2lH
+        dense_variables_dict["dnn_score_2lV"] = dnn_score_2lV
 
 
         ### Lepton truth variables ###
@@ -805,16 +924,16 @@ class AnalysisProcessor(processor.ProcessorABC):
         is_os = l0.pdgId*l1.pdgId<0
         is_sf = abs(l0.pdgId) == abs(l1.pdgId)
 
-        is_2l = (n_lep_veto==2) & (nleps==2) & (l0.pt>25) & (l1.pt>15)
-        is_3l = (n_lep_veto==3) & (nleps==3) & (l0.pt>25) & (l1.pt>15) & (l2.pt>10)
-        #is_2l_mll12 = is_2l & (mll_min_afos>12)
-        is_3l_mll12 = is_3l & (mll_min_afos>12)
+        low_mll_cut_3l = ak.where(abs_ch_sum_3l==1,mll_min_afos>12,pass_through)
+        is_onZ = abs(mass_l0l1 - 91.1876) < 20
+
+        is_2l              = (n_lep_veto==2) & (nleps==2) & (l0.pt>25) & (l1.pt>15)
+        is_3l_prelowmllcut = (n_lep_veto==3) & (nleps==3) & (l0.pt>25) & (l1.pt>15) & (l2.pt>10)
+        is_3l = is_3l_prelowmllcut & low_mll_cut_3l
 
         is_VFJ       = (fj0_mparticlenet <= 100.) & (fj0_mparticlenet > 65)
         is_HFJ       = (fj0_mparticlenet >  110.) & (fj0_mparticlenet <= 150.)
         is_HFJTagHbb = (fj0_pNetHbbvsQCD > 0.95)
-
-        is_onZ = abs(mass_l0l1 - 91.1876) < 20
 
         selections.add("all_events", pass_through)
 
@@ -825,30 +944,39 @@ class AnalysisProcessor(processor.ProcessorABC):
         selections.add("2lOS",                                   is_2l & is_os)
         selections.add("2lOSSF",                                 is_2l & is_os & is_sf)
         selections.add("2lOSSF_nFJ1",                            is_2l & is_os & is_sf & (nfatjets==1))
+        selections.add("2lOSSF_nFJ1_massLo",                     is_2l & is_os & is_sf & (nfatjets==1) & (fj0_mparticlenet <  110))
+        selections.add("2lOSSF_nFJ1_massHi",                     is_2l & is_os & is_sf & (nfatjets==1) & (fj0_mparticlenet >= 110))
+        selections.add("2lOSSF_nFJ1_massLo_Zp2",                 is_2l & is_os & is_sf & (nfatjets==1) & (fj0_mparticlenet <  110) & (fj0.gptZvsQCD>0.2))
+        selections.add("2lOSSF_nFJ1_massHi_Zp2",                 is_2l & is_os & is_sf & (nfatjets==1) & (fj0_mparticlenet >= 110) & (fj0.gptZvsQCD>0.2))
+        selections.add("2lOSSF_nFJ1_massHi_Zp2_A",               is_2l & is_os & is_sf & (nfatjets==1) & (fj0_mparticlenet >= 110) & (fj0.gptZvsQCD>0.2) & (vbsjets.mjj>1560) & (dnn_score_2lH>0.88))
+        selections.add("2lOSSF_nFJ1_massLo_Zp2_A",               is_2l & is_os & is_sf & (nfatjets==1) & (fj0_mparticlenet <  110) & (fj0.gptZvsQCD>0.2) & (vbsjets.mjj>1080) & (dnn_score_2lH>0.73))
+        selections.add("2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5",         is_2l & is_os & is_sf & (nfatjets==1) & (fj0_mparticlenet >= 110) & (fj0.gptZvsQCD>0.5) & (fj0.gptHvsQCD>0.5) & (vbsjets.score>0.5))
+        selections.add("2lOSSF_nFJ1_massLo_Zp4VBSp6",            is_2l & is_os & is_sf & (nfatjets==1) & (fj0_mparticlenet <  110) & (fj0.gptZvsQCD>0.4) & (vbsjets.score>0.6))
+
         selections.add("2lOSSF_nFJ1_mjj1k",                      is_2l & is_os & is_sf & (nfatjets==1) & (vbsjets.mjj>1000))
         selections.add("2lOSSF_nFJ1_mjj1k_HFJ",                  is_2l & is_os & is_sf & (nfatjets==1) & (vbsjets.mjj>1000) & is_HFJ)
         selections.add("2lOSSF_nFJ1_mjj1k_HFJtag",               is_2l & is_os & is_sf & (nfatjets==1) & (vbsjets.mjj>1000) & is_HFJ & is_HFJTagHbb)
         selections.add("2lOSSF_nFJ1_mjj1k_HFJtag_nb0",           is_2l & is_os & is_sf & (nfatjets==1) & (vbsjets.mjj>1000) & is_HFJ & is_HFJTagHbb & (nbtagst==0))
 
-        selections.add("2lOSSF_nFJ1_HFJ",                            is_2l & is_os & is_sf & (nfatjets==1) & is_HFJ)
 
         ### 3l ###
 
+        selections.add("3l_prelowmllcut",                 is_3l_prelowmllcut)
         selections.add("3l",                              is_3l)
 
-        selections.add("3l_chsum3",                       is_3l       & (abs_ch_sum_3l==3))
-        selections.add("3l_chsum3_mjj500",                is_3l       & (abs_ch_sum_3l==3) & (vbsjets.mjj>500))
-        selections.add("3l_chsum3_mjj500_nb0",            is_3l       & (abs_ch_sum_3l==3) & (vbsjets.mjj>500) & (nbtagst==0))
+        selections.add("3l_chsum3",                       is_3l & (abs_ch_sum_3l==3))
+        selections.add("3l_chsum3_mjj500",                is_3l & (abs_ch_sum_3l==3) & (vbsjets.mjj>500))
+        selections.add("3l_chsum3_mjj500_nb0",            is_3l & (abs_ch_sum_3l==3) & (vbsjets.mjj>500) & (nbtagst==0))
 
-        selections.add("3l_chsum1",                       is_3l_mll12 & (abs_ch_sum_3l==1))
-        selections.add("3l_chsum1_nFJg0",                 is_3l_mll12 & (abs_ch_sum_3l==1) & (nfatjets>=1))
-        selections.add("3l_chsum1_nFJg0_mjj500",          is_3l_mll12 & (abs_ch_sum_3l==1) & (nfatjets>=1) & (vbsjets.mjj>500))
-        selections.add("3l_chsum1_nFJ0",                  is_3l_mll12 & (abs_ch_sum_3l==1) & (nfatjets==0))
-        selections.add("3l_chsum1_nFJ0_nSFOSg0",          is_3l_mll12 & (abs_ch_sum_3l==1) & (nfatjets==0) & (n_ll_sfos>=1))
-        selections.add("3l_chsum1_nFJ0_nSFOSg0_mjj2k",    is_3l_mll12 & (abs_ch_sum_3l==1) & (nfatjets==0) & (n_ll_sfos>=1) & (vbsjets.mjj>2000))
-        selections.add("3l_chsum1_nFJ0_nSFOS0",           is_3l_mll12 & (abs_ch_sum_3l==1) & (nfatjets==0) & (n_ll_sfos==0))
-        selections.add("3l_chsum1_nFJ0_nSFOS0_mjj1k",     is_3l_mll12 & (abs_ch_sum_3l==1) & (nfatjets==0) & (n_ll_sfos==0) & (vbsjets.mjj>1000))
-        selections.add("3l_chsum1_nFJ0_nSFOS0_mjj1k_nb0", is_3l_mll12 & (abs_ch_sum_3l==1) & (nfatjets==0) & (n_ll_sfos==0) & (vbsjets.mjj>1000) & (nbtagst==0))
+        selections.add("3l_chsum1",                       is_3l & (abs_ch_sum_3l==1))
+        selections.add("3l_chsum1_nFJg0",                 is_3l & (abs_ch_sum_3l==1) & (nfatjets>=1))
+        selections.add("3l_chsum1_nFJg0_mjj500",          is_3l & (abs_ch_sum_3l==1) & (nfatjets>=1) & (vbsjets.mjj>500))
+        selections.add("3l_chsum1_nFJ0",                  is_3l & (abs_ch_sum_3l==1) & (nfatjets==0))
+        selections.add("3l_chsum1_nFJ0_nSFOSg0",          is_3l & (abs_ch_sum_3l==1) & (nfatjets==0) & (n_ll_sfos>=1))
+        selections.add("3l_chsum1_nFJ0_nSFOSg0_mjj2k",    is_3l & (abs_ch_sum_3l==1) & (nfatjets==0) & (n_ll_sfos>=1) & (vbsjets.mjj>2000))
+        selections.add("3l_chsum1_nFJ0_nSFOS0",           is_3l & (abs_ch_sum_3l==1) & (nfatjets==0) & (n_ll_sfos==0))
+        selections.add("3l_chsum1_nFJ0_nSFOS0_mjj1k",     is_3l & (abs_ch_sum_3l==1) & (nfatjets==0) & (n_ll_sfos==0) & (vbsjets.mjj>1000))
+        selections.add("3l_chsum1_nFJ0_nSFOS0_mjj1k_nb0", is_3l & (abs_ch_sum_3l==1) & (nfatjets==0) & (n_ll_sfos==0) & (vbsjets.mjj>1000) & (nbtagst==0))
 
 
         # Keep track of the cats we want to actually fill
@@ -859,34 +987,37 @@ class AnalysisProcessor(processor.ProcessorABC):
 
                 ### 2l OS SF 1FJ ###
 
-                "2l",
-                "2lOS",
-                "2lOSSF",
                 "2lOSSF_nFJ1",
-                "2lOSSF_nFJ1_mjj1k",
-                "2lOSSF_nFJ1_mjj1k_HFJ",
-                "2lOSSF_nFJ1_mjj1k_HFJtag",
-                "2lOSSF_nFJ1_mjj1k_HFJtag_nb0",
+                "2lOSSF_nFJ1_massLo",
+                "2lOSSF_nFJ1_massHi",
+                "2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5",
+                "2lOSSF_nFJ1_massLo_Zp4VBSp6",
 
-                "2lOSSF_nFJ1_HFJ",
+                # From cut based optimization
+                #"2lOSSF_nFJ1_mjj1k",
+                #"2lOSSF_nFJ1_mjj1k_HFJ",
+                #"2lOSSF_nFJ1_mjj1k_HFJtag",
+                #"2lOSSF_nFJ1_mjj1k_HFJtag_nb0",
+                #"2lOSSF_nFJ1_HFJ",
 
-                ### 3l ###
+                #### 3l ###
 
+                "3l_prelowmllcut",
                 "3l",
 
+                # From cut based optimization
                 "3l_chsum3",
-                "3l_chsum3_mjj500",
-                "3l_chsum3_mjj500_nb0",
-
+                #"3l_chsum3_mjj500",
+                #"3l_chsum3_mjj500_nb0",
                 "3l_chsum1",
-                "3l_chsum1_nFJg0",
-                "3l_chsum1_nFJg0_mjj500",
-                "3l_chsum1_nFJ0",
-                "3l_chsum1_nFJ0_nSFOSg0",
-                "3l_chsum1_nFJ0_nSFOSg0_mjj2k",
-                "3l_chsum1_nFJ0_nSFOS0",
-                "3l_chsum1_nFJ0_nSFOS0_mjj1k",
-                "3l_chsum1_nFJ0_nSFOS0_mjj1k_nb0",
+                #"3l_chsum1_nFJg0",
+                #"3l_chsum1_nFJg0_mjj500",
+                #"3l_chsum1_nFJ0",
+                #"3l_chsum1_nFJ0_nSFOSg0",
+                #"3l_chsum1_nFJ0_nSFOSg0_mjj2k",
+                #"3l_chsum1_nFJ0_nSFOS0",
+                #"3l_chsum1_nFJ0_nSFOS0_mjj1k",
+                #"3l_chsum1_nFJ0_nSFOS0_mjj1k_nb0",
 
             ]
         }
@@ -948,27 +1079,44 @@ class AnalysisProcessor(processor.ProcessorABC):
 
         ######### Fill the 2d ABCDnet histo #########
 
-        #fill_abcd_2d = False  # At some point should make this an option
-        fill_abcd_2d = True # At some point should make this an option
+        fill_abcd_2d = False  # At some point should make this an option
+        #fill_abcd_2d = True # At some point should make this an option
+        vbs_mjj_flow = ak.where(vbsjets.mjj<self.mjj_cap,vbsjets.mjj,self.mjj_cap-0.01)
         if fill_abcd_2d:
-            #for sr_cat in cat_dict["lep_chan_lst"]:
-            for sr_cat in ["2lOSSF_nFJ1_HFJ"]:
-                all_cuts_mask = selections.all(sr_cat)
-                weight = weights_obj_base.weight(None)
-                mjj_max_any_flow = ak.where(mjj_max_any<self.mjj_max_any_cap,mjj_max_any,self.mjj_max_any_cap-1.0)
-                # Fill a 2d histo
-                abcd_axes_fill_info_dict = {
-                    "mjj_max_any"   : ak.fill_none(mjj_max_any_flow[all_cuts_mask],0), # Don't like this fill_none
-                    "dnn_score"     : ak.fill_none(dnn_score[all_cuts_mask],0),   # Don't like this fill_none
-                    "weight"        : ak.fill_none(weight[all_cuts_mask],0),      # Don't like this fill_none
-                    "process"       : histAxisName[all_cuts_mask],
-                    "category"      : sr_cat,
-                    #"lepflav"       : abs_pdgid_sum[all_cuts_mask],
-                }
-                self.accumulator["abcd_histo"].fill(**abcd_axes_fill_info_dict)
+            # Specify the regions to use for 2d hists (NOTE these are hard coded)
+            cat2lH = "2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5"
+            cat2lV = "2lOSSF_nFJ1_massLo_Zp2"
+            all_cuts_mask_H = selections.all(cat2lH)
+            all_cuts_mask_V = selections.all(cat2lV)
+            self.accumulator["abcd2d_2lH"].fill(
+                #vbs_score = vbsjets.score[all_cuts_mask_H],
+                vbs_mjj   = vbs_mjj_flow[all_cuts_mask_H],
+                dnn_score = dnn_score_2lH[all_cuts_mask_H],
+                weight    = weights_obj_base.weight(None)[all_cuts_mask_H],
+                process   = histAxisName[all_cuts_mask_H],
+                category  = cat2lH,
+            )
+            self.accumulator["abcd2d_2lV"].fill(
+                #vbs_score = vbsjets.score[all_cuts_mask_V],
+                vbs_mjj   = vbs_mjj_flow[all_cuts_mask_V],
+                dnn_score = dnn_score_2lV[all_cuts_mask_V],
+                weight    = weights_obj_base.weight(None)[all_cuts_mask_V],
+                process   = histAxisName[all_cuts_mask_V],
+                category  = cat2lV,
+            )
 
 
         ######### Fill 1d histos #########
+
+        # Checks of our input dicts
+        vlst = dense_variables_dict.keys()
+        hlst = self._dense_axes_dict.keys()
+        if len(vlst) != len(set(vlst)): raise Exception("Variable list has a repeat")
+        if len(hlst) != len(set(hlst)): raise Exception("Hist list has a repeat")
+        for x in vlst:
+            if x not in hlst: raise Exception(f"Hist list is missing: {x}")
+        #for x in hlst:
+        #    if x not in vlst: raise Exception(f"Var list is missing: {x}")
 
         wgt_correction_syst_lst = []
 

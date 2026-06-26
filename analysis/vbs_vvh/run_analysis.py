@@ -20,6 +20,68 @@ import topcoffea.modules.remote_environment as remote_environment
 LST_OF_KNOWN_EXECUTORS = ["futures","work_queue","iterative"]
 LST_OF_KNOWN_PROCESSORS = ["semilep","semilep_nano","simple_gen"]
 
+NN_VARS = [
+    "njets",
+    "njets_counts",
+
+    "l0_pt",
+    "l0_eta",
+    "l0_phi",
+    "l1_pt",
+    "l1_eta",
+    "l1_phi",
+
+    "fj0_pt",
+    "fj0_mass",
+    "fj0_msoftdrop",
+    "fj0_mparticlenet",
+    "fj0_eta",
+    "fj0_phi",
+
+    "fj0_gptHvsQCD",
+    "fj0_gptWvsQCD",
+    "fj0_gptZvsQCD",
+    "fj0_gptVvsQCD",
+    "fj0_gpt_Hsf",
+    "fj0_gpt_Wsf",
+    "fj0_gpt_Zsf",
+    "fj0_gpt_Hfrac",
+    "fj0_gpt_Wfrac",
+    "fj0_gpt_Zfrac",
+
+    "met",
+    "metphi",
+
+    "vbs_mjj",
+    "vbs_absdetajj",
+    "vbs_score",
+
+    "vbs1_pt",
+    "vbs2_pt",
+    "vbs1_eta",
+    "vbs2_eta",
+    "vbs1_phi",
+    "vbs2_phi",
+
+    "scalarptsum_lepmet",
+    "scalarptsum_lepmetFJ0",
+    "scalarptsum_lepmetvbsFJ0",
+    "vectorsum_lepmetvbsFJ0_pt",
+
+    "mass_l0l1",
+    "dr_l0l1" ,
+    "pt_l0l1" ,
+    "absdphi_l0l1",
+    "absdphi_lepmet",
+    "dr_lepmet",
+
+    "mass_jFJ_min",
+    "mass_jFJ_max",
+    "mass_lj_min",
+    "mass_lj_max",
+
+    "absdphi_FJ0lepmet",
+]
 
 if __name__ == '__main__':
 
@@ -98,6 +160,8 @@ if __name__ == '__main__':
     if args.hist_list == ["few"]:
         # Here we hardcode a reduced list of a few hists
         hist_lst = ["j0pt", "njets", "njets_counts", "nbtagsl", "nleps", "met", "l0pt", "abs_pdgid_sum"]
+    elif args.hist_list == ["nn"]:
+        hist_lst = NN_VARS
     else:
         # We want to specify a custom list
         # If we don't specify this argument, it will be None, and the processor will fill all hists
