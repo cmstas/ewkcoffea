@@ -222,7 +222,7 @@ class AnalysisProcessor(processor.ProcessorABC):
             #"ghiggs0_pt" : axis.Regular(180, 0, 1500, name="ghiggs0_pt", label="Gen higgs pt"),
             #"gvectorboson0_pt" : axis.Regular(180, 0, 1500, name="gvectorboson0_pt", label="Gen V pt"),
 
-            "mll_min_afos" : axis.Regular(180, 0, 50, name="mll_min_afos",  label="min mll of all OS pairs"),
+            "mll_min_afos" : axis.Regular(180, -2, 48, name="mll_min_afos",  label="min mll of all OS pairs"),
             "mll_z" : axis.Regular(180, 0, 150, name="mll_z",  label="mll of the pair of leptons closest to z"),
 
             "l0_truth"          : axis.Regular(36, -1, 34, name="l0_truth", label="l0 truth flag"),
@@ -924,15 +924,16 @@ class AnalysisProcessor(processor.ProcessorABC):
         is_os = l0.pdgId*l1.pdgId<0
         is_sf = abs(l0.pdgId) == abs(l1.pdgId)
 
-        is_2l = (n_lep_veto==2) & (nleps==2) & (l0.pt>25) & (l1.pt>15)
-        is_3l = (n_lep_veto==3) & (nleps==3) & (l0.pt>25) & (l1.pt>15) & (l2.pt>10)
-        is_3l_mll12 = is_3l & (mll_min_afos>12)
+        low_mll_cut_3l = ak.where(abs_ch_sum_3l==1,mll_min_afos>12,pass_through)
+        is_onZ = abs(mass_l0l1 - 91.1876) < 20
+
+        is_2l              = (n_lep_veto==2) & (nleps==2) & (l0.pt>25) & (l1.pt>15)
+        is_3l_prelowmllcut = (n_lep_veto==3) & (nleps==3) & (l0.pt>25) & (l1.pt>15) & (l2.pt>10)
+        is_3l = is_3l_prelowmllcut & low_mll_cut_3l
 
         is_VFJ       = (fj0_mparticlenet <= 100.) & (fj0_mparticlenet > 65)
         is_HFJ       = (fj0_mparticlenet >  110.) & (fj0_mparticlenet <= 150.)
         is_HFJTagHbb = (fj0_pNetHbbvsQCD > 0.95)
-
-        is_onZ = abs(mass_l0l1 - 91.1876) < 20
 
         selections.add("all_events", pass_through)
 
@@ -960,21 +961,22 @@ class AnalysisProcessor(processor.ProcessorABC):
 
         ### 3l ###
 
+        selections.add("3l_prelowmllcut",                 is_3l_prelowmllcut)
         selections.add("3l",                              is_3l)
 
-        selections.add("3l_chsum3",                       is_3l       & (abs_ch_sum_3l==3))
-        selections.add("3l_chsum3_mjj500",                is_3l       & (abs_ch_sum_3l==3) & (vbsjets.mjj>500))
-        selections.add("3l_chsum3_mjj500_nb0",            is_3l       & (abs_ch_sum_3l==3) & (vbsjets.mjj>500) & (nbtagst==0))
+        selections.add("3l_chsum3",                       is_3l & (abs_ch_sum_3l==3))
+        selections.add("3l_chsum3_mjj500",                is_3l & (abs_ch_sum_3l==3) & (vbsjets.mjj>500))
+        selections.add("3l_chsum3_mjj500_nb0",            is_3l & (abs_ch_sum_3l==3) & (vbsjets.mjj>500) & (nbtagst==0))
 
-        selections.add("3l_chsum1",                       is_3l_mll12 & (abs_ch_sum_3l==1))
-        selections.add("3l_chsum1_nFJg0",                 is_3l_mll12 & (abs_ch_sum_3l==1) & (nfatjets>=1))
-        selections.add("3l_chsum1_nFJg0_mjj500",          is_3l_mll12 & (abs_ch_sum_3l==1) & (nfatjets>=1) & (vbsjets.mjj>500))
-        selections.add("3l_chsum1_nFJ0",                  is_3l_mll12 & (abs_ch_sum_3l==1) & (nfatjets==0))
-        selections.add("3l_chsum1_nFJ0_nSFOSg0",          is_3l_mll12 & (abs_ch_sum_3l==1) & (nfatjets==0) & (n_ll_sfos>=1))
-        selections.add("3l_chsum1_nFJ0_nSFOSg0_mjj2k",    is_3l_mll12 & (abs_ch_sum_3l==1) & (nfatjets==0) & (n_ll_sfos>=1) & (vbsjets.mjj>2000))
-        selections.add("3l_chsum1_nFJ0_nSFOS0",           is_3l_mll12 & (abs_ch_sum_3l==1) & (nfatjets==0) & (n_ll_sfos==0))
-        selections.add("3l_chsum1_nFJ0_nSFOS0_mjj1k",     is_3l_mll12 & (abs_ch_sum_3l==1) & (nfatjets==0) & (n_ll_sfos==0) & (vbsjets.mjj>1000))
-        selections.add("3l_chsum1_nFJ0_nSFOS0_mjj1k_nb0", is_3l_mll12 & (abs_ch_sum_3l==1) & (nfatjets==0) & (n_ll_sfos==0) & (vbsjets.mjj>1000) & (nbtagst==0))
+        selections.add("3l_chsum1",                       is_3l & (abs_ch_sum_3l==1))
+        selections.add("3l_chsum1_nFJg0",                 is_3l & (abs_ch_sum_3l==1) & (nfatjets>=1))
+        selections.add("3l_chsum1_nFJg0_mjj500",          is_3l & (abs_ch_sum_3l==1) & (nfatjets>=1) & (vbsjets.mjj>500))
+        selections.add("3l_chsum1_nFJ0",                  is_3l & (abs_ch_sum_3l==1) & (nfatjets==0))
+        selections.add("3l_chsum1_nFJ0_nSFOSg0",          is_3l & (abs_ch_sum_3l==1) & (nfatjets==0) & (n_ll_sfos>=1))
+        selections.add("3l_chsum1_nFJ0_nSFOSg0_mjj2k",    is_3l & (abs_ch_sum_3l==1) & (nfatjets==0) & (n_ll_sfos>=1) & (vbsjets.mjj>2000))
+        selections.add("3l_chsum1_nFJ0_nSFOS0",           is_3l & (abs_ch_sum_3l==1) & (nfatjets==0) & (n_ll_sfos==0))
+        selections.add("3l_chsum1_nFJ0_nSFOS0_mjj1k",     is_3l & (abs_ch_sum_3l==1) & (nfatjets==0) & (n_ll_sfos==0) & (vbsjets.mjj>1000))
+        selections.add("3l_chsum1_nFJ0_nSFOS0_mjj1k_nb0", is_3l & (abs_ch_sum_3l==1) & (nfatjets==0) & (n_ll_sfos==0) & (vbsjets.mjj>1000) & (nbtagst==0))
 
 
         # Keep track of the cats we want to actually fill
@@ -1000,13 +1002,14 @@ class AnalysisProcessor(processor.ProcessorABC):
 
                 #### 3l ###
 
+                "3l_prelowmllcut",
                 "3l",
 
                 # From cut based optimization
-                #"3l_chsum3",
+                "3l_chsum3",
                 #"3l_chsum3_mjj500",
                 #"3l_chsum3_mjj500_nb0",
-                #"3l_chsum1",
+                "3l_chsum1",
                 #"3l_chsum1_nFJg0",
                 #"3l_chsum1_nFJg0_mjj500",
                 #"3l_chsum1_nFJ0",
