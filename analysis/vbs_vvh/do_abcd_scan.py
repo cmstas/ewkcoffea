@@ -292,6 +292,7 @@ def plot_mjj_score_slices_optimized(histo, tag, best_score_cut, constrain_var, o
     bkg_vals    = bkg_h.values(flow=False)
     n_score = len(score_edges) - 1
     best_score_bin = int(np.clip(np.searchsorted(score_edges, best_score_cut), 1, n_score - 1))
+
     def find_equal_yield_split(lo_bin, hi_bin):
         yields = bkg_vals[lo_bin:hi_bin, :].sum(axis=1)
         cumsum = np.cumsum(yields)
@@ -514,6 +515,7 @@ def plot_abcd_2d_snapshots(histo_sig, histo_dy, histo_ttbar, histo_abcdbkg, hist
     abcdbkg_vals = abcd_h.values(flow=False)
     allbkg_vals  = abcdbkg_vals + other_h.values(flow=False)
     sig_vals     = sig_h.values(flow=False)
+
     def _make_overview_plots(vals, cbar_label, fname_prefix):
         for scale, norm, suffix in [("linear", None, "lin"), ("log", matplotlib.colors.LogNorm(), "log")]:
             fig, ax = plt.subplots(figsize=(8, 6))
