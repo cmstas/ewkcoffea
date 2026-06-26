@@ -22,40 +22,39 @@ HTML_PC = "/home/users/kmohrman/ref_scripts/html_stuff/index.php"
 
 UNBLIND_CATS = [
     "all_events",
-    "2lOSSF_1fjx",
+    "2lOSSF_nFJ1",
     "3l",
 ]
 
 CAT_LST_2l = [
-    #"all_events",
-    #"2l",
-    #"2lOS",
-    #"2lOSSF",
+    "all_events",
     "2lOSSF_nFJ1",
+    #"2lOSSF_nFJ1_massHi",
+    #"2lOSSF_nFJ1_massLo",
     #"2lOSSF_nFJ1_HFJ",
-    "2lOSSF_nFJ1_mjj1k",
-    "2lOSSF_nFJ1_mjj1k_HFJ",
-    "2lOSSF_nFJ1_mjj1k_HFJtag",
-    "2lOSSF_nFJ1_mjj1k_HFJtag_nb0",
+    #"2lOSSF_nFJ1_mjj1k",
+    #"2lOSSF_nFJ1_mjj1k_HFJ",
+    #"2lOSSF_nFJ1_mjj1k_HFJtag",
+    #"2lOSSF_nFJ1_mjj1k_HFJtag_nb0",
 ]
 
 CAT_LST_3l = [
-    #"all_events",
+    "all_events",
     "3l",
 
-    "3l_chsum3",
-    "3l_chsum3_mjj500",
-    "3l_chsum3_mjj500_nb0",
+    #"3l_chsum3",
+    #"3l_chsum3_mjj500",
+    #"3l_chsum3_mjj500_nb0",
 
-    "3l_chsum1",
-    "3l_chsum1_nFJg0",
-    "3l_chsum1_nFJg0_mjj500",
-    "3l_chsum1_nFJ0",
-    "3l_chsum1_nFJ0_nSFOSg0",
-    "3l_chsum1_nFJ0_nSFOSg0_mjj2k",
-    "3l_chsum1_nFJ0_nSFOS0",
-    "3l_chsum1_nFJ0_nSFOS0_mjj1k",
-    "3l_chsum1_nFJ0_nSFOS0_mjj1k_nb0",
+    #"3l_chsum1",
+    #"3l_chsum1_nFJg0",
+    #"3l_chsum1_nFJg0_mjj500",
+    #"3l_chsum1_nFJ0",
+    #"3l_chsum1_nFJ0_nSFOSg0",
+    #"3l_chsum1_nFJ0_nSFOSg0_mjj2k",
+    #"3l_chsum1_nFJ0_nSFOS0",
+    #"3l_chsum1_nFJ0_nSFOS0_mjj1k",
+    #"3l_chsum1_nFJ0_nSFOS0_mjj1k_nb0",
 ]
 
 
@@ -193,18 +192,18 @@ GRP_DICT_FULL_R3 = {
     "VV": [
         "WWJJto2L2Nu-OS-noTop-EWK_TuneCP5_13p6TeV",
         "WWJJto2L2Nu-SS-noTop-EWK_TuneCP5_13p6TeV",
-        "WW_TuneCP5_13p6TeV",
+        #"WW_TuneCP5_13p6TeV",
         "WWto2L2Nu_TuneCP5_13p6TeV",
         "WWto4Q_TuneCP5_13p6TeV",
         "WWtoLNu2Q_TuneCP5_13p6TeV",
-        "WZ_TuneCP5_13p6TeV",
+        #"WZ_TuneCP5_13p6TeV",
         "WZto2L2Q_TuneCP5_13p6TeV",
         "WZto3LNu_TuneCP5_13p6TeV",
         "WZtoL3Nu_TuneCP5_13p6TeV",
         "WZtoLNu2Q_TuneCP5_13p6TeV",
         "ZZJJto4L-EWK_TuneCP5_13p6TeV",
         "ZZJJto4L-QCD_TuneCP5_13p6TeV",
-        "ZZ_TuneCP5_13p6TeV",
+        #"ZZ_TuneCP5_13p6TeV",
         "ZZto2L2Nu_TuneCP5_13p6TeV",
         "ZZto2L2Q_TuneCP5_13p6TeV",
         "ZZto2Nu2Q_TuneCP5_13p6TeV",
@@ -357,14 +356,14 @@ GRP_DICT_FULL_R2 = {
         "GluGluToContinToZZTo4tau_TuneCP5_13TeV",
         "GluGluZH_HToWWTo2L2Nu_TuneCP5_13TeV",
         "GluGluZH_HToWWTo2L2Nu_M-125_TuneCP5_13TeV",
-        "WZ_TuneCP5_13TeV",
+        #"WZ_TuneCP5_13TeV",
         "WZJJ_EWK_InclusivePolarization_TuneCP5_13TeV",
         "WZTo1L1Nu2Q_4f_TuneCP5_13TeV",
         "WZTo1L3Nu_4f_TuneCP5_13TeV",
         "WZTo2Q2L_mllmin4p0_TuneCP5_13TeV",
         "WZTo3LNu_TuneCP5_13TeV",
-        "WW_TuneCP5_13TeV",
-        "ZZ_TuneCP5_13TeV",
+        #"WW_TuneCP5_13TeV",
+        #"ZZ_TuneCP5_13TeV",
         "WWTo4Q_4f_TuneCP5_13TeV",
         "WWTo1L1Nu2Q_4f_TuneCP5_13TeV",
         "WWTo2L2Nu_TuneCP5_13TeV",
@@ -478,6 +477,105 @@ def get_yields_per_cat(histo_dict,var_name,grp_dict,year_name_lst_to_prepend, ca
         out_dict[cat]["Data/MC"] = [data/mc,None] # Don't bother propagating error
 
     return out_dict
+
+
+# Make data/mc figures, written by claude
+def make_data_mc_fig(histo_mc, histo_dat, histo_mc_sig, histo_mc_bkg, title="test", axisrangex=None):
+
+    fig, (ax1, ax2) = plt.subplots(
+        nrows=2,
+        ncols=1,
+        figsize=(7, 7),
+        gridspec_kw={"height_ratios": (3, 1)},
+        sharex=True
+    )
+    fig.subplots_adjust(hspace=.07)
+
+    # Plot the stack plot
+    histo_mc.plot1d(
+        stack=True,
+        histtype="fill",
+        ax=ax1,
+        zorder=10,
+    )
+
+    # Plot the data
+    if histo_dat is not None:
+        histo_dat.plot1d(
+            stack=False,
+            histtype="errorbar",
+            color="k",
+            ax=ax1,
+            zorder=11,
+        )
+
+    # Get MC sum and errors
+    histo_mc_sum = histo_mc[{"process_grp": sum}]
+    mc_arr = histo_mc_sum.values()
+    mc_err_arr = np.sqrt(histo_mc_sum.variances())
+    bin_edges_arr = histo_mc_sum.axes[0].edges
+    bin_centers_arr = histo_mc_sum.axes[0].centers
+
+    # Plot MC stat uncertainty band on main plot
+    err_p = np.append(mc_arr + mc_err_arr, 0)
+    err_m = np.append(mc_arr - mc_err_arr, 0)
+    ax1.fill_between(bin_edges_arr, err_m, err_p,
+                     step='post', facecolor='none', edgecolor='gray',
+                     alpha=0.5, linewidth=0.0, label='MC stat', hatch='/////', zorder=11)
+
+    # Compute data/MC ratio and error
+    yld_sig = sum(sum(histo_mc_sig.values(flow=True)))
+    yld_bkg = sum(sum(histo_mc_bkg.values(flow=True)))
+    yld_mc  = yld_sig + yld_bkg
+
+    dat_arr = histo_dat[{"process_grp": sum}].values()
+    dat_err_arr = np.sqrt(histo_dat[{"process_grp": sum}].variances())
+    yld_dat = sum(sum(histo_dat.values(flow=True)))
+
+    with np.errstate(divide='ignore', invalid='ignore'):
+        ratio = np.where(mc_arr > 0, dat_arr / mc_arr, np.nan)
+        ratio_err = np.where(mc_arr > 0, dat_err_arr / mc_arr, np.nan)
+        mc_rel_err_p = np.where(mc_arr > 0, 1.0 + mc_err_arr / mc_arr, np.nan)
+        mc_rel_err_m = np.where(mc_arr > 0, 1.0 - mc_err_arr / mc_arr, np.nan)
+
+    # Plot MC uncertainty band on ratio plot
+    mc_rel_err_p_plot = np.append(mc_rel_err_p, 0)
+    mc_rel_err_m_plot = np.append(mc_rel_err_m, 0)
+    ax2.fill_between(bin_edges_arr, mc_rel_err_m_plot, mc_rel_err_p_plot,
+                     step='post', facecolor='none', edgecolor='gray',
+                     alpha=0.5, linewidth=0.0, label='MC stat', hatch='/////')
+
+    # Plot data/MC ratio points
+    ax2.errorbar(bin_centers_arr, ratio, yerr=ratio_err,
+                 fmt='o', color='k', zorder=10)
+
+    # Reference line at 1
+    ax2.axhline(1.0, linestyle='-', color='k', linewidth=0.8)
+
+    # Text block
+    plt.text(0.15, 0.85, f"Sig. yield: {np.round(yld_sig, 2)}",                          fontsize=11, transform=fig.transFigure)
+    plt.text(0.15, 0.82, f"Bkg. yield: {np.round(yld_bkg, 2)}",                          fontsize=11, transform=fig.transFigure)
+    plt.text(0.15, 0.79, f"Data: {np.round(yld_dat, 2)}",                                fontsize=11, transform=fig.transFigure)
+    plt.text(0.15, 0.76, f"Data/MC: {np.round(yld_dat / yld_mc, 2) if yld_dat > 0 else 'N/A'}", fontsize=11, transform=fig.transFigure)
+
+    # Labels, legend, formatting
+    extr = ax1.legend(loc="upper left", bbox_to_anchor=(1, 1), fontsize="12", frameon=False)
+    extt = ax1.set_title(title)
+    ax1.set_xlabel(None)
+    ax1.autoscale(axis='y')
+    ax2.set_ylabel('Data / MC')
+    ax2.set_ylim(0.0, 2.0)
+    ax2.grid(True)
+
+    # Plot a dummy hist on ax2 to get the x axis label to show up
+    histo_mc.plot1d(alpha=0, ax=ax2)
+    ax2.get_legend().remove()
+
+    if axisrangex is not None:
+        ax1.set_xlim(axisrangex[0], axisrangex[1])
+        ax2.set_xlim(axisrangex[0], axisrangex[1])
+
+    return fig, (extt, extr)
 
 
 # Make the figures for the vvh study
@@ -875,7 +973,7 @@ def print_yields(histo_dict,grp_dict,cat_lst,years_to_prepend,roundat=None,print
 
 
 ### Make the plots ###
-def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend,cat_lst,lepflav_bin=None,save_dir_path="plots",make_cat_subdirs=True,vars_to_plot=None):
+def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend,cat_lst,lepflav_bin=None,save_dir_path="plots",make_cat_subdirs=True,vars_to_plot=None,mc_scale=1):
 
     #grouping_dict = append_years(grp_dict,year_name_lst_to_prepend) # For fromnano
     grouping_dict = copy.deepcopy(grp_dict)
@@ -898,7 +996,7 @@ def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend,cat_lst,lepflav_bin=
             if "fj1" in var: continue
             #if var not in ["njets","njets_counts","scalarptsum_lepmet"]: continue # TMP
             if "truth" in var: continue
-            if var == "abcd_histo": continue # This one is 2d, can't plot it here
+            if "abcd2d" in var: continue # This one is 2d, can't plot it here
 
             # Skip empty
             if len(histo_dict[var].values()) == 0: continue
@@ -920,6 +1018,12 @@ def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend,cat_lst,lepflav_bin=
             histo = plt_tools.group(histo,"process","process_grp",grouping_dict)
             histo = plt_tools.merge_overflow(histo)
 
+            # Scale MC if requested
+            if mc_scale != 1.0:
+                for grp in histo.axes["process_grp"]:
+                    if grp == "Data": continue
+                    histo = plt_tools.scale(histo, "process_grp", {grp: mc_scale})
+
             histo_mc  = histo[{"process_grp":sample_group_names_lst_mc}]
             histo_sig = histo[{"process_grp":["Signal"]}]
             #histo_dat = histo[{"process_grp":["Data"]}]
@@ -936,6 +1040,16 @@ def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend,cat_lst,lepflav_bin=
                 title=title
             )
 
+            # Make the data/MC figure
+            if histo_dat is not None:
+                fig_datamc, ax_datamc = make_data_mc_fig(
+                    histo_mc = histo_mc,
+                    histo_dat = histo_dat,
+                    histo_mc_sig = histo_sig,
+                    histo_mc_bkg = histo_bkg,
+                    title=title
+                )
+
             # Save
             if not os.path.exists(f"./{save_dir_path}"): os.mkdir(f"./{save_dir_path}")
             if make_cat_subdirs:
@@ -944,6 +1058,7 @@ def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend,cat_lst,lepflav_bin=
                 save_dir_path_cat = save_dir_path
             if not os.path.exists(save_dir_path_cat): os.mkdir(save_dir_path_cat)
             fig.savefig(os.path.join(save_dir_path_cat,title+".png"),bbox_extra_artists=ext_tup,bbox_inches='tight')
+            if histo_dat is not None: fig_datamc.savefig(os.path.join(save_dir_path_cat,title+"_dataMC.png"),bbox_inches='tight')
             shutil.copyfile(HTML_PC, os.path.join(save_dir_path_cat,"index.php"))
 
 
@@ -976,6 +1091,7 @@ def main():
     # Print total raw events
     #print(sum(histo_dict["njets_counts"][{"systematic":"nominal", "category":"all_events", "process":sum, "lepflav":sum}].values(flow=True)))
     #print(histo_dict["njets"])
+    #tot = histo_dict["njets"][{"systematic":"nominal", "category":"2lOSSF_nFJ1", "process":["VBSWWH_OS_c2v1p0_c3_1p0", "VBSWWH_SS_c2v1p0_c3_1p0", "VBSWZH_c2v1p0_c3_1p0", "VBSZZH_c2v1p0_c3_1p0"], "njets":sum, "lepflav":sum}]
     #tot = histo_dict["njets"][{"systematic":"nominal", "category":"3l", "process":["VBSWWH_OS_c2v1p0_c3_1p0", "VBSWWH_SS_c2v1p0_c3_1p0", "VBSWZH_c2v1p0_c3_1p0", "VBSZZH_c2v1p0_c3_1p0"], "njets":sum, "lepflav":sum}]
     #tot = sum(sum(histo_dict["njets"][{"systematic":"nominal", "category":"3l"}].values(flow=True)))
     #tot = sum(sum(histo_dict["njets"][{"systematic":"nominal", "category":"2lOSSF_1fjx"}].values(flow=True)))
@@ -1007,7 +1123,7 @@ def main():
     if args.datacard:
         dump_datacard(histo_dict,grp_dict,name)
     if args.make_plots:
-        make_plots(histo_dict,grp_dict,years_to_prepend,cat_lst,lepflav_bin="all")
+        make_plots(histo_dict,grp_dict,years_to_prepend,cat_lst,lepflav_bin="all") # mc_scale=110.84/109.95 for 2024 to 2025 scaling
 
 
 
