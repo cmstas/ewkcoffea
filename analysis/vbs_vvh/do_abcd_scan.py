@@ -567,7 +567,7 @@ def plot_abcd_2d_snapshots(histo_sig, histo_dy, histo_ttbar, histo_abcdbkg, hist
             print(f"Saved scan block {i}")
 
 
-def get_top_scan_indices(results, n_top=1, min_significance=0.0, max_closure_sd=np.inf, min_S=0.0, max_B_total=np.inf):
+def get_top_scan_indices(results, n_top=1, min_significance=0.0, max_closure_sd=np.inf, min_S=0.0, max_B_total=np.inf, min_bcd_yield=0.0):
     sig_flat             = results["significance"].flatten()
     S_flat               = results["S"].flatten()
     B_total_flat         = results["B_total"].flatten()
@@ -575,21 +575,29 @@ def get_top_scan_indices(results, n_top=1, min_significance=0.0, max_closure_sd=
     B_abcd_est_err_flat  = results["B_abcd_est_err"].flatten()
     B_abcd_true_flat     = results["B_abcd_true"].flatten()
     B_abcd_est_flat      = results["B_abcd_est"].flatten()
+    B_flat               = results["B_abcd_yield"].flatten()
+    C_flat               = results["C_abcd_yield"].flatten()
+    D_flat               = results["D_abcd_yield"].flatten()
+
     denom = np.sqrt(B_abcd_true_err_flat**2 + B_abcd_est_err_flat**2)
     closure_sd_flat = np.where(denom > 0, np.abs(B_abcd_est_flat - B_abcd_true_flat) / denom, np.nan)
+
     valid_mask = (
-        ~np.isnan(sig_flat)                &
-        (sig_flat     >= min_significance) &
-        (S_flat       >= min_S)            &
-        (B_total_flat <= max_B_total)      &
-        (~np.isnan(closure_sd_flat))       &
-        (closure_sd_flat <= max_closure_sd)
+        ~np.isnan(sig_flat)                 &
+        (sig_flat     >= min_significance)  &
+        (S_flat       >= min_S)             &
+        (B_total_flat <= max_B_total)       &
+        (~np.isnan(closure_sd_flat))        &
+        (closure_sd_flat <= max_closure_sd) &
+        (B_flat >= min_bcd_yield)           &
+        (C_flat >= min_bcd_yield)           &
+        (D_flat >= min_bcd_yield)
     )
+
     valid_indices = np.where(valid_mask)[0]
     top_indices = valid_indices[np.argsort(sig_flat[valid_indices])[::-1]][:n_top]
     print(f"  {len(valid_indices)} scan points pass guard rails, returning top {len(top_indices)}")
     return top_indices
-
 
 def do_abcd_scan(histo_sig, histo_abcdbkg, histo_otherbkg, constrain_axis_name, score_axis_name="dnn_score"):
     sig_h   = histo_sig[{"process_grp": sum}]
@@ -615,6 +623,10 @@ def do_abcd_scan(histo_sig, histo_abcdbkg, histo_otherbkg, constrain_axis_name, 
     B_abcd_est_err   = np.zeros((n_scan_score, n_scan_mjj))
     B_other_err      = np.zeros((n_scan_score, n_scan_mjj))
     B_total_err      = np.zeros((n_scan_score, n_scan_mjj))
+    B_total_err      = np.zeros((n_scan_score, n_scan_mjj))
+    B_abcd_yield     = np.zeros((n_scan_score, n_scan_mjj))
+    C_abcd_yield     = np.zeros((n_scan_score, n_scan_mjj))
+    D_abcd_yield     = np.zeros((n_scan_score, n_scan_mjj))
     for i, si in enumerate(score_cut_bins):
         for j, mj in enumerate(mjj_cut_bins):
             A_sig   = get_yield(sig_h,   slice(si, None), slice(mj, None))
@@ -623,6 +635,10 @@ def do_abcd_scan(histo_sig, histo_abcdbkg, histo_otherbkg, constrain_axis_name, 
             C_abcd  = get_yield(abcd_h,  slice(si, None), slice(None, mj))
             D_abcd  = get_yield(abcd_h,  slice(None, si), slice(None, mj))
             A_other = get_yield(other_h, slice(si, None), slice(mj, None))
+            A_other    = get_yield(other_h, slice(si, None), slice(mj, None))
+            B_otherbkg = get_yield(other_h, slice(None, si), slice(mj, None))
+            C_otherbkg = get_yield(other_h, slice(si, None), slice(None, mj))
+            D_otherbkg = get_yield(other_h, slice(None, si), slice(None, mj))
             A_sig_err   = np.sqrt(sig_h[slice(si, None),   slice(mj, None)].sum(flow=False).variance)
             A_abcd_err  = np.sqrt(abcd_h[slice(si, None),  slice(mj, None)].sum(flow=False).variance)
             B_abcd_err  = np.sqrt(abcd_h[slice(None, si),  slice(mj, None)].sum(flow=False).variance)
@@ -656,6 +672,10 @@ def do_abcd_scan(histo_sig, histo_abcdbkg, histo_otherbkg, constrain_axis_name, 
             B_abcd_est_err[i, j]  = abcd_est_err
             B_other_err[i, j]     = A_other_err
             B_total_err[i, j]     = b_total_err
+            B_total_err[i, j]     = b_total_err
+            B_abcd_yield[i, j]    = B_abcd + B_otherbkg
+            C_abcd_yield[i, j]    = C_abcd + C_otherbkg
+            D_abcd_yield[i, j]    = D_abcd + D_otherbkg
     return {
         "closure"         : closure,
         "significance"    : significance,
@@ -671,6 +691,10 @@ def do_abcd_scan(histo_sig, histo_abcdbkg, histo_otherbkg, constrain_axis_name, 
         "B_abcd_est_err"  : B_abcd_est_err,
         "B_other_err"     : B_other_err,
         "B_total_err"     : B_total_err,
+        "B_total_err"  : B_total_err,
+        "B_abcd_yield" : B_abcd_yield,
+        "C_abcd_yield" : C_abcd_yield,
+        "D_abcd_yield" : D_abcd_yield,
     }
 
 
@@ -746,10 +770,11 @@ def main():
     parser.add_argument("pkl_file_path", help="The path to the pkl file")
     args = parser.parse_args()
     grp_dict = cvh.GRP_DICT_FULL_R2
+    #grp_dict = cvh.GRP_DICT_FULL_R3
 
     # Set the options for this run (NOTE these are hard coded)
     cat_for_dnn    = "2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5"
-    abcd_hist_name = "abcd_2lH"
+    abcd_hist_name = "abcd2d_2lH"
     #constrain_var  = "vbs_score"
     constrain_var  = "vbs_mjj"
     guardrails = {
@@ -757,6 +782,7 @@ def main():
         "max_closure_sd"   : 1.2,
         "min_S"            : 0.03,
         "max_B_total"      : 1e99,
+        "min_bcd_yield"    : 10.0,
     }
 
     # Get the histo from the pkl
@@ -806,7 +832,7 @@ def main():
 
     # Make the stack plot, borrowing from check_vvh_hists
     years_to_prepend = ["2016postVFP","2016preVFP","2017","2018"]
-    cvh.make_plots(histo_dict,grp_dict,years_to_prepend,["2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5"],lepflav_bin="all",save_dir_path=out_dir,make_cat_subdirs=False,vars_to_plot=["njets","njets_counts","vbs_mjj","dnn_score_2lH","dnn_score_2lV"])
+    cvh.make_plots(histo_dict,grp_dict,years_to_prepend,["2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5"],lepflav_bin="all",save_dir_path=out_dir,make_cat_subdirs=False,vars_to_plot=["vbs_mjj","dnn_score_2lH"])#"njets","njets_counts","vbs_mjj","dnn_score_2lH","dnn_score_2lV"])
 
     # Just simple make 1d plots of the score
     #plot_1d_stack(histo_sig, histo_dy, histo_ttbar, histo_otherbkg, "dnn_score_2lH", f"{out_dir}/stack_dnn_score.png")
