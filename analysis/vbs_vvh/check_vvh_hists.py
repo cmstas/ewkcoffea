@@ -23,12 +23,15 @@ HTML_PC = "/home/users/kmohrman/ref_scripts/html_stuff/index.php"
 UNBLIND_CATS = [
     "all_events",
     "2lOSSF_nFJ1",
+    "3l_prelowmllcut",
     "3l",
 ]
 
 CAT_LST_2l = [
     "all_events",
     "2lOSSF_nFJ1",
+    #"2lOSSF_nFJ1_onZ_0b",
+    #"2lOSSF_nFJ1_offZ_2b",
     #"2lOSSF_nFJ1_massHi",
     #"2lOSSF_nFJ1_massLo",
     #"2lOSSF_nFJ1_HFJ",
@@ -39,8 +42,13 @@ CAT_LST_2l = [
 ]
 
 CAT_LST_3l = [
-    "all_events",
+    #"all_events",
+    #"3l_prelowmllcut",
     "3l",
+
+    "3l_onZ_0b",
+    "3l_onZ_0b_mtlmet60",
+    "3l_onZ_0b_mtlmet60_met75",
 
     #"3l_chsum3",
     #"3l_chsum3_mjj500",
@@ -87,21 +95,21 @@ GRP_DICT_FULL_R3 = {
         "MuonEG",
         "EGamma",
     ],
-    "QCD": [
-        "QCD_Bin-PT-1000to1500_TuneCP5_13p6TeV",
-        "QCD_Bin-PT-120to170_TuneCP5_13p6TeV",
-        "QCD_Bin-PT-1500to2000_TuneCP5_13p6TeV",
-        "QCD_Bin-PT-170to300_TuneCP5_13p6TeV",
-        "QCD_Bin-PT-2000to2500_TuneCP5_13p6TeV",
-        "QCD_Bin-PT-2500to3000_TuneCP5_13p6TeV",
-        "QCD_Bin-PT-3000_TuneCP5_13p6TeV",
-        "QCD_Bin-PT-300to470_TuneCP5_13p6TeV",
-        "QCD_Bin-PT-470to600_TuneCP5_13p6TeV",
-        "QCD_Bin-PT-50to80_TuneCP5_13p6TeV",
-        "QCD_Bin-PT-600to800_TuneCP5_13p6TeV",
-        "QCD_Bin-PT-800to1000_TuneCP5_13p6TeV",
-        "QCD_Bin-PT-80to120_TuneCP5_13p6TeV",
-    ],
+    #"QCD": [
+    #    "QCD_Bin-PT-1000to1500_TuneCP5_13p6TeV",
+    #    "QCD_Bin-PT-120to170_TuneCP5_13p6TeV",
+    #    "QCD_Bin-PT-1500to2000_TuneCP5_13p6TeV",
+    #    "QCD_Bin-PT-170to300_TuneCP5_13p6TeV",
+    #    "QCD_Bin-PT-2000to2500_TuneCP5_13p6TeV",
+    #    "QCD_Bin-PT-2500to3000_TuneCP5_13p6TeV",
+    #    "QCD_Bin-PT-3000_TuneCP5_13p6TeV",
+    #    "QCD_Bin-PT-300to470_TuneCP5_13p6TeV",
+    #    "QCD_Bin-PT-470to600_TuneCP5_13p6TeV",
+    #    "QCD_Bin-PT-50to80_TuneCP5_13p6TeV",
+    #    "QCD_Bin-PT-600to800_TuneCP5_13p6TeV",
+    #    "QCD_Bin-PT-800to1000_TuneCP5_13p6TeV",
+    #    "QCD_Bin-PT-80to120_TuneCP5_13p6TeV",
+    #],
     "ttbar": [
         "TTto2L2Nu_TuneCP5_13p6TeV",
         "TTto4Q_TuneCP5_13p6TeV",
@@ -335,7 +343,16 @@ GRP_DICT_FULL_R2 = {
     ],
     "DY" : [
         "DYJetsToLL_M-10to50_TuneCP5_13TeV",
-        "DYJetsToLL_M-50_TuneCP5_13TeV",
+        #"DYJetsToLL_M-50_TuneCP5_13TeV",
+        "DYJetsToLL_M-50_HT-70to100_TuneCP5_PSweights_13TeV",
+        "DYJetsToLL_M-50_HT-100to200_TuneCP5_PSweights_13TeV",
+        "DYJetsToLL_M-50_HT-200to400_TuneCP5_PSweights_13TeV",
+        "DYJetsToLL_M-50_HT-400to600_TuneCP5_PSweights_13TeV",
+        "DYJetsToLL_M-50_HT-600to800_TuneCP5_PSweights_13TeV",
+        "DYJetsToLL_M-50_HT-800to1200_TuneCP5_PSweights_13TeV",
+        "DYJetsToLL_M-50_HT-1200to2500_TuneCP5_PSweights_13TeV",
+        "DYJetsToLL_M-50_HT-2500toInf_TuneCP5_PSweights_13TeV",
+
     ],
     "ewkV" : [
         "EWKWMinus2Jets_WToLNu_M-50_TuneCP5_withDipoleRecoil_13TeV",
@@ -911,7 +928,7 @@ def print_yields(histo_dict,grp_dict,cat_lst,years_to_prepend,roundat=None,print
             for group_name in group_lst_order:
                 #if group_name not in ["Signal","Background"]: continue
                 #if group_name not in ["Signal","Background","Data"]: continue
-                if group_name not in ["Signal","SignalC2V","SignalC3","Background","Data"]: continue
+                #if group_name not in ["Signal","SignalC2V","SignalC3","Background","Data"]: continue
                 if group_name == "metric": continue
                 if group_name == "metricX100": continue
                 if group_name == "Data/MC": continue
