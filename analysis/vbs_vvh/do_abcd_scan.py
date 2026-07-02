@@ -558,29 +558,50 @@ def plot_abcd_2d_snapshots(histo_sig, histo_dy, histo_ttbar, histo_abcdbkg, hist
     sig_vals     = sig_h.values(flow=False)
     other_vals   = other_h.values(flow=False)
 
-    def _make_overview_plots(vals, cbar_label, fname_prefix,cmap="Blues"):
+    def _make_overview_plots(h, cbar_label, fname_prefix, cmap="Blues"):
+        vals = h.values(flow=False)
+        vars_2d = h.variances(flow=False)
+
         for scale, norm, suffix in [("linear", None, "lin"), ("log", matplotlib.colors.LogNorm(), "log")]:
             fig, ax = plt.subplots(figsize=(8, 6))
             im = ax.pcolormesh(score_edges, mjj_edges, vals.T, cmap=cmap, norm=norm)
             plt.colorbar(im, ax=ax, label=cbar_label)
+
             score_centers = (score_edges[:-1] + score_edges[1:]) / 2
             mjj_centers   = (mjj_edges[:-1]   + mjj_edges[1:])   / 2
             profile = np.zeros(len(score_centers))
             profile_err = np.zeros(len(score_centers))
+
             for si in range(len(score_centers)):
                 col = vals[si, :]
-                total = col.sum()
-                if total > 0:
+                col_var = vars_2d[si, :]
+
+                sumw = np.sum(col)
+                sumw2 = np.sum(col_var)
+
+                if sumw > 0 and sumw2 > 0:
                     mean = np.average(mjj_centers, weights=col)
                     variance = np.average((mjj_centers - mean) ** 2, weights=col)
-                    n_eff = (total ** 2 / np.sum(col ** 2)) if np.sum(col ** 2) > 0 else 1.0
+                    n_eff = (sumw ** 2) / sumw2
+
                     profile[si] = mean
                     profile_err[si] = np.sqrt(variance / n_eff)
                 else:
                     profile[si] = np.nan
                     profile_err[si] = np.nan
 
-            ax.errorbar(score_centers, profile, yerr=profile_err, color="red", linewidth=2, marker="o", markersize=4, label="Mean", capsize=2)
+            ax.errorbar(
+                score_centers,
+                profile,
+                yerr=profile_err,
+                color="red",
+                linestyle="none",
+                linewidth=2,
+                marker="o",
+                markersize=4,
+                label="Mean ± SE",
+                capsize=2,
+            )
             ax.legend(loc="upper right", fontsize=8)
             ax.set_xlabel("DNN score")
             ax.set_ylabel(f"{constrain_var}")
@@ -589,12 +610,15 @@ def plot_abcd_2d_snapshots(histo_sig, histo_dy, histo_ttbar, histo_abcdbkg, hist
             plt.savefig(f"{output_dir}/{fname_prefix}_{suffix}.png", dpi=150)
             plt.close()
             print(f"Saved {output_dir}/{fname_prefix}_{suffix}.png")
-    _make_overview_plots(dy_vals,      "DY yield",                            "scan_point_overview_dy")
-    _make_overview_plots(ttbar_vals,   "ttbar yield",                         "scan_point_overview_ttbar")
-    _make_overview_plots(abcdbkg_vals, "ABCD background yield (DY + ttbar)",  "scan_point_overview_abcdbkg")
-    _make_overview_plots(allbkg_vals,  "Total background yield",              "scan_point_overview_allbkg")
-    _make_overview_plots(sig_vals,     "Signal yield",                        "scan_point_overview_sig", cmap="Greens")
-    _make_overview_plots(other_vals, "Other background yield", "scan_point_overview_otherbkg")
+
+    _make_overview_plots(dy_h,    "DY yield",                           "scan_point_overview_dy")
+    _make_overview_plots(ttbar_h, "ttbar yield",                        "scan_point_overview_ttbar")
+    _make_overview_plots(abcd_h,  "ABCD background yield (DY + ttbar)", "scan_point_overview_abcdbkg")
+    _make_overview_plots(other_h, "Other background yield",             "scan_point_overview_otherbkg")
+    _make_overview_plots(sig_h,   "Signal yield",                       "scan_point_overview_sig", cmap="Greens")
+
+    allbkg_h = abcd_h + other_h
+    _make_overview_plots(allbkg_h, "Total background yield", "scan_point_overview_allbkg")
 
     if make_scan_blocks:
         for i in range(n_score):
