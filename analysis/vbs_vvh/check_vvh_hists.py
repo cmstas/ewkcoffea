@@ -30,15 +30,13 @@ UNBLIND_CATS = [
 CAT_LST_2l = [
     "all_events",
     "2lOSSF_nFJ1",
+    "2lOSSF_nFJ1_massHi",
+    "2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5",
+    "2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5_A",
+
+    # DY and ttbar CRs
     #"2lOSSF_nFJ1_onZ_0b",
     #"2lOSSF_nFJ1_offZ_2b",
-    #"2lOSSF_nFJ1_massHi",
-    #"2lOSSF_nFJ1_massLo",
-    #"2lOSSF_nFJ1_HFJ",
-    #"2lOSSF_nFJ1_mjj1k",
-    #"2lOSSF_nFJ1_mjj1k_HFJ",
-    #"2lOSSF_nFJ1_mjj1k_HFJtag",
-    #"2lOSSF_nFJ1_mjj1k_HFJtag_nb0",
 ]
 
 CAT_LST_3l = [
@@ -63,6 +61,9 @@ CAT_LST_3l = [
     #"3l_chsum1_nFJ0_nSFOS0",
     #"3l_chsum1_nFJ0_nSFOS0_mjj1k",
     #"3l_chsum1_nFJ0_nSFOS0_mjj1k_nb0",
+
+    # WZ CR
+    #"3l_onZ_0b_mtlmet60_met75",
 ]
 
 
