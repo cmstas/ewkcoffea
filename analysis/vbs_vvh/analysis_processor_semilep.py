@@ -965,24 +965,33 @@ class AnalysisProcessor(processor.ProcessorABC):
 
         ### 2lOS + 1FJ ###
 
+        # ABCD cuts for 2l H region
+        x_2lH = 0.54
+        y_2lH = 1300.0
+        A_2lH = (dnn_score_2lH >= x_2lH) & (vbsjets.mjj >= y_2lH)
+        B_2lH = (dnn_score_2lH <  x_2lH) & (vbsjets.mjj >= y_2lH)
+        C_2lH = (dnn_score_2lH >= x_2lH) & (vbsjets.mjj <  y_2lH)
+        D_2lH = (dnn_score_2lH <  x_2lH) & (vbsjets.mjj <  y_2lH)
+
         selections.add("2l",                                     is_2l)
         selections.add("2lOS",                                   is_2l & is_os)
         selections.add("2lOSSF",                                 is_2l & is_os & is_sf)
         selections.add("2lOSSF_nFJ1",                            is_2l & is_os & is_sf & (nfatjets==1))
-        selections.add("2lOSSF_nFJ1_massLo",                     is_2l & is_os & is_sf & (nfatjets==1) & (fj0.gpt_mass2p <  110))
         selections.add("2lOSSF_nFJ1_massHi",                     is_2l & is_os & is_sf & (nfatjets==1) & (fj0.gpt_mass2p >= 110))
-        selections.add("2lOSSF_nFJ1_massLo_Zp2",                 is_2l & is_os & is_sf & (nfatjets==1) & (fj0.gpt_mass2p <  110) & (fj0.gptZvsQCD>0.2))
-        selections.add("2lOSSF_nFJ1_massHi_Zp2",                 is_2l & is_os & is_sf & (nfatjets==1) & (fj0.gpt_mass2p >= 110) & (fj0.gptZvsQCD>0.2))
-        selections.add("2lOSSF_nFJ1_massHi_Zp2_A",               is_2l & is_os & is_sf & (nfatjets==1) & (fj0.gpt_mass2p >= 110) & (fj0.gptZvsQCD>0.2) & (vbsjets.mjj>1560) & (dnn_score_2lH>0.88))
-        selections.add("2lOSSF_nFJ1_massLo_Zp2_A",               is_2l & is_os & is_sf & (nfatjets==1) & (fj0.gpt_mass2p <  110) & (fj0.gptZvsQCD>0.2) & (vbsjets.mjj>1080) & (dnn_score_2lH>0.73))
         selections.add("2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5",         is_2l & is_os & is_sf & (nfatjets==1) & (fj0.gpt_mass2p >= 110) & (fj0.gptZvsQCD>0.5) & (fj0.gptHvsQCD>0.5) & (vbsjets.score>0.5))
-        selections.add("2lOSSF_nFJ1_massLo_Zp4VBSp6",            is_2l & is_os & is_sf & (nfatjets==1) & (fj0.gpt_mass2p <  110) & (fj0.gptZvsQCD>0.4) & (vbsjets.score>0.6))
+        selections.add("2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5_A",       is_2l & is_os & is_sf & (nfatjets==1) & (fj0.gpt_mass2p >= 110) & (fj0.gptZvsQCD>0.5) & (fj0.gptHvsQCD>0.5) & (vbsjets.score>0.5) & A_2lH)
+        selections.add("2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5_B",       is_2l & is_os & is_sf & (nfatjets==1) & (fj0.gpt_mass2p >= 110) & (fj0.gptZvsQCD>0.5) & (fj0.gptHvsQCD>0.5) & (vbsjets.score>0.5) & B_2lH)
+        selections.add("2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5_C",       is_2l & is_os & is_sf & (nfatjets==1) & (fj0.gpt_mass2p >= 110) & (fj0.gptZvsQCD>0.5) & (fj0.gptHvsQCD>0.5) & (vbsjets.score>0.5) & C_2lH)
+        selections.add("2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5_D",       is_2l & is_os & is_sf & (nfatjets==1) & (fj0.gpt_mass2p >= 110) & (fj0.gptZvsQCD>0.5) & (fj0.gptHvsQCD>0.5) & (vbsjets.score>0.5) & D_2lH)
+        selections.add("2lOSSF_nFJ1_massLo_Zp2",                 is_2l & is_os & is_sf & (nfatjets==1) & (fj0.gpt_mass2p <  110) & (fj0.gptZvsQCD>0.2))
 
+        # Old cut-based slectoin
         selections.add("2lOSSF_nFJ1_mjj1k",                      is_2l & is_os & is_sf & (nfatjets==1) & (vbsjets.mjj>1000))
         selections.add("2lOSSF_nFJ1_mjj1k_HFJ",                  is_2l & is_os & is_sf & (nfatjets==1) & (vbsjets.mjj>1000) & is_HFJ)
         selections.add("2lOSSF_nFJ1_mjj1k_HFJtag",               is_2l & is_os & is_sf & (nfatjets==1) & (vbsjets.mjj>1000) & is_HFJ & is_HFJTagHbb)
         selections.add("2lOSSF_nFJ1_mjj1k_HFJtag_nb0",           is_2l & is_os & is_sf & (nfatjets==1) & (vbsjets.mjj>1000) & is_HFJ & is_HFJTagHbb & (nbtagst==0))
 
+        # DY and ttbar CRs
         selections.add("2lOSSF_nFJ1_onZ_0b",                     is_2l & is_os & is_sf & (nfatjets==1) & is_onZ  & (nbtagsl==0))
         selections.add("2lOSSF_nFJ1_offZ_2b",                    is_2l & is_os & is_sf & (nfatjets==1) & ~is_onZ & (nbtagst==2))
 
@@ -1020,27 +1029,23 @@ class AnalysisProcessor(processor.ProcessorABC):
                 ### 2l OS SF 1FJ ###
 
                 "2lOSSF_nFJ1",
-                #"2lOSSF_nFJ1_massLo",
-                #"2lOSSF_nFJ1_massHi",
+                "2lOSSF_nFJ1_massHi",
                 "2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5",
-                #"2lOSSF_nFJ1_massLo_Zp4VBSp6",
+                "2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5_A",
+                "2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5_B",
+                "2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5_C",
+                "2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5_D",
 
-                # From cut based optimization
-                #"2lOSSF_nFJ1_mjj1k",
-                #"2lOSSF_nFJ1_mjj1k_HFJ",
-                #"2lOSSF_nFJ1_mjj1k_HFJtag",
-                #"2lOSSF_nFJ1_mjj1k_HFJtag_nb0",
-                #"2lOSSF_nFJ1_HFJ",
-
+                # DY and ttbar CRs
                 #"2lOSSF_nFJ1_onZ_0b",
                 #"2lOSSF_nFJ1_offZ_2b",
 
                 #### 3l ###
 
                 #"3l_prelowmllcut",
-                #"3l",
-                #"3l_onZ_0b",
-                #"3l_onZ_0b_mtlmet60",
+                "3l",
+
+                # WZ CR
                 #"3l_onZ_0b_mtlmet60_met75",
 
                 # From cut based optimization
