@@ -537,6 +537,7 @@ def write_abcd_datacards(histo_sig, histo_abcdbkg, histo_otherbkg, histo_dat, re
             histo_sig=histo_sig,
             histo_abcdbkg=histo_abcdbkg,
             histo_otherbkg=histo_otherbkg,
+            histo_dat=histo_dat,
         )
 
 
@@ -558,48 +559,66 @@ def plot_abcd_2d_snapshots(histo_sig, histo_dy, histo_ttbar, histo_abcdbkg, hist
     sig_vals     = sig_h.values(flow=False)
     other_vals   = other_h.values(flow=False)
 
-    def _make_overview_plots(h, cbar_label, fname_prefix, cmap="Blues"):
+    def _make_overview_plots(h, cbar_label, fname_prefix, cmap="Blues", profile_rebin=1):
         vals = h.values(flow=False)
         vars_2d = h.variances(flow=False)
+
+        if profile_rebin < 1:
+            profile_rebin = 1
+
+        n_score_bins = vals.shape[0]
+        grouped_ranges = []
+        start = 0
+        while start < n_score_bins:
+            stop = min(start + profile_rebin, n_score_bins)
+            grouped_ranges.append((start, stop))
+            start = stop
 
         for scale, norm, suffix in [("linear", None, "lin"), ("log", matplotlib.colors.LogNorm(), "log")]:
             fig, ax = plt.subplots(figsize=(8, 6))
             im = ax.pcolormesh(score_edges, mjj_edges, vals.T, cmap=cmap, norm=norm)
             plt.colorbar(im, ax=ax, label=cbar_label)
 
-            score_centers = (score_edges[:-1] + score_edges[1:]) / 2
-            mjj_centers   = (mjj_edges[:-1]   + mjj_edges[1:])   / 2
-            profile = np.zeros(len(score_centers))
-            profile_err = np.zeros(len(score_centers))
+            mjj_centers = (mjj_edges[:-1] + mjj_edges[1:]) / 2
+            profile = np.zeros(len(grouped_ranges))
+            profile_err = np.zeros(len(grouped_ranges))
+            profile_x = np.zeros(len(grouped_ranges))
+            profile_xerr = np.zeros(len(grouped_ranges))
 
-            for si in range(len(score_centers)):
-                col = vals[si, :]
-                col_var = vars_2d[si, :]
+            for gi, (lo, hi) in enumerate(grouped_ranges):
+                col = np.sum(vals[lo:hi, :], axis=0)
+                col_var = np.sum(vars_2d[lo:hi, :], axis=0)
 
                 sumw = np.sum(col)
                 sumw2 = np.sum(col_var)
+
+                x_lo = score_edges[lo]
+                x_hi = score_edges[hi]
+                profile_x[gi] = 0.5 * (x_lo + x_hi)
+                profile_xerr[gi] = 0.5 * (x_hi - x_lo)
 
                 if sumw > 0 and sumw2 > 0:
                     mean = np.average(mjj_centers, weights=col)
                     variance = np.average((mjj_centers - mean) ** 2, weights=col)
                     n_eff = (sumw ** 2) / sumw2
 
-                    profile[si] = mean
-                    profile_err[si] = np.sqrt(variance / n_eff)
+                    profile[gi] = mean
+                    profile_err[gi] = np.sqrt(variance / n_eff)
                 else:
-                    profile[si] = np.nan
-                    profile_err[si] = np.nan
+                    profile[gi] = np.nan
+                    profile_err[gi] = np.nan
 
+            label = "Mean ± SE" if profile_rebin == 1 else f"Mean ± SE (profile x{profile_rebin} coarser)"
             ax.errorbar(
-                score_centers,
+                profile_x,
                 profile,
+                xerr=profile_xerr,
                 yerr=profile_err,
                 color="red",
                 linestyle="none",
-                linewidth=2,
                 marker="o",
                 markersize=4,
-                label="Mean ± SE",
+                label=label,
                 capsize=2,
             )
             ax.legend(loc="upper right", fontsize=8)
@@ -607,18 +626,35 @@ def plot_abcd_2d_snapshots(histo_sig, histo_dy, histo_ttbar, histo_abcdbkg, hist
             ax.set_ylabel(f"{constrain_var}")
             ax.set_title(f"{fname_prefix} 2D histogram (no cuts, {scale})")
             plt.tight_layout()
-            plt.savefig(f"{output_dir}/{fname_prefix}_{suffix}.png", dpi=150)
+
+            extra = "" if profile_rebin == 1 else f"_profileRebin{profile_rebin}"
+            plt.savefig(f"{output_dir}/{fname_prefix}_{suffix}{extra}.png", dpi=150)
             plt.close()
-            print(f"Saved {output_dir}/{fname_prefix}_{suffix}.png")
+            print(f"Saved {output_dir}/{fname_prefix}_{suffix}{extra}.png")
 
-    _make_overview_plots(dy_h,    "DY yield",                           "scan_point_overview_dy")
-    _make_overview_plots(ttbar_h, "ttbar yield",                        "scan_point_overview_ttbar")
-    _make_overview_plots(abcd_h,  "ABCD background yield (DY + ttbar)", "scan_point_overview_abcdbkg")
-    _make_overview_plots(other_h, "Other background yield",             "scan_point_overview_otherbkg")
-    _make_overview_plots(sig_h,   "Signal yield",                       "scan_point_overview_sig", cmap="Greens")
-
+    # Also get total
     allbkg_h = abcd_h + other_h
+
+    _make_overview_plots(dy_h,    "DY yield",                            "scan_point_overview_dy")
+    _make_overview_plots(ttbar_h, "ttbar yield",                         "scan_point_overview_ttbar")
+    _make_overview_plots(abcd_h,  "ABCD background yield (DY + ttbar)",  "scan_point_overview_abcdbkg")
+    _make_overview_plots(other_h, "Other background yield",              "scan_point_overview_otherbkg")
+    _make_overview_plots(sig_h,   "Signal yield",                        "scan_point_overview_sig", cmap="Greens")
     _make_overview_plots(allbkg_h, "Total background yield", "scan_point_overview_allbkg")
+
+    _make_overview_plots(dy_h,    "DY yield",                            "scan_point_overview_dy", profile_rebin=4)
+    _make_overview_plots(ttbar_h, "ttbar yield",                         "scan_point_overview_ttbar", profile_rebin=4)
+    _make_overview_plots(abcd_h,  "ABCD background yield (DY + ttbar)",  "scan_point_overview_abcdbkg", profile_rebin=4)
+    _make_overview_plots(other_h, "Other background yield",              "scan_point_overview_otherbkg", profile_rebin=4)
+    _make_overview_plots(sig_h,   "Signal yield",                        "scan_point_overview_sig", cmap="Greens", profile_rebin=4)
+    _make_overview_plots(allbkg_h, "Total background yield", "scan_point_overview_allbkg", profile_rebin=4)
+
+    _make_overview_plots(dy_h,    "DY yield",                           "scan_point_overview_dy", profile_rebin=10)
+    _make_overview_plots(ttbar_h, "ttbar yield",                        "scan_point_overview_ttbar", profile_rebin=10)
+    _make_overview_plots(abcd_h,  "ABCD background yield (DY + ttbar)", "scan_point_overview_abcdbkg", profile_rebin=10)
+    _make_overview_plots(other_h, "Other background yield",             "scan_point_overview_otherbkg", profile_rebin=10)
+    _make_overview_plots(sig_h,   "Signal yield",                       "scan_point_overview_sig", cmap="Greens", profile_rebin=10)
+    _make_overview_plots(allbkg_h, "Total background yield",            "scan_point_overview_allbkg", profile_rebin=10)
 
     if make_scan_blocks:
         for i in range(n_score):
