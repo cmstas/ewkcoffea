@@ -33,6 +33,16 @@ def to_vec(obj,with_name="PtEtaPhiMCollection"):
         "mass": obj.mass,
     }, with_name=with_name)
 
+# Returns masks for the 4 ABCD regions from the 2d plane
+#     - x_var would generally be your dnn score
+#     - y_var would generally be your constrain var
+#     - The equlity (inclusive cut) is given to the A direction
+def get_abcd_region_masks(x_var,y_var,x_cut,y_cut):
+    A_mask = (x_var >= x_cut) & (y_var >= y_cut)
+    B_mask = (x_var <  x_cut) & (y_var >= y_cut)
+    C_mask = (x_var >= x_cut) & (y_var <  y_cut)
+    D_mask = (x_var <  x_cut) & (y_var <  y_cut)
+    return (A_mask, B_mask, C_mask, D_mask)
 
 class AnalysisProcessor(processor.ProcessorABC):
 
@@ -956,22 +966,15 @@ class AnalysisProcessor(processor.ProcessorABC):
         is_3l_prelowmllcut = (n_lep_veto==3) & (nleps==3) & (l0.pt>25) & (l1.pt>15) & (l2.pt>10)
         is_3l = is_3l_prelowmllcut & low_mll_cut_3l
 
-        is_VFJ       = (fj0_mparticlenet <= 100.) & (fj0_mparticlenet > 65)
         is_HFJ       = (fj0_mparticlenet >  110.) & (fj0_mparticlenet <= 150.)
         is_HFJTagHbb = (fj0_pNetHbbvsQCD > 0.95)
+
+        A_2lH, B_2lH, C_2lH, D_2lH = get_abcd_region_masks(x_var=dnn_score_2lH, y_var=vbsjets.mjj, x_cut=0.54, y_cut=1300.0)
 
         selections.add("all_events", pass_through)
 
 
         ### 2lOS + 1FJ ###
-
-        # ABCD cuts for 2l H region
-        x_2lH = 0.54
-        y_2lH = 1300.0
-        A_2lH = (dnn_score_2lH >= x_2lH) & (vbsjets.mjj >= y_2lH)
-        B_2lH = (dnn_score_2lH <  x_2lH) & (vbsjets.mjj >= y_2lH)
-        C_2lH = (dnn_score_2lH >= x_2lH) & (vbsjets.mjj <  y_2lH)
-        D_2lH = (dnn_score_2lH <  x_2lH) & (vbsjets.mjj <  y_2lH)
 
         selections.add("2l",                                     is_2l)
         selections.add("2lOS",                                   is_2l & is_os)
