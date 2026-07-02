@@ -180,7 +180,7 @@ def plot_1d_stack(histo_sig, histo_dy, histo_ttbar, histo_otherbkg, axis_name, o
     print(f"Saved {output_path}")
 
 
-def plot_abcd_regions(score_edges, mjj_edges, bkg_vals, score_cut, mjj_cut, constrain_var, title, cbar_label, output_path, extra_text="", histo_sig=None, histo_abcdbkg=None, histo_otherbkg=None):
+def plot_abcd_regions(score_edges, mjj_edges, bkg_vals, score_cut, mjj_cut, constrain_var, title, cbar_label, output_path, extra_text="", histo_sig=None, histo_abcdbkg=None, histo_otherbkg=None, histo_dat=None):
     """Plot the 2D ABCD regions for a given set of cuts and background values."""
     score_mid_lo = score_edges[0] + (score_cut - score_edges[0]) / 2
     score_mid_hi = score_cut      + (score_edges[-1] - score_cut) / 2
@@ -203,6 +203,7 @@ def plot_abcd_regions(score_edges, mjj_edges, bkg_vals, score_cut, mjj_cut, cons
             err = np.sqrt(sub.sum(flow=False).variance)
             return val, err
 
+        region_text += "MC:\n"
         for region, s_slice, m_slice in [
             ("A", slice(si, None), slice(mj, None)),
             ("B", slice(None, si), slice(mj, None)),
@@ -227,6 +228,45 @@ def plot_abcd_regions(score_edges, mjj_edges, bkg_vals, score_cut, mjj_cut, cons
             f"A+B+C+D: sig={total_sig:.4f}+-{total_sig_err:.4f}  abcdbkg={total_ab:.4f}+-{total_ab_err:.4f}"
             f"  otherbkg={total_ot:.4f}+-{total_ot_err:.4f}  totbkg={total_tot:.4f}+-{total_tot_err:.4f}\n"
         )
+        if histo_dat is not None:
+            region_text += "\nData:\n"
+            dat_h = histo_dat[{"process_grp": sum}]
+            for region, s_slice, m_slice in [
+                ("B", slice(None, si), slice(mj, None)),
+                ("C", slice(si, None), slice(None, mj)),
+                ("D", slice(None, si), slice(None, mj)),
+            ]:
+                d,   d_err   = get_val_err(dat_h,   s_slice, m_slice)
+                ab,  ab_err  = get_val_err(abcd_h,  s_slice, m_slice)
+                ot,  ot_err  = get_val_err(other_h, s_slice, m_slice)
+                tot, tot_err = ab + ot, np.sqrt(ab_err**2 + ot_err**2)
+                ratio = d / tot if tot > 0 else np.nan
+                ratio_err = (d_err / tot) * np.sqrt(1 + (ratio * tot_err / tot)**2) if tot > 0 else np.nan
+                region_text += (
+                    f"{region}: data={d:.1f}+-{d_err:.1f}  totbkg={tot:.4f}+-{tot_err:.4f}  data/totbkg={ratio:.3f}+-{ratio_err:.3f}\n"
+                )
+            B_dat, B_dat_err = get_val_err(dat_h, slice(None, si), slice(mj, None))
+            C_dat, C_dat_err = get_val_err(dat_h, slice(si, None), slice(None, mj))
+            D_dat, D_dat_err = get_val_err(dat_h, slice(None, si), slice(None, mj))
+
+            if D_dat > 0:
+                A_est_dat = B_dat * C_dat / D_dat
+                A_est_dat_err = A_est_dat * np.sqrt(
+                    (B_dat_err / B_dat)**2 + (C_dat_err / C_dat)**2 + (D_dat_err / D_dat)**2
+                ) if (B_dat > 0 and C_dat > 0) else 0.0
+            else:
+                A_est_dat = np.nan
+                A_est_dat_err = np.nan
+
+            A_mc_tot, A_mc_tot_err = get_val_err(abcd_h, slice(si, None), slice(mj, None))
+            A_ot,     A_ot_err     = get_val_err(other_h, slice(si, None), slice(mj, None))
+            A_mc_total     = A_mc_tot + A_ot
+            A_mc_total_err = np.sqrt(A_mc_tot_err**2 + A_ot_err**2)
+
+            region_text += (
+                f"A (data est B*C/D): {A_est_dat:.4f}+-{A_est_dat_err:.4f}\n"
+                f"A (MC truth total): {A_mc_total:.4f}+-{A_mc_total_err:.4f}\n"
+            )
 
     fig, ax = plt.subplots(figsize=(10, 8))
     im = ax.pcolormesh(score_edges, mjj_edges, bkg_vals.T, cmap="Blues")
@@ -234,7 +274,7 @@ def plot_abcd_regions(score_edges, mjj_edges, bkg_vals, score_cut, mjj_cut, cons
     ax.axvline(score_cut, color="red",    linewidth=2, linestyle="--", label=f"score > {score_cut:.3f}")
     ax.axhline(mjj_cut,   color="orange", linewidth=2, linestyle="--", label=f"{constrain_var} > {mjj_cut:.0f} GeV")
     ax.text(0.02, 0.98, extra_text,  fontsize=9, transform=ax.transAxes, va="top")
-    ax.text(0.02, 0.12, region_text, fontsize=7, transform=ax.transAxes, va="top", family="monospace")
+    ax.text(0.02, 0.22, region_text, fontsize=7, transform=ax.transAxes, va="top", family="monospace")
     ax.text(score_mid_hi, mjj_mid_hi, "A (SR)", ha="center", va="center", color="red",   fontsize=12, fontweight="bold")
     ax.text(score_mid_lo, mjj_mid_hi, "B",      ha="center", va="center", color="black", fontsize=12, fontweight="bold")
     ax.text(score_mid_hi, mjj_mid_lo, "C",      ha="center", va="center", color="black", fontsize=12, fontweight="bold")
@@ -341,7 +381,7 @@ def plot_mjj_score_slices_optimized(histo, tag, best_score_cut, constrain_var, o
     print(f"Saved {output_dir}/mjj_score_slices_optimized_{tag}.png")
 
 
-def plot_best_working_point(histo_sig, histo_dy, histo_ttbar, histo_abcdbkg, histo_otherbkg, results, constrain_var, output_dir="abcd_scan_plots", guardrails={}):
+def plot_best_working_point(histo_sig, histo_dy, histo_ttbar, histo_abcdbkg, histo_otherbkg, histo_dat, results, constrain_var, output_dir="abcd_scan_plots", guardrails={}):
     top_indices = get_top_scan_indices(results, n_top=1, **guardrails)
     best_idx = top_indices[0]
     best_i, best_j = np.unravel_index(best_idx, results["significance"].shape)
@@ -405,6 +445,7 @@ def plot_best_working_point(histo_sig, histo_dy, histo_ttbar, histo_abcdbkg, his
             histo_sig=histo_sig,
             histo_abcdbkg=histo_abcdbkg,
             histo_otherbkg=histo_otherbkg,
+            histo_dat=histo_dat,
         )
     write_single_datacard(
         best_S, best_B_total,
@@ -413,7 +454,7 @@ def plot_best_working_point(histo_sig, histo_dy, histo_ttbar, histo_abcdbkg, his
     )
 
 
-def write_abcd_datacards(histo_sig, histo_abcdbkg, histo_otherbkg, results, constrain_var, output_dir="abcd_scan_plots", n_top=5, min_significance=0, guardrails={}):
+def write_abcd_datacards(histo_sig, histo_abcdbkg, histo_otherbkg, histo_dat, results, constrain_var, output_dir="abcd_scan_plots", n_top=5, min_significance=0, guardrails={}):
     os.makedirs(output_dir, exist_ok=True)
     top_indices = get_top_scan_indices(results, n_top=n_top, **guardrails)
     sig_h     = histo_sig[{"process_grp": sum}]
@@ -496,6 +537,7 @@ def write_abcd_datacards(histo_sig, histo_abcdbkg, histo_otherbkg, results, cons
             histo_sig=histo_sig,
             histo_abcdbkg=histo_abcdbkg,
             histo_otherbkg=histo_otherbkg,
+            histo_dat=histo_dat,
         )
 
 
@@ -515,36 +557,105 @@ def plot_abcd_2d_snapshots(histo_sig, histo_dy, histo_ttbar, histo_abcdbkg, hist
     abcdbkg_vals = abcd_h.values(flow=False)
     allbkg_vals  = abcdbkg_vals + other_h.values(flow=False)
     sig_vals     = sig_h.values(flow=False)
+    other_vals   = other_h.values(flow=False)
 
-    def _make_overview_plots(vals, cbar_label, fname_prefix):
+    def _make_overview_plots(h, cbar_label, fname_prefix, cmap="Blues", profile_rebin=1):
+        vals = h.values(flow=False)
+        vars_2d = h.variances(flow=False)
+
+        if profile_rebin < 1:
+            profile_rebin = 1
+
+        n_score_bins = vals.shape[0]
+        grouped_ranges = []
+        start = 0
+        while start < n_score_bins:
+            stop = min(start + profile_rebin, n_score_bins)
+            grouped_ranges.append((start, stop))
+            start = stop
+
         for scale, norm, suffix in [("linear", None, "lin"), ("log", matplotlib.colors.LogNorm(), "log")]:
             fig, ax = plt.subplots(figsize=(8, 6))
-            im = ax.pcolormesh(score_edges, mjj_edges, vals.T, cmap="Blues", norm=norm)
+            im = ax.pcolormesh(score_edges, mjj_edges, vals.T, cmap=cmap, norm=norm)
             plt.colorbar(im, ax=ax, label=cbar_label)
-            score_centers = (score_edges[:-1] + score_edges[1:]) / 2
-            mjj_centers   = (mjj_edges[:-1]   + mjj_edges[1:])   / 2
-            profile = np.zeros(len(score_centers))
-            for si in range(len(score_centers)):
-                col = vals[si, :]
-                total = col.sum()
-                if total > 0:
-                    profile[si] = np.average(mjj_centers, weights=col)
+
+            mjj_centers = (mjj_edges[:-1] + mjj_edges[1:]) / 2
+            profile = np.zeros(len(grouped_ranges))
+            profile_err = np.zeros(len(grouped_ranges))
+            profile_x = np.zeros(len(grouped_ranges))
+            profile_xerr = np.zeros(len(grouped_ranges))
+
+            for gi, (lo, hi) in enumerate(grouped_ranges):
+                col = np.sum(vals[lo:hi, :], axis=0)
+                col_var = np.sum(vars_2d[lo:hi, :], axis=0)
+
+                sumw = np.sum(col)
+                sumw2 = np.sum(col_var)
+
+                x_lo = score_edges[lo]
+                x_hi = score_edges[hi]
+                profile_x[gi] = 0.5 * (x_lo + x_hi)
+                profile_xerr[gi] = 0.5 * (x_hi - x_lo)
+
+                if sumw > 0 and sumw2 > 0:
+                    mean = np.average(mjj_centers, weights=col)
+                    variance = np.average((mjj_centers - mean) ** 2, weights=col)
+                    n_eff = (sumw ** 2) / sumw2
+
+                    profile[gi] = mean
+                    profile_err[gi] = np.sqrt(variance / n_eff)
                 else:
-                    profile[si] = np.nan
-            ax.plot(score_centers, profile, color="red", linewidth=2, marker="o", markersize=4, label="Mean")
+                    profile[gi] = np.nan
+                    profile_err[gi] = np.nan
+
+            label = "Mean ± SE" if profile_rebin == 1 else f"Mean ± SE (profile x{profile_rebin} coarser)"
+            ax.errorbar(
+                profile_x,
+                profile,
+                xerr=profile_xerr,
+                yerr=profile_err,
+                color="red",
+                linestyle="none",
+                marker="o",
+                markersize=4,
+                label=label,
+                capsize=2,
+            )
             ax.legend(loc="upper right", fontsize=8)
             ax.set_xlabel("DNN score")
             ax.set_ylabel(f"{constrain_var}")
             ax.set_title(f"{fname_prefix} 2D histogram (no cuts, {scale})")
             plt.tight_layout()
-            plt.savefig(f"{output_dir}/{fname_prefix}_{suffix}.png", dpi=150)
+
+            extra = "" if profile_rebin == 1 else f"_profileRebin{profile_rebin}"
+            plt.savefig(f"{output_dir}/{fname_prefix}_{suffix}{extra}.png", dpi=150)
             plt.close()
-            print(f"Saved {output_dir}/{fname_prefix}_{suffix}.png")
-    _make_overview_plots(dy_vals,      "DY yield",                            "scan_point_overview_dy")
-    _make_overview_plots(ttbar_vals,   "ttbar yield",                         "scan_point_overview_ttbar")
-    _make_overview_plots(abcdbkg_vals, "ABCD background yield (DY + ttbar)",  "scan_point_overview_abcdbkg")
-    _make_overview_plots(allbkg_vals,  "Total background yield",              "scan_point_overview_allbkg")
-    _make_overview_plots(sig_vals,     "Signal yield",                        "scan_point_overview_sig")
+            print(f"Saved {output_dir}/{fname_prefix}_{suffix}{extra}.png")
+
+    # Also get total
+    allbkg_h = abcd_h + other_h
+
+    _make_overview_plots(dy_h,    "DY yield",                            "scan_point_overview_dy")
+    _make_overview_plots(ttbar_h, "ttbar yield",                         "scan_point_overview_ttbar")
+    _make_overview_plots(abcd_h,  "ABCD background yield (DY + ttbar)",  "scan_point_overview_abcdbkg")
+    _make_overview_plots(other_h, "Other background yield",              "scan_point_overview_otherbkg")
+    _make_overview_plots(sig_h,   "Signal yield",                        "scan_point_overview_sig", cmap="Greens")
+    _make_overview_plots(allbkg_h, "Total background yield", "scan_point_overview_allbkg")
+
+    _make_overview_plots(dy_h,    "DY yield",                            "scan_point_overview_dy", profile_rebin=4)
+    _make_overview_plots(ttbar_h, "ttbar yield",                         "scan_point_overview_ttbar", profile_rebin=4)
+    _make_overview_plots(abcd_h,  "ABCD background yield (DY + ttbar)",  "scan_point_overview_abcdbkg", profile_rebin=4)
+    _make_overview_plots(other_h, "Other background yield",              "scan_point_overview_otherbkg", profile_rebin=4)
+    _make_overview_plots(sig_h,   "Signal yield",                        "scan_point_overview_sig", cmap="Greens", profile_rebin=4)
+    _make_overview_plots(allbkg_h, "Total background yield", "scan_point_overview_allbkg", profile_rebin=4)
+
+    _make_overview_plots(dy_h,    "DY yield",                           "scan_point_overview_dy", profile_rebin=10)
+    _make_overview_plots(ttbar_h, "ttbar yield",                        "scan_point_overview_ttbar", profile_rebin=10)
+    _make_overview_plots(abcd_h,  "ABCD background yield (DY + ttbar)", "scan_point_overview_abcdbkg", profile_rebin=10)
+    _make_overview_plots(other_h, "Other background yield",             "scan_point_overview_otherbkg", profile_rebin=10)
+    _make_overview_plots(sig_h,   "Signal yield",                       "scan_point_overview_sig", cmap="Greens", profile_rebin=10)
+    _make_overview_plots(allbkg_h, "Total background yield",            "scan_point_overview_allbkg", profile_rebin=10)
+
     if make_scan_blocks:
         for i in range(n_score):
             score_cut = results["score_cuts"][i]
@@ -567,7 +678,7 @@ def plot_abcd_2d_snapshots(histo_sig, histo_dy, histo_ttbar, histo_abcdbkg, hist
             print(f"Saved scan block {i}")
 
 
-def get_top_scan_indices(results, n_top=1, min_significance=0.0, max_closure_sd=np.inf, min_S=0.0, max_B_total=np.inf):
+def get_top_scan_indices(results, n_top=1, min_significance=0.0, max_closure_sd=np.inf, min_S=0.0, max_B_total=np.inf, min_bcd_yield=0.0):
     sig_flat             = results["significance"].flatten()
     S_flat               = results["S"].flatten()
     B_total_flat         = results["B_total"].flatten()
@@ -575,21 +686,29 @@ def get_top_scan_indices(results, n_top=1, min_significance=0.0, max_closure_sd=
     B_abcd_est_err_flat  = results["B_abcd_est_err"].flatten()
     B_abcd_true_flat     = results["B_abcd_true"].flatten()
     B_abcd_est_flat      = results["B_abcd_est"].flatten()
+    B_flat               = results["B_abcd_yield"].flatten()
+    C_flat               = results["C_abcd_yield"].flatten()
+    D_flat               = results["D_abcd_yield"].flatten()
+
     denom = np.sqrt(B_abcd_true_err_flat**2 + B_abcd_est_err_flat**2)
     closure_sd_flat = np.where(denom > 0, np.abs(B_abcd_est_flat - B_abcd_true_flat) / denom, np.nan)
+
     valid_mask = (
-        ~np.isnan(sig_flat)                &
-        (sig_flat     >= min_significance) &
-        (S_flat       >= min_S)            &
-        (B_total_flat <= max_B_total)      &
-        (~np.isnan(closure_sd_flat))       &
-        (closure_sd_flat <= max_closure_sd)
+        ~np.isnan(sig_flat)                 &
+        (sig_flat     >= min_significance)  &
+        (S_flat       >= min_S)             &
+        (B_total_flat <= max_B_total)       &
+        (~np.isnan(closure_sd_flat))        &
+        (closure_sd_flat <= max_closure_sd) &
+        (B_flat >= min_bcd_yield)           &
+        (C_flat >= min_bcd_yield)           &
+        (D_flat >= min_bcd_yield)
     )
+
     valid_indices = np.where(valid_mask)[0]
     top_indices = valid_indices[np.argsort(sig_flat[valid_indices])[::-1]][:n_top]
     print(f"  {len(valid_indices)} scan points pass guard rails, returning top {len(top_indices)}")
     return top_indices
-
 
 def do_abcd_scan(histo_sig, histo_abcdbkg, histo_otherbkg, constrain_axis_name, score_axis_name="dnn_score"):
     sig_h   = histo_sig[{"process_grp": sum}]
@@ -615,6 +734,10 @@ def do_abcd_scan(histo_sig, histo_abcdbkg, histo_otherbkg, constrain_axis_name, 
     B_abcd_est_err   = np.zeros((n_scan_score, n_scan_mjj))
     B_other_err      = np.zeros((n_scan_score, n_scan_mjj))
     B_total_err      = np.zeros((n_scan_score, n_scan_mjj))
+    B_total_err      = np.zeros((n_scan_score, n_scan_mjj))
+    B_abcd_yield     = np.zeros((n_scan_score, n_scan_mjj))
+    C_abcd_yield     = np.zeros((n_scan_score, n_scan_mjj))
+    D_abcd_yield     = np.zeros((n_scan_score, n_scan_mjj))
     for i, si in enumerate(score_cut_bins):
         for j, mj in enumerate(mjj_cut_bins):
             A_sig   = get_yield(sig_h,   slice(si, None), slice(mj, None))
@@ -623,6 +746,10 @@ def do_abcd_scan(histo_sig, histo_abcdbkg, histo_otherbkg, constrain_axis_name, 
             C_abcd  = get_yield(abcd_h,  slice(si, None), slice(None, mj))
             D_abcd  = get_yield(abcd_h,  slice(None, si), slice(None, mj))
             A_other = get_yield(other_h, slice(si, None), slice(mj, None))
+            A_other    = get_yield(other_h, slice(si, None), slice(mj, None))
+            B_otherbkg = get_yield(other_h, slice(None, si), slice(mj, None))
+            C_otherbkg = get_yield(other_h, slice(si, None), slice(None, mj))
+            D_otherbkg = get_yield(other_h, slice(None, si), slice(None, mj))
             A_sig_err   = np.sqrt(sig_h[slice(si, None),   slice(mj, None)].sum(flow=False).variance)
             A_abcd_err  = np.sqrt(abcd_h[slice(si, None),  slice(mj, None)].sum(flow=False).variance)
             B_abcd_err  = np.sqrt(abcd_h[slice(None, si),  slice(mj, None)].sum(flow=False).variance)
@@ -656,6 +783,10 @@ def do_abcd_scan(histo_sig, histo_abcdbkg, histo_otherbkg, constrain_axis_name, 
             B_abcd_est_err[i, j]  = abcd_est_err
             B_other_err[i, j]     = A_other_err
             B_total_err[i, j]     = b_total_err
+            B_total_err[i, j]     = b_total_err
+            B_abcd_yield[i, j]    = B_abcd + B_otherbkg
+            C_abcd_yield[i, j]    = C_abcd + C_otherbkg
+            D_abcd_yield[i, j]    = D_abcd + D_otherbkg
     return {
         "closure"         : closure,
         "significance"    : significance,
@@ -671,6 +802,10 @@ def do_abcd_scan(histo_sig, histo_abcdbkg, histo_otherbkg, constrain_axis_name, 
         "B_abcd_est_err"  : B_abcd_est_err,
         "B_other_err"     : B_other_err,
         "B_total_err"     : B_total_err,
+        "B_total_err"  : B_total_err,
+        "B_abcd_yield" : B_abcd_yield,
+        "C_abcd_yield" : C_abcd_yield,
+        "D_abcd_yield" : D_abcd_yield,
     }
 
 
@@ -746,10 +881,11 @@ def main():
     parser.add_argument("pkl_file_path", help="The path to the pkl file")
     args = parser.parse_args()
     grp_dict = cvh.GRP_DICT_FULL_R2
+    #grp_dict = cvh.GRP_DICT_FULL_R3
 
     # Set the options for this run (NOTE these are hard coded)
     cat_for_dnn    = "2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5"
-    abcd_hist_name = "abcd_2lH"
+    abcd_hist_name = "abcd2d_2lH"
     #constrain_var  = "vbs_score"
     constrain_var  = "vbs_mjj"
     guardrails = {
@@ -757,6 +893,7 @@ def main():
         "max_closure_sd"   : 1.2,
         "min_S"            : 0.03,
         "max_B_total"      : 1e99,
+        "min_bcd_yield"    : 10.0,
     }
 
     # Get the histo from the pkl
@@ -806,7 +943,7 @@ def main():
 
     # Make the stack plot, borrowing from check_vvh_hists
     years_to_prepend = ["2016postVFP","2016preVFP","2017","2018"]
-    cvh.make_plots(histo_dict,grp_dict,years_to_prepend,["2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5"],lepflav_bin="all",save_dir_path=out_dir,make_cat_subdirs=False,vars_to_plot=["njets","njets_counts","vbs_mjj","dnn_score_2lH","dnn_score_2lV"])
+    cvh.make_plots(histo_dict,grp_dict,years_to_prepend,["2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5"],lepflav_bin="all",save_dir_path=out_dir,make_cat_subdirs=False,vars_to_plot=["vbs_mjj","dnn_score_2lH"])#"njets","njets_counts","vbs_mjj","dnn_score_2lH","dnn_score_2lV"])
 
     # Just simple make 1d plots of the score
     #plot_1d_stack(histo_sig, histo_dy, histo_ttbar, histo_otherbkg, "dnn_score_2lH", f"{out_dir}/stack_dnn_score.png")
@@ -840,7 +977,7 @@ def main():
     results = do_abcd_scan(histo_sig, histo_abcdbkg, histo_otherbkg, constrain_var)
     plot_abcd_scan_panels(results, f"{out_dir}/abcd_scan_panels.png")
     plot_abcd_2d_snapshots(histo_sig, histo_dy, histo_ttbar, histo_abcdbkg, histo_otherbkg, results, constrain_var, output_dir=out_dir, make_scan_blocks=False)
-    plot_best_working_point(histo_sig, histo_dy, histo_ttbar, histo_abcdbkg, histo_otherbkg, results, constrain_var, output_dir=out_dir, guardrails=guardrails)
+    plot_best_working_point(histo_sig, histo_dy, histo_ttbar, histo_abcdbkg, histo_otherbkg, histo_dat, results, constrain_var, output_dir=out_dir, guardrails=guardrails)
 
     # Optimized slices plots at best working point
     best_idx = get_top_scan_indices(results, n_top=1, **guardrails)[0]
@@ -850,7 +987,7 @@ def main():
         plot_mjj_score_slices_optimized(histo, tag, best_score_cut, constrain_var, output_dir=out_dir)
 
     # Write datacards
-    write_abcd_datacards(histo_sig, histo_abcdbkg, histo_otherbkg, results, constrain_var, output_dir=out_dir_dc, n_top=200, guardrails=guardrails)
+    write_abcd_datacards(histo_sig, histo_abcdbkg, histo_otherbkg, histo_dat, results, constrain_var, output_dir=out_dir_dc, n_top=200, guardrails=guardrails)
 
 
 
