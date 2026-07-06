@@ -74,6 +74,13 @@ class AnalysisProcessor(processor.ProcessorABC):
                 #axis.Regular(50, 0, 1, name="vbs_score", label="Score of vbs"),
                 storage="weight", name="Counts",
             ),
+            "abcd2d_3lChsum1": hist.Hist(
+                hist.axis.StrCategory([], growth=True, name="process", label="process"),
+                hist.axis.StrCategory([], growth=True, name="category", label="category"),
+                axis.Regular(100, 0, 1, name="dnn_score",   label="DNN score from ABCDnet"),
+                axis.Regular(100, 0, self.mjj_cap, name="vbs_mjj", label="Mjj of vbs"),
+                storage="weight", name="Counts",
+            ),
         }
 
         # Create the dense axes for the histograms
@@ -234,6 +241,7 @@ class AnalysisProcessor(processor.ProcessorABC):
 
             "mll_min_afos" : axis.Regular(180, -2, 48, name="mll_min_afos",  label="min mll of all OS pairs"),
             "mll_z" : axis.Regular(180, 0, 150, name="mll_z",  label="mll of the pair of leptons closest to z"),
+            "pt_z"  : axis.Regular(180, 0, 150, name="pt_z",   label="pt of the pair of leptons closest to z"),
             "mt_wlep" : axis.Regular(180,-2,298, name="mt_wlep", label="MT of MET and W lep (ie, lep that is not the SFOS Z pair)"),
             "dr_wlepmet" : axis.Regular(180,0,6, name="dr_wlepmet", label="dr between MET and W lep (ie, lep that is not the SFOS Z pair)"),
 
@@ -255,8 +263,9 @@ class AnalysisProcessor(processor.ProcessorABC):
             "nlep_truth_real"   : axis.Regular(5, 0, 5, name="nlep_truth_real",   label="Lep (truth, real) multiplicity"),
             "nlep_truth_fake"   : axis.Regular(5, 0, 5, name="nlep_truth_fake",   label="Lep (truth, fake) multiplicity"),
 
-            "dnn_score_2lH"   : axis.Regular(180, 0, 1, name="dnn_score_2lH",   label="DNN ABCDnet score for 2l1FJ H region"),
-            "dnn_score_2lV"   : axis.Regular(180, 0, 1, name="dnn_score_2lV",   label="DNN ABCDnet score for 1l1FJ V region"),
+            "dnn_score_2lH"      : axis.Regular(180, 0, 1, name="dnn_score_2lH",      label="DNN ABCDnet score for 2l1FJ H region"),
+            "dnn_score_2lV"      : axis.Regular(180, 0, 1, name="dnn_score_2lV",      label="DNN ABCDnet score for 1l1FJ V region"),
+            "dnn_score_3lChsum1" : axis.Regular(180, 0, 1, name="dnn_score_3lChsum1", label="DNN ABCDnet score for 3l chargesum=1 region"),
 
             "vbs_mjj"       : axis.Regular(180, 0, 4000, name="vbs_mjj",       label="VBS candidate mjj [GeV]"),
             "vbs_absdetajj" : axis.Regular(180, 0, 10,   name="vbs_absdetajj", label="VBS candidate abs delta eta jj"),
@@ -315,7 +324,6 @@ class AnalysisProcessor(processor.ProcessorABC):
         self._bdt_vars = []
         for varname in list(self._dense_axes_dict.keys()):
             self._bdt_vars.append(varname)
-        self._bdt_vars.append("isRun2") # Not in hist dense axis list but we want it
         self._bdt_vars.append("isRun3") # Not in hist dense axis list but we want it
         if self._siphon_bdt_data:
             bdt_out = {var: processor.column_accumulator(np.array([], dtype=np.float32)) for var in self._bdt_vars}
@@ -350,6 +358,9 @@ class AnalysisProcessor(processor.ProcessorABC):
         elif model == "2lV":
             scaler_path = ewkcoffea_path("data/vvh_abcd_models/single_abcdisco_2l1fj_forV_scaler_params.json")
             checkpoint_path = ewkcoffea_path("data/vvh_abcd_models/single_abcdisco_2l1fj_forV.ckpt")
+        elif model == "3lChsum1":
+            scaler_path = ewkcoffea_path("data/vvh_abcd_models/single_abcdisco_3lChsum1_scaler_params.json")
+            checkpoint_path = ewkcoffea_path("data/vvh_abcd_models/single_abcdisco_3lChsum1.ckpt")
         else:
             raise Exception(f"Unknown model {model}")
 
@@ -703,6 +714,7 @@ class AnalysisProcessor(processor.ProcessorABC):
         ll_pairs_4vec = ll_pairs_sfos.i0 + ll_pairs_sfos.i1
         zpeak_idx     = ak.argmin(abs(ll_pairs_4vec.mass - 91.1876), keepdims=True, axis=1)
         mll_z         = ak.fill_none(ak.flatten(ll_pairs_4vec[zpeak_idx].mass), 0)
+        pt_z          = ak.fill_none(ak.flatten(ll_pairs_4vec[zpeak_idx].pt), 0)
 
         # For 3l, find the lepton that's not part of the Z pair
         sfos_mask = ak.any(sfos_pairs_mask, axis=1)
@@ -875,6 +887,7 @@ class AnalysisProcessor(processor.ProcessorABC):
 
             "mll_min_afos" : mll_min_afos,
             "mll_z" : mll_z,
+            "pt_z"  : pt_z,
             "mt_wlep":mt_wlep,
             "dr_wlepmet":dr_wlepmet,
 
@@ -890,7 +903,6 @@ class AnalysisProcessor(processor.ProcessorABC):
             "vbs2_phi": vbs2.phi,
 
             # We want to include this in the siponed output, but probably not make hists for it
-            "isRun2" : events.isRun2,
             "isRun3" : events.isRun3,
 
         }
@@ -900,8 +912,10 @@ class AnalysisProcessor(processor.ProcessorABC):
         # Once we finish evaluating, add the score to the dense_variables_dict too
         dnn_score_2lH = self._run_abcd_inference(events, dense_variables_dict,"2lH")
         dnn_score_2lV = self._run_abcd_inference(events, dense_variables_dict,"2lV")
+        dnn_score_3lChsum1 = self._run_abcd_inference(events, dense_variables_dict,"3lChsum1")
         dense_variables_dict["dnn_score_2lH"] = dnn_score_2lH
         dense_variables_dict["dnn_score_2lV"] = dnn_score_2lV
+        dense_variables_dict["dnn_score_3lChsum1"] = dnn_score_3lChsum1
 
 
         ### Lepton truth variables ###
@@ -1009,6 +1023,15 @@ class AnalysisProcessor(processor.ProcessorABC):
         selections.add("3l_chsum3_mjj500_nb0",            is_3l & (abs_ch_sum_3l==3) & (vbsjets.mjj>500) & (nbtagst==0))
 
         selections.add("3l_chsum1",                       is_3l & (abs_ch_sum_3l==1))
+        selections.add("3l_chsum1_nSFOS0",                is_3l & (abs_ch_sum_3l==1) & (n_ll_sfos==0))
+        selections.add("3l_chsum1_nSFOS0_VBS0p2",         is_3l & (abs_ch_sum_3l==1) & (n_ll_sfos==0) & (vbsjets.score>0.2))
+        selections.add("3l_chsum1_nSFOSg0",               is_3l & (abs_ch_sum_3l==1) & (n_ll_sfos>=1))
+        selections.add("3l_chsum1_nSFOSg0_mjj500",        is_3l & (abs_ch_sum_3l==1) & (n_ll_sfos>=1) & (vbsjets.mjj>500))
+
+        selections.add("3l_chsum1_VBS0p4",                is_3l & (abs_ch_sum_3l==1) & (vbsjets.score>0.4))
+        selections.add("3l_chsum1_mjj500",                is_3l & (abs_ch_sum_3l==1) & (vbsjets.mjj>500))
+        selections.add("3l_chsum1_VBS0p4_dnn0p9",         is_3l & (abs_ch_sum_3l==1) & (vbsjets.score>0.4) & (dnn_score_3lChsum1>0.9))
+
         selections.add("3l_chsum1_nFJg0",                 is_3l & (abs_ch_sum_3l==1) & (nfatjets>=1))
         selections.add("3l_chsum1_nFJg0_mjj500",          is_3l & (abs_ch_sum_3l==1) & (nfatjets>=1) & (vbsjets.mjj>500))
         selections.add("3l_chsum1_nFJ0",                  is_3l & (abs_ch_sum_3l==1) & (nfatjets==0))
@@ -1035,9 +1058,9 @@ class AnalysisProcessor(processor.ProcessorABC):
                 "2lOSSF_nFJ1_massHi",
                 "2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5",
                 "2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5_A",
-                "2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5_B",
-                "2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5_C",
-                "2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5_D",
+                #"2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5_B",
+                #"2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5_C",
+                #"2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5_D",
 
                 # DY and ttbar CRs
                 #"2lOSSF_nFJ1_onZ_0b",
@@ -1045,10 +1068,19 @@ class AnalysisProcessor(processor.ProcessorABC):
 
                 #### 3l ###
 
-                #"3l_prelowmllcut",
                 "3l",
 
+                "3l_chsum3",
+
+                "3l_chsum1",
+                #"3l_chsum1_nSFOS0",
+                #"3l_chsum1_nSFOS0_VBS0p2",
+                #"3l_chsum1_nSFOSg0",
+                #"3l_chsum1_nSFOSg0_mjj500",
+
                 # WZ CR
+                #"3l_onZ_0b",
+                #"3l_onZ_0b_mtlmet60",
                 #"3l_onZ_0b_mtlmet60_met75",
 
                 # From cut based optimization
@@ -1129,13 +1161,14 @@ class AnalysisProcessor(processor.ProcessorABC):
         fill_abcd_2d = True # At some point should make this an option
         vbs_mjj_flow = ak.where(vbsjets.mjj<self.mjj_cap,vbsjets.mjj,self.mjj_cap-0.01)
         if fill_abcd_2d:
-            # Specify the regions to use for 2d hists (NOTE these are hard coded)
+            # Specify the regions to use for 2d hists
             cat2lH = "2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5"
             cat2lV = "2lOSSF_nFJ1_massLo_Zp2"
+            cat3lChsum1 = "3l_chsum1_VBS0p4"
             all_cuts_mask_H = selections.all(cat2lH)
             all_cuts_mask_V = selections.all(cat2lV)
+            all_cuts_mask_3lChsum1 = selections.all(cat3lChsum1)
             self.accumulator["abcd2d_2lH"].fill(
-                #vbs_score = vbsjets.score[all_cuts_mask_H],
                 vbs_mjj   = vbs_mjj_flow[all_cuts_mask_H],
                 dnn_score = dnn_score_2lH[all_cuts_mask_H],
                 weight    = weights_obj_base.weight(None)[all_cuts_mask_H],
@@ -1143,12 +1176,18 @@ class AnalysisProcessor(processor.ProcessorABC):
                 category  = cat2lH,
             )
             self.accumulator["abcd2d_2lV"].fill(
-                #vbs_score = vbsjets.score[all_cuts_mask_V],
                 vbs_mjj   = vbs_mjj_flow[all_cuts_mask_V],
                 dnn_score = dnn_score_2lV[all_cuts_mask_V],
                 weight    = weights_obj_base.weight(None)[all_cuts_mask_V],
                 process   = histAxisName[all_cuts_mask_V],
                 category  = cat2lV,
+            )
+            self.accumulator["abcd2d_3lChsum1"].fill(
+                vbs_mjj   = vbs_mjj_flow[all_cuts_mask_3lChsum1],
+                dnn_score = dnn_score_3lChsum1[all_cuts_mask_3lChsum1],
+                weight    = weights_obj_base.weight(None)[all_cuts_mask_3lChsum1],
+                process   = histAxisName[all_cuts_mask_3lChsum1],
+                category  = cat3lChsum1,
             )
 
 
