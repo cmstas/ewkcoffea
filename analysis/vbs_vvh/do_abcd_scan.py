@@ -884,10 +884,10 @@ def main():
     #grp_dict = cvh.GRP_DICT_FULL_R3
 
     # Set the options for this run (NOTE these are hard coded)
-    cat_for_dnn    = "2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5"
-    abcd_hist_name = "abcd2d_2lH"
-    #constrain_var  = "vbs_score"
+    cat_for_dnn    = "3l_chsum1_nSFOS0_VBS0p2" # Some others include: 2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5
+    abcd_hist_name = "abcd2d_3lChsum1" # Some others include: abcd2d_2lH
     constrain_var  = "vbs_mjj"
+    abcdbkg_names = ["DY", "ttbar"]
     guardrails = {
         "min_significance" : 0.0,
         "max_closure_sd"   : 1.2,
@@ -905,7 +905,7 @@ def main():
     # Build the list of non-ABCD background group names
     other_bkg_names = []
     for grp_name in grp_dict:
-        if grp_name not in ["Data", "Signal", "DY", "ttbar", 'VBSWWH_SS', 'VBSWWH_OS', 'VBSWZH', 'VBSZZH']:
+        if grp_name not in ["Data", "Signal", *abcdbkg_names, 'VBSWWH_SS', 'VBSWWH_OS', 'VBSWZH', 'VBSZZH']:
             other_bkg_names.append(grp_name)
 
     # Hists for all the relevant groupings
@@ -943,7 +943,7 @@ def main():
 
     # Make the stack plot, borrowing from check_vvh_hists
     years_to_prepend = ["2016postVFP","2016preVFP","2017","2018"]
-    cvh.make_plots(histo_dict,grp_dict,years_to_prepend,["2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5"],lepflav_bin="all",save_dir_path=out_dir,make_cat_subdirs=False,vars_to_plot=["vbs_mjj","dnn_score_2lH"])#"njets","njets_counts","vbs_mjj","dnn_score_2lH","dnn_score_2lV"])
+    cvh.make_plots(histo_dict,grp_dict,years_to_prepend,[cat_for_dnn],lepflav_bin="all",save_dir_path=out_dir,make_cat_subdirs=False,vars_to_plot=[constrain_var,"dnn_score_3lChsum1"])
 
     # Just simple make 1d plots of the score
     #plot_1d_stack(histo_sig, histo_dy, histo_ttbar, histo_otherbkg, "dnn_score_2lH", f"{out_dir}/stack_dnn_score.png")
@@ -963,7 +963,7 @@ def main():
             write_score_only_datacard(result, fname)
 
         # Evaluate at a fixed given score
-        eval_at_fixed_cut(histo_sig, histo_abcdbkg, histo_otherbkg, score_cut=0.996, label="")
+        eval_at_fixed_cut(histo_sig, histo_abcdbkg, histo_otherbkg, score_cut=0.990, label="")
 
 
 
