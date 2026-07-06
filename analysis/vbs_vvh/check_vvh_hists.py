@@ -28,11 +28,14 @@ UNBLIND_CATS = [
 ]
 
 CAT_LST_2l = [
-    "all_events",
+    #"all_events",
     "2lOSSF_nFJ1",
     "2lOSSF_nFJ1_massHi",
     "2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5",
     "2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5_A",
+    #"2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5_B",
+    #"2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5_C",
+    #"2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5_D",
 
     # DY and ttbar CRs
     #"2lOSSF_nFJ1_onZ_0b",
@@ -43,27 +46,16 @@ CAT_LST_3l = [
     #"all_events",
     #"3l_prelowmllcut",
     "3l",
-
-    "3l_onZ_0b",
-    "3l_onZ_0b_mtlmet60",
-    "3l_onZ_0b_mtlmet60_met75",
-
-    #"3l_chsum3",
-    #"3l_chsum3_mjj500",
-    #"3l_chsum3_mjj500_nb0",
-
-    #"3l_chsum1",
-    #"3l_chsum1_nFJg0",
-    #"3l_chsum1_nFJg0_mjj500",
-    #"3l_chsum1_nFJ0",
-    #"3l_chsum1_nFJ0_nSFOSg0",
-    #"3l_chsum1_nFJ0_nSFOSg0_mjj2k",
-    #"3l_chsum1_nFJ0_nSFOS0",
-    #"3l_chsum1_nFJ0_nSFOS0_mjj1k",
-    #"3l_chsum1_nFJ0_nSFOS0_mjj1k_nb0",
+    "3l_chsum1",
+    "3l_chsum3",
+    #"3l_chsum1_nSFOS0",
+    #"3l_chsum1_nSFOSg0",
 
     # WZ CR
+    #"3l_onZ_0b",
+    #"3l_onZ_0b_mtlmet60",
     #"3l_onZ_0b_mtlmet60_met75",
+
 ]
 
 
@@ -304,9 +296,7 @@ GRP_DICT_FULL_R2 = {
     "ttX" : [
         "TTWJetsToLNu_TuneCP5_13TeV",
         "TTWJetsToQQ_TuneCP5_13TeV",
-        "TTWW_TuneCP5_13TeV",
-        "TTWZ_TuneCP5_13TeV",
-        "TTZToLLNuNu_M-10_TuneCP5_13TeV",
+        #"TTZToLLNuNu_M-10_TuneCP5_13TeV",
         "TTbb_4f_TTTo2L2Nu",
         "TTbb_4f_TTToSemiLeptonic",
         "TTbb_4f_TTToHadronic",
@@ -317,6 +307,8 @@ GRP_DICT_FULL_R2 = {
     ],
     "rare-top" : [
         "TWZToLL_tlept_Wlept_5f_DR_TuneCP5_13TeV",
+        "TTWZ_TuneCP5_13TeV",
+        "TTWW_TuneCP5_13TeV",
         "tZq_ll_4f_ckm_NLO_TuneCP5_13TeV",
     ],
     "Vjets" : [
@@ -344,15 +336,15 @@ GRP_DICT_FULL_R2 = {
     ],
     "DY" : [
         "DYJetsToLL_M-10to50_TuneCP5_13TeV",
-        #"DYJetsToLL_M-50_TuneCP5_13TeV",
-        "DYJetsToLL_M-50_HT-70to100_TuneCP5_PSweights_13TeV",
-        "DYJetsToLL_M-50_HT-100to200_TuneCP5_PSweights_13TeV",
-        "DYJetsToLL_M-50_HT-200to400_TuneCP5_PSweights_13TeV",
-        "DYJetsToLL_M-50_HT-400to600_TuneCP5_PSweights_13TeV",
-        "DYJetsToLL_M-50_HT-600to800_TuneCP5_PSweights_13TeV",
-        "DYJetsToLL_M-50_HT-800to1200_TuneCP5_PSweights_13TeV",
-        "DYJetsToLL_M-50_HT-1200to2500_TuneCP5_PSweights_13TeV",
-        "DYJetsToLL_M-50_HT-2500toInf_TuneCP5_PSweights_13TeV",
+        "DYJetsToLL_M-50_TuneCP5_13TeV",
+        #"DYJetsToLL_M-50_HT-70to100_TuneCP5_PSweights_13TeV",
+        #"DYJetsToLL_M-50_HT-100to200_TuneCP5_PSweights_13TeV",
+        #"DYJetsToLL_M-50_HT-200to400_TuneCP5_PSweights_13TeV",
+        #"DYJetsToLL_M-50_HT-400to600_TuneCP5_PSweights_13TeV",
+        #"DYJetsToLL_M-50_HT-600to800_TuneCP5_PSweights_13TeV",
+        #"DYJetsToLL_M-50_HT-800to1200_TuneCP5_PSweights_13TeV",
+        #"DYJetsToLL_M-50_HT-1200to2500_TuneCP5_PSweights_13TeV",
+        #"DYJetsToLL_M-50_HT-2500toInf_TuneCP5_PSweights_13TeV",
 
     ],
     "ewkV" : [
@@ -1044,8 +1036,8 @@ def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend,cat_lst,lepflav_bin=
 
             histo_mc  = histo[{"process_grp":sample_group_names_lst_mc}]
             histo_sig = histo[{"process_grp":["Signal"]}]
-            #histo_dat = histo[{"process_grp":["Data"]}]
-            histo_dat = None
+            histo_dat = histo[{"process_grp":["Data"]}]
+            #histo_dat = None
             histo_bkg = plt_tools.group(histo,"process_grp","process_grp",{"Background": sample_group_names_lst_bkg})
 
             # Make the figure
