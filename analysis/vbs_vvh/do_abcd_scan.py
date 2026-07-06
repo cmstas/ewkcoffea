@@ -888,6 +888,9 @@ def main():
     args = parser.parse_args()
     grp_dict = cvh.GRP_DICT_FULL_R2
 
+    #########################################################
+    ############# NOTE: Configure your run here #############
+
     cat_for_dnn    = "2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5" # 3l_chsum1_nSFOS0_VBS0p2 2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5
     abcd_hist_name = "abcd2d_2lH" # abcd2d_2lH abcd2d_3lChsum1
     constrain_var  = "vbs_mjj"
@@ -900,6 +903,9 @@ def main():
         "min_bcd_yield"    : 10.0,
     }
 
+    #########################################################
+
+    # Get the input histo
     histo_dict = pickle.load(gzip.open(args.pkl_file_path))
     histo = histo_dict[abcd_hist_name]
     histo = histo[{"category": cat_for_dnn}]
