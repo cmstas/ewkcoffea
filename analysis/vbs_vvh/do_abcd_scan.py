@@ -727,10 +727,80 @@ def get_top_scan_indices(results, n_top=1, min_significance=0.0, max_closure_sd=
     return top_indices
 
 
-def do_abcd_scan(histo_sig, histo_abcdbkg, histo_otherbkg, constrain_axis_name, score_axis_name="dnn_score"):
+def compute_data_sideband_closure(dat_h, score_edges, mjj_edges, si, mj):
+    """
+    For each of the three sideband regions B, C, D, split into 4 sub-regions
+    at the midpoint of the two axes within that region and compute the ABCD
+    closure: Ba_obs vs Bb*Bc/Bd (and analogously for C and D).
+    """
+    def _mid_bin(edges, lo, hi):
+        mid_val = 0.5 * (edges[lo] + edges[hi])
+        idx = int(np.searchsorted(edges, mid_val))
+        return int(np.clip(idx, lo + 1, hi - 1))
+
+    n_score_bins = len(score_edges) - 1
+    n_mjj_bins   = len(mjj_edges)   - 1
+
+    def _get(s_lo, s_hi, m_lo, m_hi):
+        sub = dat_h[slice(s_lo, s_hi), slice(m_lo, m_hi)]
+        val = sub.sum(flow=False).value
+        err = np.sqrt(sub.sum(flow=False).variance)
+        return val, err
+
+    def _closure_for_region(s_lo, s_hi, m_lo, m_hi, label):
+        sm = _mid_bin(score_edges, s_lo, s_hi)
+        mm = _mid_bin(mjj_edges,   m_lo, m_hi)
+
+        Ba, Ba_err = _get(sm, s_hi, mm, m_hi)   # high score, high mjj  (SR-analogue)
+        Bb, Bb_err = _get(s_lo, sm, mm, m_hi)   # low  score, high mjj
+        Bc, Bc_err = _get(sm, s_hi, m_lo, mm)   # high score, low  mjj
+        Bd, Bd_err = _get(s_lo, sm, m_lo, mm)   # low  score, low  mjj
+
+        if Bd > 0 and Bb > 0 and Bc > 0:
+            Ba_est     = Bb * Bc / Bd
+            Ba_est_err = Ba_est * np.sqrt(
+                (Bb_err / Bb)**2 + (Bc_err / Bc)**2 + (Bd_err / Bd)**2
+            )
+        else:
+            Ba_est     = np.nan
+            Ba_est_err = np.nan
+
+        closure    = Ba / Ba_est if (not np.isnan(Ba_est) and Ba_est > 0) else np.nan
+        denom_cl   = np.sqrt(Ba_err**2 + Ba_est_err**2) if not np.isnan(Ba_est) else np.nan
+        closure_sd = (Ba - Ba_est) / denom_cl if (not np.isnan(denom_cl) and denom_cl > 0) else np.nan
+        closure_err = closure * np.sqrt(
+            (Ba_err / Ba)**2 + (Ba_est_err / Ba_est)**2
+        ) if (not np.isnan(closure) and Ba > 0 and not np.isnan(Ba_est) and Ba_est > 0) else np.nan
+
+        return {
+            "label"      : label,
+            "split_score": score_edges[sm],
+            "split_mjj"  : mjj_edges[mm],
+            "Ba"         : Ba,     "Ba_err"    : Ba_err,
+            "Bb"         : Bb,     "Bb_err"    : Bb_err,
+            "Bc"         : Bc,     "Bc_err"    : Bc_err,
+            "Bd"         : Bd,     "Bd_err"    : Bd_err,
+            "Ba_est"     : Ba_est, "Ba_est_err": Ba_est_err,
+            "closure"    : closure,
+            "closure_err": closure_err,
+            "closure_sd" : closure_sd,
+        }
+
+    results = {}
+    if si > 1 and (n_mjj_bins - mj) > 1:
+        results["B"] = _closure_for_region(0, si, mj, n_mjj_bins, "B")
+    if (n_score_bins - si) > 1 and mj > 1:
+        results["C"] = _closure_for_region(si, n_score_bins, 0, mj, "C")
+    if si > 1 and mj > 1:
+        results["D"] = _closure_for_region(0, si, 0, mj, "D")
+    return results
+
+
+def do_abcd_scan(histo_sig, histo_abcdbkg, histo_otherbkg, constrain_axis_name, score_axis_name="dnn_score", histo_dat=None):
     sig_h   = histo_sig[{"process_grp": sum}]
     abcd_h  = histo_abcdbkg[{"process_grp": sum}]
     other_h = histo_otherbkg[{"process_grp": sum}]
+    dat_h   = histo_dat[{"process_grp": sum}] if histo_dat is not None else None
     score_edges = sig_h.axes[score_axis_name].edges
     mjj_edges   = sig_h.axes[constrain_axis_name].edges
     n_score = len(score_edges) - 1
@@ -754,6 +824,12 @@ def do_abcd_scan(histo_sig, histo_abcdbkg, histo_otherbkg, constrain_axis_name, 
     B_abcd_yield     = np.zeros((n_scan_score, n_scan_mjj))
     C_abcd_yield     = np.zeros((n_scan_score, n_scan_mjj))
     D_abcd_yield     = np.zeros((n_scan_score, n_scan_mjj))
+    data_closure_B     = np.full((n_scan_score, n_scan_mjj), np.nan)
+    data_closure_C     = np.full((n_scan_score, n_scan_mjj), np.nan)
+    data_closure_D     = np.full((n_scan_score, n_scan_mjj), np.nan)
+    data_closure_B_err = np.full((n_scan_score, n_scan_mjj), np.nan)
+    data_closure_C_err = np.full((n_scan_score, n_scan_mjj), np.nan)
+    data_closure_D_err = np.full((n_scan_score, n_scan_mjj), np.nan)
     for i, si in enumerate(score_cut_bins):
         for j, mj in enumerate(mjj_cut_bins):
             A_sig   = get_yield(sig_h,   slice(si, None), slice(mj, None))
@@ -801,24 +877,41 @@ def do_abcd_scan(histo_sig, histo_abcdbkg, histo_otherbkg, constrain_axis_name, 
             B_abcd_yield[i, j]    = B_abcd + B_otherbkg
             C_abcd_yield[i, j]    = C_abcd + C_otherbkg
             D_abcd_yield[i, j]    = D_abcd + D_otherbkg
+            if dat_h is not None:
+                sb = compute_data_sideband_closure(dat_h, score_edges, mjj_edges, si, mj)
+                if "B" in sb:
+                    data_closure_B[i, j]     = sb["B"]["closure"]
+                    data_closure_B_err[i, j] = sb["B"]["closure_err"]
+                if "C" in sb:
+                    data_closure_C[i, j]     = sb["C"]["closure"]
+                    data_closure_C_err[i, j] = sb["C"]["closure_err"]
+                if "D" in sb:
+                    data_closure_D[i, j]     = sb["D"]["closure"]
+                    data_closure_D_err[i, j] = sb["D"]["closure_err"]
     return {
-        "closure"         : closure,
-        "significance"    : significance,
-        "S"               : S_arr,
-        "B_abcd_true"     : B_abcd_true,
-        "B_abcd_est"      : B_abcd_est,
-        "B_other"         : B_other,
-        "B_total"         : B_total,
-        "score_cuts"      : score_edges[score_cut_bins],
-        "mjj_cuts"        : mjj_edges[mjj_cut_bins],
-        "S_err"           : S_err_arr,
-        "B_abcd_true_err" : B_abcd_true_err,
-        "B_abcd_est_err"  : B_abcd_est_err,
-        "B_other_err"     : B_other_err,
-        "B_total_err"     : B_total_err,
-        "B_abcd_yield"    : B_abcd_yield,
-        "C_abcd_yield"    : C_abcd_yield,
-        "D_abcd_yield"    : D_abcd_yield,
+        "closure"          : closure,
+        "significance"     : significance,
+        "S"                : S_arr,
+        "B_abcd_true"      : B_abcd_true,
+        "B_abcd_est"       : B_abcd_est,
+        "B_other"          : B_other,
+        "B_total"          : B_total,
+        "score_cuts"       : score_edges[score_cut_bins],
+        "mjj_cuts"         : mjj_edges[mjj_cut_bins],
+        "S_err"            : S_err_arr,
+        "B_abcd_true_err"  : B_abcd_true_err,
+        "B_abcd_est_err"   : B_abcd_est_err,
+        "B_other_err"      : B_other_err,
+        "B_total_err"      : B_total_err,
+        "B_abcd_yield"     : B_abcd_yield,
+        "C_abcd_yield"     : C_abcd_yield,
+        "D_abcd_yield"     : D_abcd_yield,
+        "data_closure_B"   : data_closure_B,
+        "data_closure_C"   : data_closure_C,
+        "data_closure_D"   : data_closure_D,
+        "data_closure_B_err": data_closure_B_err,
+        "data_closure_C_err": data_closure_C_err,
+        "data_closure_D_err": data_closure_D_err,
     }
 
 
@@ -833,6 +926,12 @@ def plot_abcd_scan_panels(results, output_path):
     B_other           = []
     B_total           = []
     closure           = []
+    data_closure_B    = []
+    data_closure_C    = []
+    data_closure_D    = []
+    data_closure_B_err = []
+    data_closure_C_err = []
+    data_closure_D_err = []
     labels            = []
     for i in range(n_score):
         for j in range(n_mjj):
@@ -847,111 +946,83 @@ def plot_abcd_scan_panels(results, output_path):
             B_other.append(results["B_other"][i, j])
             B_total.append(results["B_total"][i, j])
             closure.append(results["closure"][i, j])
+            data_closure_B.append(results["data_closure_B"][i, j])
+            data_closure_C.append(results["data_closure_C"][i, j])
+            data_closure_D.append(results["data_closure_D"][i, j])
+            data_closure_B_err.append(results["data_closure_B_err"][i, j])
+            data_closure_C_err.append(results["data_closure_C_err"][i, j])
+            data_closure_D_err.append(results["data_closure_D_err"][i, j])
             labels.append(f"s>{results['score_cuts'][i]:.2f},mjj>{results['mjj_cuts'][j]:.0f}")
-    scan_points       = np.array(scan_points)
-    significance      = np.array(significance)
-    significance_true = np.array(significance_true)
-    B_abcd_true       = np.array(B_abcd_true)
-    B_abcd_est        = np.array(B_abcd_est)
-    B_other           = np.array(B_other)
-    B_total           = np.array(B_total)
-    closure           = np.array(closure)
-    fig, axes = plt.subplots(3, 1, figsize=(min(max(12, len(scan_points)//4), 80), 12), sharex=True)
+    scan_points        = np.array(scan_points)
+    significance       = np.array(significance)
+    significance_true  = np.array(significance_true)
+    B_abcd_true        = np.array(B_abcd_true)
+    B_abcd_est         = np.array(B_abcd_est)
+    B_other            = np.array(B_other)
+    B_total            = np.array(B_total)
+    closure            = np.array(closure)
+    data_closure_B     = np.array(data_closure_B)
+    data_closure_C     = np.array(data_closure_C)
+    data_closure_D     = np.array(data_closure_D)
+    data_closure_B_err = np.array(data_closure_B_err)
+    data_closure_C_err = np.array(data_closure_C_err)
+    data_closure_D_err = np.array(data_closure_D_err)
+
+    has_data_closure = not np.all(np.isnan(data_closure_B))
+    n_panels = 6 if has_data_closure else 3
+    fig, axes = plt.subplots(n_panels, 1, figsize=(min(max(12, len(scan_points)//4), 80), 4 * n_panels), sharex=True)
+
     axes[0].plot(scan_points, significance,      marker="o", markersize=3, linewidth=1, color="tab:blue",   label="S/sqrt(B_total)")
     axes[0].plot(scan_points, significance_true, marker="o", markersize=3, linewidth=1, color="tab:orange", label="S/sqrt(B_true_total)")
     axes[0].set_ylabel("Significance")
-    axes[0].legend()
+    axes[0].legend(loc="upper left")
     axes[0].grid(True, alpha=0.3)
+
     axes[1].plot(scan_points, B_abcd_true, marker="o", markersize=3, linewidth=1, color="tab:blue",   label="B_abcd true (MC)")
     axes[1].plot(scan_points, B_abcd_est,  marker="o", markersize=3, linewidth=1, color="tab:cyan",   label="B_abcd est (B*C/D)")
     axes[1].plot(scan_points, B_other,     marker="o", markersize=3, linewidth=1, color="tab:green",  label="B_other (MC)")
     axes[1].plot(scan_points, B_total,     marker="o", markersize=3, linewidth=1, color="tab:orange", label="B_total")
     axes[1].set_ylabel("Background yield in A")
-    axes[1].legend()
+    axes[1].legend(loc="upper left")
     axes[1].grid(True, alpha=0.3)
-    axes[2].plot(scan_points, closure, marker="o", markersize=3, linewidth=1, color="tab:green")
+
+    axes[2].plot(scan_points, closure, marker="o", markersize=3, linewidth=1, color="tab:green", label="MC ABCD bkg closure (B*C/D / truth)")
     axes[2].axhline(1.0, color="black", linestyle="--", linewidth=1)
     axes[2].axhline(1.2, color="red",   linestyle="--", linewidth=0.8, alpha=0.5)
     axes[2].axhline(0.8, color="red",   linestyle="--", linewidth=0.8, alpha=0.5)
-    axes[2].set_ylabel("B_abcd_est / B_abcd_true (ABCD bkg closure)")
-    axes[2].set_xlabel("Scan point (score cut, mjj cut)")
+    axes[2].set_ylabel("MC ABCD closure")
     axes[2].set_ylim(0, 2)
+    axes[2].legend(loc="upper left")
     axes[2].grid(True, alpha=0.3)
-    axes[0].set_xlim(-10, len(scan_points) + 10)
+
+    if has_data_closure:
+        for ax, closure_vals, closure_errs, region in [
+            (axes[3], data_closure_B, data_closure_B_err, "B"),
+            (axes[4], data_closure_C, data_closure_C_err, "C"),
+            (axes[5], data_closure_D, data_closure_D_err, "D"),
+        ]:
+            ax.errorbar(scan_points, closure_vals, yerr=closure_errs,
+                        fmt="o", markersize=3, linewidth=1, color="tab:purple",
+                        elinewidth=0.3, capsize=1, label=f"Data closure in sideband {region}")
+            ax.axhline(1.0, color="black", linestyle="--", linewidth=1)
+            ax.axhline(1.2, color="red",   linestyle="--", linewidth=0.8, alpha=0.5)
+            ax.axhline(0.8, color="red",   linestyle="--", linewidth=0.8, alpha=0.5)
+            ax.set_ylabel(f"Data closure\nsideband {region}")
+            ax.set_ylim(0, 2)
+            ax.legend(loc="upper left")
+            ax.grid(True, alpha=0.3)
+
+    axes[-1].set_xlabel("Scan point (score cut, mjj cut)")
+    axes[-1].set_xlim(-10, len(scan_points) + 10)
     tick_step = max(1, len(scan_points) // 20)
     tick_positions = [0] + list(scan_points[::tick_step])
     tick_labels = [labels[0]] + [labels[i] for i in range(0, len(scan_points), tick_step)]
-    axes[2].set_xticks(tick_positions)
-    axes[2].set_xticklabels(tick_labels, rotation=90, fontsize=6)
+    axes[-1].set_xticks(tick_positions)
+    axes[-1].set_xticklabels(tick_labels, rotation=90, fontsize=6)
     plt.tight_layout()
     plt.savefig(output_path, dpi=200)
     plt.close()
     print(f"Saved scan plot to {output_path}")
-
-
-def compute_data_sideband_closure(dat_h, score_edges, mjj_edges, si, mj):
-    """
-    For each of the three sideband regions B, C, D, split into 4 sub-regions
-    at the midpoint of the two axes within that region and compute the ABCD
-    closure: Ba_obs vs Bb*Bc/Bd (and analogously for C and D).
-    """
-    def _mid_bin(edges, lo, hi):
-        mid_val = 0.5 * (edges[lo] + edges[hi])
-        idx = int(np.searchsorted(edges, mid_val))
-        return int(np.clip(idx, lo + 1, hi - 1))
-
-    n_score_bins = len(score_edges) - 1
-    n_mjj_bins   = len(mjj_edges)   - 1
-
-    def _get(s_lo, s_hi, m_lo, m_hi):
-        sub = dat_h[slice(s_lo, s_hi), slice(m_lo, m_hi)]
-        val = sub.sum(flow=False).value
-        err = np.sqrt(sub.sum(flow=False).variance)
-        return val, err
-
-    def _closure_for_region(s_lo, s_hi, m_lo, m_hi, label):
-        sm = _mid_bin(score_edges, s_lo, s_hi)
-        mm = _mid_bin(mjj_edges,   m_lo, m_hi)
-
-        Ba, Ba_err = _get(sm, s_hi, mm, m_hi)   # high score, high mjj  (SR-analogue)
-        Bb, Bb_err = _get(s_lo, sm, mm, m_hi)   # low  score, high mjj
-        Bc, Bc_err = _get(sm, s_hi, m_lo, mm)   # high score, low  mjj
-        Bd, Bd_err = _get(s_lo, sm, m_lo, mm)   # low  score, low  mjj
-
-        if Bd > 0 and Bb > 0 and Bc > 0:
-            Ba_est     = Bb * Bc / Bd
-            Ba_est_err = Ba_est * np.sqrt(
-                (Bb_err / Bb)**2 + (Bc_err / Bc)**2 + (Bd_err / Bd)**2
-            )
-        else:
-            Ba_est     = np.nan
-            Ba_est_err = np.nan
-
-        closure    = Ba / Ba_est if (not np.isnan(Ba_est) and Ba_est > 0) else np.nan
-        denom_cl   = np.sqrt(Ba_err**2 + Ba_est_err**2) if not np.isnan(Ba_est) else np.nan
-        closure_sd = (Ba - Ba_est) / denom_cl if (not np.isnan(denom_cl) and denom_cl > 0) else np.nan
-
-        return {
-            "label"      : label,
-            "split_score": score_edges[sm],
-            "split_mjj"  : mjj_edges[mm],
-            "Ba"         : Ba,     "Ba_err"    : Ba_err,
-            "Bb"         : Bb,     "Bb_err"    : Bb_err,
-            "Bc"         : Bc,     "Bc_err"    : Bc_err,
-            "Bd"         : Bd,     "Bd_err"    : Bd_err,
-            "Ba_est"     : Ba_est, "Ba_est_err": Ba_est_err,
-            "closure"    : closure,
-            "closure_sd" : closure_sd,
-        }
-
-    results = {}
-    if si > 1 and (n_mjj_bins - mj) > 1:
-        results["B"] = _closure_for_region(0, si, mj, n_mjj_bins, "B")
-    if (n_score_bins - si) > 1 and mj > 1:
-        results["C"] = _closure_for_region(si, n_score_bins, 0, mj, "C")
-    if si > 1 and mj > 1:
-        results["D"] = _closure_for_region(0, si, 0, mj, "D")
-    return results
 
 
 def format_sideband_closure_text(closure_results, constrain_var):
@@ -1078,7 +1149,8 @@ def main():
         plot_mjj_score_slices(histo, tag, constrain_var, output_dir=out_dir)
 
     # Run the scan
-    results = do_abcd_scan(histo_sig, histo_abcdbkg, histo_otherbkg, constrain_var)
+    print("\nDoing scan...")
+    results = do_abcd_scan(histo_sig, histo_abcdbkg, histo_otherbkg, constrain_var, histo_dat=histo_dat)
     plot_abcd_scan_panels(results, f"{out_dir}/abcd_scan_panels.png")
     plot_abcd_2d_snapshots(histo_sig, histo_abcdbkg_dict, histo_abcdbkg, histo_otherbkg, results, constrain_var, output_dir=out_dir, make_scan_blocks=False)
     plot_best_working_point(histo_sig, histo_abcdbkg_dict, histo_abcdbkg, histo_otherbkg, histo_dat, results, constrain_var, output_dir=out_dir, guardrails=guardrails, abcd_label=abcd_label)
@@ -1091,7 +1163,7 @@ def main():
         plot_mjj_score_slices_optimized(histo, tag, best_score_cut, constrain_var, output_dir=out_dir)
 
     # Write datacards
-    print("\nWriting datacards for top points:")
+    print("\nWriting datacards for top points...")
     write_abcd_datacards(histo_sig, histo_abcdbkg, histo_otherbkg, histo_dat, results, constrain_var, output_dir=out_dir_dc, n_top=200, guardrails=guardrails)
 
 
