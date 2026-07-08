@@ -308,6 +308,110 @@ def plot_abcd_regions(score_edges, mjj_edges, bkg_vals, score_cut, mjj_cut, cons
     plt.close()
     print(f"Saved {output_path}")
 
+def plot_subregion_profiles(h, score_edges, mjj_edges, constrain_var, fname_prefix, output_dir,
+                             is_data=False, show_heatmap=False, profile_rebin=4):
+    """
+    Plot profile overlays for each ABCD sub-region, defined by the midpoint of each axis.
+    For data, only B, C, D profiles are drawn. Heatmap is optional.
+    """
+    if "process_grp" in [ax.name for ax in h.axes]:
+        h2d = h[{"process_grp": sum}]
+    else:
+        h2d = h
+
+    vals    = h2d.values(flow=False)
+    vars_2d = h2d.variances(flow=False)
+
+    n_score_bins = len(score_edges) - 1
+    n_mjj_bins   = len(mjj_edges)   - 1
+
+    # Find midpoint bins
+    score_mid_val = 0.5 * (score_edges[0] + score_edges[-1])
+    mjj_mid_val   = 0.5 * (mjj_edges[0]   + mjj_edges[-1])
+    si = int(np.clip(np.searchsorted(score_edges, score_mid_val), 1, n_score_bins - 1))
+    mj = int(np.clip(np.searchsorted(mjj_edges,   mjj_mid_val),   1, n_mjj_bins   - 1))
+
+    # Sub-regions: (label, score_lo, score_hi, mjj_lo, mjj_hi, color)
+    all_subregions = [
+        ("A", si, n_score_bins, mj, n_mjj_bins,  "tab:red"),
+        ("B", 0,  si,           mj, n_mjj_bins,  "tab:blue"),
+        ("C", si, n_score_bins, 0,  mj,           "tab:green"),
+        ("D", 0,  si,           0,  mj,           "tab:orange"),
+    ]
+    subregions = [r for r in all_subregions if not (is_data and r[0] == "A")]
+
+    if profile_rebin < 1:
+        profile_rebin = 1
+
+    def _make_profile(s_lo, s_hi, m_lo, m_hi):
+        """Compute profile mean +/- SE restricted to mjj bins m_lo:m_hi, for score bins s_lo:s_hi."""
+        mjj_centers_sub = (mjj_edges[m_lo:m_hi] + mjj_edges[m_lo+1:m_hi+1]) / 2
+
+        grouped_ranges = []
+        start = s_lo
+        while start < s_hi:
+            stop = min(start + profile_rebin, s_hi)
+            grouped_ranges.append((start, stop))
+            start = stop
+
+        profile      = np.zeros(len(grouped_ranges))
+        profile_err  = np.zeros(len(grouped_ranges))
+        profile_x    = np.zeros(len(grouped_ranges))
+        profile_xerr = np.zeros(len(grouped_ranges))
+
+        for gi, (lo, hi) in enumerate(grouped_ranges):
+            # Restrict to the mjj sub-range
+            col     = np.sum(vals[lo:hi, m_lo:m_hi], axis=0)
+            col_var = np.sum(vars_2d[lo:hi, m_lo:m_hi], axis=0)
+            sumw    = np.sum(col)
+            sumw2   = np.sum(col_var)
+            profile_x[gi]    = 0.5 * (score_edges[lo] + score_edges[hi])
+            profile_xerr[gi] = 0.5 * (score_edges[hi] - score_edges[lo])
+            if sumw > 0 and sumw2 > 0:
+                mean     = np.average(mjj_centers_sub, weights=col)
+                variance = np.average((mjj_centers_sub - mean) ** 2, weights=col)
+                n_eff    = (sumw ** 2) / sumw2
+                profile[gi]     = mean
+                profile_err[gi] = np.sqrt(variance / n_eff)
+            else:
+                profile[gi]     = np.nan
+                profile_err[gi] = np.nan
+
+        return profile_x, profile_xerr, profile, profile_err
+
+    fig, ax = plt.subplots(figsize=(8, 6))
+
+    if show_heatmap:
+        im = ax.pcolormesh(score_edges, mjj_edges, vals.T, cmap="Blues")
+        plt.colorbar(im, ax=ax)
+
+    # Draw midpoint cut lines
+    ax.axvline(score_edges[si], color="black", linewidth=1, linestyle="--", alpha=0.5, label=f"score midpoint={score_edges[si]:.3f}")
+    ax.axhline(mjj_edges[mj],   color="black", linewidth=1, linestyle=":",  alpha=0.5, label=f"{constrain_var} midpoint={mjj_edges[mj]:.3f}")
+
+    for region_label, s_lo, s_hi, m_lo, m_hi, color in subregions:
+        px, pxerr, py, pyerr = _make_profile(s_lo, s_hi, m_lo, m_hi)
+        ax.errorbar(
+            px, py,
+            xerr=pxerr, yerr=pyerr,
+            color=color, linestyle="none", marker="o",
+            markersize=4, capsize=2, elinewidth=0.8,
+            label=f"Region {region_label}",
+        )
+
+    ax.set_xlabel("DNN score")
+    ax.set_ylabel(constrain_var)
+    data_tag = " (data, BCD only)" if is_data else ""
+    ax.set_title(f"{fname_prefix} sub-region profiles{data_tag}\n(split at axis midpoints)")
+    ax.set_xlim(score_edges[0], score_edges[-1])
+    ax.set_ylim(mjj_edges[0],   mjj_edges[-1])
+    ax.legend(loc="upper left", fontsize=8)
+    ax.grid(True, alpha=0.3)
+    plt.tight_layout()
+    out_path = f"{output_dir}/{fname_prefix}_subregion_profiles.png"
+    plt.savefig(out_path, dpi=150)
+    plt.close()
+    print(f"Saved {out_path}")
 
 def plot_mjj_score_slices(histo, tag, constrain_var, output_dir="abcd_scan_plots"):
     """Plot mjj distribution in equal score slices for a single sample."""
@@ -574,7 +678,7 @@ def write_abcd_datacards(histo_sig, histo_abcdbkg, histo_otherbkg, histo_dat, re
         )
 
 
-def plot_abcd_2d_snapshots(histo_sig, histo_abcdbkg_dict, histo_abcdbkg, histo_otherbkg, results, constrain_var, output_dir="abcd_snapshots", make_scan_blocks=True):
+def plot_abcd_2d_snapshots(histo_sig, histo_abcdbkg_dict, histo_abcdbkg, histo_otherbkg, results, constrain_var, output_dir="abcd_snapshots", make_scan_blocks=True, histo_dat=None):
     """
     histo_abcdbkg_dict: dict mapping sample name -> histogram, one per ABCD background.
     histo_abcdbkg:      combined ABCD background histogram.
@@ -643,7 +747,7 @@ def plot_abcd_2d_snapshots(histo_sig, histo_abcdbkg_dict, histo_abcdbkg, histo_o
                 color="red", linestyle="none", marker="o",
                 markersize=4, label=label, capsize=2,
             )
-            ax.legend(loc="upper right", fontsize=8)
+            ax.legend(loc="upper left", fontsize=8)
             ax.set_xlabel("DNN score")
             ax.set_ylabel(f"{constrain_var}")
             ax.set_title(f"{fname_prefix} 2D histogram (no cuts, {scale})")
@@ -672,6 +776,29 @@ def plot_abcd_2d_snapshots(histo_sig, histo_abcdbkg_dict, histo_abcdbkg, histo_o
             cmap = "Greens" if "sig" in fname_prefix else "Blues"
             _make_overview_plots(h, cbar_label, fname_prefix, cmap=cmap, profile_rebin=profile_rebin)
 
+    # Sub-region profile plots at axis midpoints
+    subregion_targets = []
+    for name, h in histo_abcdbkg_dict.items():
+        safe_name = name.lower().replace(" ", "_")
+        subregion_targets.append((h[{"process_grp": sum}], f"scan_point_overview_{safe_name}", False))
+    subregion_targets.append((abcd_h,   "scan_point_overview_abcdbkg", False))
+    if has_other:
+        subregion_targets.append((other_h, "scan_point_overview_otherbkg", False))
+    subregion_targets.append((allbkg_h, "scan_point_overview_allbkg", False))
+    if histo_dat is not None:
+        dat_h = histo_dat[{"process_grp": sum}]
+        subregion_targets.append((dat_h, "scan_point_overview_data", True))
+
+    for h, fname_prefix, is_data in subregion_targets:
+        plot_subregion_profiles(
+            h, score_edges, mjj_edges, constrain_var,
+            fname_prefix=fname_prefix,
+            output_dir=output_dir,
+            is_data=is_data,
+            show_heatmap=not is_data,
+            profile_rebin=4,
+        )
+
     if make_scan_blocks:
         for i in range(n_score):
             score_cut = results["score_cuts"][i]
@@ -687,12 +814,11 @@ def plot_abcd_2d_snapshots(histo_sig, histo_abcdbkg_dict, histo_abcdbkg, histo_o
             ax.set_xlabel("DNN score")
             ax.set_ylabel(f"{constrain_var}")
             ax.set_title(f"Score cut block {i}: score > {score_cut:.2f}\nmjj cuts shown as horizontal lines")
-            ax.legend(loc="upper right", fontsize=8)
+            ax.legend(loc="upper left", fontsize=8)
             plt.tight_layout()
             plt.savefig(f"{output_dir}/scan_block_{i:04d}.png", dpi=100)
             plt.close()
             print(f"Saved scan block {i}")
-
 
 def get_top_scan_indices(results, n_top=1, min_significance=0.0, max_closure_sd=np.inf, min_S=0.0, max_B_total=np.inf, min_bcd_yield=0.0):
     sig_flat             = results["significance"].flatten()
@@ -1152,7 +1278,7 @@ def main():
     print("\nDoing scan...")
     results = do_abcd_scan(histo_sig, histo_abcdbkg, histo_otherbkg, constrain_var, histo_dat=histo_dat)
     plot_abcd_scan_panels(results, f"{out_dir}/abcd_scan_panels.png")
-    plot_abcd_2d_snapshots(histo_sig, histo_abcdbkg_dict, histo_abcdbkg, histo_otherbkg, results, constrain_var, output_dir=out_dir, make_scan_blocks=False)
+    plot_abcd_2d_snapshots(histo_sig, histo_abcdbkg_dict, histo_abcdbkg, histo_otherbkg, results, constrain_var, output_dir=out_dir, make_scan_blocks=False, histo_dat=histo_dat)
     plot_best_working_point(histo_sig, histo_abcdbkg_dict, histo_abcdbkg, histo_otherbkg, histo_dat, results, constrain_var, output_dir=out_dir, guardrails=guardrails, abcd_label=abcd_label)
 
     # Optimized slice plots at best working point
