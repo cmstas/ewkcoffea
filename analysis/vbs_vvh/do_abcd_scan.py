@@ -48,7 +48,7 @@ def eval_at_fixed_cut(histo_sig, histo_abcdbkg, histo_otherbkg, score_cut, label
 def write_single_datacard(A_sig, A_bkg, score_cut, mjj_cut, output_path):
     A_obs = A_sig + A_bkg
     with open(output_path, "w") as f:
-        f.write(f"# Counting experiment datacard: score>{score_cut:.4f}, mjj>{mjj_cut:.1f} GeV\n")
+        f.write(f"# Counting experiment datacard: score>{score_cut:.4f}, constrainvar>{mjj_cut:.1f}\n")
         f.write( "imax 1  number of channels\n")
         f.write( "jmax 1  number of backgrounds\n")
         f.write( "kmax 0  number of nuisance parameters\n")
@@ -289,7 +289,7 @@ def plot_abcd_regions(score_edges, mjj_edges, bkg_vals, score_cut, mjj_cut, cons
     im = ax.pcolormesh(score_edges, mjj_edges, bkg_vals.T, cmap="Blues")
     plt.colorbar(im, ax=ax, label=cbar_label)
     ax.axvline(score_cut, color="red",    linewidth=2, linestyle="--", label=f"score > {score_cut:.3f}")
-    ax.axhline(mjj_cut,   color="orange", linewidth=2, linestyle="--", label=f"{constrain_var} > {mjj_cut:.0f} GeV")
+    ax.axhline(mjj_cut,   color="orange", linewidth=2, linestyle="--", label=f"{constrain_var} > {mjj_cut:.2f}")
     ax.text(0.02, 0.98, extra_text,  fontsize=9, transform=ax.transAxes, va="top")
     ax.text(0.02, 0.29, region_text, fontsize=7, transform=ax.transAxes, va="top", family="monospace")
     ax.text(score_mid_hi, mjj_mid_hi, "A (SR)", ha="center", va="center", color="red",   fontsize=12, fontweight="bold")
@@ -308,8 +308,7 @@ def plot_abcd_regions(score_edges, mjj_edges, bkg_vals, score_cut, mjj_cut, cons
     plt.close()
     print(f"Saved {output_path}")
 
-def plot_subregion_profiles(h, score_edges, mjj_edges, constrain_var, fname_prefix, output_dir,
-                             is_data=False, show_heatmap=False, profile_rebin=4):
+def plot_subregion_profiles(h, score_edges, mjj_edges, constrain_var, fname_prefix, output_dir, is_data=False, show_heatmap=False, profile_rebin=4):
     """
     Plot x and y profile overlays for each ABCD sub-region on the same plot.
     X profiles (mean constrain_var vs DNN score) in red.
@@ -633,7 +632,7 @@ def plot_best_working_point(histo_sig, histo_abcdbkg_dict, histo_abcdbkg, histo_
     print("BEST WORKING POINT (max S/sqrt(B_total))")
     print("="*50)
     print(f"  Score cut             : {best_score_cut:.4f}  (scan index {best_i})")
-    print(f"  mjj cut               : {best_mjj_cut:.1f} GeV  (scan index {best_j})")
+    print(f"  Constrainvar cut      : {best_mjj_cut:.1f}  (scan index {best_j})")
     print(f"  S                     : {best_S:.4f}")
     print(f"  B_abcd_true (MC)      : {best_B_abcd_true:.2f}  [{abcd_label}]")
     print(f"  B_abcd_est (B*C/D)    : {best_B_abcd_est:.2f}")
@@ -673,7 +672,7 @@ def plot_best_working_point(histo_sig, histo_abcdbkg_dict, histo_abcdbkg, histo_
         score_edges, mjj_edges, allbkg_vals,
         best_score_cut, best_mjj_cut,
         constrain_var,
-        title=f"Best working point (allbkg): score>{best_score_cut:.3f}, mjj>{best_mjj_cut:.0f} GeV",
+        title=f"Best working point (allbkg): score>{best_score_cut:.3f}, constrainvar>{best_mjj_cut:.3f}",
         cbar_label=f"Total background yield ({abcd_label} + other MC)",
         output_path=f"{output_dir}/best_working_point_allbkg.png",
         extra_text=extra_text,
@@ -726,7 +725,7 @@ def write_abcd_datacards(histo_sig, histo_abcdbkg, histo_otherbkg, histo_dat, re
         closure_sd   = (abcd_est - A_abcd) / denom if denom > 0 else np.nan
         fpath = os.path.join(output_dir, f"{fname_base}.txt")
         with open(fpath, "w") as f:
-            f.write(f"# Counting experiment datacard: rank={rank}, score>{score_cut:.4f}, mjj>{mjj_cut:.1f} GeV\n")
+            f.write(f"# Counting experiment datacard: rank={rank}, score>{score_cut:.4f}, constrainvar>{mjj_cut:.1f}\n")
             f.write(f"# S/sqrt(B_total)={sig_val:.4f}\n")
             f.write(f"# A_abcd_true={A_abcd:.2f}, A_abcd_est={abcd_est:.2f}, A_other={A_other:.2f}\n\n")
             f.write( "# Details:\n")
@@ -763,7 +762,7 @@ def write_abcd_datacards(histo_sig, histo_abcdbkg, histo_otherbkg, histo_dat, re
             score_cut, mjj_cut,
             constrain_var,
             title=(
-                f"rank={rank}: score>{score_cut:.3f}, mjj>{mjj_cut:.0f} GeV\n"
+                f"rank={rank}: score>{score_cut:.3f}, constrainvar>{mjj_cut:.3f}\n"
                 f"S={A_sig:.3f}, B_abcd_est={abcd_est:.1f}, B_other={A_other:.1f}, "
                 f"B_total={A_bkg:.1f}, S/sqrt(B_total)={sig_val:.3f}"
             ),
@@ -1219,7 +1218,7 @@ def plot_abcd_scan_panels(results, output_path):
             data_closure_B_err.append(results["data_closure_B_err"][i, j])
             data_closure_C_err.append(results["data_closure_C_err"][i, j])
             data_closure_D_err.append(results["data_closure_D_err"][i, j])
-            labels.append(f"s>{results['score_cuts'][i]:.2f},mjj>{results['mjj_cuts'][j]:.0f}")
+            labels.append(f"s>{results['score_cuts'][i]:.3f},constrainvar>{results['mjj_cuts'][j]:.3f}")
     scan_points        = np.array(scan_points)
     significance       = np.array(significance)
     significance_true  = np.array(significance_true)
@@ -1438,7 +1437,7 @@ def main():
 
     if 0:
         my_score_cut = 0.840
-        my_mjj_cut   = 960
+        my_constrainvar_cut   = 960
         sig_h   = histo_sig[{"process_grp": sum}]
         abcd_h  = histo_abcdbkg[{"process_grp": sum}]
         other_h = histo_otherbkg[{"process_grp": sum}]
@@ -1447,11 +1446,11 @@ def main():
         allbkg_vals  = abcd_h.values(flow=False) + other_h.values(flow=False)
         plot_abcd_regions(
             score_edges, mjj_edges, allbkg_vals,
-            my_score_cut, my_mjj_cut,
+            my_score_cut, my_constrainvar_cut,
             constrain_var,
-            title=f"score>{my_score_cut:.3f}, mjj>{my_mjj_cut:.0f} GeV",
+            title=f"score>{my_score_cut:.3f}, constrainvar>{my_constrainvar_cut:.2f}",
             cbar_label="Total background yield",
-            output_path=f"{out_dir}/custom_wp_score{my_score_cut:.3f}_mjj{my_mjj_cut:.0f}.png",
+            output_path=f"{out_dir}/custom_wp_score{my_score_cut:.3f}_mjj{my_constrainvar_cut:.2f}.png",
             histo_sig=histo_sig,
             histo_abcdbkg=histo_abcdbkg,
             histo_otherbkg=histo_otherbkg,
