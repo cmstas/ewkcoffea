@@ -280,13 +280,18 @@ def plot_abcd_regions(score_edges, mjj_edges, bkg_vals, score_cut, mjj_cut, cons
                 f"A (MC truth total): {A_mc_total:.4f}+-{A_mc_total_err:.4f}\n"
             )
 
+            region_text += "\n" + format_sideband_closure_text(
+                compute_data_sideband_closure(dat_h, score_edges, mjj_edges, si, mj),
+                constrain_var,
+            ) + "\n"
+
     fig, ax = plt.subplots(figsize=(10, 8))
     im = ax.pcolormesh(score_edges, mjj_edges, bkg_vals.T, cmap="Blues")
     plt.colorbar(im, ax=ax, label=cbar_label)
     ax.axvline(score_cut, color="red",    linewidth=2, linestyle="--", label=f"score > {score_cut:.3f}")
     ax.axhline(mjj_cut,   color="orange", linewidth=2, linestyle="--", label=f"{constrain_var} > {mjj_cut:.0f} GeV")
     ax.text(0.02, 0.98, extra_text,  fontsize=9, transform=ax.transAxes, va="top")
-    ax.text(0.02, 0.22, region_text, fontsize=7, transform=ax.transAxes, va="top", family="monospace")
+    ax.text(0.02, 0.29, region_text, fontsize=7, transform=ax.transAxes, va="top", family="monospace")
     ax.text(score_mid_hi, mjj_mid_hi, "A (SR)", ha="center", va="center", color="red",   fontsize=12, fontweight="bold")
     ax.text(score_mid_lo, mjj_mid_hi, "B",      ha="center", va="center", color="black", fontsize=12, fontweight="bold")
     ax.text(score_mid_hi, mjj_mid_lo, "C",      ha="center", va="center", color="black", fontsize=12, fontweight="bold")
@@ -884,6 +889,94 @@ def plot_abcd_scan_panels(results, output_path):
     print(f"Saved scan plot to {output_path}")
 
 
+def compute_data_sideband_closure(dat_h, score_edges, mjj_edges, si, mj):
+    """
+    For each of the three sideband regions B, C, D, split into 4 sub-regions
+    at the midpoint of the two axes within that region and compute the ABCD
+    closure: Ba_obs vs Bb*Bc/Bd (and analogously for C and D).
+    """
+    def _mid_bin(edges, lo, hi):
+        mid_val = 0.5 * (edges[lo] + edges[hi])
+        idx = int(np.searchsorted(edges, mid_val))
+        return int(np.clip(idx, lo + 1, hi - 1))
+
+    n_score_bins = len(score_edges) - 1
+    n_mjj_bins   = len(mjj_edges)   - 1
+
+    def _get(s_lo, s_hi, m_lo, m_hi):
+        sub = dat_h[slice(s_lo, s_hi), slice(m_lo, m_hi)]
+        val = sub.sum(flow=False).value
+        err = np.sqrt(sub.sum(flow=False).variance)
+        return val, err
+
+    def _closure_for_region(s_lo, s_hi, m_lo, m_hi, label):
+        sm = _mid_bin(score_edges, s_lo, s_hi)
+        mm = _mid_bin(mjj_edges,   m_lo, m_hi)
+
+        Ba, Ba_err = _get(sm, s_hi, mm, m_hi)   # high score, high mjj  (SR-analogue)
+        Bb, Bb_err = _get(s_lo, sm, mm, m_hi)   # low  score, high mjj
+        Bc, Bc_err = _get(sm, s_hi, m_lo, mm)   # high score, low  mjj
+        Bd, Bd_err = _get(s_lo, sm, m_lo, mm)   # low  score, low  mjj
+
+        if Bd > 0 and Bb > 0 and Bc > 0:
+            Ba_est     = Bb * Bc / Bd
+            Ba_est_err = Ba_est * np.sqrt(
+                (Bb_err / Bb)**2 + (Bc_err / Bc)**2 + (Bd_err / Bd)**2
+            )
+        else:
+            Ba_est     = np.nan
+            Ba_est_err = np.nan
+
+        closure    = Ba / Ba_est if (not np.isnan(Ba_est) and Ba_est > 0) else np.nan
+        denom_cl   = np.sqrt(Ba_err**2 + Ba_est_err**2) if not np.isnan(Ba_est) else np.nan
+        closure_sd = (Ba - Ba_est) / denom_cl if (not np.isnan(denom_cl) and denom_cl > 0) else np.nan
+
+        return {
+            "label"      : label,
+            "split_score": score_edges[sm],
+            "split_mjj"  : mjj_edges[mm],
+            "Ba"         : Ba,     "Ba_err"    : Ba_err,
+            "Bb"         : Bb,     "Bb_err"    : Bb_err,
+            "Bc"         : Bc,     "Bc_err"    : Bc_err,
+            "Bd"         : Bd,     "Bd_err"    : Bd_err,
+            "Ba_est"     : Ba_est, "Ba_est_err": Ba_est_err,
+            "closure"    : closure,
+            "closure_sd" : closure_sd,
+        }
+
+    results = {}
+    if si > 1 and (n_mjj_bins - mj) > 1:
+        results["B"] = _closure_for_region(0, si, mj, n_mjj_bins, "B")
+    if (n_score_bins - si) > 1 and mj > 1:
+        results["C"] = _closure_for_region(si, n_score_bins, 0, mj, "C")
+    if si > 1 and mj > 1:
+        results["D"] = _closure_for_region(0, si, 0, mj, "D")
+    return results
+
+
+def format_sideband_closure_text(closure_results, constrain_var):
+    """Format the sideband closure results as a monospace string for plot annotation."""
+    lines = ["Data sideband closure:"]
+    for region, r in closure_results.items():
+        p = region
+        cl_str = f"{r['closure']:.3f}" if not np.isnan(r['closure']) else "N/A"
+        sd_str = f"{r['closure_sd']:.2f} s.d." if not np.isnan(r['closure_sd']) else "N/A"
+        if not np.isnan(r['Ba_est']):
+            lines.append(
+                f"{p}: split x={r['split_score']:.3f}, split y={r['split_mjj']:.3f}, "
+                f"{p}a_obs={r['Ba']:.1f}+-{r['Ba_err']:.1f}, {p}a_est={r['Ba_est']:.1f}+-{r['Ba_est_err']:.1f}, "
+                f"closure={cl_str} ({sd_str})"
+            )
+        else:
+            lines.append(
+                f"{p}: split x={r['split_score']:.3f}, split y={r['split_mjj']:.3f}, "
+                f"{p}a_obs={r['Ba']:.1f}+-{r['Ba_err']:.1f}, {p}a_est=N/A, "
+                f"closure=N/A"
+            )
+    return "\n".join(lines)
+
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("pkl_file_path", help="The path to the pkl file")
@@ -998,6 +1091,7 @@ def main():
         plot_mjj_score_slices_optimized(histo, tag, best_score_cut, constrain_var, output_dir=out_dir)
 
     # Write datacards
+    print("\nWriting datacards for top points:")
     write_abcd_datacards(histo_sig, histo_abcdbkg, histo_otherbkg, histo_dat, results, constrain_var, output_dir=out_dir_dc, n_top=200, guardrails=guardrails)
 
 
