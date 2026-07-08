@@ -311,7 +311,9 @@ def plot_abcd_regions(score_edges, mjj_edges, bkg_vals, score_cut, mjj_cut, cons
 def plot_subregion_profiles(h, score_edges, mjj_edges, constrain_var, fname_prefix, output_dir,
                              is_data=False, show_heatmap=False, profile_rebin=4):
     """
-    Plot profile overlays for each ABCD sub-region, defined by the midpoint of each axis.
+    Plot x and y profile overlays for each ABCD sub-region on the same plot.
+    X profiles (mean constrain_var vs DNN score) in red.
+    Y profiles (mean DNN score vs constrain_var) in purple.
     For data, only B, C, D profiles are drawn. Heatmap is optional.
     """
     if "process_grp" in [ax.name for ax in h.axes]:
@@ -325,42 +327,35 @@ def plot_subregion_profiles(h, score_edges, mjj_edges, constrain_var, fname_pref
     n_score_bins = len(score_edges) - 1
     n_mjj_bins   = len(mjj_edges)   - 1
 
-    # Find midpoint bins
     score_mid_val = 0.5 * (score_edges[0] + score_edges[-1])
     mjj_mid_val   = 0.5 * (mjj_edges[0]   + mjj_edges[-1])
     si = int(np.clip(np.searchsorted(score_edges, score_mid_val), 1, n_score_bins - 1))
     mj = int(np.clip(np.searchsorted(mjj_edges,   mjj_mid_val),   1, n_mjj_bins   - 1))
 
-    # Sub-regions: (label, score_lo, score_hi, mjj_lo, mjj_hi, color)
     all_subregions = [
-        ("A", si, n_score_bins, mj, n_mjj_bins,  "tab:red"),
-        ("B", 0,  si,           mj, n_mjj_bins,  "tab:blue"),
-        ("C", si, n_score_bins, 0,  mj,           "tab:green"),
-        ("D", 0,  si,           0,  mj,           "tab:orange"),
+        ("A", si, n_score_bins, mj, n_mjj_bins),
+        ("B", 0,  si,           mj, n_mjj_bins),
+        ("C", si, n_score_bins, 0,  mj),
+        ("D", 0,  si,           0,  mj),
     ]
     subregions = [r for r in all_subregions if not (is_data and r[0] == "A")]
 
     if profile_rebin < 1:
         profile_rebin = 1
 
-    def _make_profile(s_lo, s_hi, m_lo, m_hi):
-        """Compute profile mean +/- SE restricted to mjj bins m_lo:m_hi, for score bins s_lo:s_hi."""
+    def _make_x_profile(s_lo, s_hi, m_lo, m_hi):
         mjj_centers_sub = (mjj_edges[m_lo:m_hi] + mjj_edges[m_lo+1:m_hi+1]) / 2
-
         grouped_ranges = []
         start = s_lo
         while start < s_hi:
             stop = min(start + profile_rebin, s_hi)
             grouped_ranges.append((start, stop))
             start = stop
-
         profile      = np.zeros(len(grouped_ranges))
         profile_err  = np.zeros(len(grouped_ranges))
         profile_x    = np.zeros(len(grouped_ranges))
         profile_xerr = np.zeros(len(grouped_ranges))
-
         for gi, (lo, hi) in enumerate(grouped_ranges):
-            # Restrict to the mjj sub-range
             col     = np.sum(vals[lo:hi, m_lo:m_hi], axis=0)
             col_var = np.sum(vars_2d[lo:hi, m_lo:m_hi], axis=0)
             sumw    = np.sum(col)
@@ -376,32 +371,69 @@ def plot_subregion_profiles(h, score_edges, mjj_edges, constrain_var, fname_pref
             else:
                 profile[gi]     = np.nan
                 profile_err[gi] = np.nan
-
         return profile_x, profile_xerr, profile, profile_err
 
-    fig, ax = plt.subplots(figsize=(8, 6))
+    def _make_y_profile(s_lo, s_hi, m_lo, m_hi):
+        score_centers_sub = (score_edges[s_lo:s_hi] + score_edges[s_lo+1:s_hi+1]) / 2
+        grouped_ranges = []
+        start = m_lo
+        while start < m_hi:
+            stop = min(start + profile_rebin, m_hi)
+            grouped_ranges.append((start, stop))
+            start = stop
+        profile      = np.zeros(len(grouped_ranges))
+        profile_err  = np.zeros(len(grouped_ranges))
+        profile_y    = np.zeros(len(grouped_ranges))
+        profile_yerr = np.zeros(len(grouped_ranges))
+        for gi, (lo, hi) in enumerate(grouped_ranges):
+            row     = np.sum(vals[s_lo:s_hi, lo:hi], axis=1)
+            row_var = np.sum(vars_2d[s_lo:s_hi, lo:hi], axis=1)
+            sumw    = np.sum(row)
+            sumw2   = np.sum(row_var)
+            profile_y[gi]    = 0.5 * (mjj_edges[lo] + mjj_edges[hi])
+            profile_yerr[gi] = 0.5 * (mjj_edges[hi] - mjj_edges[lo])
+            if sumw > 0 and sumw2 > 0:
+                mean     = np.average(score_centers_sub, weights=row)
+                variance = np.average((score_centers_sub - mean) ** 2, weights=row)
+                n_eff    = (sumw ** 2) / sumw2
+                profile[gi]     = mean
+                profile_err[gi] = np.sqrt(variance / n_eff)
+            else:
+                profile[gi]     = np.nan
+                profile_err[gi] = np.nan
+        return profile, profile_err, profile_y, profile_yerr
 
+    data_tag = " (data, BCD only)" if is_data else ""
+
+    fig, ax = plt.subplots(figsize=(8, 6))
     if show_heatmap:
         im = ax.pcolormesh(score_edges, mjj_edges, vals.T, cmap="Blues")
         plt.colorbar(im, ax=ax)
 
-    # Draw midpoint cut lines
-    ax.axvline(score_edges[si], color="black", linewidth=1, linestyle="--", alpha=0.5, label=f"score midpoint={score_edges[si]:.3f}")
-    ax.axhline(mjj_edges[mj],   color="black", linewidth=1, linestyle=":",  alpha=0.5, label=f"{constrain_var} midpoint={mjj_edges[mj]:.3f}")
+    ax.axvline(score_edges[si], color="black", linewidth=1, linestyle="--", alpha=0.5,
+               label=f"score midpoint={score_edges[si]:.3f}")
+    ax.axhline(mjj_edges[mj],   color="black", linewidth=1, linestyle=":",  alpha=0.5,
+               label=f"{constrain_var} midpoint={mjj_edges[mj]:.3f}")
 
-    for region_label, s_lo, s_hi, m_lo, m_hi, color in subregions:
-        px, pxerr, py, pyerr = _make_profile(s_lo, s_hi, m_lo, m_hi)
-        ax.errorbar(
-            px, py,
-            xerr=pxerr, yerr=pyerr,
-            color=color, linestyle="none", marker="o",
-            markersize=4, capsize=2, elinewidth=0.8,
-            label=f"Region {region_label}",
-        )
+    x_label_done = False
+    y_label_done = False
+    for region_label, s_lo, s_hi, m_lo, m_hi in subregions:
+        px, pxerr, py, pyerr = _make_x_profile(s_lo, s_hi, m_lo, m_hi)
+        ax.errorbar(px, py, xerr=pxerr, yerr=pyerr,
+                    color="tab:red", linestyle="none", marker="o",
+                    markersize=4, capsize=2, elinewidth=0.8,
+                    label=f"mean {constrain_var} vs DNN score" if not x_label_done else "_nolegend_")
+        x_label_done = True
+
+        spx, spxerr, spy, spyerr = _make_y_profile(s_lo, s_hi, m_lo, m_hi)
+        ax.errorbar(spx, spy, xerr=spxerr, yerr=spyerr,
+                    color="tab:purple", linestyle="none", marker="o",
+                    markersize=4, capsize=2, elinewidth=0.8,
+                    label=f"mean DNN score vs {constrain_var}" if not y_label_done else "_nolegend_")
+        y_label_done = True
 
     ax.set_xlabel("DNN score")
     ax.set_ylabel(constrain_var)
-    data_tag = " (data, BCD only)" if is_data else ""
     ax.set_title(f"{fname_prefix} sub-region profiles{data_tag}\n(split at axis midpoints)")
     ax.set_xlim(score_edges[0], score_edges[-1])
     ax.set_ylim(mjj_edges[0],   mjj_edges[-1])
@@ -412,6 +444,7 @@ def plot_subregion_profiles(h, score_edges, mjj_edges, constrain_var, fname_pref
     plt.savefig(out_path, dpi=150)
     plt.close()
     print(f"Saved {out_path}")
+
 
 def plot_mjj_score_slices(histo, tag, constrain_var, output_dir="abcd_scan_plots"):
     """Plot mjj distribution in equal score slices for a single sample."""
@@ -703,56 +736,98 @@ def plot_abcd_2d_snapshots(histo_sig, histo_abcdbkg_dict, histo_abcdbkg, histo_o
             profile_rebin = 1
 
         n_score_bins = vals.shape[0]
-        grouped_ranges = []
+        n_mjj_bins   = vals.shape[1]
+
+        mjj_centers   = (mjj_edges[:-1] + mjj_edges[1:]) / 2
+        score_centers = (score_edges[:-1] + score_edges[1:]) / 2
+
+        # X profile: mean constrain_var vs DNN score
+        grouped_ranges_x = []
         start = 0
         while start < n_score_bins:
             stop = min(start + profile_rebin, n_score_bins)
-            grouped_ranges.append((start, stop))
+            grouped_ranges_x.append((start, stop))
             start = stop
+
+        profile_x      = np.zeros(len(grouped_ranges_x))
+        profile_x_err  = np.zeros(len(grouped_ranges_x))
+        profile_x_pos  = np.zeros(len(grouped_ranges_x))
+        profile_x_perr = np.zeros(len(grouped_ranges_x))
+
+        for gi, (lo, hi) in enumerate(grouped_ranges_x):
+            col     = np.sum(vals[lo:hi, :], axis=0)
+            col_var = np.sum(vars_2d[lo:hi, :], axis=0)
+            sumw    = np.sum(col)
+            sumw2   = np.sum(col_var)
+            profile_x_pos[gi]  = 0.5 * (score_edges[lo] + score_edges[hi])
+            profile_x_perr[gi] = 0.5 * (score_edges[hi] - score_edges[lo])
+            if sumw > 0 and sumw2 > 0:
+                mean     = np.average(mjj_centers, weights=col)
+                variance = np.average((mjj_centers - mean) ** 2, weights=col)
+                n_eff    = (sumw ** 2) / sumw2
+                profile_x[gi]     = mean
+                profile_x_err[gi] = np.sqrt(variance / n_eff)
+            else:
+                profile_x[gi]     = np.nan
+                profile_x_err[gi] = np.nan
+
+        # Y profile: mean DNN score vs constrain_var
+        grouped_ranges_y = []
+        start = 0
+        while start < n_mjj_bins:
+            stop = min(start + profile_rebin, n_mjj_bins)
+            grouped_ranges_y.append((start, stop))
+            start = stop
+
+        profile_y      = np.zeros(len(grouped_ranges_y))
+        profile_y_err  = np.zeros(len(grouped_ranges_y))
+        profile_y_pos  = np.zeros(len(grouped_ranges_y))
+        profile_y_perr = np.zeros(len(grouped_ranges_y))
+
+        for gi, (lo, hi) in enumerate(grouped_ranges_y):
+            row     = np.sum(vals[:, lo:hi], axis=1)
+            row_var = np.sum(vars_2d[:, lo:hi], axis=1)
+            sumw    = np.sum(row)
+            sumw2   = np.sum(row_var)
+            profile_y_pos[gi]  = 0.5 * (mjj_edges[lo] + mjj_edges[hi])
+            profile_y_perr[gi] = 0.5 * (mjj_edges[hi] - mjj_edges[lo])
+            if sumw > 0 and sumw2 > 0:
+                mean     = np.average(score_centers, weights=row)
+                variance = np.average((score_centers - mean) ** 2, weights=row)
+                n_eff    = (sumw ** 2) / sumw2
+                profile_y[gi]     = mean
+                profile_y_err[gi] = np.sqrt(variance / n_eff)
+            else:
+                profile_y[gi]     = np.nan
+                profile_y_err[gi] = np.nan
+
+        extra = "" if profile_rebin == 1 else f"_profileRebin{profile_rebin}"
 
         for scale, norm, suffix in [("linear", None, "lin"), ("log", matplotlib.colors.LogNorm(), "log")]:
             fig, ax = plt.subplots(figsize=(8, 6))
             im = ax.pcolormesh(score_edges, mjj_edges, vals.T, cmap=cmap, norm=norm)
             plt.colorbar(im, ax=ax, label=cbar_label)
 
-            mjj_centers  = (mjj_edges[:-1] + mjj_edges[1:]) / 2
-            profile      = np.zeros(len(grouped_ranges))
-            profile_err  = np.zeros(len(grouped_ranges))
-            profile_x    = np.zeros(len(grouped_ranges))
-            profile_xerr = np.zeros(len(grouped_ranges))
-
-            for gi, (lo, hi) in enumerate(grouped_ranges):
-                col     = np.sum(vals[lo:hi, :], axis=0)
-                col_var = np.sum(vars_2d[lo:hi, :], axis=0)
-                sumw    = np.sum(col)
-                sumw2   = np.sum(col_var)
-                x_lo = score_edges[lo]
-                x_hi = score_edges[hi]
-                profile_x[gi]    = 0.5 * (x_lo + x_hi)
-                profile_xerr[gi] = 0.5 * (x_hi - x_lo)
-                if sumw > 0 and sumw2 > 0:
-                    mean     = np.average(mjj_centers, weights=col)
-                    variance = np.average((mjj_centers - mean) ** 2, weights=col)
-                    n_eff    = (sumw ** 2) / sumw2
-                    profile[gi]     = mean
-                    profile_err[gi] = np.sqrt(variance / n_eff)
-                else:
-                    profile[gi]     = np.nan
-                    profile_err[gi] = np.nan
-
-            label = "Mean ± SE" if profile_rebin == 1 else f"Mean ± SE (profile x{profile_rebin} coarser)"
+            x_label = "Mean ± SE" if profile_rebin == 1 else f"Mean ± SE (x{profile_rebin} coarser)"
             ax.errorbar(
-                profile_x, profile,
-                xerr=profile_xerr, yerr=profile_err,
+                profile_x_pos, profile_x,
+                xerr=profile_x_perr, yerr=profile_x_err,
                 color="red", linestyle="none", marker="o",
-                markersize=4, label=label, capsize=2,
+                markersize=4, capsize=2,
+                label=f"mean {constrain_var} vs DNN score",
+            )
+            ax.errorbar(
+                profile_y, profile_y_pos,
+                xerr=profile_y_err, yerr=profile_y_perr,
+                color="tab:purple", linestyle="none", marker="o",
+                markersize=4, capsize=2,
+                label=f"mean DNN score vs {constrain_var}",
             )
             ax.legend(loc="upper left", fontsize=8)
             ax.set_xlabel("DNN score")
             ax.set_ylabel(f"{constrain_var}")
             ax.set_title(f"{fname_prefix} 2D histogram (no cuts, {scale})")
             plt.tight_layout()
-            extra = "" if profile_rebin == 1 else f"_profileRebin{profile_rebin}"
             plt.savefig(f"{output_dir}/{fname_prefix}_{suffix}{extra}.png", dpi=150)
             plt.close()
             print(f"Saved {output_dir}/{fname_prefix}_{suffix}{extra}.png")
