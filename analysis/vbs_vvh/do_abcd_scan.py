@@ -891,10 +891,10 @@ def main():
     #########################################################
     ############# NOTE: Configure your run here #############
 
-    cat_for_dnn    = "2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5" # 3l_chsum1_nSFOS0_VBS0p2 2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5
-    abcd_hist_name = "abcd2d_2lH" # abcd2d_2lH abcd2d_3lChsum1
-    constrain_var  = "vbs_mjj"
-    abcdbkg_names  = ["DY", "ttbar"]
+    cat_for_dnn    = "3l_chsum1_mjj500" # 3l_chsum1_nSFOS0_VBS0p2 2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5
+    abcd_hist_name = "abcd2d_3lChsum1" # abcd2d_2lH abcd2d_3lChsum1
+    constrain_var  = "vbs_score" # vbs_mjj
+    abcdbkg_names  = ["DY", "ttbar", "VV"]
     guardrails = {
         "min_significance" : 0.0,
         "max_closure_sd"   : 1.2,
@@ -953,7 +953,7 @@ def main():
 
     # Make the stack plot, borrowing from check_vvh_hists
     years_to_prepend = ["2016postVFP","2016preVFP","2017","2018"]
-    cvh.make_plots(histo_dict, grp_dict, years_to_prepend, [cat_for_dnn], lepflav_bin="all", save_dir_path=out_dir, make_cat_subdirs=False, vars_to_plot=[constrain_var, "dnn_score_2lH"], do_data=False)
+    cvh.make_plots(histo_dict, grp_dict, years_to_prepend, [cat_for_dnn], lepflav_bin="all", save_dir_path=out_dir, make_cat_subdirs=False, vars_to_plot=[constrain_var, "dnn_score_2lH", "dnn_score_3lChsum1"], do_data=False)
 
 
     ####################### Scan over 1d #######################
