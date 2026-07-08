@@ -78,7 +78,8 @@ class AnalysisProcessor(processor.ProcessorABC):
                 hist.axis.StrCategory([], growth=True, name="process", label="process"),
                 hist.axis.StrCategory([], growth=True, name="category", label="category"),
                 axis.Regular(100, 0, 1, name="dnn_score",   label="DNN score from ABCDnet"),
-                axis.Regular(100, 0, self.mjj_cap, name="vbs_mjj", label="Mjj of vbs"),
+                axis.Regular(100, 0, 1, name="vbs_score",   label="VBS jets score from tagger"),
+                #axis.Regular(100, 0, self.mjj_cap, name="vbs_mjj", label="Mjj of vbs"),
                 storage="weight", name="Counts",
             ),
         }
@@ -320,7 +321,8 @@ class AnalysisProcessor(processor.ProcessorABC):
         # Siphon the outputs (these outputs are the inputs for the ML training)
         self._siphon_output_path = f"histos/{siphon_out_name}.root"
         self._siphon_bdt_data = siphon_bdt_data
-        self._siphon_selection = ["2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5"] # NOTE this is hard coded
+        #self._siphon_selection = ["2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5"] # NOTE this is hard coded
+        self._siphon_selection = ["3l_chsum1_mjj500"] # NOTE this is hard coded
         self._bdt_vars = []
         for varname in list(self._dense_axes_dict.keys()):
             self._bdt_vars.append(varname)
@@ -984,6 +986,7 @@ class AnalysisProcessor(processor.ProcessorABC):
         is_HFJTagHbb = (fj0_pNetHbbvsQCD > 0.95)
 
         A_2lH, B_2lH, C_2lH, D_2lH = get_abcd_region_masks(x_var=dnn_score_2lH, y_var=vbsjets.mjj, x_cut=0.54, y_cut=1300.0)
+        A_3lChsum1, B_3lChsum1, C_3lChsum1, D_3lChsum1 = get_abcd_region_masks(x_var=dnn_score_3lChsum1, y_var=vbsjets.score, x_cut=0.71, y_cut=0.61)
 
         selections.add("all_events", pass_through)
 
@@ -1023,14 +1026,11 @@ class AnalysisProcessor(processor.ProcessorABC):
         selections.add("3l_chsum3_mjj500_nb0",            is_3l & (abs_ch_sum_3l==3) & (vbsjets.mjj>500) & (nbtagst==0))
 
         selections.add("3l_chsum1",                       is_3l & (abs_ch_sum_3l==1))
-        selections.add("3l_chsum1_nSFOS0",                is_3l & (abs_ch_sum_3l==1) & (n_ll_sfos==0))
-        selections.add("3l_chsum1_nSFOS0_VBS0p2",         is_3l & (abs_ch_sum_3l==1) & (n_ll_sfos==0) & (vbsjets.score>0.2))
-        selections.add("3l_chsum1_nSFOSg0",               is_3l & (abs_ch_sum_3l==1) & (n_ll_sfos>=1))
-        selections.add("3l_chsum1_nSFOSg0_mjj500",        is_3l & (abs_ch_sum_3l==1) & (n_ll_sfos>=1) & (vbsjets.mjj>500))
-
-        selections.add("3l_chsum1_VBS0p4",                is_3l & (abs_ch_sum_3l==1) & (vbsjets.score>0.4))
         selections.add("3l_chsum1_mjj500",                is_3l & (abs_ch_sum_3l==1) & (vbsjets.mjj>500))
-        selections.add("3l_chsum1_VBS0p4_dnn0p9",         is_3l & (abs_ch_sum_3l==1) & (vbsjets.score>0.4) & (dnn_score_3lChsum1>0.9))
+        selections.add("3l_chsum1_mjj500_A",              is_3l & (abs_ch_sum_3l==1) & (vbsjets.mjj>500) & (A_3lChsum1))
+        selections.add("3l_chsum1_mjj500_B",              is_3l & (abs_ch_sum_3l==1) & (vbsjets.mjj>500) & (B_3lChsum1))
+        selections.add("3l_chsum1_mjj500_C",              is_3l & (abs_ch_sum_3l==1) & (vbsjets.mjj>500) & (C_3lChsum1))
+        selections.add("3l_chsum1_mjj500_D",              is_3l & (abs_ch_sum_3l==1) & (vbsjets.mjj>500) & (D_3lChsum1))
 
         selections.add("3l_chsum1_nFJg0",                 is_3l & (abs_ch_sum_3l==1) & (nfatjets>=1))
         selections.add("3l_chsum1_nFJg0_mjj500",          is_3l & (abs_ch_sum_3l==1) & (nfatjets>=1) & (vbsjets.mjj>500))
@@ -1073,10 +1073,11 @@ class AnalysisProcessor(processor.ProcessorABC):
                 "3l_chsum3",
 
                 "3l_chsum1",
-                #"3l_chsum1_nSFOS0",
-                #"3l_chsum1_nSFOS0_VBS0p2",
-                #"3l_chsum1_nSFOSg0",
-                #"3l_chsum1_nSFOSg0_mjj500",
+                "3l_chsum1_mjj500",
+                "3l_chsum1_mjj500_A",
+                "3l_chsum1_mjj500_B",
+                "3l_chsum1_mjj500_C",
+                "3l_chsum1_mjj500_D",
 
                 # WZ CR
                 #"3l_onZ_0b",
@@ -1164,7 +1165,7 @@ class AnalysisProcessor(processor.ProcessorABC):
             # Specify the regions to use for 2d hists
             cat2lH = "2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5"
             cat2lV = "2lOSSF_nFJ1_massLo_Zp2"
-            cat3lChsum1 = "3l_chsum1_VBS0p4"
+            cat3lChsum1 = "3l_chsum1_mjj500"
             all_cuts_mask_H = selections.all(cat2lH)
             all_cuts_mask_V = selections.all(cat2lV)
             all_cuts_mask_3lChsum1 = selections.all(cat3lChsum1)
@@ -1183,7 +1184,7 @@ class AnalysisProcessor(processor.ProcessorABC):
                 category  = cat2lV,
             )
             self.accumulator["abcd2d_3lChsum1"].fill(
-                vbs_mjj   = vbs_mjj_flow[all_cuts_mask_3lChsum1],
+                vbs_score = vbsjets.score[all_cuts_mask_3lChsum1],
                 dnn_score = dnn_score_3lChsum1[all_cuts_mask_3lChsum1],
                 weight    = weights_obj_base.weight(None)[all_cuts_mask_3lChsum1],
                 process   = histAxisName[all_cuts_mask_3lChsum1],
