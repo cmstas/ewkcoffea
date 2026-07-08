@@ -42,14 +42,14 @@ CAT_LST_2l = [
     #"2lOSSF_nFJ1_offZ_2b",
 ]
 
+
 CAT_LST_3l = [
     #"all_events",
     #"3l_prelowmllcut",
     "3l",
-    "3l_chsum1",
     "3l_chsum3",
-    #"3l_chsum1_nSFOS0",
-    #"3l_chsum1_nSFOSg0",
+    "3l_chsum1",
+    "3l_chsum1_mjj500",
 
     # WZ CR
     #"3l_onZ_0b",
@@ -378,7 +378,7 @@ GRP_DICT_FULL_R2 = {
         "WWTo1L1Nu2Q_4f_TuneCP5_13TeV",
         "WWTo2L2Nu_TuneCP5_13TeV",
         "GluGluHToZZTo4L",
-        "ZZJJTo4L_TuneCP5_13TeV",
+        #"ZZJJTo4L_TuneCP5_13TeV",
         "ZZTo2Nu2Q_5f_TuneCP5_13TeV",
         "ZZTo4Q_5f_TuneCP5_13TeV",
         "ZZJJTo4L_EWKnotop_TuneCP5_13TeV",
@@ -1133,7 +1133,7 @@ def main():
     if args.datacard:
         dump_datacard(histo_dict,grp_dict,name)
     if args.make_plots:
-        make_plots(histo_dict,grp_dict,years_to_prepend,cat_lst,lepflav_bin="all") # mc_scale=110.84/109.95 for 2024 to 2025 scaling
+        make_plots(histo_dict,grp_dict,years_to_prepend,cat_lst,lepflav_bin="all",do_data=True) # mc_scale=110.84/109.95 for 2024 to 2025 scaling
 
 
 
