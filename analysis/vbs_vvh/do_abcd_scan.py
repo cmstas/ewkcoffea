@@ -400,7 +400,7 @@ def plot_mjj_score_slices_optimized(histo, tag, best_score_cut, constrain_var, o
     print(f"Saved {output_dir}/mjj_score_slices_optimized_{tag}.png")
 
 
-def plot_best_working_point(histo_sig, histo_abcdbkg_dict, histo_abcdbkg, histo_otherbkg, histo_dat, results, constrain_var, output_dir="abcd_scan_plots", guardrails={}):
+def plot_best_working_point(histo_sig, histo_abcdbkg_dict, histo_abcdbkg, histo_otherbkg, histo_dat, results, constrain_var, output_dir="abcd_scan_plots", guardrails={}, abcd_label=""):
     """
     histo_abcdbkg_dict: dict mapping sample name -> histogram, one per ABCD background (for labelling only).
     histo_abcdbkg:      combined ABCD background histogram.
@@ -457,7 +457,8 @@ def plot_best_working_point(histo_sig, histo_abcdbkg_dict, histo_abcdbkg, histo_
         f"Truth ABCD bkg in A: {best_B_abcd_true:.4f} +/- {best_B_abcd_true_err:.4f}\n"
         f"Other bkg in A: {best_B_other:.4f} +/- {best_B_other_err:.4f}\n"
         f"Tot bkg in A: {best_B_total:.4f} +/- {best_B_total_err:.4f}\n"
-        f"Closure of ABCD bkgs: {abcd_closure_sigma:.4f} s.d."
+        f"Closure of ABCD bkgs: {abcd_closure_sigma:.4f} s.d.\n"
+        f"Where ABCD bkgs are: {abcd_label}\n"
     )
     os.makedirs(output_dir, exist_ok=True)
     plot_abcd_regions(
@@ -480,7 +481,7 @@ def plot_best_working_point(histo_sig, histo_abcdbkg_dict, histo_abcdbkg, histo_
     )
 
 
-def write_abcd_datacards(histo_sig, histo_abcdbkg, histo_otherbkg, histo_dat, results, constrain_var, output_dir="abcd_scan_plots", n_top=5, min_significance=0, guardrails={}):
+def write_abcd_datacards(histo_sig, histo_abcdbkg, histo_otherbkg, histo_dat, results, constrain_var, abcd_label="", output_dir="abcd_scan_plots", n_top=5, min_significance=0, guardrails={}):
     os.makedirs(output_dir, exist_ok=True)
     top_indices = get_top_scan_indices(results, n_top=n_top, **guardrails)
     sig_h     = histo_sig[{"process_grp": sum}]
@@ -546,7 +547,8 @@ def write_abcd_datacards(histo_sig, histo_abcdbkg, histo_otherbkg, histo_dat, re
             f"Truth ABCD bkg in A: {A_abcd:.4f} +/- {A_abcd_err:.4f}\n"
             f"Other bkg in A: {A_other:.4f} +/- {A_other_err:.4f}\n"
             f"Tot bkg in A: {A_bkg:.4f} +/- {A_bkg_err:.4f}\n"
-            f"Closure of ABCD bkgs: {closure_sd:.4f} s.d."
+            f"Closure of ABCD bkgs: {closure_sd:.4f} s.d.\n"
+            f"Where ABCD bkgs are: {abcd_label}\n"
         )
         plot_abcd_regions(
             score_edges, mjj_edges, allbkg_vals,
@@ -894,7 +896,8 @@ def main():
     cat_for_dnn    = "3l_chsum1_mjj500" # 3l_chsum1_nSFOS0_VBS0p2 2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5
     abcd_hist_name = "abcd2d_3lChsum1" # abcd2d_2lH abcd2d_3lChsum1
     constrain_var  = "vbs_score" # vbs_mjj
-    abcdbkg_names  = ["DY", "ttbar", "VV"]
+    #abcdbkg_names  = ["DY", "ttbar", "VV"]
+    abcdbkg_names  = ["ttbar", "single-t", "ttX", "rare-top", "DY", "ewkV", "VV", "ewkVV", "VH", "VVV"]
     guardrails = {
         "min_significance" : 0.0,
         "max_closure_sd"   : 1.2,
@@ -985,7 +988,7 @@ def main():
     results = do_abcd_scan(histo_sig, histo_abcdbkg, histo_otherbkg, constrain_var)
     plot_abcd_scan_panels(results, f"{out_dir}/abcd_scan_panels.png")
     plot_abcd_2d_snapshots(histo_sig, histo_abcdbkg_dict, histo_abcdbkg, histo_otherbkg, results, constrain_var, output_dir=out_dir, make_scan_blocks=False)
-    plot_best_working_point(histo_sig, histo_abcdbkg_dict, histo_abcdbkg, histo_otherbkg, histo_dat, results, constrain_var, output_dir=out_dir, guardrails=guardrails)
+    plot_best_working_point(histo_sig, histo_abcdbkg_dict, histo_abcdbkg, histo_otherbkg, histo_dat, results, constrain_var, output_dir=out_dir, guardrails=guardrails, abcd_label=abcd_label)
 
     # Optimized slice plots at best working point
     best_idx = get_top_scan_indices(results, n_top=1, **guardrails)[0]
