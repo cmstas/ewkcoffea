@@ -314,7 +314,8 @@ def plot_subregion_profiles(h, score_edges, mjj_edges, constrain_var, fname_pref
     Plot x and y profile overlays for each ABCD sub-region on the same plot.
     X profiles (mean constrain_var vs DNN score) in red.
     Y profiles (mean DNN score vs constrain_var) in purple.
-    For data, only B, C, D profiles are drawn. Heatmap is optional.
+    Each parent region gets a text annotation with sub-yields and closure.
+    For data, region A is skipped entirely.
     """
     if "process_grp" in [ax.name for ax in h.axes]:
         h2d = h[{"process_grp": sum}]
@@ -342,6 +343,54 @@ def plot_subregion_profiles(h, score_edges, mjj_edges, constrain_var, fname_pref
 
     if profile_rebin < 1:
         profile_rebin = 1
+
+    def _mid_bin(edges, lo, hi):
+        mid_val = 0.5 * (edges[lo] + edges[hi])
+        idx = int(np.searchsorted(edges, mid_val))
+        return int(np.clip(idx, lo + 1, hi - 1))
+
+    def _get_yield(s_lo, s_hi, m_lo, m_hi):
+        val = np.sum(vals[s_lo:s_hi, m_lo:m_hi])
+        var = np.sum(vars_2d[s_lo:s_hi, m_lo:m_hi])
+        return val, np.sqrt(var)
+
+    def _make_closure_text(region_label, s_lo, s_hi, m_lo, m_hi):
+        """Build the text block for a parent region showing sub-yields and Xa closure."""
+        sm = _mid_bin(score_edges, s_lo, s_hi)
+        mm = _mid_bin(mjj_edges,   m_lo, m_hi)
+        p  = region_label
+
+        # Sub-region yields: a=high score high mjj, b=low score high mjj,
+        #                    c=high score low mjj,  d=low score low mjj
+        Xa, Xa_err = _get_yield(sm,   s_hi, mm,   m_hi)
+        Xb, Xb_err = _get_yield(s_lo, sm,   mm,   m_hi)
+        Xc, Xc_err = _get_yield(sm,   s_hi, m_lo, mm)
+        Xd, Xd_err = _get_yield(s_lo, sm,   m_lo, mm)
+
+        lines = [
+            f"{p}a={Xa:.1f}+-{Xa_err:.1f}",
+            f"{p}b={Xb:.1f}+-{Xb_err:.1f}",
+            f"{p}c={Xc:.1f}+-{Xc_err:.1f}",
+            f"{p}d={Xd:.1f}+-{Xd_err:.1f}",
+        ]
+
+        if Xb > 0 and Xc > 0 and Xd > 0:
+            Xa_est     = Xb * Xc / Xd
+            Xa_est_err = Xa_est * np.sqrt(
+                (Xb_err / Xb)**2 + (Xc_err / Xc)**2 + (Xd_err / Xd)**2
+            )
+            closure    = Xa / Xa_est if Xa_est > 0 else np.nan
+            denom_cl   = np.sqrt(Xa_err**2 + Xa_est_err**2)
+            closure_sd = (Xa - Xa_est) / denom_cl if denom_cl > 0 else np.nan
+            lines.append(f"{p}a est={Xa_est:.1f}+-{Xa_est_err:.1f}")
+            cl_str = f"{closure:.3f}" if not np.isnan(closure) else "N/A"
+            sd_str = f"{closure_sd:.2f}sd" if not np.isnan(closure_sd) else "N/A"
+            lines.append(f"closure={cl_str} ({sd_str})")
+        else:
+            lines.append(f"{p}a est=N/A")
+            lines.append("closure=N/A")
+
+        return "\n".join(lines)
 
     def _make_x_profile(s_lo, s_hi, m_lo, m_hi):
         mjj_centers_sub = (mjj_edges[m_lo:m_hi] + mjj_edges[m_lo+1:m_hi+1]) / 2
@@ -405,7 +454,7 @@ def plot_subregion_profiles(h, score_edges, mjj_edges, constrain_var, fname_pref
 
     data_tag = " (data, BCD only)" if is_data else ""
 
-    fig, ax = plt.subplots(figsize=(8, 6))
+    fig, ax = plt.subplots(figsize=(10, 8))
     if show_heatmap:
         im = ax.pcolormesh(score_edges, mjj_edges, vals.T, cmap="Blues")
         plt.colorbar(im, ax=ax)
@@ -415,9 +464,21 @@ def plot_subregion_profiles(h, score_edges, mjj_edges, constrain_var, fname_pref
     ax.axhline(mjj_edges[mj],   color="black", linewidth=1, linestyle=":",  alpha=0.5,
                label=f"{constrain_var} midpoint={mjj_edges[mj]:.3f}")
 
+    # Text anchor positions: lower-left corner of each parent region box
+    # Expressed in data coordinates with a small offset inward
+    x_offset = 0.01 * (score_edges[-1] - score_edges[0])
+    y_offset = 0.01 * (mjj_edges[-1]   - mjj_edges[0])
+    text_positions = {
+        "A": (score_edges[si]  + x_offset, mjj_edges[mj]  + y_offset),
+        "B": (score_edges[0]   + x_offset, mjj_edges[mj]  + y_offset),
+        "C": (score_edges[si]  + x_offset, mjj_edges[0]   + y_offset),
+        "D": (score_edges[0]   + x_offset, mjj_edges[0]   + y_offset),
+    }
+
     x_label_done = False
     y_label_done = False
     for region_label, s_lo, s_hi, m_lo, m_hi in subregions:
+        # Profile overlays
         px, pxerr, py, pyerr = _make_x_profile(s_lo, s_hi, m_lo, m_hi)
         ax.errorbar(px, py, xerr=pxerr, yerr=pyerr,
                     color="tab:red", linestyle="none", marker="o",
@@ -432,6 +493,12 @@ def plot_subregion_profiles(h, score_edges, mjj_edges, constrain_var, fname_pref
                     label=f"mean DNN score vs {constrain_var}" if not y_label_done else "_nolegend_")
         y_label_done = True
 
+        # Closure text annotation
+        text = _make_closure_text(region_label, s_lo, s_hi, m_lo, m_hi)
+        tx, ty = text_positions[region_label]
+        ax.text(tx, ty, text, fontsize=6, va="bottom", ha="left", family="monospace",
+                bbox=dict(boxstyle="round,pad=0.2", facecolor="white", alpha=0.6, edgecolor="gray"))
+
     ax.set_xlabel("DNN score")
     ax.set_ylabel(constrain_var)
     ax.set_title(f"{fname_prefix} sub-region profiles{data_tag}\n(split at axis midpoints)")
@@ -444,7 +511,6 @@ def plot_subregion_profiles(h, score_edges, mjj_edges, constrain_var, fname_pref
     plt.savefig(out_path, dpi=150)
     plt.close()
     print(f"Saved {out_path}")
-
 
 def plot_mjj_score_slices(histo, tag, constrain_var, output_dir="abcd_scan_plots"):
     """Plot mjj distribution in equal score slices for a single sample."""
