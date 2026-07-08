@@ -31,14 +31,12 @@ git clone -b nano_schema_patch https://github.com/kmohrman/coffea.git
 cd coffea
 pip install -e .  
 ```
-Now all of the dependencies have been installed and the `ewkcoffea` repository is ready to be used. The next time you want to use it, all you have to do is to activate the environment via `conda activate coffea-env`. 
 
-## For the WWZ analysis
-
-One of the packages the WWZ analysis depends on is not conda installed (i.e. they were not included in the `environment.yml` where most of the dependencies were specified), so we can go ahead and install those into our new `conda` environment via `pip`. 
+One of the packages the analysis depends on is not conda installed (i.e. they were not included in the `environment.yml` where most of the dependencies were specified), so we can go ahead and install those into our new `conda` environment via `pip`. 
 ```
 pip install mt2
 ```
+Now all of the dependencies have been installed and the `ewkcoffea` repository is ready to be used. The next time you want to use it, all you have to do is to activate the environment via `conda activate coffea-env`. 
 
 ### Learning how to run the processor 
 
