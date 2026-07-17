@@ -476,7 +476,8 @@ class AnalysisProcessor(processor.ProcessorABC):
 
         # We will use loose e and medium m for analysis, be sure to convert the 0 and 1 in the array to T and F before using as a mask
         ele = ele[ak.values_astype(ele.isLoose,bool)]
-        mu  = mu[ak.values_astype(mu.isMedium,bool)]
+        #mu  = mu[ak.values_astype(mu.isMedium,bool)]
+        mu  = mu[ak.values_astype(mu.isTight,bool)]
 
         # Get tight leptons for VVH selection, using mask from RDF
         l_vvh_t = ak.with_name(ak.concatenate([ele,mu],axis=1),'PtEtaPhiMCandidate')
@@ -508,6 +509,12 @@ class AnalysisProcessor(processor.ProcessorABC):
         # Note: add() will generally modify up/down weights, so if these are needed for any reason after this point, we should instead pass copies to add()
         weights_obj_base = coffea.analysis_tools.Weights(len(events),storeIndividual=True)
         weights_obj_base.add("norm",events.baseweight)
+
+        # SFs and systematics
+        if not isData:
+            weighttest = events.weighttest
+            weights_obj_base.add('lepSf', weighttest.lepSF1[:,0], weighttest.lepSF1[:,1], weighttest.lepSF1[:,2])
+
 
 
         #################### Jets ####################
@@ -1075,9 +1082,9 @@ class AnalysisProcessor(processor.ProcessorABC):
                 "3l_chsum1",
                 "3l_chsum1_mjj500",
                 "3l_chsum1_mjj500_A",
-                "3l_chsum1_mjj500_B",
-                "3l_chsum1_mjj500_C",
-                "3l_chsum1_mjj500_D",
+                #"3l_chsum1_mjj500_B",
+                #"3l_chsum1_mjj500_C",
+                #"3l_chsum1_mjj500_D",
 
                 # WZ CR
                 #"3l_onZ_0b",
@@ -1209,7 +1216,11 @@ class AnalysisProcessor(processor.ProcessorABC):
 
         # Set up the list of weight fluctuations to loop over
         # For now the syst do not depend on the category, so we can figure this out outside of the filling loop
-        wgt_var_lst = ["nominal"]
+        #wgt_var_lst = ["nominal"]
+        if not isData:
+            wgt_var_lst = ["nominal", "lepSfUp", "lepSfDown"]
+        else:
+            wgt_var_lst = ["nominal"]
 
         # Loop over the hists we want to fill
         for dense_axis_name, dense_axis_vals in dense_variables_dict.items():
