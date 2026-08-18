@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 #import sys
+import time
 import coffea
 import numpy as np
 import awkward as ak
@@ -9,7 +10,7 @@ import hist
 from hist import axis
 from coffea.analysis_tools import PackedSelection
 #import ewkcoffea.modules.objects_wwz as os_ec
-import ewkcoffea.modules.selection_wwz as es_ec
+#import ewkcoffea.modules.selection_wwz as es_ec
 
 from ewkcoffea.modules.paths import ewkcoffea_path as ewkcoffea_path
 
@@ -32,6 +33,11 @@ def to_vec(obj,with_name="PtEtaPhiMCollection"):
         "phi": obj.phi,
         "mass": obj.mass,
     }, with_name=with_name)
+
+# Get the MT variable
+# See also https://en.wikipedia.org/wiki/Transverse_mass#Transverse_mass_in_two-particle_systems
+def get_mt(p1,p2):
+    return np.sqrt(2*p1.pt*p2.pt*(1 - np.cos(p1.delta_phi(p2))))
 
 # Returns masks for the 4 ABCD regions from the 2d plane
 #     - x_var would generally be your dnn score
@@ -344,14 +350,28 @@ class AnalysisProcessor(processor.ProcessorABC):
 
     #################################################################################
     ### For ABCDnet evaluations ###
-    def _load_model(self, checkpoint_path, model_key):
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self._device = device
+    def _load_model(self, checkpoint_path, model_key, device):
+        _t0 = time.time()
         if not hasattr(self, '_models'):
             self._models = {}
         self._models[model_key] = ABCDLightningModule.load_from_checkpoint(checkpoint_path, map_location=device)
+        print(f"CHUNK_TIMING loaded checkpoint {model_key} from disk in {time.time() - _t0:.2f}s", flush=True)
         self._models[model_key].to(device)
         self._models[model_key].eval()
+
+    def _scale_feature(self, name, tensor, scaler_params):
+        # Torch equivalent of the old numpy-based scaling, kept on whatever
+        # device `tensor` already lives on (cpu or cuda) so no host<->device
+        # transfer is introduced here.
+        params = scaler_params[name]
+        arr = tensor.to(torch.float64)
+        if params["transform"] == "log":
+            arr = torch.log(torch.clamp(arr, min=1e-9))
+        lo, hi = params["min"], params["max"]
+        denom = hi - lo
+        if denom > 0:
+            arr = (arr - lo) / denom
+        return torch.clamp(arr, 0.0, 1.0).to(torch.float32)
 
     def _run_abcd_inference(self, events, dense_variables_dict, model):
         if model == "2lH":
@@ -366,10 +386,19 @@ class AnalysisProcessor(processor.ProcessorABC):
         else:
             raise Exception(f"Unknown model {model}")
 
+        # Run on whatever backend/device the events themselves are already
+        # on: "cuda" -> GPU, "cpu" -> CPU. This is what lets the same code
+        # path flip between CPU and GPU running with no config needed.
+        device = torch.device(ak.backend(events))
+
         if not hasattr(self, '_models'):
             self._models = {}
         if model not in self._models:
-            self._load_model(checkpoint_path, model)
+            self._load_model(checkpoint_path, model, device)
+        else:
+            # Cheap no-op if already on the right device; only actually
+            # moves weights if the backend changed since the last chunk.
+            self._models[model] = self._models[model].to(device)
 
         if not hasattr(self, '_scaler_params_dict'):
             self._scaler_params_dict = {}
@@ -380,34 +409,51 @@ class AnalysisProcessor(processor.ProcessorABC):
 
         scaler_params = self._scaler_params_dict[model]
 
-        def scale(name, values):
-            params = scaler_params[name]
-            arr = np.array(values, dtype=np.float64)
-            if params["transform"] == "log":
-                arr = np.log(np.clip(arr, 1e-9, None))
-            lo, hi = params["min"], params["max"]
-            denom = hi - lo
-            if denom > 0:
-                arr = (arr - lo) / denom
-            return np.clip(arr, 0.0, 1.0).astype(np.float32)
-
-        feature_matrix = np.column_stack([
-            scale(feat, ak.to_numpy(ak.fill_none(dense_variables_dict[feat], -1.0)))
+        feature_matrix = torch.stack([
+            self._scale_feature(
+                feat,
+                ak.to_torch(ak.fill_none(dense_variables_dict[feat], -1.0)),
+                scaler_params,
+            )
             for feat in scaler_params["_training_features"]
-        ])
+        ], dim=1)
 
-        features_tensor = torch.from_numpy(feature_matrix).to(self._device)
         with torch.no_grad():
-            logits = self._models[model](features_tensor)
+            logits = self._models[model](feature_matrix)
             if logits.ndim == 1:
                 logits = logits.unsqueeze(-1)
-            scores = torch.sigmoid(logits).cpu().numpy()[:, 0]
-        return scores
+            scores = torch.sigmoid(logits)[:, 0].contiguous()
+
+        # ak.from_dlpack reads the tensor's own device off DLPack, so this
+        # comes back as a cuda-backend ak.Array when `device` is cuda, and a
+        # cpu-backend one otherwise -- no manual branching needed.
+        return ak.from_dlpack(scores)
     #################################################################################
 
 
     # Main function: run on a given chunk
     def process(self, events):
+
+        _chunk_t0 = time.time()
+        if not hasattr(self, "_chunk_count"):
+            self._chunk_count = 0
+        self._chunk_count += 1
+
+        #events = ak.materialize(events)
+        #events = ak.to_backend(events,"cuda")
+        #print("Events arr backend:",ak.backend(events))
+        events_gpu = {}
+        fields_to_materialize = ["baseweight", "electron", "event", "fatjet", "gen", "isRun3", "jet", "kind", "luminosityBlock", "met", "muon", "run", "shortname", "vbs", "xsec", "year"]
+        import os
+        target_backend = os.environ.get("EWKCOFFEA_BACKEND", "cuda")
+        for fname in fields_to_materialize:
+            if fname in events.fields:
+                events_gpu[fname] = ak.to_backend(ak.materialize(events[fname]),target_backend)
+        events = ak.zip(events_gpu,depth_limit=1)
+        print("Events arr backend:",ak.backend(events))
+
+        _t_prev = time.time()
+        print(f"CHUNK_TIMING phase=data_load_to_gpu seconds={_t_prev - _chunk_t0:.2f}", flush=True)
 
         histAxisName = events.shortname
         year         = events.year
@@ -420,6 +466,9 @@ class AnalysisProcessor(processor.ProcessorABC):
         met     = events.met
         fatjets = events.fatjet
         vbsjets = events.vbs
+
+        print("Ele arr backend:",ak.backend(ele))
+        print("Muo arr backend:",ak.backend(mu))
 
         # Identify the kind of of chunk that this is (note this check assumes all events in this chunk are of the same kind, should be true)
         isSig  = events.kind[0]=="sig"
@@ -576,6 +625,9 @@ class AnalysisProcessor(processor.ProcessorABC):
         nbtagsm = ak.num(goodJets[isBtagJetsMedium])
         nbtagst = ak.num(goodJets[isBtagJetsTight])
 
+        _t_now = time.time()
+        print(f"CHUNK_TIMING phase=obj_basic_selection seconds={_t_now - _t_prev:.2f}", flush=True)
+        _t_prev = _t_now
 
         ######### Get variables we haven't already calculated #########
 
@@ -725,12 +777,16 @@ class AnalysisProcessor(processor.ProcessorABC):
         all_idx = ak.local_index(l_vvh_t, axis=1)
         w_lep_mask = (all_idx != z_idx0) & (all_idx != z_idx1)
         l_w = ak.firsts(l_vvh_t[w_lep_mask])
-        mt_wlep = ak.where(sfos_mask,es_ec.get_mt(l_w, met4),-1)
+        #mt_wlep = ak.where(sfos_mask,es_ec.get_mt(l_w, met4),-1)
+        mt_wlep = ak.where(sfos_mask,get_mt(l_w, met4),-1)
         dr_wlepmet = ak.where(sfos_mask,l_w.delta_r(met4),-1)
 
         # NOTE Only defind for exactly 2 and 3 lep
         abs_pdgid_sum = ak.fill_none(ak.where(nleps==3,abs(l0.pdgId) + abs(l1.pdgId) + abs(l2.pdgId),abs(l0.pdgId) + abs(l1.pdgId)),0)
 
+        _t_now = time.time()
+        print(f"CHUNK_TIMING phase=obj_combinatorics_vars seconds={_t_now - _t_prev:.2f}", flush=True)
+        _t_prev = _t_now
 
         # Put the variables we'll plot into a dictionary for easy access later
         dense_variables_dict = {
@@ -909,6 +965,10 @@ class AnalysisProcessor(processor.ProcessorABC):
 
         }
 
+        _t_now = time.time()
+        print(f"CHUNK_TIMING phase=dict_assembly seconds={_t_now - _t_prev:.2f}", flush=True)
+        _t_prev = _t_now
+
         # For ABCDnet evaluations
         # This must come after dense_variables_dict since pass all vars from dense_variables_dict to evaluation since any/all might be needed (depending on which model we're using)
         # Once we finish evaluating, add the score to the dense_variables_dict too
@@ -918,6 +978,10 @@ class AnalysisProcessor(processor.ProcessorABC):
         dense_variables_dict["dnn_score_2lH"] = dnn_score_2lH
         dense_variables_dict["dnn_score_2lV"] = dnn_score_2lV
         dense_variables_dict["dnn_score_3lChsum1"] = dnn_score_3lChsum1
+
+        _t_now = time.time()
+        print(f"CHUNK_TIMING phase=dnn_inference seconds={_t_now - _t_prev:.2f}", flush=True)
+        _t_prev = _t_now
 
 
         ### Lepton truth variables ###
@@ -965,6 +1029,10 @@ class AnalysisProcessor(processor.ProcessorABC):
             dense_variables_dict["nlep_truth_fake"] = nlep_truth_fake
 
 
+
+        _t_now = time.time()
+        print(f"CHUNK_TIMING phase=lepton_truth_vars seconds={_t_now - _t_prev:.2f}", flush=True)
+        _t_prev = _t_now
 
         ######### Store boolean masks with PackedSelection ##########
 
@@ -1141,10 +1209,14 @@ class AnalysisProcessor(processor.ProcessorABC):
 
 
 
+        _t_now = time.time()
+        print(f"CHUNK_TIMING phase=selections_build seconds={_t_now - _t_prev:.2f}", flush=True)
+        _t_prev = _t_now
+
         ######### Siphon outputs for ABCDnet training #########
 
         if self._siphon_bdt_data:
-            siphon_mask = selections.all(*self._siphon_selection)
+            siphon_mask = ak.to_backend(selections.all(*self._siphon_selection), ak.backend(events))
             for var in self._bdt_vars:
                 if var not in dense_variables_dict:
                     raise Exception(f"BDT var '{var}' not found in dense_variables_dict")
@@ -1156,6 +1228,10 @@ class AnalysisProcessor(processor.ProcessorABC):
             )
 
 
+        _t_now = time.time()
+        print(f"CHUNK_TIMING phase=siphon_output seconds={_t_now - _t_prev:.2f}", flush=True)
+        _t_prev = _t_now
+
         ######### Fill the 2d ABCDnet histo #########
 
         #fill_abcd_2d = False  # At some point should make this an option
@@ -1166,9 +1242,13 @@ class AnalysisProcessor(processor.ProcessorABC):
             cat2lH = "2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5"
             cat2lV = "2lOSSF_nFJ1_massLo_Zp2"
             cat3lChsum1 = "3l_chsum1_mjj500"
-            all_cuts_mask_H = selections.all(cat2lH)
-            all_cuts_mask_V = selections.all(cat2lV)
-            all_cuts_mask_3lChsum1 = selections.all(cat3lChsum1)
+            # selections.all(...) is always a plain CPU (numpy) array -- coerce
+            # it back onto whatever backend events/vbs_mjj_flow/etc. are on
+            # before using it to index them.
+            backend = ak.backend(events)
+            all_cuts_mask_H = ak.to_backend(selections.all(cat2lH), backend)
+            all_cuts_mask_V = ak.to_backend(selections.all(cat2lV), backend)
+            all_cuts_mask_3lChsum1 = ak.to_backend(selections.all(cat3lChsum1), backend)
             self.accumulator["abcd2d_2lH"].fill(
                 vbs_mjj   = vbs_mjj_flow[all_cuts_mask_H],
                 dnn_score = dnn_score_2lH[all_cuts_mask_H],
@@ -1191,6 +1271,12 @@ class AnalysisProcessor(processor.ProcessorABC):
                 category  = cat3lChsum1,
             )
 
+
+        _t_now = time.time()
+        print(f"CHUNK_TIMING phase=abcd2d_hist_fill seconds={_t_now - _t_prev:.2f}", flush=True)
+        _t_prev = _t_now
+
+        _fill_call_count = 0
 
         ######### Fill 1d histos #########
 
@@ -1237,7 +1323,8 @@ class AnalysisProcessor(processor.ProcessorABC):
 
                     # Make the cuts mask
                     cuts_lst = [sr_cat]
-                    all_cuts_mask = selections.all(*cuts_lst)
+                    #all_cuts_mask = selections.all(*cuts_lst)
+                    all_cuts_mask = ak.to_backend(selections.all(*cuts_lst),backend)
 
                     # Print info about the events
                     #import sys
@@ -1268,7 +1355,13 @@ class AnalysisProcessor(processor.ProcessorABC):
                     }
 
                     self.accumulator[dense_axis_name].fill(**axes_fill_info_dict)
+                    _fill_call_count += 1
 
+        _t_now = time.time()
+        print(f"CHUNK_TIMING phase=hist_fill_1d_loop seconds={_t_now - _t_prev:.2f} fill_calls={_fill_call_count}", flush=True)
+        _t_prev = _t_now
+
+        print(f"CHUNK_TIMING chunk={self._chunk_count} seconds={time.time() - _chunk_t0:.2f}", flush=True)
         return self.accumulator
 
     def postprocess(self, accumulator):
