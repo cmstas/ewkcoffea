@@ -477,8 +477,16 @@ class AnalysisProcessor(processor.ProcessorABC):
         print("Muo arr backend:",ak.backend(mu))
 
         # Identify the kind of of chunk that this is (note this check assumes all events in this chunk are of the same kind, should be true)
-        isSig  = events.kind[0]=="sig"
         isData = events.kind[0]=="data"
+        # Per-event version of isSig (unlike a chunk-wide scalar, this is
+        # safe even for a chunk that mixes signal and background events in
+        # the same file) -- used below to gate the signal-only gen-truth
+        # matching categories on a per-event basis. String equality isn't
+        # supported at all on the cuda backend (the comparison itself
+        # raises, not just returns CPU-backend) -- do the comparison on
+        # CPU, then coerce the resulting boolean mask back before
+        # combining with GPU-native masks below.
+        isSig_mask = ak.to_backend(ak.to_backend(events.kind, "cpu")=="sig", ak.backend(events))
 
         # Put the relevant tagging scores in fatjets object (this should be in RDF in the future)
         fatjets["gptHvsQCD"] = fatjets.globalParT3_Xbb / (fatjets.globalParT3_Xbb + fatjets.globalParT3_QCD)
@@ -1177,7 +1185,14 @@ class AnalysisProcessor(processor.ProcessorABC):
 
 
         ### Gen truth matched categories for signal ###
-        if isSig:
+        # Gated per-event (isSig_mask), not per-chunk: a chunk can contain a
+        # mix of signal and background events (e.g. representative-mix mega
+        # files), and background events never have real gen.h/v1/v2 values
+        # (dummy-filled at file build time) -- ANDing isSig_mask into every
+        # selections.add() call below ensures background events always come
+        # out False here regardless of their dummy gen values, while signal
+        # events still get the real dR-matching computation.
+        if ak.any(isSig_mask):
             gen_h  = ak.zip({"pt": ak.ones_like(events.gen.h_eta), "eta": events.gen.h_eta,  "phi": events.gen.h_phi,  "mass": ak.ones_like(events.gen.h_eta)}, with_name="PtEtaPhiMCollection")
             gen_v1 = ak.zip({"pt": ak.ones_like(events.gen.v1_eta), "eta": events.gen.v1_eta, "phi": events.gen.v1_phi, "mass": ak.ones_like(events.gen.v1_eta)}, with_name="PtEtaPhiMCollection")
             gen_v2 = ak.zip({"pt": ak.ones_like(events.gen.v2_eta), "eta": events.gen.v2_eta, "phi": events.gen.v2_phi, "mass": ak.ones_like(events.gen.v2_eta)}, with_name="PtEtaPhiMCollection")
@@ -1190,15 +1205,15 @@ class AnalysisProcessor(processor.ProcessorABC):
             fj0_matchedV2 = (dR_fj0_v2 < dR_threshold) & (dR_fj0_v2 < dR_fj0_h)  & (dR_fj0_v2 < dR_fj0_v1)
             fj0_matchedV  = fj0_matchedV1 | fj0_matchedV2
             fj0_noMatch   = ~(dR_fj0_h < dR_threshold) & ~(dR_fj0_v1 < dR_threshold) & ~(dR_fj0_v2 < dR_threshold)
-            selections.add("2lOSSF_1fjx_fj0matchH",  is_2l & is_os & is_sf & (nfatjets==1) & ak.fill_none(fj0_matchedH,  False))
-            selections.add("2lOSSF_1fjx_fj0matchV1", is_2l & is_os & is_sf & (nfatjets==1) & ak.fill_none(fj0_matchedV1, False))
-            selections.add("2lOSSF_1fjx_fj0matchV2", is_2l & is_os & is_sf & (nfatjets==1) & ak.fill_none(fj0_matchedV2, False))
-            selections.add("2lOSSF_1fjx_fj0matchV",  is_2l & is_os & is_sf & (nfatjets==1) & ak.fill_none(fj0_matchedV, False))
-            selections.add("2lOSSF_1fjx_fj0noMatch", is_2l & is_os & is_sf & (nfatjets==1) & ak.fill_none(fj0_noMatch, False))
-            selections.add("2lOSSF_1fjx_ejj3_fj0matchH",  is_2l & is_os & is_sf & (nfatjets==1) & (vbsjets.detajj > 3) & ak.fill_none(fj0_matchedH,  False))
-            selections.add("2lOSSF_1fjx_ejj3_fj0matchV1", is_2l & is_os & is_sf & (nfatjets==1) & (vbsjets.detajj > 3) & ak.fill_none(fj0_matchedV1, False))
-            selections.add("2lOSSF_1fjx_ejj3_fj0matchV2", is_2l & is_os & is_sf & (nfatjets==1) & (vbsjets.detajj > 3) & ak.fill_none(fj0_matchedV2, False))
-            selections.add("2lOSSF_1fjx_ejj3_fj0matchV",  is_2l & is_os & is_sf & (nfatjets==1) & (vbsjets.detajj > 3) & ak.fill_none(fj0_matchedV, False))
+            selections.add("2lOSSF_1fjx_fj0matchH",  isSig_mask & is_2l & is_os & is_sf & (nfatjets==1) & ak.fill_none(fj0_matchedH,  False))
+            selections.add("2lOSSF_1fjx_fj0matchV1", isSig_mask & is_2l & is_os & is_sf & (nfatjets==1) & ak.fill_none(fj0_matchedV1, False))
+            selections.add("2lOSSF_1fjx_fj0matchV2", isSig_mask & is_2l & is_os & is_sf & (nfatjets==1) & ak.fill_none(fj0_matchedV2, False))
+            selections.add("2lOSSF_1fjx_fj0matchV",  isSig_mask & is_2l & is_os & is_sf & (nfatjets==1) & ak.fill_none(fj0_matchedV, False))
+            selections.add("2lOSSF_1fjx_fj0noMatch", isSig_mask & is_2l & is_os & is_sf & (nfatjets==1) & ak.fill_none(fj0_noMatch, False))
+            selections.add("2lOSSF_1fjx_ejj3_fj0matchH",  isSig_mask & is_2l & is_os & is_sf & (nfatjets==1) & (vbsjets.detajj > 3) & ak.fill_none(fj0_matchedH,  False))
+            selections.add("2lOSSF_1fjx_ejj3_fj0matchV1", isSig_mask & is_2l & is_os & is_sf & (nfatjets==1) & (vbsjets.detajj > 3) & ak.fill_none(fj0_matchedV1, False))
+            selections.add("2lOSSF_1fjx_ejj3_fj0matchV2", isSig_mask & is_2l & is_os & is_sf & (nfatjets==1) & (vbsjets.detajj > 3) & ak.fill_none(fj0_matchedV2, False))
+            selections.add("2lOSSF_1fjx_ejj3_fj0matchV",  isSig_mask & is_2l & is_os & is_sf & (nfatjets==1) & (vbsjets.detajj > 3) & ak.fill_none(fj0_matchedV, False))
             selections.add("2lOSSF_1fjx_ejj3_fj0noMatch", is_2l & is_os & is_sf & (nfatjets==1) & (vbsjets.detajj > 3) & ak.fill_none(fj0_noMatch, False))
 
             #cat_dict["lep_chan_lst"].append("2lOSSF_1fjx_fj0matchH")
