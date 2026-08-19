@@ -26,6 +26,16 @@ warnings.filterwarnings(
     module="coffea.nanoevents.schemas.nanoaod"
 )
 
+def _sync_backend(backend):
+    # Force any queued GPU kernels to finish so a subsequent time.time() reflects
+    # real completion, not just launch/dispatch time (ak/cupy ops on cuda are async by default).
+    if backend == "cuda":
+        try:
+            import cupy
+            cupy.cuda.Stream.null.synchronize()
+        except ImportError:
+            pass
+
 def to_vec(obj,with_name="PtEtaPhiMCollection"):
     return ak.zip({
         "pt": obj.pt,
@@ -642,6 +652,8 @@ class AnalysisProcessor(processor.ProcessorABC):
         _t_now = time.time()
         print(f"CHUNK_TIMING phase=obj_basic_selection seconds={_t_now - _t_prev:.2f}", flush=True)
         _t_prev = _t_now
+        _backend = ak.backend(events)
+        _combo_phase_t0 = _t_prev  # preserved across subphase timers below for the overall phase total
 
         ######### Get variables we haven't already calculated #########
 
@@ -657,6 +669,9 @@ class AnalysisProcessor(processor.ProcessorABC):
         ll_pairs = ak.combinations(l_vvh_t_padded, 2, fields=["l0", "l1"] )
         sfos_mask = ak.fill_none((ll_pairs.l0.pdgId == -ll_pairs.l1.pdgId),False)
         n_ll_sfos = ak.num(ll_pairs[sfos_mask])
+        _sync_backend(_backend); _t_now = time.time()
+        print(f"CHUNK_TIMING subphase=obj_combinatorics_vars.lepton_pairs_sfos seconds={_t_now - _t_prev:.4f}", flush=True)
+        _t_prev = _t_now
 
         # Find the mjj of the pair of jets (central + fwd) that have the min delta R
         jj_pairs = ak.combinations(goodJets_ptordered_padded, 2, fields=["j0", "j1"] )
@@ -665,16 +680,27 @@ class AnalysisProcessor(processor.ProcessorABC):
         jj_pairs_atmindr = jj_pairs[jj_pairs_idx_mindr]
         jj_pairs_atmindr_mjj = (jj_pairs_atmindr.j0 + jj_pairs_atmindr.j1).mass
         jj_pairs_atmindr_mjj = ak.flatten(ak.fill_none(jj_pairs_atmindr_mjj,-999)) # Replace Nones, flatten (so e.g. [[None],[x],[y]] -> [-999,x,y])
+        _sync_backend(_backend); _t_now = time.time()
+        print(f"CHUNK_TIMING subphase=obj_combinatorics_vars.jj_mindr seconds={_t_now - _t_prev:.4f}", flush=True)
+        _t_prev = _t_now
 
-        # Find jet triplets clost to top mass
+        # Find jet triplets clost to top mass (all jets - only 3-way combination in this block, uses full unfiltered jet collection)
         jetall_triplets = ak.combinations(goodJets_ptordered_padded, 3, fields=["j0", "j1", "j2"] )
-        jetcnt_triplets = ak.combinations(goodJets_central_ptordered_padded, 3, fields=["j0", "j1", "j2"] )
         jjjall_4vec = jetall_triplets.j0 + jetall_triplets.j1 + jetall_triplets.j2
-        jjjcnt_4vec = jetcnt_triplets.j0 + jetcnt_triplets.j1 + jetcnt_triplets.j2
         tpeak_jall_idx = ak.argmin(abs(jjjall_4vec.mass - 173),keepdims=True,axis=1)
-        tpeak_jcnt_idx = ak.argmin(abs(jjjcnt_4vec.mass - 173),keepdims=True,axis=1)
         mjjjall_nearest_t = ak.fill_none(ak.flatten(jjjall_4vec[tpeak_jall_idx].mass),0)
+        _sync_backend(_backend); _t_now = time.time()
+        print(f"CHUNK_TIMING subphase=obj_combinatorics_vars.triplets_all seconds={_t_now - _t_prev:.4f}", flush=True)
+        _t_prev = _t_now
+
+        # Find jet triplets closest to top mass (central jets only - smaller input collection than triplets_all above)
+        jetcnt_triplets = ak.combinations(goodJets_central_ptordered_padded, 3, fields=["j0", "j1", "j2"] )
+        jjjcnt_4vec = jetcnt_triplets.j0 + jetcnt_triplets.j1 + jetcnt_triplets.j2
+        tpeak_jcnt_idx = ak.argmin(abs(jjjcnt_4vec.mass - 173),keepdims=True,axis=1)
         mjjjcnt_nearest_t = ak.fill_none(ak.flatten(jjjcnt_4vec[tpeak_jcnt_idx].mass),0)
+        _sync_backend(_backend); _t_now = time.time()
+        print(f"CHUNK_TIMING subphase=obj_combinatorics_vars.triplets_cent seconds={_t_now - _t_prev:.4f}", flush=True)
+        _t_prev = _t_now
 
         mass_l0l1 = (l0+l1).mass
         dr_l0l1 = l0.delta_r(l1)
@@ -687,11 +713,17 @@ class AnalysisProcessor(processor.ProcessorABC):
         scalarptsum_lepmetfwdjets = scalarptsum_lep + met.pt + scalarptsum_jetFwd
         scalarptsum_lepmetvbsFJ0 = scalarptsum_lep + met.pt + vbs1.pt + vbs2.pt + fj0.pt
         vectorsum_lepmetvbsFJ0_pt = (l0v + l1v + vbs1 + vbs2 + met4 + fj0).pt
+        _sync_backend(_backend); _t_now = time.time()
+        print(f"CHUNK_TIMING subphase=obj_combinatorics_vars.scalar_sums seconds={_t_now - _t_prev:.4f}", flush=True)
+        _t_prev = _t_now
 
         # lb pairs (i.e. always one lep, one bjet)
         lb_pairs = ak.cartesian({"l":to_vec(l_vvh_t),"j": bjetsm})
         mlb_min = ak.min((lb_pairs["l"] + lb_pairs["j"]).mass,axis=-1)
         mlb_max = ak.max((lb_pairs["l"] + lb_pairs["j"]).mass,axis=-1)
+        _sync_backend(_backend); _t_now = time.time()
+        print(f"CHUNK_TIMING subphase=obj_combinatorics_vars.lb_pairs seconds={_t_now - _t_prev:.4f}", flush=True)
+        _t_prev = _t_now
 
         # lj pairs (i.e. always one lep, one jet)
         lj_pairs     = ak.cartesian({"l":to_vec(l_vvh_t),"j": jets})
@@ -702,11 +734,17 @@ class AnalysisProcessor(processor.ProcessorABC):
         mass_lj_max   = ak.max((lj_pairs["l"]+lj_pairs["j"]).mass,axis=-1)
         dr_ljnvbs_min = ak.min(ljnvbs_pairs["l"].delta_r(ljnvbs_pairs["j"]),axis=-1)
         dr_ljnvbs_max = ak.max(ljnvbs_pairs["l"].delta_r(ljnvbs_pairs["j"]),axis=-1)
+        _sync_backend(_backend); _t_now = time.time()
+        print(f"CHUNK_TIMING subphase=obj_combinatorics_vars.lj_pairs seconds={_t_now - _t_prev:.4f}", flush=True)
+        _t_prev = _t_now
 
         # FJj pairs (i.e. always one FJ, one jet)
         FJj_pairs     = ak.cartesian({"fj":fatjets,"j": jets})
         mass_jFJ_min   = ak.min((FJj_pairs["fj"]+FJj_pairs["j"]).mass,axis=-1)
         mass_jFJ_max   = ak.max((FJj_pairs["fj"]+FJj_pairs["j"]).mass,axis=-1)
+        _sync_backend(_backend); _t_now = time.time()
+        print(f"CHUNK_TIMING subphase=obj_combinatorics_vars.FJj_pairs seconds={_t_now - _t_prev:.4f}", flush=True)
+        _t_prev = _t_now
 
         bjets_ptordered = bjetsl[ak.argsort( bjetsl.pt,axis=-1,ascending=False)]
         bjets_ptordered_padded = ak.pad_none(bjets_ptordered, 2)
@@ -738,20 +776,35 @@ class AnalysisProcessor(processor.ProcessorABC):
         mass_jbscore0jbscore1 = ak.fill_none((jbscore0+jbscore1).mass,0)
         jbscore0_bscore = ak.fill_none(jbscore0.btagDeepFlavB,0)
         jbscore1_bscore = ak.fill_none(jbscore1.btagDeepFlavB,0)
+        _sync_backend(_backend); _t_now = time.time()
+        print(f"CHUNK_TIMING subphase=obj_combinatorics_vars.bjet_vars seconds={_t_now - _t_prev:.4f}", flush=True)
+        _t_prev = _t_now
 
         # Mjj max from any jets
+        # NOTE: jjCentFwd_pairs and jjCent_pairs below are both ak.combinations(goodJets_ptordered_padded, 2, ...)
+        # on the identical unfiltered input despite the "Cent"-suggestive names -- timed separately to quantify
+        # the cost of this apparent redundancy (see also jjCent_pairs below).
         jjCentFwd_pairs = ak.combinations( goodJets_ptordered_padded, 2, fields=["j0", "j1"] )
         mjj_max_any     = ak.fill_none(ak.max((jjCentFwd_pairs.j0 + jjCentFwd_pairs.j1).mass,axis=-1),0)
         absdeta_max_any = ak.fill_none(ak.max(abs(jjCentFwd_pairs.j0.eta - jjCentFwd_pairs.j1.eta),axis=-1),0)
+        _sync_backend(_backend); _t_now = time.time()
+        print(f"CHUNK_TIMING subphase=obj_combinatorics_vars.jjCentFwd_pairs seconds={_t_now - _t_prev:.4f}", flush=True)
+        _t_prev = _t_now
 
-        # Mjj max from cent jets
+        # Mjj max from cent jets (NOTE: same combinations call as jjCentFwd_pairs above, on the same input)
         jjCent_pairs = ak.combinations(goodJets_ptordered_padded, 2, fields=["j0", "j1"] )
         mjj_max_cent = ak.fill_none(ak.max((jjCent_pairs.j0 + jjCent_pairs.j1).mass,axis=-1),0)
+        _sync_backend(_backend); _t_now = time.time()
+        print(f"CHUNK_TIMING subphase=obj_combinatorics_vars.jjCent_pairs seconds={_t_now - _t_prev:.4f}", flush=True)
+        _t_prev = _t_now
 
-        # Mjj max from forward jets
+        # Mjj max from forward jets (genuinely different input: forward-only padded collection)
         jjFwd_pairs = ak.combinations(goodJets_forward_ptordered_padded, 2, fields=["j0", "j1"] )
         mjj_max_fwd = ak.fill_none(ak.max((jjFwd_pairs.j0 + jjFwd_pairs.j1).mass,axis=-1),0)
         absdeta_max_fwd = ak.fill_none(ak.max(abs(jjFwd_pairs.j0.eta - jjFwd_pairs.j1.eta),axis=-1),0)
+        _sync_backend(_backend); _t_now = time.time()
+        print(f"CHUNK_TIMING subphase=obj_combinatorics_vars.jjFwd_pairs seconds={_t_now - _t_prev:.4f}", flush=True)
+        _t_prev = _t_now
 
         fj0_pNetH4qvsQCD = fj0.particleNetWithMass_H4qvsQCD
         fj0_pNetHbbvsQCD = fj0.particleNetWithMass_HbbvsQCD
@@ -775,6 +828,9 @@ class AnalysisProcessor(processor.ProcessorABC):
         mll_min_afas = ak.min(ll_mass_pairs,axis=-1)
         mll_min_afos = ak.min(ll_mass_pairs[os_pairs_mask],axis=-1)
         mll_min_sfos = ak.min(ll_mass_pairs[sfos_pairs_mask],axis=-1)
+        _sync_backend(_backend); _t_now = time.time()
+        print(f"CHUNK_TIMING subphase=obj_combinatorics_vars.fj0_fields_and_mll seconds={_t_now - _t_prev:.4f}", flush=True)
+        _t_prev = _t_now
 
         # Get Z peak pairs
         ll_pairs_sfos = ll_pairs_tmp[sfos_pairs_mask]
@@ -797,9 +853,12 @@ class AnalysisProcessor(processor.ProcessorABC):
 
         # NOTE Only defind for exactly 2 and 3 lep
         abs_pdgid_sum = ak.fill_none(ak.where(nleps==3,abs(l0.pdgId) + abs(l1.pdgId) + abs(l2.pdgId),abs(l0.pdgId) + abs(l1.pdgId)),0)
+        _sync_backend(_backend); _t_now = time.time()
+        print(f"CHUNK_TIMING subphase=obj_combinatorics_vars.zpeak_and_wlep seconds={_t_now - _t_prev:.4f}", flush=True)
+        _t_prev = _t_now
 
         _t_now = time.time()
-        print(f"CHUNK_TIMING phase=obj_combinatorics_vars seconds={_t_now - _t_prev:.2f}", flush=True)
+        print(f"CHUNK_TIMING phase=obj_combinatorics_vars seconds={_t_now - _combo_phase_t0:.2f}", flush=True)
         _t_prev = _t_now
 
         # Put the variables we'll plot into a dictionary for easy access later
