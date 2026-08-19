@@ -442,14 +442,20 @@ class AnalysisProcessor(processor.ProcessorABC):
         #events = ak.materialize(events)
         #events = ak.to_backend(events,"cuda")
         #print("Events arr backend:",ak.backend(events))
-        events_gpu = {}
-        fields_to_materialize = ["baseweight", "electron", "event", "fatjet", "gen", "isRun3", "jet", "kind", "luminosityBlock", "met", "muon", "run", "shortname", "vbs", "xsec", "year"]
         import os
         target_backend = os.environ.get("EWKCOFFEA_BACKEND", "cuda")
-        for fname in fields_to_materialize:
-            if fname in events.fields:
-                events_gpu[fname] = ak.to_backend(ak.materialize(events[fname]),target_backend)
-        events = ak.zip(events_gpu,depth_limit=1)
+        skip_materialize = os.environ.get("EWKCOFFEA_SKIP_MATERIALIZE", "0") == "1"
+        if skip_materialize:
+            # Experimental: skip the materialize/to_backend/zip rebuild entirely and use events as-delivered.
+            # Only meaningful to test on the cpu backend -- on cuda, events would never get moved onto the GPU.
+            print(f"CHUNK_TIMING skip_materialize=1 backend={target_backend}", flush=True)
+        else:
+            events_gpu = {}
+            fields_to_materialize = ["baseweight", "electron", "event", "fatjet", "gen", "isRun3", "jet", "kind", "luminosityBlock", "met", "muon", "run", "shortname", "vbs", "xsec", "year"]
+            for fname in fields_to_materialize:
+                if fname in events.fields:
+                    events_gpu[fname] = ak.to_backend(ak.materialize(events[fname]),target_backend)
+            events = ak.zip(events_gpu,depth_limit=1)
         print("Events arr backend:",ak.backend(events))
 
         _t_prev = time.time()
