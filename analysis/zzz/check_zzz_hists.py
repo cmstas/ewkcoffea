@@ -14,8 +14,8 @@ import ewkcoffea.modules.plotting_tools as plt_tools
 #import topcoffea.modules.MakeLatexTable as mlt
 
 
-HTML_PC = "/home/users/kmohrman/ref_scripts/html_stuff/index.php"
-#HTML_PC = "/home/k.mohrman/ref_scirpts/html_stuff/index.php"
+#HTML_PC = "/home/users/kmohrman/ref_scripts/html_stuff/index.php"
+HTML_PC = "/home/k.mohrman/ref_scirpts/html_stuff/index.php"
 
 #CLR_LST = ['#d55e00', '#e69f00', '#f0e442', '#009e73', '#0072b2', '#56b4e9', '#cc79a7', '#6e3600', '#a17500'] #, '#a39b2f', '#00664f', '#005d87', '#999999', '#8c5d77']
 #CLR_LST = ['#d55e00', '#e69f00']
@@ -55,36 +55,39 @@ GRP_DICT_FULL_R2 = {
         #"DYJetsToLL_M-50_HT-800to1200_TuneCP5_PSweights_13TeV",
         "DYJetsToLL_M-50_TuneCP5_13TeV",
     ],
-    "ST" : [
+    "ttbar" : [
+        "TTTo2L2Nu_TuneCP5_13TeV",
+    ],
+    "other" : [
+        "TTWW_TuneCP5_13TeV",
+        "TTWZ_TuneCP5_13TeV",
+        "TWZToLL_tlept_Wlept_5f_DR_TuneCP5_13TeV",
+        "tZq_ll_4f_ckm_NLO_TuneCP5_13TeV",
+
         "ST_s-channel_4f_leptonDecays_TuneCP5_13TeV",
         "ST_t-channel_antitop_4f_InclusiveDecays_TuneCP5_13TeV",
         "ST_t-channel_top_4f_InclusiveDecays_TuneCP5_13TeV",
         "ST_tW_antitop_5f_inclusiveDecays_TuneCP5_13TeV",
         "ST_tW_top_5f_inclusiveDecays_TuneCP5_13TeV",
-    ],
-    "ewk" : [
+
         "SSWW",
         "EWKZ2Jets_ZToLL_M-50_TuneCP5_withDipoleRecoil_13TeV",
-    ],
-    "ttbar" : [
-        "TTTo2L2Nu_TuneCP5_13TeV",
-    ],
-    "rare" : [
-        "TTWW_TuneCP5_13TeV",
-        "TTWZ_TuneCP5_13TeV",
-        "TWZToLL_tlept_Wlept_5f_DR_TuneCP5_13TeV",
-        "tZq_ll_4f_ckm_NLO_TuneCP5_13TeV",
+
+        "WWJJToLNuLNu_EWK_noTop_TuneCP5_13TeV",
+        "WWTo2L2Nu_TuneCP5_13TeV",
+        #"WW_TuneCP5_13TeV",
+
+        #"ttWJets_TuneCP5_13TeV",
+        "TTWJetsToLNu_TuneCP5_13TeV",
+        "TTWJetsToQQ_TuneCP5_13TeV",
+
+        "WWW_4F_TuneCP5_13TeV",
     ],
     "VH" : [
         "HZJ_HToWWTo2L2Nu_ZTo2L_M-125_TuneCP5_13TeV",
         "VHToNonbb_M125_TuneCP5_13TeV",
         "ZH_HToBB_ZToLL_M-125_TuneCP5_13TeV",
         "ggZH_HToBB_ZToLL_M-125_TuneCP5_13TeV",
-    ],
-    "WW" : [
-        "WWJJToLNuLNu_EWK_noTop_TuneCP5_13TeV",
-        "WWTo2L2Nu_TuneCP5_13TeV",
-        #"WW_TuneCP5_13TeV",
     ],
     "WZ" : [
         "WZJJ_EWK_InclusivePolarization_TuneCP5_13TeV",
@@ -93,14 +96,10 @@ GRP_DICT_FULL_R2 = {
     ],
     "ZZ" : [
         "ZZJJTo4L_EWKnotop_TuneCP5_13TeV",
-        "ZZTo2L2Nu_TuneCP5_13TeV",
-        "ZZTo4L_M-1toInf_TuneCP5_13TeV",
-        #"ZZ_TuneCP5_13TeV",
-    ],
-    "ggH":[
-        "GluGluHToZZTo4L",
-    ],
-    "ggZZ" : [
+        #"ZZTo2L2Nu_TuneCP5_13TeV",
+        #"ZZTo4L_M-1toInf_TuneCP5_13TeV",
+        "ZZ_TuneCP5_13TeV",
+
         "GluGluToContinToZZTo2e2mu_TuneCP5_13TeV",
         "GluGluToContinToZZTo2e2tau_TuneCP5_13TeV",
         "GluGluToContinToZZTo2mu2tau_TuneCP5_13TeV",
@@ -108,20 +107,18 @@ GRP_DICT_FULL_R2 = {
         "GluGluToContinToZZTo4mu_TuneCP5_13TeV",
         "GluGluToContinToZZTo4tau_TuneCP5_13TeV",
     ],
+    "ggH":[
+        "GluGluHToZZTo4L",
+    ],
     "ttH" : [
         "ttHToNonbb_M125_TuneCP5_13TeV",
         "ttHTobb_M125_TuneCP5_13TeV",
     ],
-    "ttW" : [
-        #"ttWJets_TuneCP5_13TeV",
-        "TTWJetsToLNu_TuneCP5_13TeV",
-        "TTWJetsToQQ_TuneCP5_13TeV",
-    ],
+
     "ttZ": [
         "ttZJets_TuneCP5_13TeV",
         #"TTZToLLNuNu_M-10_TuneCP5_13TeV",
     ],
-    "WWW": ["WWW_4F_TuneCP5_13TeV"],
     "WWZ": ["WWZ_4F_TuneCP5_13TeV"],
     "WZZ": ["WZZ_TuneCP5_13TeV"],
     "ZZZ": ["ZZZ_TuneCP5_13TeV"],
@@ -136,42 +133,46 @@ GRP_DICT_FULL_R3 = {
         "EGamma",
     ],
     "DY" : [
+        "DYto2Mu_Bin-MLL-10to50_TuneCP5_13p6TeV",
         "DYto2E-2Jets_Bin-MLL-50_TuneCP5_13p6TeV",
         "DYto2E_Bin-MLL-10to50_TuneCP5_13p6TeV",
-        "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-100to200",
-        "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-200to400",
-        "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-400to600",
-        "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-40to100",
-        "DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600",
-        "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-100to200",
-        "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-200to400",
-        "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-400to600",
-        "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-40to100",
-        "DYto2L-2Jets_Bin-2J-MLL-50-PTLL-600",
         "DYto2Mu-2Jets_Bin-MLL-50_TuneCP5_13p6TeV",
-        "DYto2Mu_Bin-MLL-10to50_TuneCP5_13p6TeV",
         "DYto2Tau-2Jets_Bin-MLL-50_TuneCP5_13p6TeV",
+        #"DYto2L-2Jets_Bin-1J-MLL-50-PTLL-100to200",
+        #"DYto2L-2Jets_Bin-1J-MLL-50-PTLL-200to400",
+        #"DYto2L-2Jets_Bin-1J-MLL-50-PTLL-400to600",
+        #"DYto2L-2Jets_Bin-1J-MLL-50-PTLL-40to100",
+        #"DYto2L-2Jets_Bin-1J-MLL-50-PTLL-600",
+        #"DYto2L-2Jets_Bin-2J-MLL-50-PTLL-100to200",
+        #"DYto2L-2Jets_Bin-2J-MLL-50-PTLL-200to400",
+        #"DYto2L-2Jets_Bin-2J-MLL-50-PTLL-400to600",
+        #"DYto2L-2Jets_Bin-2J-MLL-50-PTLL-40to100",
+        #"DYto2L-2Jets_Bin-2J-MLL-50-PTLL-600",
     ],
-    "ggZH" : [
-        "GluGluZH-Zto2L-Hto2B_Par-M-125_TuneCP5_13p6TeV",
-        "GluGluZH-Zto2Nu-Hto2B_Par-M-125_TuneCP5_13p6TeV",
+    #"QCD" : [
+    #    "QCD-4Jets_Bin-HT-200to400_TuneCP5_13p6TeV",
+    #    "QCD_Bin-PT-1000to1500_TuneCP5_13p6TeV",
+    #],
+    "ttH" : [
+        "TTH-Hto2B_Par-M-125_TuneCP5_13p6TeV",
+        "TTH-HtoNon2B_Par-M-125_TuneCP5_13p6TeV",
     ],
-    "ggH" : [
+    "ttZ" : [
+        "TTLL_Bin-MLL-4to50_TuneCP5_13p6TeV",
+        "TTLL_Bin-MLL-50_TuneCP5_13p6TeV",
+    ],
+    "other" : [
         "GluGluH-Hto2Zto4L_Par-M-125_TuneCP5_13p6TeV",
-    ],
-    "ggZZ" : [
-        "GluGluToContinto2Zto2E2Mu_TuneCP5_13p6TeV",
-        "GluGluToContinto2Zto2E2Tau_TuneCP5_13p6TeV",
-        "GluGluToContinto2Zto2Mu2Tau_TuneCP5_13p6TeV",
-        "GluGlutoContinto2Zto4E_TuneCP5_13p6TeV",
-        "GluGlutoContinto2Zto4Mu_TuneCP5_13p6TeV",
-        "GluGlutoContinto2Zto4Tau_TuneCP5_13p6TeV",
-    ],
-    "QCD" : [
-        "QCD-4Jets_Bin-HT-200to400_TuneCP5_13p6TeV",
-        "QCD_Bin-PT-1000to1500_TuneCP5_13p6TeV",
-    ],
-    "ST" : [
+
+        "TTWW_TuneCP5_13p6TeV",
+        "TTWZ_TuneCP5_13p6TeV",
+        "TZQB-Zto2L-4FS_Bin-MLL-30_TuneCP5_13p6TeV",
+
+        "WWW-4F_TuneCP5_13p6TeV",
+
+        "TTLNu-1Jets_TuneCP5_13p6TeV",
+        "TTW-WtoQQ-1Jets_TuneCP5_13p6TeV",
+
         "TBbarQtoLNu-t-channel-4FS_TuneCP5_13p6TeV",
         "TBbartoLNu-s-channel_TuneCP5_13p6TeV",
         "TWminusto2L2Nu_TuneCP5_13p6TeV",
@@ -180,91 +181,81 @@ GRP_DICT_FULL_R3 = {
         "TbarBtoLNu-s-channel_TuneCP5_13p6TeV",
         "TbarWplusto2L2Nu_TuneCP5_13p6TeV",
         "TbarWplustoLNu2Q_TuneCP5_13p6TeV",
-    ],
 
-    "ttH" : [
-        "TTH-Hto2B_Par-M-125_TuneCP5_13p6TeV",
-        "TTH-HtoNon2B_Par-M-125_TuneCP5_13p6TeV",
-    ],
-
-    "ttZ" : [
-        "TTLL_Bin-MLL-4to50_TuneCP5_13p6TeV",
-        "TTLL_Bin-MLL-50_TuneCP5_13p6TeV",
-    ],
-    "ttW" : [
-        "TTLNu-1Jets_TuneCP5_13p6TeV",
-        "TTW-WtoQQ-1Jets_TuneCP5_13p6TeV",
-    ],
-    "rare" : [
-        "TTWW_TuneCP5_13p6TeV",
-        "TTWZ_TuneCP5_13p6TeV",
-        "TZQB-Zto2L-4FS_Bin-MLL-30_TuneCP5_13p6TeV",
-    ],
-    "ttbar" : [
-        "TTto2L2Nu_TuneCP5_13p6TeV",
-        "TTto4Q_TuneCP5_13p6TeV",
-        "TTtoLNu2Q_TuneCP5_13p6TeV",
-    ],
-    "ewk" : [
         "VBS-SSWW-LL_TuneCP5_13p6TeV",
         "VBS-SSWW-TL_TuneCP5_13p6TeV",
-    ],
-    "WW" : [
+
+        #"WW_TuneCP5_13p6TeV",
         "WWJJto2L2Nu-OS-noTop-EWK_TuneCP5_13p6TeV",
         "WWJJto2L2Nu-SS-noTop-EWK_TuneCP5_13p6TeV",
-        "WW_TuneCP5_13p6TeV",
         "WWto2L2Nu_TuneCP5_13p6TeV",
         "WWto4Q_TuneCP5_13p6TeV",
         "WWtoLNu2Q_TuneCP5_13p6TeV",
-    ],
-    "WZ" : [
-        "WZ_TuneCP5_13p6TeV",
-        "WZto2L2Q_TuneCP5_13p6TeV",
-        "WZto3LNu_TuneCP5_13p6TeV",
-        "WZtoLNu2Q_TuneCP5_13p6TeV",
-    ],
-    "ZZ" : [
-        "ZZ_TuneCP5_13p6TeV",
-        "ZZto2L2Nu_TuneCP5_13p6TeV",
-        "ZZto2L2Q_TuneCP5_13p6TeV",
-        "ZZto4L_TuneCP5_13p6TeV",
-        "ZZJJto4L-EWK_TuneCP5_13p6TeV",
-        "ZZJJto4L-QCD_TuneCP5_13p6TeV",
-    ],
-    "WH" : [
-        "WminusH-HtoNon2B_Par-M-125_TuneCP5_13p6TeV",
-        "WminusH-WtoLNu-Hto2B_Par-M-125_TuneCP5_13p6TeV",
-        "WplusH-HtoNon2B_Par-M-125_TuneCP5_13p6TeV",
-        "WplusH-WtoLNu-Hto2B_Par-M-125_TuneCP5_13p6TeV",
-    ],
-    "ZH" : [
-        "ZH-Hto2Z_Fil-4L_Par-M-125_TuneCP5_13p6TeV",
-        "ZH-HtoNon2B_Par-M-125_TuneCP5_13p6TeV",
-        "ZH-Zto2L-Hto2B_Par-M-125_TuneCP5_13p6TeV",
-    ],
-    "V" : [
+
         "Wto2Q-3Jets_Bin-HT-1500to2500_TuneCP5_13p6TeV",
-        "WtoLNu-2Jets_Bin-1J-PTLNu-100to200_TuneCP5_13p6TeV",
-        "WtoLNu-2Jets_Bin-1J-PTLNu-200to400_TuneCP5_13p6TeV",
-        "WtoLNu-2Jets_Bin-1J-PTLNu-400to600_TuneCP5_13p6TeV",
-        "WtoLNu-2Jets_Bin-1J-PTLNu-40to100_TuneCP5_13p6TeV",
-        "WtoLNu-2Jets_Bin-1J-PTLNu-600_TuneCP5_13p6TeV",
-        "WtoLNu-2Jets_Bin-2J-PTLNu-100to200_TuneCP5_13p6TeV",
-        "WtoLNu-2Jets_Bin-2J-PTLNu-200to400_TuneCP5_13p6TeV",
-        "WtoLNu-2Jets_Bin-2J-PTLNu-400to600_TuneCP5_13p6TeV",
-        "WtoLNu-2Jets_Bin-2J-PTLNu-40to100_TuneCP5_13p6TeV",
-        "WtoLNu-2Jets_Bin-2J-PTLNu-600_TuneCP5_13p6TeV",
+        #"WtoLNu-2Jets_Bin-1J-PTLNu-100to200_TuneCP5_13p6TeV",
+        #"WtoLNu-2Jets_Bin-1J-PTLNu-200to400_TuneCP5_13p6TeV",
+        #"WtoLNu-2Jets_Bin-1J-PTLNu-400to600_TuneCP5_13p6TeV",
+        #"WtoLNu-2Jets_Bin-1J-PTLNu-40to100_TuneCP5_13p6TeV",
+        #"WtoLNu-2Jets_Bin-1J-PTLNu-600_TuneCP5_13p6TeV",
+        #"WtoLNu-2Jets_Bin-2J-PTLNu-100to200_TuneCP5_13p6TeV",
+        #"WtoLNu-2Jets_Bin-2J-PTLNu-200to400_TuneCP5_13p6TeV",
+        #"WtoLNu-2Jets_Bin-2J-PTLNu-400to600_TuneCP5_13p6TeV",
+        #"WtoLNu-2Jets_Bin-2J-PTLNu-40to100_TuneCP5_13p6TeV",
+        #"WtoLNu-2Jets_Bin-2J-PTLNu-600_TuneCP5_13p6TeV",
         "WtoLNu-4Jets_Bin-1J_TuneCP5_13p6TeV",
         "WtoLNu-4Jets_Bin-2J_TuneCP5_13p6TeV",
         "WtoLNu-4Jets_Bin-3J_TuneCP5_13p6TeV",
         "WtoLNu-4Jets_Bin-4J_TuneCP5_13p6TeV",
         "Zto2Q-4Jets_Bin-HT-100to400_TuneCP5_13p6TeV",
         "Zto2Q-4Jets_Bin-HT-400to800_TuneCP5_13p6TeV",
+
+        "WminusH-HtoNon2B_Par-M-125_TuneCP5_13p6TeV",
+        "WminusH-WtoLNu-Hto2B_Par-M-125_TuneCP5_13p6TeV",
+        "WplusH-HtoNon2B_Par-M-125_TuneCP5_13p6TeV",
+        "WplusH-WtoLNu-Hto2B_Par-M-125_TuneCP5_13p6TeV",
     ],
-    "WWW" : ["WWW-4F_TuneCP5_13p6TeV"],
+    "ttbar" : [
+        "TTto2L2Nu_TuneCP5_13p6TeV",
+        "TTto4Q_TuneCP5_13p6TeV",
+        "TTtoLNu2Q_TuneCP5_13p6TeV",
+    ],
+    "WZ" : [
+        #"WZ_TuneCP5_13p6TeV",
+        "WZto2L2Q_TuneCP5_13p6TeV",
+        "WZto3LNu_TuneCP5_13p6TeV",
+        "WZtoLNu2Q_TuneCP5_13p6TeV",
+    ],
+    "ZZ" : [
+        #"ZZ_TuneCP5_13p6TeV",
+        "ZZto2L2Nu_TuneCP5_13p6TeV",
+        "ZZto2L2Q_TuneCP5_13p6TeV",
+        "ZZto4L_TuneCP5_13p6TeV",
+        "ZZJJto4L-EWK_TuneCP5_13p6TeV",
+        "ZZJJto4L-QCD_TuneCP5_13p6TeV",
+
+        "GluGluToContinto2Zto2E2Mu_TuneCP5_13p6TeV",
+        "GluGluToContinto2Zto2E2Tau_TuneCP5_13p6TeV",
+        "GluGluToContinto2Zto2Mu2Tau_TuneCP5_13p6TeV",
+        "GluGlutoContinto2Zto4E_TuneCP5_13p6TeV",
+        "GluGlutoContinto2Zto4Mu_TuneCP5_13p6TeV",
+        "GluGlutoContinto2Zto4Tau_TuneCP5_13p6TeV",
+    ],
+
     "WWZ" : ["WWZ-4F_TuneCP5_13p6TeV"],
     "WZZ" : ["WZZ-5F_TuneCP5_13p6TeV"],
     "ZZZ" : ["ZZZ-5F_TuneCP5_13p6TeV"],
+
+    "ggZH" : [
+        "GluGluZH-Zto2L-Hto2B_Par-M-125_TuneCP5_13p6TeV",
+        "GluGluZH-Zto2Nu-Hto2B_Par-M-125_TuneCP5_13p6TeV",
+    ],
+
+    "ZH" : [
+        "ZH-Hto2Z_Fil-4L_Par-M-125_TuneCP5_13p6TeV",
+        #"ZH-HtoNon2B_Par-M-125_TuneCP5_13p6TeV",
+        "ZH-Zto2L-Hto2B_Par-M-125_TuneCP5_13p6TeV",
+    ],
 
     "Signal" : ["ZZZ-5F_TuneCP5_13p6TeV"],
 }
@@ -312,7 +303,8 @@ def get_yields_per_cat(histo_dict,var_name,grp_dict,year_name_lst_to_prepend, ca
     # Get list of all of the backgrounds together
     bkg_lst = []
     for grp in grouping_dict:
-        if (grp != "Signal") and (grp != "Data") and (grp not in ["VBSWWH_SS","VBSWWH_OS","VBSWZH","VBSZZH", "SignalC2V", "SignalC3"]):
+        #if (grp != "Signal") and (grp != "Data") and (grp not in ["VBSWWH_SS","VBSWWH_OS","VBSWZH","VBSZZH", "SignalC2V", "SignalC3"]):
+        if (grp != "Signal") and (grp != "Data") and (grp not in ["ZZZ", "ZH", "Signal"]):
             bkg_lst = bkg_lst + grouping_dict[grp]
 
     # Make the dictionary to get yields for, it includes what's in grouping_dict, plus the backgrounds grouped as one
@@ -1012,7 +1004,7 @@ def main():
         dump_datacard(histo_dict,grp_dict,name)
     if args.make_plots:
         #make_plots(histo_dict,grp_dict,years_to_prepend,cat_lst,lepflav_bin="all",do_data=True) # mc_scale=110.84/109.95 for 2024 to 2025 scaling
-        make_plots(histo_dict,grp_dict,years_to_prepend,cat_lst,lepflav_bin="all",do_data=False, mc_scale=450/138)
+        make_plots(histo_dict,grp_dict,years_to_prepend,cat_lst,lepflav_bin="all",do_data=False) #, mc_scale=450/138)
 
 
 
