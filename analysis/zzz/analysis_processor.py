@@ -15,7 +15,6 @@ from ewkcoffea.modules.paths import ewkcoffea_path as ewkcoffea_path
 
 import torch
 torch.set_num_threads(1)
-from ewkcoffea.modules.abcd_model import ABCDLightningModule
 
 import warnings
 warnings.filterwarnings(
@@ -33,16 +32,6 @@ def to_vec(obj,with_name="PtEtaPhiMCollection"):
         "mass": obj.mass,
     }, with_name=with_name)
 
-# Returns masks for the 4 ABCD regions from the 2d plane
-#     - x_var would generally be your dnn score
-#     - y_var would generally be your constrain var
-#     - The equlity (inclusive cut) is given to the A direction
-def get_abcd_region_masks(x_var,y_var,x_cut,y_cut):
-    A_mask = (x_var >= x_cut) & (y_var >= y_cut)
-    B_mask = (x_var <  x_cut) & (y_var >= y_cut)
-    C_mask = (x_var >= x_cut) & (y_var <  y_cut)
-    D_mask = (x_var <  x_cut) & (y_var <  y_cut)
-    return (A_mask, B_mask, C_mask, D_mask)
 
 class AnalysisProcessor(processor.ProcessorABC):
 
@@ -66,11 +55,9 @@ class AnalysisProcessor(processor.ProcessorABC):
             "scalarptsum_lepmet" : axis.Regular(180, 0, 1500, name="scalarptsum_lepmet", label="S_T + metpt"),
             "scalarptsum_lepmetFJ0" : axis.Regular(180, 0, 3500, name="scalarptsum_lepmetFJ0", label="S_T + metpt + FJ0 pt"),
             "scalarptsum_lepmetFJ01" : axis.Regular(180, 0, 3500, name="scalarptsum_lepmetFJ01", label="S_T + metpt + FJ0 pt + FJ1 pt"),
-            #"scalarptsum_lepmetvbsFJ0" : axis.Regular(180, 0, 3500, name="scalarptsum_lepmetvbsFJ0", label="S_T + metpt + vbs1pt + vbs2pt + FJ0pt"),
             "scalarptsum_lepmetalljets" : axis.Regular(180, 0, 2500, name="scalarptsum_lepmetalljets", label="S_T + metpt + H_T all"),
             "scalarptsum_lepmetcentjets" : axis.Regular(180, 0, 2500, name="scalarptsum_lepmetcentjets", label="S_T + metpt + H_T cent"),
             "scalarptsum_lepmetfwdjets" : axis.Regular(180, 0, 1500, name="scalarptsum_lepmetfwdjets", label="S_T + metpt + H_T fwd"),
-            #"vectorsum_lepmetvbsFJ0_pt" : axis.Regular(180, 0, 2000, name="vectorsum_lepmetvbsFJ0_pt", label="Pt of vector sum of lep0+lep1+MET+vbs1+vbs2+FJ0"),
 
             "l0_pt"  : axis.Regular(180, 0, 500, name="l0_pt", label="l0 pt"),
             "l0_eta"  : axis.Regular(180, -3,3, name="l0_eta", label="l0 eta"),
@@ -168,8 +155,6 @@ class AnalysisProcessor(processor.ProcessorABC):
 
             "dr_lj_min" : axis.Regular(180, 0, 6, name="dr_lj_min", label="Min dr between a jet and lepton"),
             "dr_lj_max" : axis.Regular(180, 0, 6, name="dr_lj_max", label="Max dr between a jet and lepton"),
-            #"dr_ljnvbs_min" : axis.Regular(180, 0, 6, name="dr_ljnvbs_min", label="Min dr between a non-vbs jet and lepton"),
-            #"dr_ljnvbs_max" : axis.Regular(180, 0, 6, name="dr_ljnvbs_max", label="Max dr between a non-vbs jet and lepton"),
 
             "absdphi_j0fwdj1fwd"   : axis.Regular(180, 0, 3.1416, name="absdphi_j0fwdj1fwd", label="abs dphi between leading two forward jets"),
             "absdphi_j0centj1cent" : axis.Regular(180, 0, 3.1416, name="absdphi_j0centj1cent", label="abs dphi between leading two central jets"),
@@ -235,22 +220,6 @@ class AnalysisProcessor(processor.ProcessorABC):
             "nlep_truth_real"   : axis.Regular(5, 0, 5, name="nlep_truth_real",   label="Lep (truth, real) multiplicity"),
             "nlep_truth_fake"   : axis.Regular(5, 0, 5, name="nlep_truth_fake",   label="Lep (truth, fake) multiplicity"),
 
-            "dnn_score_2lH"      : axis.Regular(180, 0, 1, name="dnn_score_2lH",      label="DNN ABCDnet score for 2l1FJ H region"),
-            "dnn_score_2lV"      : axis.Regular(180, 0, 1, name="dnn_score_2lV",      label="DNN ABCDnet score for 1l1FJ V region"),
-            "dnn_score_3lChsum1" : axis.Regular(180, 0, 1, name="dnn_score_3lChsum1", label="DNN ABCDnet score for 3l chargesum=1 region"),
-
-            #"vbs_mjj"       : axis.Regular(180, 0, 4000, name="vbs_mjj",       label="VBS candidate mjj [GeV]"),
-            #"vbs_absdetajj" : axis.Regular(180, 0, 10,   name="vbs_absdetajj", label="VBS candidate abs delta eta jj"),
-            #"vbs_score"     : axis.Regular(180, 0, 1,    name="vbs_score",     label="VBS BDT score"),
-
-            #"vbs1_pt"  : axis.Regular(180, 0, 400,          name="vbs1_pt",  label="VBS jet 1 pt"),
-            #"vbs2_pt"  : axis.Regular(180, 0, 400,          name="vbs2_pt",  label="VBS jet 2 pt"),
-            #"vbs1_eta" : axis.Regular(180, -5, 5,           name="vbs1_eta", label="VBS jet 1 eta"),
-            #"vbs2_eta" : axis.Regular(180, -5, 5,           name="vbs2_eta", label="VBS jet 2 eta"),
-            #"vbs1_phi" : axis.Regular(180, -3.1416, 3.1416, name="vbs1_phi", label="VBS jet 1 phi"),
-            #"vbs2_phi" : axis.Regular(180, -3.1416, 3.1416, name="vbs2_phi", label="VBS jet 2 phi"),
-
-
         }
 
         # Add histograms to dictionary that will be passed on to dict_accumulator
@@ -266,8 +235,6 @@ class AnalysisProcessor(processor.ProcessorABC):
                 storage="weight", # Keeps track of sumw2
                 name="Counts",
             )
-        #for abcd_hist_name in self._abcd_histo_dict:
-            #dout[abcd_hist_name] = self._abcd_histo_dict[abcd_hist_name]
 
         # Set the accumulator
         self._accumulator = processor.dict_accumulator(dout)
@@ -313,70 +280,6 @@ class AnalysisProcessor(processor.ProcessorABC):
         return self._columns
 
 
-    #################################################################################
-    ### For ABCDnet evaluations ###
-    def _load_model(self, checkpoint_path, model_key):
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self._device = device
-        if not hasattr(self, '_models'):
-            self._models = {}
-        self._models[model_key] = ABCDLightningModule.load_from_checkpoint(checkpoint_path, map_location=device)
-        self._models[model_key].to(device)
-        self._models[model_key].eval()
-
-    def _run_abcd_inference(self, events, dense_variables_dict, model):
-        if model == "2lH":
-            scaler_path = ewkcoffea_path("data/vvh_abcd_models/single_abcdisco_2l1fj_forH_scaler_params.json")
-            checkpoint_path = ewkcoffea_path("data/vvh_abcd_models/single_abcdisco_2l1fj_forH.ckpt")
-        elif model == "2lV":
-            scaler_path = ewkcoffea_path("data/vvh_abcd_models/single_abcdisco_2l1fj_forV_scaler_params.json")
-            checkpoint_path = ewkcoffea_path("data/vvh_abcd_models/single_abcdisco_2l1fj_forV.ckpt")
-        elif model == "3lChsum1":
-            scaler_path = ewkcoffea_path("data/vvh_abcd_models/single_abcdisco_3lChsum1_scaler_params.json")
-            checkpoint_path = ewkcoffea_path("data/vvh_abcd_models/single_abcdisco_3lChsum1.ckpt")
-        else:
-            raise Exception(f"Unknown model {model}")
-
-        if not hasattr(self, '_models'):
-            self._models = {}
-        if model not in self._models:
-            self._load_model(checkpoint_path, model)
-
-        if not hasattr(self, '_scaler_params_dict'):
-            self._scaler_params_dict = {}
-        if model not in self._scaler_params_dict:
-            import json
-            with open(scaler_path) as f:
-                self._scaler_params_dict[model] = json.load(f)
-
-        scaler_params = self._scaler_params_dict[model]
-
-        def scale(name, values):
-            params = scaler_params[name]
-            arr = np.array(values, dtype=np.float64)
-            if params["transform"] == "log":
-                arr = np.log(np.clip(arr, 1e-9, None))
-            lo, hi = params["min"], params["max"]
-            denom = hi - lo
-            if denom > 0:
-                arr = (arr - lo) / denom
-            return np.clip(arr, 0.0, 1.0).astype(np.float32)
-
-        feature_matrix = np.column_stack([
-            scale(feat, ak.to_numpy(ak.fill_none(dense_variables_dict[feat], -1.0)))
-            for feat in scaler_params["_training_features"]
-        ])
-
-        features_tensor = torch.from_numpy(feature_matrix).to(self._device)
-        with torch.no_grad():
-            logits = self._models[model](features_tensor)
-            if logits.ndim == 1:
-                logits = logits.unsqueeze(-1)
-            scores = torch.sigmoid(logits).cpu().numpy()[:, 0]
-        return scores
-    #################################################################################
-
-
     # Main function: run on a given chunk
     def process(self, events):
 
@@ -390,7 +293,6 @@ class AnalysisProcessor(processor.ProcessorABC):
         jets    = events.jet
         met     = events.met
         fatjets = events.fatjet
-        #vbsjets = events.vbs
 
         # Identify the kind of of chunk that this is (note this check assumes all events in this chunk are of the same kind, should be true)
         isSig  = events.kind[0]=="sig"
@@ -411,14 +313,6 @@ class AnalysisProcessor(processor.ProcessorABC):
         fatjets["gpt_Zfrac"] = fatjets.gptZvsQCD / gpt_denom_tot
         fatjets["gpt_mass2p"] = fatjets.globalParT3_massCorrX2p     * fatjets.mass * (1 - fatjets.rawFactor)
         fatjets["gpt_mass"]   = fatjets.globalParT3_massCorrGeneric * fatjets.mass * (1 - fatjets.rawFactor)
-
-        # Form the collection of non-vbs jets by masking out the vbs ones
-        #mask_nvbsjet = (ak.local_index(jets)!=vbsjets.jet1_idx) & (ak.local_index(jets)!=vbsjets.jet2_idx)
-        #nvbsjets = jets[mask_nvbsjet]
-
-        # Grab the vbs jet objects
-        #vbs1 = ak.flatten(jets[ak.local_index(jets)==vbsjets.jet1_idx])
-        #vbs2 = ak.flatten(jets[ak.local_index(jets)==vbsjets.jet2_idx])
 
         # "4-vector" for met
         met4 = ak.zip(
@@ -446,8 +340,8 @@ class AnalysisProcessor(processor.ProcessorABC):
         n_lep_veto = ak.num(ele) + ak.num(mu)
 
         # We will use loose e and medium m for analysis, be sure to convert the 0 and 1 in the array to T and F before using as a mask
-        ele = ele[ak.values_astype(ele.isLoose,bool)]
-        mu  = mu[ak.values_astype(mu.isMedium,bool)]
+        #ele = ele[ak.values_astype(ele.isLoose,bool)]
+        #mu  = mu[ak.values_astype(mu.isMedium,bool)]
 
         # Get tight leptons for VVH selection, using mask from RDF
         l_vvh_t = ak.with_name(ak.concatenate([ele,mu],axis=1),'PtEtaPhiMCandidate')
@@ -590,8 +484,6 @@ class AnalysisProcessor(processor.ProcessorABC):
         scalarptsum_lepmetalljets = scalarptsum_lep + met.pt + scalarptsum_jet
         scalarptsum_lepmetcentjets = scalarptsum_lep + met.pt + scalarptsum_jetCent
         scalarptsum_lepmetfwdjets = scalarptsum_lep + met.pt + scalarptsum_jetFwd
-        #scalarptsum_lepmetvbsFJ0 = scalarptsum_lep + met.pt + vbs1.pt + vbs2.pt + fj0.pt
-        #vectorsum_lepmetvbsFJ0_pt = (l0v + l1v + vbs1 + vbs2 + met4 + fj0).pt
 
         # lb pairs (i.e. always one lep, one bjet)
         lb_pairs = ak.cartesian({"l":to_vec(l_vvh_t),"j": bjetsm})
@@ -600,13 +492,10 @@ class AnalysisProcessor(processor.ProcessorABC):
 
         # lj pairs (i.e. always one lep, one jet)
         lj_pairs     = ak.cartesian({"l":to_vec(l_vvh_t),"j": jets})
-        #ljnvbs_pairs = ak.cartesian({"l":to_vec(l_vvh_t),"j": nvbsjets})
         dr_lj_min     = ak.min(lj_pairs["l"].delta_r(lj_pairs["j"]),axis=-1)
         dr_lj_max     = ak.max(lj_pairs["l"].delta_r(lj_pairs["j"]),axis=-1)
         mass_lj_min   = ak.min((lj_pairs["l"]+lj_pairs["j"]).mass,axis=-1)
         mass_lj_max   = ak.max((lj_pairs["l"]+lj_pairs["j"]).mass,axis=-1)
-        #dr_ljnvbs_min = ak.min(ljnvbs_pairs["l"].delta_r(ljnvbs_pairs["j"]),axis=-1)
-        #dr_ljnvbs_max = ak.max(ljnvbs_pairs["l"].delta_r(ljnvbs_pairs["j"]),axis=-1)
 
         # FJj pairs (i.e. always one FJ, one jet)
         FJj_pairs     = ak.cartesian({"fj":fatjets,"j": jets})
@@ -718,8 +607,6 @@ class AnalysisProcessor(processor.ProcessorABC):
             "scalarptsum_lepmetalljets" : scalarptsum_lepmetalljets,
             "scalarptsum_lepmetcentjets" : scalarptsum_lepmetcentjets,
             "scalarptsum_lepmetfwdjets" : scalarptsum_lepmetfwdjets,
-            #"scalarptsum_lepmetvbsFJ0" : scalarptsum_lepmetvbsFJ0,
-            #"vectorsum_lepmetvbsFJ0_pt" : vectorsum_lepmetvbsFJ0_pt,
             "l0_pt"  : l0.pt,
             "l0_eta" : l0.eta,
             "l0_phi" : l0.phi,
@@ -848,8 +735,6 @@ class AnalysisProcessor(processor.ProcessorABC):
 
             "dr_lj_min" : dr_lj_min,
             "dr_lj_max" : dr_lj_max,
-            #"dr_ljnvbs_min" : dr_ljnvbs_min,
-            #"dr_ljnvbs_max" : dr_ljnvbs_max,
 
             #"ghiggs0_pt" : ghiggs0.pt,
             #"gvectorboson0_pt" : gvectorboson0.pt,
@@ -864,31 +749,10 @@ class AnalysisProcessor(processor.ProcessorABC):
             #"mt_wlep":mt_wlep,
             "dr_wlepmet":dr_wlepmet,
 
-            #"vbs_mjj"    : vbsjets.mjj,
-            #"vbs_absdetajj" : vbsjets.detajj,
-            #"vbs_score"  : vbsjets.score,
-
-            #"vbs1_pt": vbs1.pt,
-            #"vbs2_pt": vbs2.pt,
-            #"vbs1_eta": vbs1.eta,
-            #"vbs2_eta": vbs2.eta,
-            #"vbs1_phi": vbs1.phi,
-            #"vbs2_phi": vbs2.phi,
-
             # We want to include this in the siponed output, but probably not make hists for it
             "isRun3" : events.isRun3,
 
         }
-
-        # For ABCDnet evaluations
-        # This must come after dense_variables_dict since pass all vars from dense_variables_dict to evaluation since any/all might be needed (depending on which model we're using)
-        # Once we finish evaluating, add the score to the dense_variables_dict too
-        #dnn_score_2lH = self._run_abcd_inference(events, dense_variables_dict,"2lH")
-        #dnn_score_2lV = self._run_abcd_inference(events, dense_variables_dict,"2lV")
-        #dnn_score_3lChsum1 = self._run_abcd_inference(events, dense_variables_dict,"3lChsum1")
-        #dense_variables_dict["dnn_score_2lH"] = dnn_score_2lH
-        #dense_variables_dict["dnn_score_2lV"] = dnn_score_2lV
-        #dense_variables_dict["dnn_score_3lChsum1"] = dnn_score_3lChsum1
 
 
         ### Lepton truth variables ###
@@ -935,6 +799,57 @@ class AnalysisProcessor(processor.ProcessorABC):
             dense_variables_dict["nlep_truth_real"] = nlep_truth_real
             dense_variables_dict["nlep_truth_fake"] = nlep_truth_fake
 
+        ########################################################################
+        ######### Find the Zs ##########
+
+        MZ = 91.1876
+        Z_WINDOW = 20.0
+        
+        leps = ak.with_field(l_vvh_t, ak.local_index(l_vvh_t, axis=1), "lep_idx")
+        
+        def best_sfos_pair(leps):
+            """SFOS pair in `leps` closest to MZ, as a single 4-vector object.
+            Z (and the indices) are None for events with no SFOS pair within Z_WINDOW."""
+            pairs = ak.combinations(leps, 2, fields=["l0", "l1"])
+            sfos_mask = ak.fill_none(pairs.l0.pdgId == -pairs.l1.pdgId, False)
+            pairs = pairs[sfos_mask]
+        
+            dist = abs((pairs.l0 + pairs.l1).mass - MZ)
+            best = ak.argmin(dist, axis=1, keepdims=True)
+            in_window = ak.fill_none(ak.firsts(dist[best] < Z_WINDOW), False)
+        
+            l0, l1 = ak.firsts(pairs.l0[best]), ak.firsts(pairs.l1[best])
+            Z    = ak.mask(l0 + l1, in_window)
+            idx0 = ak.mask(l0.lep_idx, in_window)                  
+            idx1 = ak.mask(l1.lep_idx, in_window)
+            return Z, idx0, idx1
+                                                                   
+        # Z1: best SFOS pair among all leptons                                                        
+        Z1, z1_i0, z1_i1 = best_sfos_pair(leps)
+        
+        # Z2: best SFOS pair among leptons not used by Z1
+        leps_left = leps[(leps.lep_idx != ak.fill_none(z1_i0, -1)) & (leps.lep_idx != ak.fill_none(z1_i1,
+        -1))]
+        Z2, z2_i0, z2_i1 = best_sfos_pair(leps_left)
+        
+        # Z3: best SFOS pair among leptons not used by Z1 or Z2
+        leps_left2 = leps_left[(leps_left.lep_idx != ak.fill_none(z2_i0, -1)) & (leps_left.lep_idx !=
+        ak.fill_none(z2_i1, -1))]
+        Z3, z3_i0, z3_i1 = best_sfos_pair(leps_left2)              
+        
+        # Number of valid Z candidates found (0-3)
+        n_sfosz = (                                                    
+            ak.values_astype(~ak.is_none(Z1.mass), "int32")                                           
+            + ak.values_astype(~ak.is_none(Z2.mass), "int32")
+            + ak.values_astype(~ak.is_none(Z3.mass), "int32")
+        )
+
+        #print(nleps)
+        #print(n_sfosz)
+        #print(Z1.mass)
+        #print(Z2.mass)
+        #print(Z3.mass)
+        ########################################################################
 
 
         ######### Store boolean masks with PackedSelection ##########
@@ -949,48 +864,23 @@ class AnalysisProcessor(processor.ProcessorABC):
         low_mll_cut_3l = ak.where(abs_ch_sum_3l==1,mll_min_afos>12,pass_through)
         is_onZ = abs(mll_z-91.1876) < 10
 
-        is_2l              = (n_lep_veto==2) & (nleps==2) & (l0.pt>25) & (l1.pt>15)
-        is_3l_prelowmllcut = (n_lep_veto==3) & (nleps==3) & (l0.pt>25) & (l1.pt>15) & (l2.pt>10)
-        is_3l = is_3l_prelowmllcut & low_mll_cut_3l
-
-        is_HFJ       = (fj0_mparticlenet >  110.) & (fj0_mparticlenet <= 150.)
-        is_HFJTagHbb = (fj0_pNetHbbvsQCD > 0.95)
-
-        #A_2lH, B_2lH, C_2lH, D_2lH = get_abcd_region_masks(x_var=dnn_score_2lH, y_var=vbsjets.mjj, x_cut=0.54, y_cut=1300.0)
-        #A_3lChsum1, B_3lChsum1, C_3lChsum1, D_3lChsum1 = get_abcd_region_masks(x_var=dnn_score_3lChsum1, y_var=vbsjets.score, x_cut=0.71, y_cut=0.61)
-
         selections.add("all_events", pass_through)
 
 
-        ### 2lOS + 1FJ ###
+        ### 6 lepton selections ###
 
-        selections.add("2l",                                     is_2l)
-        selections.add("2lOS",                                   is_2l & is_os)
-        selections.add("2lOSSF",                                 is_2l & is_os & is_sf)
-        selections.add("2lOSSF_nFJ1",                            is_2l & is_os & is_sf & (nfatjets==1))
-        selections.add("2lOSSF_nFJ1_massHi",                     is_2l & is_os & is_sf & (nfatjets==1) & (fj0.gpt_mass2p >= 110))
-        #selections.add("2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5",         is_2l & is_os & is_sf & (nfatjets==1) & (fj0.gpt_mass2p >= 110) & (fj0.gptZvsQCD>0.5) & (fj0.gptHvsQCD>0.5) & (vbsjets.score>0.5))
-        #selections.add("2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5_A",       is_2l & is_os & is_sf & (nfatjets==1) & (fj0.gpt_mass2p >= 110) & (fj0.gptZvsQCD>0.5) & (fj0.gptHvsQCD>0.5) & (vbsjets.score>0.5) & A_2lH)
-        #selections.add("2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5_B",       is_2l & is_os & is_sf & (nfatjets==1) & (fj0.gpt_mass2p >= 110) & (fj0.gptZvsQCD>0.5) & (fj0.gptHvsQCD>0.5) & (vbsjets.score>0.5) & B_2lH)
-        #selections.add("2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5_C",       is_2l & is_os & is_sf & (nfatjets==1) & (fj0.gpt_mass2p >= 110) & (fj0.gptZvsQCD>0.5) & (fj0.gptHvsQCD>0.5) & (vbsjets.score>0.5) & C_2lH)
-        #selections.add("2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5_D",       is_2l & is_os & is_sf & (nfatjets==1) & (fj0.gpt_mass2p >= 110) & (fj0.gptZvsQCD>0.5) & (fj0.gptHvsQCD>0.5) & (vbsjets.score>0.5) & D_2lH)
-        #selections.add("2lOSSF_nFJ1_massLo_Zp2",                 is_2l & is_os & is_sf & (nfatjets==1) & (fj0.gpt_mass2p <  110) & (fj0.gptZvsQCD>0.2))
+        is_4l           = (nleps>=4)
+        is_4l_minmll    = (nleps>=4) & (mll_min_afos>12)
+        is_4l_minmll_0b = (nleps>=4) & (mll_min_afos>12) & (nbtagst==0)
 
-        # Old cut-based slectoin
-        #selections.add("2lOSSF_nFJ1_mjj1k",                      is_2l & is_os & is_sf & (nfatjets==1) & (vbsjets.mjj>1000))
-        #selections.add("2lOSSF_nFJ1_mjj1k_HFJ",                  is_2l & is_os & is_sf & (nfatjets==1) & (vbsjets.mjj>1000) & is_HFJ)
-        #selections.add("2lOSSF_nFJ1_mjj1k_HFJtag",               is_2l & is_os & is_sf & (nfatjets==1) & (vbsjets.mjj>1000) & is_HFJ & is_HFJTagHbb)
-        #selections.add("2lOSSF_nFJ1_mjj1k_HFJtag_nb0",           is_2l & is_os & is_sf & (nfatjets==1) & (vbsjets.mjj>1000) & is_HFJ & is_HFJTagHbb & (nbtagst==0))
-
-        # DY and ttbar CRs
-        selections.add("2lOSSF_nFJ1_onZ_0b",                     is_2l & is_os & is_sf & (nfatjets==1) & is_onZ  & (nbtagsl==0))
-        selections.add("2lOSSF_nFJ1_offZ_2b",                    is_2l & is_os & is_sf & (nfatjets==1) & ~is_onZ & (nbtagst==2))
-
-
-        ### 3l ###
-
-        selections.add("3l_prelowmllcut",                 is_3l_prelowmllcut)
-        selections.add("3l",                              is_3l)
+        selections.add("6l",                    nleps==6)
+        selections.add("6l_st250",              nleps==6 & (scalarptsum_lep>250))
+        selections.add("4l",                    is_4l)
+        selections.add("4l_minmll",             is_4l_minmll)
+        selections.add("4l_minmll_0b",          is_4l_minmll_0b)
+        selections.add("4l_minmll_0b_2z",       is_4l_minmll_0b & (n_sfosz>=2))
+        selections.add("4l_minmll_0b_2z_6l",    is_4l_minmll_0b & (n_sfosz>=2) & (nleps==6))
+        selections.add("4l_minmll_0b_2z_6l_3z", is_4l_minmll_0b & (n_sfosz>=2) & (nleps==6) & (n_sfosz==3))
 
 
         # Keep track of the cats we want to actually fill
@@ -998,53 +888,14 @@ class AnalysisProcessor(processor.ProcessorABC):
             "lep_chan_lst" : [
 
                 "all_events",
-
-                ### 2l OS SF 1FJ ###
-
-                #"2lOSSF_nFJ1",
-                #"2lOSSF_nFJ1_massHi",
-                #"2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5",
-                #"2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5_A",
-                #"2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5_B",
-                #"2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5_C",
-                #"2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5_D",
-
-                # DY and ttbar CRs
-                #"2lOSSF_nFJ1_onZ_0b",
-                #"2lOSSF_nFJ1_offZ_2b",
-
-                #### 3l ###
-
-                #"3l",
-
-                #"3l_chsum3",
-
-                #"3l_chsum1",
-                #"3l_chsum1_mjj500",
-                #"3l_chsum1_mjj500_A",
-                #"3l_chsum1_mjj500_B",
-                #"3l_chsum1_mjj500_C",
-                #"3l_chsum1_mjj500_D",
-
-                # WZ CR
-                #"3l_onZ_0b",
-                #"3l_onZ_0b_mtlmet60",
-                #"3l_onZ_0b_mtlmet60_met75",
-
-                # From cut based optimization
-                #"3l_chsum3",
-                #"3l_chsum3_mjj500",
-                #"3l_chsum3_mjj500_nb0",
-                #"3l_chsum1",
-                #"3l_chsum1_nFJg0",
-                #"3l_chsum1_nFJg0_mjj500",
-                #"3l_chsum1_nFJ0",
-                #"3l_chsum1_nFJ0_nSFOSg0",
-                #"3l_chsum1_nFJ0_nSFOSg0_mjj2k",
-                #"3l_chsum1_nFJ0_nSFOS0",
-                #"3l_chsum1_nFJ0_nSFOS0_mjj1k",
-                #"3l_chsum1_nFJ0_nSFOS0_mjj1k_nb0",
-
+                "6l",
+                "6l_st250",
+                "4l",
+                "4l_minmll",
+                "4l_minmll_0b",
+                "4l_minmll_0b_2z",
+                "4l_minmll_0b_2z_6l",
+                "4l_minmll_0b_2z_6l_3z",
             ]
         }
 
@@ -1068,11 +919,6 @@ class AnalysisProcessor(processor.ProcessorABC):
             selections.add("2lOSSF_1fjx_fj0matchV2", is_2l & is_os & is_sf & (nfatjets==1) & ak.fill_none(fj0_matchedV2, False))
             selections.add("2lOSSF_1fjx_fj0matchV",  is_2l & is_os & is_sf & (nfatjets==1) & ak.fill_none(fj0_matchedV, False))
             selections.add("2lOSSF_1fjx_fj0noMatch", is_2l & is_os & is_sf & (nfatjets==1) & ak.fill_none(fj0_noMatch, False))
-            #selections.add("2lOSSF_1fjx_ejj3_fj0matchH",  is_2l & is_os & is_sf & (nfatjets==1) & (vbsjets.detajj > 3) & ak.fill_none(fj0_matchedH,  False))
-            #selections.add("2lOSSF_1fjx_ejj3_fj0matchV1", is_2l & is_os & is_sf & (nfatjets==1) & (vbsjets.detajj > 3) & ak.fill_none(fj0_matchedV1, False))
-            #selections.add("2lOSSF_1fjx_ejj3_fj0matchV2", is_2l & is_os & is_sf & (nfatjets==1) & (vbsjets.detajj > 3) & ak.fill_none(fj0_matchedV2, False))
-            #selections.add("2lOSSF_1fjx_ejj3_fj0matchV",  is_2l & is_os & is_sf & (nfatjets==1) & (vbsjets.detajj > 3) & ak.fill_none(fj0_matchedV, False))
-            #selections.add("2lOSSF_1fjx_ejj3_fj0noMatch", is_2l & is_os & is_sf & (nfatjets==1) & (vbsjets.detajj > 3) & ak.fill_none(fj0_noMatch, False))
 
             #cat_dict["lep_chan_lst"].append("2lOSSF_1fjx_fj0matchH")
             #cat_dict["lep_chan_lst"].append("2lOSSF_1fjx_fj0matchV1")
