@@ -32,6 +32,44 @@ def to_vec(obj,with_name="PtEtaPhiMCollection"):
         "mass": obj.mass,
     }, with_name=with_name)
 
+# Get MT2 for WW
+def get_mt2(w_lep0,w_lep1,met):
+
+    # Construct misspart vector, as implimented in c++: https://github.com/sgnoohc/mt2example/blob/main/main.cc#L7 (but pass 0 not pi/2 for met eta)
+    nevents = len(np.zeros_like(met))
+    misspart = ak.zip(
+        {
+            "pt": met.pt,
+            "eta": 0,
+            "phi": met.phi,
+            "mass": np.full(nevents, 0),
+        },
+        with_name="PtEtaPhiMLorentzVector",
+        behavior=vector.behavior,
+    )
+    # Do the boosts, as implimented in c++: https://github.com/sgnoohc/mt2example/blob/main/main.cc#L7
+    rest_WW = w_lep0 + w_lep1 + misspart
+    beta_from_miss_reverse = rest_WW.boostvec
+    beta_from_miss = beta_from_miss_reverse.negative()
+    w_lep0_boosted = w_lep0.boost(beta_from_miss)
+    w_lep1_boosted = w_lep1.boost(beta_from_miss)
+    misspart_boosted = misspart.boost(beta_from_miss)
+
+    # Directly plug in e mass since its sometimes negative in naod
+    mass_l0 = ak.where(abs(w_lep0.pdgId)==11,0.000511,w_lep0.mass)
+    mass_l1 = ak.where(abs(w_lep1.pdgId)==11,0.000511,w_lep1.mass)
+
+
+    # Get the mt2 variable, use the mt2 package: https://pypi.org/project/mt2/
+    mt2_var = mt2(
+        mass_l0, w_lep0_boosted.px, w_lep0_boosted.py,
+        mass_l1, w_lep1_boosted.px, w_lep1_boosted.py,
+        misspart_boosted.px, misspart_boosted.py,
+        np.zeros_like(met.pt), np.zeros_like(met.pt),
+    )
+
+    return mt2_var
+
 
 class AnalysisProcessor(processor.ProcessorABC):
 
@@ -81,6 +119,7 @@ class AnalysisProcessor(processor.ProcessorABC):
             "pt_l0l1"        : axis.Regular(180, 0, 1000, name="pt_l0l1", label="pt of pair of leading two leptons"),
             "absdphi_l0l1"   : axis.Regular(180, 0, 3.1416, name="absdphi_l0l1", label="abs delta phi between leading two leptons"),
             "absdphi_lepmet" : axis.Regular(180, 0, 3.1416, name="absdphi_lepmet", label="abs delta phi between met and pair of leading leptons"),
+            "absdphi_l0met"  : axis.Regular(180, 0, 3.1416, name="absdphi_l0met", label="abs delta phi between met and leading lepton"),
             "dr_lepmet"      : axis.Regular(180, 0, 6, name="dr_lepmet", label="dr between met and pair of leading leptons"),
             "absdphi_FJ0lepmet" : axis.Regular(180, 0, 3.1416, name="absdphi_FJ0lepmet", label="abs delta phi between FJ0 and (met + leptons)"),
 
@@ -201,6 +240,14 @@ class AnalysisProcessor(processor.ProcessorABC):
             "pt_z"  : axis.Regular(180, 0, 150, name="pt_z",   label="pt of the pair of leptons closest to z"),
             #"mt_wlep" : axis.Regular(180,-2,298, name="mt_wlep", label="MT of MET and W lep (ie, lep that is not the SFOS Z pair)"),
             "dr_wlepmet" : axis.Regular(180,0,6, name="dr_wlepmet", label="dr between MET and W lep (ie, lep that is not the SFOS Z pair)"),
+
+            "pt_z1"  : axis.Regular(180, 0, 1000, name="pt_z1",   label="pt of Z1"),
+            "pt_z2"  : axis.Regular(180, 0, 1000, name="pt_z2",   label="pt of Z2"),
+            "absdphi_z1_met"   : axis.Regular(180, 0, 3.1416, name="absdphi_z1_met", label="abs delta phi between Z1 and met"),
+            "absdphi_z2_met"   : axis.Regular(180, 0, 3.1416, name="absdphi_z2_met", label="abs delta phi between Z2 and met"),
+            "absdphi_z1z2_met" : axis.Regular(180, 0, 3.1416, name="absdphi_z1z2_met", label="abs delta phi between (Z1+Z2) and met"),
+            "absdphi_min_jmet" : axis.Regular(180, -2, 4, name="absdphi_min_jmet", label="min abs delta phi between met and any good jet"),
+            "met_sig_proxy"    : axis.Regular(180, 0, 30, name="met_sig_proxy", label="met / sqrt(S_T + H_T)"),
 
             "l0_truth"          : axis.Regular(36, -1, 34, name="l0_truth", label="l0 truth flag"),
             "l1_truth"          : axis.Regular(36, -1, 34, name="l1_truth", label="l1 truth flag"),
@@ -372,7 +419,8 @@ class AnalysisProcessor(processor.ProcessorABC):
         # Weights object
         # Note: add() will generally modify up/down weights, so if these are needed for any reason after this point, we should instead pass copies to add()
         weights_obj_base = coffea.analysis_tools.Weights(len(events),storeIndividual=True)
-        weights_obj_base.add("norm",events.baseweight)
+        #weights_obj_base.add("norm",events.baseweight)
+        weights_obj_base.add("norm",events.weight)
 
 
         #################### Jets ####################
@@ -591,6 +639,54 @@ class AnalysisProcessor(processor.ProcessorABC):
         # NOTE Only defind for exactly 2 and 3 lep
         abs_pdgid_sum = ak.fill_none(ak.where(nleps==3,abs(l0.pdgId) + abs(l1.pdgId) + abs(l2.pdgId),abs(l0.pdgId) + abs(l1.pdgId)),0)
 
+        ########################################################################
+        ######### Find the Zs ##########
+
+        MZ = 91.1876
+        Z_WINDOW = 20.0
+
+        leps = ak.with_field(l_vvh_t, ak.local_index(l_vvh_t, axis=1), "lep_idx")
+
+        def best_sfos_pair(leps):
+            """SFOS pair in `leps` closest to MZ, as a single 4-vector object.
+            Z (and the indices) are None for events with no SFOS pair within Z_WINDOW."""
+            pairs = ak.combinations(leps, 2, fields=["l0", "l1"])
+            sfos_mask = ak.fill_none(pairs.l0.pdgId == -pairs.l1.pdgId, False)
+            pairs = pairs[sfos_mask]
+
+            dist = abs((pairs.l0 + pairs.l1).mass - MZ)
+            best = ak.argmin(dist, axis=1, keepdims=True)
+            in_window = ak.fill_none(ak.firsts(dist[best] < Z_WINDOW), False)
+
+            l0, l1 = ak.firsts(pairs.l0[best]), ak.firsts(pairs.l1[best])
+            Z    = ak.mask(l0 + l1, in_window)
+            idx0 = ak.mask(l0.lep_idx, in_window)
+            idx1 = ak.mask(l1.lep_idx, in_window)
+            return Z, idx0, idx1
+
+        # Z1: best SFOS pair among all leptons
+        Z1, z1_i0, z1_i1 = best_sfos_pair(leps)
+
+        # Z2: best SFOS pair among leptons not used by Z1
+        leps_left = leps[(leps.lep_idx != ak.fill_none(z1_i0, -1)) & (leps.lep_idx != ak.fill_none(z1_i1, -1))]
+        Z2, z2_i0, z2_i1 = best_sfos_pair(leps_left)
+
+        # Z3: best SFOS pair among leptons not used by Z1 or Z2
+        leps_left2 = leps_left[(leps_left.lep_idx != ak.fill_none(z2_i0, -1)) & (leps_left.lep_idx != ak.fill_none(z2_i1, -1))]
+        Z3, z3_i0, z3_i1 = best_sfos_pair(leps_left2)
+
+        # Number of valid Z candidates found (0-3)
+        n_sfosz = (
+            ak.values_astype(~ak.is_none(Z1.mass), "int32")
+            + ak.values_astype(~ak.is_none(Z2.mass), "int32")
+            + ak.values_astype(~ak.is_none(Z3.mass), "int32")
+        )
+
+        absdphi_min_jmet = ak.fill_none(ak.min(abs(goodJets.delta_phi(met4)), axis=-1), -1)
+        met_sig_proxy = met.pt / np.sqrt(scalarptsum_lep + scalarptsum_jet)
+
+
+        ########################################################################
 
         # Put the variables we'll plot into a dictionary for easy access later
         dense_variables_dict = {
@@ -621,6 +717,7 @@ class AnalysisProcessor(processor.ProcessorABC):
             "pt_l0l1" : (l0+l1).pt,
             "absdphi_l0l1" : abs(l0.delta_phi(l1)),
             "absdphi_lepmet" : abs(met4.delta_phi(l0+l1)),
+            "absdphi_l0met" : abs(met4.delta_phi(l0)),
             "absdphi_FJ0lepmet" : abs(fj0.delta_phi(met4+l0vLZ+l1vLZ)),
             "dr_lepmet" : met4.delta_r(l0+l1),
             "l0_iso"     : l0.pfRelIso03_all,
@@ -752,6 +849,14 @@ class AnalysisProcessor(processor.ProcessorABC):
             # We want to include this in the siponed output, but probably not make hists for it
             "isRun3" : events.isRun3,
 
+            "pt_z1" : Z1.pt,
+            "pt_z2" : Z2.pt,
+            "absdphi_z1_met" : abs(met4.delta_phi(Z1)),
+            "absdphi_z2_met" : abs(met4.delta_phi(Z2)),
+            "absdphi_z1z2_met" : abs(met4.delta_phi(Z1+Z2)),
+            "absdphi_min_jmet" : absdphi_min_jmet,
+            "met_sig_proxy" : met_sig_proxy,
+
         }
 
 
@@ -799,57 +904,6 @@ class AnalysisProcessor(processor.ProcessorABC):
             dense_variables_dict["nlep_truth_real"] = nlep_truth_real
             dense_variables_dict["nlep_truth_fake"] = nlep_truth_fake
 
-        ########################################################################
-        ######### Find the Zs ##########
-
-        MZ = 91.1876
-        Z_WINDOW = 20.0
-        
-        leps = ak.with_field(l_vvh_t, ak.local_index(l_vvh_t, axis=1), "lep_idx")
-        
-        def best_sfos_pair(leps):
-            """SFOS pair in `leps` closest to MZ, as a single 4-vector object.
-            Z (and the indices) are None for events with no SFOS pair within Z_WINDOW."""
-            pairs = ak.combinations(leps, 2, fields=["l0", "l1"])
-            sfos_mask = ak.fill_none(pairs.l0.pdgId == -pairs.l1.pdgId, False)
-            pairs = pairs[sfos_mask]
-        
-            dist = abs((pairs.l0 + pairs.l1).mass - MZ)
-            best = ak.argmin(dist, axis=1, keepdims=True)
-            in_window = ak.fill_none(ak.firsts(dist[best] < Z_WINDOW), False)
-        
-            l0, l1 = ak.firsts(pairs.l0[best]), ak.firsts(pairs.l1[best])
-            Z    = ak.mask(l0 + l1, in_window)
-            idx0 = ak.mask(l0.lep_idx, in_window)                  
-            idx1 = ak.mask(l1.lep_idx, in_window)
-            return Z, idx0, idx1
-                                                                   
-        # Z1: best SFOS pair among all leptons                                                        
-        Z1, z1_i0, z1_i1 = best_sfos_pair(leps)
-        
-        # Z2: best SFOS pair among leptons not used by Z1
-        leps_left = leps[(leps.lep_idx != ak.fill_none(z1_i0, -1)) & (leps.lep_idx != ak.fill_none(z1_i1,
-        -1))]
-        Z2, z2_i0, z2_i1 = best_sfos_pair(leps_left)
-        
-        # Z3: best SFOS pair among leptons not used by Z1 or Z2
-        leps_left2 = leps_left[(leps_left.lep_idx != ak.fill_none(z2_i0, -1)) & (leps_left.lep_idx !=
-        ak.fill_none(z2_i1, -1))]
-        Z3, z3_i0, z3_i1 = best_sfos_pair(leps_left2)              
-        
-        # Number of valid Z candidates found (0-3)
-        n_sfosz = (                                                    
-            ak.values_astype(~ak.is_none(Z1.mass), "int32")                                           
-            + ak.values_astype(~ak.is_none(Z2.mass), "int32")
-            + ak.values_astype(~ak.is_none(Z3.mass), "int32")
-        )
-
-        #print(nleps)
-        #print(n_sfosz)
-        #print(Z1.mass)
-        #print(Z2.mass)
-        #print(Z3.mass)
-        ########################################################################
 
 
         ######### Store boolean masks with PackedSelection ##########
@@ -870,17 +924,26 @@ class AnalysisProcessor(processor.ProcessorABC):
         ### 6 lepton selections ###
 
         is_4l           = (nleps>=4)
-        is_4l_minmll    = (nleps>=4) & (mll_min_afos>12)
-        is_4l_minmll_0b = (nleps>=4) & (mll_min_afos>12) & (nbtagst==0)
+        is_4l_minmll    = (nleps>=4) & (mll_min_sfos>12)
 
-        selections.add("6l",                    nleps==6)
-        selections.add("6l_st250",              nleps==6 & (scalarptsum_lep>250))
+        selections.add("6l",       (nleps==6))
+        selections.add("g6l",      (nleps>6))
+        selections.add("6l_st250", (nleps==6) & (scalarptsum_lep>250))
+
         selections.add("4l",                    is_4l)
         selections.add("4l_minmll",             is_4l_minmll)
-        selections.add("4l_minmll_0b",          is_4l_minmll_0b)
-        selections.add("4l_minmll_0b_2z",       is_4l_minmll_0b & (n_sfosz>=2))
-        selections.add("4l_minmll_0b_2z_6l",    is_4l_minmll_0b & (n_sfosz>=2) & (nleps==6))
-        selections.add("4l_minmll_0b_2z_6l_3z", is_4l_minmll_0b & (n_sfosz>=2) & (nleps==6) & (n_sfosz==3))
+        selections.add("4l_minmll_2z",          is_4l_minmll & (n_sfosz>=2))
+        selections.add("4l_minmll_2z_0b",       is_4l_minmll & (n_sfosz>=2) & (nbtagst==0))
+
+        selections.add("4l_minmll_2z_0b_4lx_0fj_met100",         is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==4) & (nfatjets==0) & (met.pt>100))
+        selections.add("4l_minmll_2z_0b_4lx_0fj_met100_phimetz", is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==4) & (nfatjets==0) & (met.pt>100) & (abs(met4.delta_phi(Z2))>1.5))
+        selections.add("4l_minmll_2z_0b_4lx_1fj",                is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==4) & (nfatjets==1))
+        selections.add("4l_minmll_2z_0b_4lx_1fj_gpt0p5",         is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==4) & (nfatjets==1) & (fj0.gptZvsQCD>0.5))
+        selections.add("4l_minmll_2z_0b_5lx",                    is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==5))
+
+        selections.add("4l_minmll_2z_0b_6l",    is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==6))
+        selections.add("4l_minmll_2z_0b_6l_2z", is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==6) & (n_sfosz==2))
+        selections.add("4l_minmll_2z_0b_6l_3z", is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==6) & (n_sfosz==3))
 
 
         # Keep track of the cats we want to actually fill
@@ -888,14 +951,25 @@ class AnalysisProcessor(processor.ProcessorABC):
             "lep_chan_lst" : [
 
                 "all_events",
+
                 "6l",
+                "g6l",
                 "6l_st250",
+
                 "4l",
                 "4l_minmll",
-                "4l_minmll_0b",
-                "4l_minmll_0b_2z",
-                "4l_minmll_0b_2z_6l",
-                "4l_minmll_0b_2z_6l_3z",
+                "4l_minmll_2z",
+                "4l_minmll_2z_0b",
+
+                "4l_minmll_2z_0b_4lx_0fj_met100",
+                "4l_minmll_2z_0b_4lx_0fj_met100_phimetz",
+                "4l_minmll_2z_0b_4lx_1fj",
+                "4l_minmll_2z_0b_4lx_1fj_gpt0p5",
+                "4l_minmll_2z_0b_5lx",
+
+                "4l_minmll_2z_0b_6l",
+                "4l_minmll_2z_0b_6l_2z",
+                "4l_minmll_2z_0b_6l_3z",
             ]
         }
 
