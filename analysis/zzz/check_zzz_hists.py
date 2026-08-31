@@ -17,27 +17,45 @@ import ewkcoffea.modules.plotting_tools as plt_tools
 #HTML_PC = "/home/users/kmohrman/ref_scripts/html_stuff/index.php"
 HTML_PC = "/home/k.mohrman/ref_scirpts/html_stuff/index.php"
 
-#CLR_LST = ['#d55e00', '#e69f00', '#f0e442', '#009e73', '#0072b2', '#56b4e9', '#cc79a7', '#6e3600', '#a17500'] #, '#a39b2f', '#00664f', '#005d87', '#999999', '#8c5d77']
-#CLR_LST = ['#d55e00', '#e69f00']
+CLR_LST = {
+    "ZZZ"   : "red",
+    "ZH"    : "blue",
+    "ZZ"    : "#F09B9B",
+    "ttZ"   : "#00D091",
+    "WZ"    : "#A39B2F",
+    "other" : "#CDCDCD",
+    "WZZ"   : "#CDF09B",
+    "DY"    : "#E69F00",
+    "ttbar" : "#7570B3",
+    "ttH"   : "#F0E442",
+    "WWZ"   : "#8C564B",
+}
+
+
 
 CAT_LST = [
-    #"all_events",
+    "all_events",
 
-    #"6l",
-    #"g6l",
-    #"6l_st250",
-
-    "4l",
-    "4l_minmll",
-    "4l_minmll_2z",
+    #"4l",
+    #"4l_minmll",
+    #"4l_minmll_2z",
     "4l_minmll_2z_0b",
 
-    "4l_minmll_2z_0b_4lx_met50",
-    "4l_minmll_2z_0b_4lx_met100",
+    "4l_minmll_2z_0b_4lx_0fj_met90l",
+    "4l_minmll_2z_2b_4lx",
+
+    "4l_minmll_2z_0b_4lx_0fj",
+    "4l_minmll_2z_0b_4lx_0fj_met90",
+    "4l_minmll_2z_0b_4lx_0fj_met90_phimetzz",
     "4l_minmll_2z_0b_4lx_1fj",
+    "4l_minmll_2z_0b_4lx_1fj_gpt0p5",
+    "4l_minmll_2z_0b_4lx_1fj_pn0p5",
+
     "4l_minmll_2z_0b_5lx",
 
     "4l_minmll_2z_0b_6l",
+    "4l_minmll_2z_0b_6l_2z",
+    "4l_minmll_2z_0b_6l_2z_mh150l",
     "4l_minmll_2z_0b_6l_3z",
 ]
 
@@ -48,6 +66,7 @@ UNBLIND_CATS = [
     "4l_minmll",
     "4l_minmll_2z",
     "4l_minmll_2z_0b",
+    "4l_minmll_2z_0b_4lx_0fj_met90l" # ZZ CR
 ]
 
 
@@ -122,8 +141,7 @@ GRP_DICT_FULL_R2 = {
         #"ZZTo4L_M-1toInf_TuneCP5_13TeV",
         #"ZZ_TuneCP5_13TeV",
         "ZZTo4L_TuneCP5_13TeV",
-    ],
-    "ggZZ" : [
+
         "GluGluToContinToZZTo2e2mu_TuneCP5_13TeV",
         "GluGluToContinToZZTo2e2tau_TuneCP5_13TeV",
         "GluGluToContinToZZTo2mu2tau_TuneCP5_13TeV",
@@ -135,12 +153,12 @@ GRP_DICT_FULL_R2 = {
     "WZZ": ["WZZ_TuneCP5_13TeV"],
 
     "VH" : [
-        "HZJ_HToWWTo2L2Nu_ZTo2L_M-125_TuneCP5_13TeV",
+        #"HZJ_HToWWTo2L2Nu_ZTo2L_M-125_TuneCP5_13TeV",
         "VHToNonbb_M125_TuneCP5_13TeV",
-        "ZH_HToBB_ZToLL_M-125_TuneCP5_13TeV",
-        "ggZH_HToBB_ZToLL_M-125_TuneCP5_13TeV",
+        #"ZH_HToBB_ZToLL_M-125_TuneCP5_13TeV",
+        #"ggZH_HToBB_ZToLL_M-125_TuneCP5_13TeV",
     ],
-    #"ZZZ": ["ZZZ_TuneCP5_13TeV"],
+    "ZZZ": ["ZZZ_TuneCP5_13TeV"],
     "Signal": ["ZZZ_TuneCP5_13TeV"],
 }
 
@@ -252,8 +270,7 @@ GRP_DICT_FULL_R3 = {
         "ZZto2L2Nu_TuneCP5_13p6TeV",
         "ZZto2L2Q_TuneCP5_13p6TeV",
         "ZZto4L_TuneCP5_13p6TeV",
-    ],
-    "ggZZ": [
+
         "GluGluToContinto2Zto2E2Mu_TuneCP5_13p6TeV",
         "GluGluToContinto2Zto2E2Tau_TuneCP5_13p6TeV",
         "GluGluToContinto2Zto2Mu2Tau_TuneCP5_13p6TeV",
@@ -263,18 +280,18 @@ GRP_DICT_FULL_R3 = {
     ],
     "WWZ" : ["WWZ-4F_TuneCP5_13p6TeV"],
     "WZZ" : ["WZZ-5F_TuneCP5_13p6TeV"],
-    #"ZZZ" : ["ZZZ-5F_TuneCP5_13p6TeV"],
+    "ZZZ" : ["ZZZ-5F_TuneCP5_13p6TeV"],
 
     "ZH" : [
         "ZH-Hto2Z_Fil-4L_Par-M-125_TuneCP5_13p6TeV",
         #"ZH-HtoNon2B_Par-M-125_TuneCP5_13p6TeV",
-        "ZH-Zto2L-Hto2B_Par-M-125_TuneCP5_13p6TeV",
-
-        "GluGluZH-Zto2L-Hto2B_Par-M-125_TuneCP5_13p6TeV",
-        "GluGluZH-Zto2Nu-Hto2B_Par-M-125_TuneCP5_13p6TeV",
+        #"ZH-Zto2L-Hto2B_Par-M-125_TuneCP5_13p6TeV",
+        #"GluGluZH-Zto2L-Hto2B_Par-M-125_TuneCP5_13p6TeV",
+        #"GluGluZH-Zto2Nu-Hto2B_Par-M-125_TuneCP5_13p6TeV",
     ],
 
-    "Signal" : ["ZZZ-5F_TuneCP5_13p6TeV"],
+    "Signal" : ["ZZZ-5F_TuneCP5_13p6TeV","ZH-Hto2Z_Fil-4L_Par-M-125_TuneCP5_13p6TeV"],
+    #"Signal" : ["ZZZ-5F_TuneCP5_13p6TeV"]
 }
 
 
@@ -376,11 +393,13 @@ def make_data_mc_fig(histo_mc, histo_dat, histo_mc_sig, histo_mc_bkg, title="tes
     fig.subplots_adjust(hspace=.07)
 
     # Plot the stack plot
+    clrs = [CLR_LST.get(str(g), "#000000") for g in histo_mc.axes["process_grp"]]
     histo_mc.plot1d(
         stack=True,
         histtype="fill",
         ax=ax1,
         zorder=10,
+        color=clrs, # THIS
     )
 
     # Plot the data
@@ -476,10 +495,11 @@ def make_vvh_fig(histo_mc,histo_mc_sig,histo_mc_bkg,histo_dat=None,title="test",
     fig.subplots_adjust(hspace=.07)
 
     # Plot the stack plot
+    clrs = [CLR_LST.get(str(g), "#000000") for g in histo_mc.axes["process_grp"]]
     histo_mc.plot1d(
         stack=True,
         histtype="fill",
-        #color=CLR_LST,
+        color=clrs, # THIS
         ax=ax1,
         zorder=10,
     )
@@ -803,11 +823,22 @@ def print_yields(histo_dict,grp_dict,cat_lst,years_to_prepend,roundat=None,print
                 #perr = 100*(err/yld) if yld else float("nan")
                 perr = 100*(err/yld) if (err is not None and yld) else float("nan")
                 err_str = np.round(err, 4) if err is not None else "None"
+                #print(f"    {group_name}:  {yld} +- {err_str}")
                 print(f"    {group_name}:  {np.round(yld,roundat)} +- {err_str}")
                 #print(f"    {group_name}:  {np.round(yld,roundat)} +- {np.round(err,4)}")
                 #print(f"    {group_name}:  {np.round(yld,roundat)} +- {np.round(perr,2)}%")
             #print(f"    -> Metric: {np.round(yld_dict[cat]['metric'][0],3)}")
             #print(f"    -> For copy pasting: python dump_toy_card.py {yld_dict[cat]['Signal'][0]} {yld_dict[cat]['Background'][0]}")
+            # S, B, S+B summary — as measured, and scaled to a target lumi
+            #LUMI_SCALE = 450.0/138.0
+            LUMI_SCALE = 450.0/110.0
+            sig, sig_err = yld_dict[cat]["Signal"]
+            bkg, bkg_err = yld_dict[cat]["Background"]
+            sb,  sb_err  = sig + bkg, np.sqrt(sig_err**2 + bkg_err**2)
+            for tag, k in [("      ", 1.0), (f" x{LUMI_SCALE:.3f}", LUMI_SCALE)]:
+                print(f"    -> S, B, S+B{tag}:  {np.round(k*sig,roundat)} , {np.round(k*bkg,roundat)} , {np.round(k*sb,roundat)}")
+                #print(f"    -> S, B, S+B{tag}:  {k*sig} , {k*bkg} , {k*sb}")
+
         #exit()
 
 
@@ -868,9 +899,9 @@ def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend,cat_lst,lepflav_bin=
     sample_group_names_lst_mc = []
     sample_group_names_lst_bkg = []
     for grp_name in grp_dict:
-        if grp_name not in ["Data"]:
+        if grp_name not in ["Data","Signal"]:
             sample_group_names_lst_mc.append(grp_name)
-        if grp_name not in ["Data", "Signal"]:
+        if grp_name not in ["Data", "Signal", "ZZZ", "ZH"]:
             sample_group_names_lst_bkg.append(grp_name)
 
     var_lst = histo_dict.keys()
@@ -885,9 +916,7 @@ def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend,cat_lst,lepflav_bin=
             if "truth" in var: continue
             if "abcd2d" in var: continue # This one is 2d, can't plot it here
             #if var == "njets" : do_data = True
-            #if var not in ("mll_min_afos","nbtagst"): continue
-            if var not in ("scalarptsum_lep"): continue
-            else: do_data = False
+            #else: do_data = False
 
             # Skip empty
             if len(histo_dict[var].values()) == 0: continue
@@ -905,6 +934,7 @@ def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend,cat_lst,lepflav_bin=
             # Clean up a bit (rebin, regroup, and handle overflow)
             if var not in ["njets","nleps","nbtagsl","nbtagsm","nbtagst","njets_counts","nleps_counts","nfatjets","njets_forward","njets_tot","n_ll_sfos","abs_ch_sum_3l","l0_truth","l1_truth","l2_truth", "nlep_truth_real", "nlep_truth_fake", "abs_pdgid_sum"]:
                 histo = plt_tools.rebin(histo,6)
+                #histo = plt_tools.rebin(histo,12)
             #histo = plt_tools.group(histo,"process","process_grp",grouping_dict_mc)
             histo = plt_tools.group(histo,"process","process_grp",grouping_dict)
             histo = plt_tools.merge_overflow(histo)
@@ -949,6 +979,7 @@ def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend,cat_lst,lepflav_bin=
                 save_dir_path_cat = save_dir_path
             if not os.path.exists(save_dir_path_cat): os.mkdir(save_dir_path_cat)
             fig.savefig(os.path.join(save_dir_path_cat,title+".png"),bbox_extra_artists=ext_tup,bbox_inches='tight')
+            plt.close(fig)
             if histo_dat is not None: fig_datamc.savefig(os.path.join(save_dir_path_cat,title+"_dataMC.png"),bbox_inches='tight')
             shutil.copyfile(HTML_PC, os.path.join(save_dir_path_cat,"index.php"))
 
@@ -1016,7 +1047,9 @@ def main():
         dump_datacard(histo_dict,grp_dict,name)
     if args.make_plots:
         #make_plots(histo_dict,grp_dict,years_to_prepend,cat_lst,lepflav_bin="all",do_data=True) # mc_scale=110.84/109.95 for 2024 to 2025 scaling
+        #make_plots(histo_dict,grp_dict,years_to_prepend,cat_lst,lepflav_bin="all",do_data=True, mc_scale=110.84/109.95) #, mc_scale=450/138)
         make_plots(histo_dict,grp_dict,years_to_prepend,cat_lst,lepflav_bin="all",do_data=False) #, mc_scale=450/138)
+        #make_plots(histo_dict,grp_dict,years_to_prepend,cat_lst,lepflav_bin="all",do_data=True, mc_scale=110.84/109.95)
 
 
 
