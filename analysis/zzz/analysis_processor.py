@@ -8,6 +8,8 @@ from coffea import processor
 import hist
 from hist import axis
 from coffea.analysis_tools import PackedSelection
+from coffea.nanoevents.methods import vector
+from mt2 import mt2
 #import ewkcoffea.modules.objects_wwz as os_ec
 #import ewkcoffea.modules.selection_wwz as es_ec
 
@@ -89,7 +91,7 @@ class AnalysisProcessor(processor.ProcessorABC):
             "scalarptsum_jet" : axis.Regular(180, 0, 2000, name="scalarptsum_jet", label="H_T small radius"),
             "scalarptsum_jetFwd" : axis.Regular(180, 0, 1000, name="scalarptsum_jetFwd", label="H_T forward"),
             "scalarptsum_jetCent" : axis.Regular(180, 0, 2000, name="scalarptsum_jetCent", label="H_T central"),
-            "scalarptsum_lep" : axis.Regular(180, 0, 2000, name="scalarptsum_lep", label="S_T"),
+            "scalarptsum_lep" : axis.Regular(180, 0, 800, name="scalarptsum_lep", label="S_T"),
             "scalarptsum_lepmet" : axis.Regular(180, 0, 1500, name="scalarptsum_lepmet", label="S_T + metpt"),
             "scalarptsum_lepmetFJ0" : axis.Regular(180, 0, 3500, name="scalarptsum_lepmetFJ0", label="S_T + metpt + FJ0 pt"),
             "scalarptsum_lepmetFJ01" : axis.Regular(180, 0, 3500, name="scalarptsum_lepmetFJ01", label="S_T + metpt + FJ0 pt + FJ1 pt"),
@@ -248,6 +250,12 @@ class AnalysisProcessor(processor.ProcessorABC):
             "absdphi_z1z2_met" : axis.Regular(180, 0, 3.1416, name="absdphi_z1z2_met", label="abs delta phi between (Z1+Z2) and met"),
             "absdphi_min_jmet" : axis.Regular(180, -2, 4, name="absdphi_min_jmet", label="min abs delta phi between met and any good jet"),
             "met_sig_proxy"    : axis.Regular(180, 0, 30, name="met_sig_proxy", label="met / sqrt(S_T + H_T)"),
+            "mt2_z1"   : axis.Regular(180, 0, 360, name="mt2_z1",   label="MT2 of Z1 leptons and met"),
+            "mt2_z2"   : axis.Regular(180, 0, 360, name="mt2_z2",   label="MT2 of Z2 leptons and met"),
+            "mt2_zmin" : axis.Regular(180, 0, 360, name="mt2_zmin", label="min MT2 over Z1,Z2 leptons and met"),
+            "mt2_zlead" : axis.Regular(180, 0, 360, name="mt2_zlead", label="MT2 of leading-pt Z leptons and met"),
+            "mt2_zsub"  : axis.Regular(180, 0, 360, name="mt2_zsub",  label="MT2 of subleading-pt Z leptons and met"),
+
 
             "l0_truth"          : axis.Regular(36, -1, 34, name="l0_truth", label="l0 truth flag"),
             "l1_truth"          : axis.Regular(36, -1, 34, name="l1_truth", label="l1 truth flag"),
@@ -266,6 +274,12 @@ class AnalysisProcessor(processor.ProcessorABC):
             "l2_truth_fake_iso" : axis.Regular(180, 0, 0.4, name="l2_truth_fake_iso", label="l2 truth fake pfRelIso03_all"),
             "nlep_truth_real"   : axis.Regular(5, 0, 5, name="nlep_truth_real",   label="Lep (truth, real) multiplicity"),
             "nlep_truth_fake"   : axis.Regular(5, 0, 5, name="nlep_truth_fake",   label="Lep (truth, fake) multiplicity"),
+            "pt_z1z2met"        : axis.Regular(180, 0, 360, name="pt_z1z2met", label="pt of (Z1 + Z2 + met) system"),
+            "mass_z1z2z3"       : axis.Regular(180, 0, 1000, name="mass_z1z2z3", label="mass of (Z1 + Z2 + Z3) system"),
+            "mass_z3cand"       : axis.Regular(51, -4, 200, name="mass_z3cand", label="m(third pair) [GeV]"),
+            "mass_h_cand"       : axis.Regular(101, -5, 500, name="mass_h_cand", label="m(4l) Higgs candidate [GeV]"),
+            "pt_lep_unpaired"   : axis.Regular(51, -4, 200, name="pt_lep_unpaired", label="pt of unpaired lepton after Z1 and Z2 selection (only relevant for 5l)"),
+
 
         }
 
@@ -660,20 +674,43 @@ class AnalysisProcessor(processor.ProcessorABC):
 
             l0, l1 = ak.firsts(pairs.l0[best]), ak.firsts(pairs.l1[best])
             Z    = ak.mask(l0 + l1, in_window)
+            lep0 = ak.mask(l0, in_window)
+            lep1 = ak.mask(l1, in_window)
             idx0 = ak.mask(l0.lep_idx, in_window)
             idx1 = ak.mask(l1.lep_idx, in_window)
-            return Z, idx0, idx1
+            return Z, lep0, lep1, idx0, idx1
 
         # Z1: best SFOS pair among all leptons
-        Z1, z1_i0, z1_i1 = best_sfos_pair(leps)
+        Z1, z1_l0, z1_l1, z1_i0, z1_i1 = best_sfos_pair(leps)
 
         # Z2: best SFOS pair among leptons not used by Z1
-        leps_left = leps[(leps.lep_idx != ak.fill_none(z1_i0, -1)) & (leps.lep_idx != ak.fill_none(z1_i1, -1))]
-        Z2, z2_i0, z2_i1 = best_sfos_pair(leps_left)
+        leps_minus_z1 = leps[(leps.lep_idx != ak.fill_none(z1_i0, -1)) & (leps.lep_idx != ak.fill_none(z1_i1, -1))]
+        Z2, z2_l0, z2_l1, z2_i0, z2_i1 = best_sfos_pair(leps_minus_z1)
 
         # Z3: best SFOS pair among leptons not used by Z1 or Z2
-        leps_left2 = leps_left[(leps_left.lep_idx != ak.fill_none(z2_i0, -1)) & (leps_left.lep_idx != ak.fill_none(z2_i1, -1))]
-        Z3, z3_i0, z3_i1 = best_sfos_pair(leps_left2)
+        leps_minus_z1z2 = leps_minus_z1[(leps_minus_z1.lep_idx != ak.fill_none(z2_i0, -1)) & (leps_minus_z1.lep_idx != ak.fill_none(z2_i1, -1))]
+        Z3, z3_l0, z3_l1, z3_i0, z3_i1 = best_sfos_pair(leps_minus_z1z2)
+
+        # The two leptons beyond Z1 and Z2 (the third pair). On Z in the 6l 3Z channel,
+        # outside the window in the 6l 2Z channel. Exists only for 6l with both Z1 and Z2 found.
+        has_pair3 = (ak.num(leps_minus_z1z2, axis=1) == 2)
+        mass_z3cand = ak.fill_none(ak.mask(leps_minus_z1z2.sum(axis=1).mass, has_pair3), -1)
+
+        # The single lepton left unpaired once Z1 and Z2 have claimed theirs (5l channel).
+        # Prompt and hard when signal has lost a 6th lepton to acceptance; soft when it is
+        # the nonprompt lepton that promotes ZZ->4l into the 5l category.
+        has_lep_unpaired = (ak.num(leps_minus_z1z2, axis=1) == 1)
+        pt_lep_unpaired = ak.fill_none(ak.mask(ak.firsts(leps_minus_z1z2).pt, has_lep_unpaired), -1)
+
+        # Higgs candidate for the 6l regions: the third pair plus whichever of Z1/Z2 is
+        # not the associated Z. Both of those are on Z, so the choice is genuinely
+        # ambiguous -- take whichever combination lands closer to mH. Summing lepton
+        # collections rather than adding Z four-vectors avoids the Candidate/LorentzVector
+        # dispatch problem that Z1+Z2+Z3 hits.
+        leps_minus_z2 = leps[(leps.lep_idx != ak.fill_none(z2_i0, -1)) & (leps.lep_idx != ak.fill_none(z2_i1, -1))]
+        m_h_with_z1 = leps_minus_z2.sum(axis=1).mass    # Z1 + third pair
+        m_h_with_z2 = leps_minus_z1.sum(axis=1).mass    # Z2 + third pair
+        mass_h_cand = ak.fill_none(ak.mask( ak.where(abs(m_h_with_z1 - 125.0) < abs(m_h_with_z2 - 125.0), m_h_with_z1, m_h_with_z2), has_pair3), -1)
 
         # Number of valid Z candidates found (0-3)
         n_sfosz = (
@@ -684,6 +721,33 @@ class AnalysisProcessor(processor.ProcessorABC):
 
         absdphi_min_jmet = ak.fill_none(ak.min(abs(goodJets.delta_phi(met4)), axis=-1), -1)
         met_sig_proxy = met.pt / np.sqrt(scalarptsum_lep + scalarptsum_jet)
+
+        # MT2 of each Z's lepton pair against MET. Backgrounds where the pair is really
+        # two W legs (WWZ, ttZ, ttbar) have an endpoint at mW; a genuine Z does not.
+        def _safe_lep(lep):
+            """get_mt2 can't take option-type input. Fill Z-undefined events with
+            dummy values; only the 2Z categories look at these variables."""
+            return ak.zip(
+                {
+                    "pt":    ak.fill_none(lep.pt,   10.0),
+                    "eta":   ak.fill_none(lep.eta,   0.0),
+                    "phi":   ak.fill_none(lep.phi,   0.0),
+                    "mass":  ak.fill_none(lep.mass,  0.0),
+                    "pdgId": ak.fill_none(lep.pdgId,  13),
+                },
+                with_name="PtEtaPhiMLorentzVector",
+                behavior=vector.behavior,
+            )
+
+        mt2_z1   = get_mt2(_safe_lep(z1_l0), _safe_lep(z1_l1), met)
+        mt2_z2   = get_mt2(_safe_lep(z2_l0), _safe_lep(z2_l1), met)
+        mt2_zmin = np.minimum(mt2_z1, mt2_z2)
+
+        z2_is_lead = ak.fill_none(Z2.pt > Z1.pt, False)
+        mt2_zlead  = ak.where(z2_is_lead, mt2_z2, mt2_z1)
+        mt2_zsub   = ak.where(z2_is_lead, mt2_z1, mt2_z2)
+
+
 
 
         ########################################################################
@@ -856,6 +920,16 @@ class AnalysisProcessor(processor.ProcessorABC):
             "absdphi_z1z2_met" : abs(met4.delta_phi(Z1+Z2)),
             "absdphi_min_jmet" : absdphi_min_jmet,
             "met_sig_proxy" : met_sig_proxy,
+            "mt2_z1"   : mt2_z1,
+            "mt2_z2"   : mt2_z2,
+            "mt2_zmin" : mt2_zmin,
+            "mt2_zlead" : mt2_zlead,
+            "mt2_zsub"  : mt2_zsub,
+            "pt_z1z2met" : (Z1 + Z2 + met4).pt,
+            "mass_z1z2z3" : l_vvh_t.sum(axis=1).mass,
+            "mass_z3cand" : mass_z3cand,
+            "mass_h_cand" : mass_h_cand,
+            "pt_lep_unpaired" : pt_lep_unpaired,
 
         }
 
@@ -928,22 +1002,28 @@ class AnalysisProcessor(processor.ProcessorABC):
 
         selections.add("6l",       (nleps==6))
         selections.add("g6l",      (nleps>6))
-        selections.add("6l_st250", (nleps==6) & (scalarptsum_lep>250))
 
         selections.add("4l",                    is_4l)
         selections.add("4l_minmll",             is_4l_minmll)
         selections.add("4l_minmll_2z",          is_4l_minmll & (n_sfosz>=2))
         selections.add("4l_minmll_2z_0b",       is_4l_minmll & (n_sfosz>=2) & (nbtagst==0))
 
-        selections.add("4l_minmll_2z_0b_4lx_0fj_met100",         is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==4) & (nfatjets==0) & (met.pt>100))
-        selections.add("4l_minmll_2z_0b_4lx_0fj_met100_phimetz", is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==4) & (nfatjets==0) & (met.pt>100) & (abs(met4.delta_phi(Z2))>1.5))
+        selections.add("4l_minmll_2z_0b_4lx_0fj_met90l",          is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==4) & (nfatjets==0) & (met.pt<90))
+        selections.add("4l_minmll_2z_2b_4lx",                     is_4l_minmll & (n_sfosz>=2) & (nbtagst>=2) & (nleps==4))
+
+        selections.add("4l_minmll_2z_0b_4lx_0fj",                is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==4) & (nfatjets==0))
+        selections.add("4l_minmll_2z_0b_4lx_0fj_met90",          is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==4) & (nfatjets==0) & (met.pt>90))
+        selections.add("4l_minmll_2z_0b_4lx_0fj_met90_phimetzz", is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==4) & (nfatjets==0) & (met.pt>90) & (abs(met4.delta_phi(Z1+Z2))>2))
         selections.add("4l_minmll_2z_0b_4lx_1fj",                is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==4) & (nfatjets==1))
         selections.add("4l_minmll_2z_0b_4lx_1fj_gpt0p5",         is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==4) & (nfatjets==1) & (fj0.gptZvsQCD>0.5))
+        selections.add("4l_minmll_2z_0b_4lx_1fj_pn0p5",          is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==4) & (nfatjets==1) & (fj0_pNetZvsQCD>0.5))
+
         selections.add("4l_minmll_2z_0b_5lx",                    is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==5))
 
-        selections.add("4l_minmll_2z_0b_6l",    is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==6))
-        selections.add("4l_minmll_2z_0b_6l_2z", is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==6) & (n_sfosz==2))
-        selections.add("4l_minmll_2z_0b_6l_3z", is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==6) & (n_sfosz==3))
+        selections.add("4l_minmll_2z_0b_6l",           is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==6))
+        selections.add("4l_minmll_2z_0b_6l_2z",        is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==6) & (n_sfosz==2))
+        selections.add("4l_minmll_2z_0b_6l_2z_mh150l", is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==6) & (n_sfosz==2) & (mass_h_cand<150))
+        selections.add("4l_minmll_2z_0b_6l_3z",        is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==6) & (n_sfosz==3))
 
 
         # Keep track of the cats we want to actually fill
@@ -951,25 +1031,31 @@ class AnalysisProcessor(processor.ProcessorABC):
             "lep_chan_lst" : [
 
                 "all_events",
-
                 "6l",
                 "g6l",
-                "6l_st250",
 
                 "4l",
                 "4l_minmll",
                 "4l_minmll_2z",
                 "4l_minmll_2z_0b",
 
-                "4l_minmll_2z_0b_4lx_0fj_met100",
-                "4l_minmll_2z_0b_4lx_0fj_met100_phimetz",
+                "4l_minmll_2z_0b_4lx_0fj_met90l",
+                "4l_minmll_2z_2b_4lx",
+
+                "4l_minmll_2z_0b_4lx_0fj",
+                "4l_minmll_2z_0b_4lx_0fj_met90",
+                "4l_minmll_2z_0b_4lx_0fj_met90_phimetzz",
                 "4l_minmll_2z_0b_4lx_1fj",
                 "4l_minmll_2z_0b_4lx_1fj_gpt0p5",
+                "4l_minmll_2z_0b_4lx_1fj_pn0p5",
+
                 "4l_minmll_2z_0b_5lx",
 
                 "4l_minmll_2z_0b_6l",
                 "4l_minmll_2z_0b_6l_2z",
+                "4l_minmll_2z_0b_6l_2z_mh150l",
                 "4l_minmll_2z_0b_6l_3z",
+
             ]
         }
 
