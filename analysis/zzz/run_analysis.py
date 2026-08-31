@@ -17,6 +17,10 @@ from coffea.nanoevents import NanoAODSchema
 NanoAODSchema.warn_missing_crossrefs = False
 #import topcoffea.modules.remote_environment as remote_environment
 
+import os
+os.environ["PYTHONWARNINGS"] = "ignore:Missing cross-reference::"
+
+
 LST_OF_KNOWN_EXECUTORS = ["futures","work_queue","iterative"]
 LST_OF_KNOWN_PROCESSORS = ["semilep","semilep_nano","simple_gen"]
 
