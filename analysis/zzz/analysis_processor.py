@@ -13,7 +13,7 @@ from mt2 import mt2
 #import ewkcoffea.modules.objects_wwz as os_ec
 #import ewkcoffea.modules.selection_wwz as es_ec
 
-from ewkcoffea.modules.paths import ewkcoffea_path as ewkcoffea_path
+#from ewkcoffea.modules.paths import ewkcoffea_path as ewkcoffea_path
 
 import torch
 torch.set_num_threads(1)
@@ -1074,11 +1074,11 @@ class AnalysisProcessor(processor.ProcessorABC):
             fj0_matchedV2 = (dR_fj0_v2 < dR_threshold) & (dR_fj0_v2 < dR_fj0_h)  & (dR_fj0_v2 < dR_fj0_v1)
             fj0_matchedV  = fj0_matchedV1 | fj0_matchedV2
             fj0_noMatch   = ~(dR_fj0_h < dR_threshold) & ~(dR_fj0_v1 < dR_threshold) & ~(dR_fj0_v2 < dR_threshold)
-            selections.add("2lOSSF_1fjx_fj0matchH",  is_2l & is_os & is_sf & (nfatjets==1) & ak.fill_none(fj0_matchedH,  False))
-            selections.add("2lOSSF_1fjx_fj0matchV1", is_2l & is_os & is_sf & (nfatjets==1) & ak.fill_none(fj0_matchedV1, False))
-            selections.add("2lOSSF_1fjx_fj0matchV2", is_2l & is_os & is_sf & (nfatjets==1) & ak.fill_none(fj0_matchedV2, False))
-            selections.add("2lOSSF_1fjx_fj0matchV",  is_2l & is_os & is_sf & (nfatjets==1) & ak.fill_none(fj0_matchedV, False))
-            selections.add("2lOSSF_1fjx_fj0noMatch", is_2l & is_os & is_sf & (nfatjets==1) & ak.fill_none(fj0_noMatch, False))
+            #selections.add("2lOSSF_1fjx_fj0matchH",  is_2l & is_os & is_sf & (nfatjets==1) & ak.fill_none(fj0_matchedH,  False))
+            #selections.add("2lOSSF_1fjx_fj0matchV1", is_2l & is_os & is_sf & (nfatjets==1) & ak.fill_none(fj0_matchedV1, False))
+            #selections.add("2lOSSF_1fjx_fj0matchV2", is_2l & is_os & is_sf & (nfatjets==1) & ak.fill_none(fj0_matchedV2, False))
+            #selections.add("2lOSSF_1fjx_fj0matchV",  is_2l & is_os & is_sf & (nfatjets==1) & ak.fill_none(fj0_matchedV, False))
+            #selections.add("2lOSSF_1fjx_fj0noMatch", is_2l & is_os & is_sf & (nfatjets==1) & ak.fill_none(fj0_noMatch, False))
 
             #cat_dict["lep_chan_lst"].append("2lOSSF_1fjx_fj0matchH")
             #cat_dict["lep_chan_lst"].append("2lOSSF_1fjx_fj0matchV1")

@@ -279,82 +279,6 @@ if __name__ == '__main__':
 
     processor_instance = analysis_processor.AnalysisProcessor(samplesdict,wc_lst,hist_lst,do_systs,skip_obj_systs,skip_sr,skip_cr,siphon_bdt_data=siphon,rwgt_to_sm=rwgt_to_sm, ele_cutBased_val=args.ele_cutBased_val, mu_pfIsoId_val=args.mu_pfIsoId_val,siphon_out_name=outname)
 
-    #if executor == "work_queue":
-    #    executor_args = {
-    #        'master_name': '{}-workqueue-coffea'.format(os.environ['USER']),
-
-    #        # find a port to run work queue in this range:
-    #        'port': port,
-
-    #        'debug_log': 'debug.log',
-    #        'transactions_log': 'tr.log',
-    #        'stats_log': 'stats.log',
-    #        'tasks_accum_log': 'tasks.log',
-
-    #        'environment_file': remote_environment.get_environment(
-    #            extra_conda=["root"],
-    #            extra_pip=["mt2","xgboost"],
-    #            extra_pip_local = {"ewkcoffea": ["ewkcoffea", "setup.py"]},
-    #        ),
-    #        'extra_input_files': ["analysis_processor.py"],
-
-    #        'retries': 5,
-
-    #        # use mid-range compression for chunks results. 9 is the default for work
-    #        # queue in coffea. Valid values are 0 (minimum compression, less memory
-    #        # usage) to 16 (maximum compression, more memory usage).
-    #        'compression': 9,
-
-    #        # automatically find an adequate resource allocation for tasks.
-    #        # tasks are first tried using the maximum resources seen of previously ran
-    #        # tasks. on resource exhaustion, they are retried with the maximum resource
-    #        # values, if specified below. if a maximum is not specified, the task waits
-    #        # forever until a larger worker connects.
-    #        'resource_monitor': True,
-    #        'resources_mode': 'auto',
-
-    #        # this resource values may be omitted when using
-    #        # resources_mode: 'auto', but they do make the initial portion
-    #        # of a workflow run a little bit faster.
-    #        # Rather than using whole workers in the exploratory mode of
-    #        # resources_mode: auto, tasks are forever limited to a maximum
-    #        # of 8GB of mem and disk.
-    #        #
-    #        # NOTE: The very first tasks in the exploratory
-    #        # mode will use the values specified here, so workers need to be at least
-    #        # this large. If left unspecified, tasks will use whole workers in the
-    #        # exploratory mode.
-    #        # 'cores': 1,
-    #        # 'disk': 8000,   #MB
-    #        # 'memory': 10000, #MB
-
-    #        # control the size of accumulation tasks. Results are
-    #        # accumulated in groups of size chunks_per_accum, keeping at
-    #        # most chunks_per_accum at the same time in memory per task.
-    #        'chunks_per_accum': 25,
-    #        'chunks_accum_in_mem': 2,
-
-    #        # terminate workers on which tasks have been running longer than average.
-    #        # This is useful for temporary conditions on worker nodes where a task will
-    #        # be finish faster is ran in another worker.
-    #        # the time limit is computed by multipliying the average runtime of tasks
-    #        # by the value of 'fast_terminate_workers'.  Since some tasks can be
-    #        # legitimately slow, no task can trigger the termination of workers twice.
-    #        #
-    #        # warning: small values (e.g. close to 1) may cause the workflow to misbehave,
-    #        # as most tasks will be terminated.
-    #        #
-    #        # Less than 1 disables it.
-    #        'fast_terminate_workers': 0,
-
-    #        # print messages when tasks are submitted, finished, etc.,
-    #        # together with their resource allocation and usage. If a task
-    #        # fails, its standard output is also printed, so we can turn
-    #        # off print_stdout for all tasks.
-    #        'verbose': True,
-    #        'print_stdout': False,
-    #    }
-
     # Run the processor and get the output
     tstart = time.time()
 
@@ -364,9 +288,6 @@ if __name__ == '__main__':
     elif executor == "iterative":
         exec_instance = processor.IterativeExecutor()
         runner = processor.Runner(exec_instance, schema=NanoAODSchema, chunksize=chunksize, maxchunks=nchunks)
-    elif executor ==  "work_queue":
-        executor = processor.WorkQueueExecutor(**executor_args)
-        runner = processor.Runner(executor, schema=NanoAODSchema, chunksize=chunksize, maxchunks=nchunks, skipbadfiles=False, xrootdtimeout=180)
 
     # Make the flist into the format the runner expects now
     flist_dict = {}
