@@ -25,8 +25,11 @@ UNBLIND_CATS = [
     "2lOSSF_nFJ1",
     "3l_prelowmllcut",
     "3l",
+    "3l_chsum3",       # Unblind the inclusive training region
+    "3l_chsum3_B",     # Unblind Control Region B
+    "3l_chsum3_C",     # Unblind Control Region C
+    "3l_chsum3_D",     # Unblind Control Region D
 ]
-
 CAT_LST_2l = [
     #"all_events",
     "2lOSSF_nFJ1",
@@ -48,6 +51,10 @@ CAT_LST_3l = [
     #"3l_prelowmllcut",
     "3l",
     "3l_chsum3",
+    "3l_chsum3_A",
+    "3l_chsum3_B",
+    "3l_chsum3_C",
+    "3l_chsum3_D",
     "3l_chsum1",
     "3l_chsum1_mjj500",
 
@@ -259,7 +266,7 @@ GRP_DICT_FULL_R2 = {
     #"VBSWWH_OS": ["VBSWWH_OS_c2v1p0_c3_1p0"],
     #"VBSWZH": ["VBSWZH_c2v1p0_c3_1p0"],
     #"VBSZZH": ["VBSZZH_c2v1p0_c3_1p0"],
-
+   
     "Data" : [
         #"data",
         "DoubleMuon",
@@ -638,12 +645,12 @@ def make_vvh_fig(histo_mc,histo_mc_sig,histo_mc_bkg,histo_dat=None,title="test",
 
     # Get normalized hists of sig and bkg
     yld_sig = sum(sum(histo_mc_sig.values(flow=True)))
-    yld_bkg = sum(sum(histo_mc_bkg.values(flow=True)))
+    yld_bkg = sum(sum(histo_mc_bkg.values(flow=True))) 
+   
     metric = yld_sig/(yld_bkg**0.5)
     histo_mc_sig_scale_to_bkg = plt_tools.scale(copy.deepcopy(histo_mc_sig), "process_grp", {"Signal":yld_bkg/yld_sig})
     histo_mc_sig_norm         = plt_tools.scale(copy.deepcopy(histo_mc_sig), "process_grp", {"Signal":1.0/yld_sig})
-    histo_mc_bkg_norm         = plt_tools.scale(copy.deepcopy(histo_mc_bkg), "process_grp", {"Background":1.0/yld_bkg})
-
+    histo_mc_bkg_norm         = plt_tools.scale(copy.deepcopy(histo_mc_bkg), "process_grp", {"Background":1.0/yld_bkg}) 
     histo_mc_sig_scale_to_bkg.plot1d(color=["red"], ax=ax1, zorder=100)
     histo_mc_sig_norm.plot1d(color="red",  ax=ax2, zorder=100)
     histo_mc_bkg_norm.plot1d(color="gray", ax=ax2, zorder=100)
@@ -1037,7 +1044,9 @@ def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend,cat_lst,lepflav_bin=
             histo_mc  = histo[{"process_grp":sample_group_names_lst_mc}]
             histo_sig = histo[{"process_grp":["Signal"]}]
             histo_bkg = plt_tools.group(histo,"process_grp","process_grp",{"Background": sample_group_names_lst_bkg})
-            if do_data: histo_dat = histo[{"process_grp":["Data"]}]
+            #Changed this line to get blind A region
+            #if do_data: histo_dat = histo[{"process_grp":["Data"]}
+            if do_data and (cat in UNBLIND_CATS): histo_dat = histo[{"process_grp":["Data"]}] 
             else: histo_dat = None
 
             # Make the figure
@@ -1124,7 +1133,7 @@ def main():
     else:
         raise Exception(f"Unknown year argument {args.r}")
 
-    # Which main functionalities to run
+# Which main functionalities to run
     if args.dump_json:
         dump_json_simple(histo_dict,args.output_name)
     if args.get_yields:

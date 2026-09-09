@@ -82,6 +82,14 @@ class AnalysisProcessor(processor.ProcessorABC):
                 #axis.Regular(100, 0, self.mjj_cap, name="vbs_mjj", label="Mjj of vbs"),
                 storage="weight", name="Counts",
             ),
+            "abcd2d_3lChsum3": hist.Hist(
+                hist.axis.StrCategory([], growth=True, name="process", label="process"),
+                hist.axis.StrCategory([], growth=True, name="category", label="category"),
+                axis.Regular(100, 0, 1, name="dnn_score",   label="DNN score from ABCDnet"),
+                axis.Regular(100, 0, 1, name="vbs_score",   label="VBS jets score from tagger"),
+                #axis.Regular(100, 0, self.mjj_cap, name="vbs_mjj", label="Mjj of vbs"),
+                storage="weight", name="Counts",
+            ),
         }
 
         # Create the dense axes for the histograms
@@ -242,6 +250,7 @@ class AnalysisProcessor(processor.ProcessorABC):
 
             "mll_min_afos" : axis.Regular(180, -2, 48, name="mll_min_afos",  label="min mll of all OS pairs"),
             "mll_z" : axis.Regular(180, 0, 150, name="mll_z",  label="mll of the pair of leptons closest to z"),
+            "mll_z_sf" : axis.Regular(180, 0, 150, name="mll_z_sf",  label="mll of SF pair closest to Z (any charge)"),
             "pt_z"  : axis.Regular(180, 0, 150, name="pt_z",   label="pt of the pair of leptons closest to z"),
             "mt_wlep" : axis.Regular(180,-2,298, name="mt_wlep", label="MT of MET and W lep (ie, lep that is not the SFOS Z pair)"),
             "dr_wlepmet" : axis.Regular(180,0,6, name="dr_wlepmet", label="dr between MET and W lep (ie, lep that is not the SFOS Z pair)"),
@@ -267,6 +276,7 @@ class AnalysisProcessor(processor.ProcessorABC):
             "dnn_score_2lH"      : axis.Regular(180, 0, 1, name="dnn_score_2lH",      label="DNN ABCDnet score for 2l1FJ H region"),
             "dnn_score_2lV"      : axis.Regular(180, 0, 1, name="dnn_score_2lV",      label="DNN ABCDnet score for 1l1FJ V region"),
             "dnn_score_3lChsum1" : axis.Regular(180, 0, 1, name="dnn_score_3lChsum1", label="DNN ABCDnet score for 3l chargesum=1 region"),
+            "dnn_score_3lChsum3" : axis.Regular(180, 0, 1, name="dnn_score_3lChsum3", label="DNN ABCDnet score for 3l chargesum=3 region"),
 
             "vbs_mjj"       : axis.Regular(180, 0, 4000, name="vbs_mjj",       label="VBS candidate mjj [GeV]"),
             "vbs_absdetajj" : axis.Regular(180, 0, 10,   name="vbs_absdetajj", label="VBS candidate abs delta eta jj"),
@@ -278,9 +288,13 @@ class AnalysisProcessor(processor.ProcessorABC):
             "vbs2_eta" : axis.Regular(180, -5, 5,           name="vbs2_eta", label="VBS jet 2 eta"),
             "vbs1_phi" : axis.Regular(180, -3.1416, 3.1416, name="vbs1_phi", label="VBS jet 1 phi"),
             "vbs2_phi" : axis.Regular(180, -3.1416, 3.1416, name="vbs2_phi", label="VBS jet 2 phi"),
-
-
-        }
+            
+            "mass_lep_jbscore0"       : axis.Regular(180, 0, 500, name="mass_lep_jbscore0", label="Mass of lep and highest b-score jet"),
+            "mass_bbll_ttbar_closest" : axis.Regular(180, 0, 1000, name="mass_bbll_ttbar_closest", label="Mass of 2b+2l closest to 345 GeV"),
+			"min_dr_leps"    : axis.Regular(180, 0, 5, name="min_dr_leps", label="Min DR between any two leptons"),
+            "mass_3l"        : axis.Regular(180, 0, 1000, name="mass_3l", label="Invariant mass of all 3 leptons"),
+            "min_mll_leps"   : axis.Regular(180, 0, 500, name="min_mll_leps", label="Min invariant mass of any two leptons"),
+            }
 
         # Add histograms to dictionary that will be passed on to dict_accumulator
         dout = {}
@@ -322,7 +336,7 @@ class AnalysisProcessor(processor.ProcessorABC):
         self._siphon_output_path = f"histos/{siphon_out_name}.root"
         self._siphon_bdt_data = siphon_bdt_data
         #self._siphon_selection = ["2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5"] # NOTE this is hard coded
-        self._siphon_selection = ["3l_chsum1_mjj500"] # NOTE this is hard coded
+        self._siphon_selection = ["3l_chsum3"] # NOTE this is hard coded
         self._bdt_vars = []
         for varname in list(self._dense_axes_dict.keys()):
             self._bdt_vars.append(varname)
@@ -363,6 +377,9 @@ class AnalysisProcessor(processor.ProcessorABC):
         elif model == "3lChsum1":
             scaler_path = ewkcoffea_path("data/vvh_abcd_models/single_abcdisco_3lChsum1_scaler_params.json")
             checkpoint_path = ewkcoffea_path("data/vvh_abcd_models/single_abcdisco_3lChsum1.ckpt")
+        elif model == "3lChsum3":
+            scaler_path = ewkcoffea_path("data/vvh_abcd_models/single_abcdisco_3lChsum3_total_v1_scaler_params.json")
+            checkpoint_path = ewkcoffea_path("data/vvh_abcd_models/single_abcdisco_3lChsum3_total_v1.ckpt")
         else:
             raise Exception(f"Unknown model {model}")
 
@@ -673,6 +690,30 @@ class AnalysisProcessor(processor.ProcessorABC):
         jbscore0_bscore = ak.fill_none(jbscore0.btagDeepFlavB,0)
         jbscore1_bscore = ak.fill_none(jbscore1.btagDeepFlavB,0)
 
+        #Variables related to lepton closest to the jet with the highest b-tag score (jbscore0)
+        dr_l_jbscore0 = l_vvh_t.delta_r(jbscore0)
+        idx_closest_l = ak.argmin(dr_l_jbscore0, axis=-1, keepdims=True)
+        closest_l_to_jbscore0 = ak.firsts(l_vvh_t[idx_closest_l])
+        mass_lep_jbscore0 = ak.fill_none((to_vec(closest_l_to_jbscore0) + jbscore0).mass, -1)
+		
+        # Variable related to ttbar system (2 jets with highest b-score + 2 leptons)
+        ll_pairs_tt = ak.combinations(l_vvh_t, 2, fields=["l0", "l1"])
+        bbll_4vec = to_vec(ll_pairs_tt.l0) + to_vec(ll_pairs_tt.l1) + jbscore0 + jbscore1
+        diff_from_ttbar = abs(bbll_4vec.mass - 345.0)
+        best_tt_idx = ak.argmin(diff_from_ttbar, axis=-1, keepdims=True)
+        mass_bbll_ttbar_closest = ak.fill_none(ak.firsts(bbll_4vec[best_tt_idx].mass), -1) 
+
+		#  Min DR and Min Mass between all lepton combinations
+        ll_pairs_all = ak.combinations(l_vvh_t_padded, 2, fields=["l0", "l1"])
+        dr_pairs = ll_pairs_all.l0.delta_r(ll_pairs_all.l1)
+        mass_pairs = (to_vec(ll_pairs_all.l0) + to_vec(ll_pairs_all.l1)).mass
+        min_dr_leps = ak.fill_none(ak.min(dr_pairs, axis=-1), -1)
+        min_mll_leps = ak.fill_none(ak.min(mass_pairs, axis=-1), -1)
+
+        # Tri-lepton system mass
+        l3_system = to_vec(l0) + to_vec(l1) + to_vec(l2)
+        mass_3l = ak.fill_none(l3_system.mass, -1)
+        
         # Mjj max from any jets
         jjCentFwd_pairs = ak.combinations( goodJets_ptordered_padded, 2, fields=["j0", "j1"] )
         mjj_max_any     = ak.fill_none(ak.max((jjCentFwd_pairs.j0 + jjCentFwd_pairs.j1).mass,axis=-1),0)
@@ -701,6 +742,7 @@ class AnalysisProcessor(processor.ProcessorABC):
         ll_idx_pairs = ak.argcombinations(l_vvh_t, 2, fields=["i0", "i1"])
         os_pairs_mask   = ak.fill_none((ll_pairs_tmp.i0.pdgId*ll_pairs_tmp.i1.pdgId < 0),False) # Maks for opposite-sign pairs
         sfos_pairs_mask = ak.fill_none((ll_pairs_tmp.i0.pdgId == -ll_pairs_tmp.i1.pdgId),False) # Mask for same-flavor-opposite-sign pairs
+        sf_pairs_mask   = ak.fill_none((abs(ll_pairs_tmp.i0.pdgId) == abs(ll_pairs_tmp.i1.pdgId)),False) 
         ll_absdphi_pairs = abs(ll_pairs_tmp.i0.delta_phi(ll_pairs_tmp.i1))
         ll_mass_pairs = (ll_pairs_tmp.i0+ll_pairs_tmp.i1).mass            # The mll for each ll pair
         absdphi_min_afas = ak.min(ll_absdphi_pairs,axis=-1)
@@ -717,6 +759,12 @@ class AnalysisProcessor(processor.ProcessorABC):
         zpeak_idx     = ak.argmin(abs(ll_pairs_4vec.mass - 91.1876), keepdims=True, axis=1)
         mll_z         = ak.fill_none(ak.flatten(ll_pairs_4vec[zpeak_idx].mass), 0)
         pt_z          = ak.fill_none(ak.flatten(ll_pairs_4vec[zpeak_idx].pt), 0)
+
+        # Z PEAK FOR ANY SF PAIR (IGNORES CHARGE):
+        ll_pairs_sf      = ll_pairs_tmp[sf_pairs_mask]
+        ll_pairs_sf_4vec = ll_pairs_sf.i0 + ll_pairs_sf.i1
+        zpeak_sf_idx     = ak.argmin(abs(ll_pairs_sf_4vec.mass - 91.1876), keepdims=True, axis=1)
+        mll_z_sf         = ak.fill_none(ak.flatten(ll_pairs_sf_4vec[zpeak_sf_idx].mass), 0)
 
         # For 3l, find the lepton that's not part of the Z pair
         sfos_mask = ak.any(sfos_pairs_mask, axis=1)
@@ -848,6 +896,11 @@ class AnalysisProcessor(processor.ProcessorABC):
             "jbscore0_bscore" : jbscore0_bscore,
             "jbscore1_bscore" : jbscore1_bscore,
             "mass_jbscore0jbscore1" : mass_jbscore0jbscore1,
+            "mass_lep_jbscore0"       : mass_lep_jbscore0,
+            "mass_bbll_ttbar_closest" : mass_bbll_ttbar_closest,
+			"min_dr_leps"    : min_dr_leps,
+            "min_mll_leps"   : min_mll_leps,
+            "mass_3l"        : mass_3l,
 
             "mjj_max_any" : mjj_max_any,
             "mjj_max_cent" : mjj_max_cent,
@@ -889,6 +942,7 @@ class AnalysisProcessor(processor.ProcessorABC):
 
             "mll_min_afos" : mll_min_afos,
             "mll_z" : mll_z,
+			"mll_z_sf" : mll_z_sf,
             "pt_z"  : pt_z,
             "mt_wlep":mt_wlep,
             "dr_wlepmet":dr_wlepmet,
@@ -915,9 +969,11 @@ class AnalysisProcessor(processor.ProcessorABC):
         dnn_score_2lH = self._run_abcd_inference(events, dense_variables_dict,"2lH")
         dnn_score_2lV = self._run_abcd_inference(events, dense_variables_dict,"2lV")
         dnn_score_3lChsum1 = self._run_abcd_inference(events, dense_variables_dict,"3lChsum1")
+        dnn_score_3lChsum3 = self._run_abcd_inference(events, dense_variables_dict,"3lChsum3")
         dense_variables_dict["dnn_score_2lH"] = dnn_score_2lH
         dense_variables_dict["dnn_score_2lV"] = dnn_score_2lV
         dense_variables_dict["dnn_score_3lChsum1"] = dnn_score_3lChsum1
+        dense_variables_dict["dnn_score_3lChsum3"] = dnn_score_3lChsum3
 
 
         ### Lepton truth variables ###
@@ -987,6 +1043,8 @@ class AnalysisProcessor(processor.ProcessorABC):
 
         A_2lH, B_2lH, C_2lH, D_2lH = get_abcd_region_masks(x_var=dnn_score_2lH, y_var=vbsjets.mjj, x_cut=0.54, y_cut=1300.0)
         A_3lChsum1, B_3lChsum1, C_3lChsum1, D_3lChsum1 = get_abcd_region_masks(x_var=dnn_score_3lChsum1, y_var=vbsjets.score, x_cut=0.71, y_cut=0.61)
+        #A_3lChsum3, B_3lChsum3, C_3lChsum3, D_3lChsum3 = get_abcd_region_masks(x_var=dnn_score_3lChsum3, y_var=vbsjets.score, x_cut=0.71, y_cut=0.61)
+        A_3lChsum3, B_3lChsum3, C_3lChsum3, D_3lChsum3 = get_abcd_region_masks(x_var=dnn_score_3lChsum3, y_var=vbsjets.score, x_cut=0.480, y_cut=0.580)
 
         selections.add("all_events", pass_through)
 
@@ -1022,6 +1080,11 @@ class AnalysisProcessor(processor.ProcessorABC):
         selections.add("3l",                              is_3l)
 
         selections.add("3l_chsum3",                       is_3l & (abs_ch_sum_3l==3))
+        selections.add("3l_chsum3_A",                     is_3l & (abs_ch_sum_3l==3) & A_3lChsum3)
+        selections.add("3l_chsum3_B",                     is_3l & (abs_ch_sum_3l==3) & B_3lChsum3)
+        selections.add("3l_chsum3_C",                     is_3l & (abs_ch_sum_3l==3) & C_3lChsum3)
+        selections.add("3l_chsum3_D",                     is_3l & (abs_ch_sum_3l==3) & D_3lChsum3)
+
         selections.add("3l_chsum3_mjj500",                is_3l & (abs_ch_sum_3l==3) & (vbsjets.mjj>500))
         selections.add("3l_chsum3_mjj500_nb0",            is_3l & (abs_ch_sum_3l==3) & (vbsjets.mjj>500) & (nbtagst==0))
 
@@ -1078,6 +1141,10 @@ class AnalysisProcessor(processor.ProcessorABC):
                 "3l_chsum1_mjj500_B",
                 "3l_chsum1_mjj500_C",
                 "3l_chsum1_mjj500_D",
+                "3l_chsum3_A",
+                "3l_chsum3_B",
+                "3l_chsum3_C",
+                "3l_chsum3_D"
 
                 # WZ CR
                 #"3l_onZ_0b",
@@ -1166,9 +1233,11 @@ class AnalysisProcessor(processor.ProcessorABC):
             cat2lH = "2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5"
             cat2lV = "2lOSSF_nFJ1_massLo_Zp2"
             cat3lChsum1 = "3l_chsum1_mjj500"
+            cat3lChsum3 = "3l_chsum3"
             all_cuts_mask_H = selections.all(cat2lH)
             all_cuts_mask_V = selections.all(cat2lV)
             all_cuts_mask_3lChsum1 = selections.all(cat3lChsum1)
+            all_cuts_mask_3lChsum3 = selections.all(cat3lChsum3)
             self.accumulator["abcd2d_2lH"].fill(
                 vbs_mjj   = vbs_mjj_flow[all_cuts_mask_H],
                 dnn_score = dnn_score_2lH[all_cuts_mask_H],
@@ -1190,6 +1259,14 @@ class AnalysisProcessor(processor.ProcessorABC):
                 process   = histAxisName[all_cuts_mask_3lChsum1],
                 category  = cat3lChsum1,
             )
+            self.accumulator["abcd2d_3lChsum3"].fill(
+                vbs_score = vbsjets.score[all_cuts_mask_3lChsum3],
+                dnn_score = dnn_score_3lChsum3[all_cuts_mask_3lChsum3],
+                weight    = weights_obj_base.weight(None)[all_cuts_mask_3lChsum3],
+                process   = histAxisName[all_cuts_mask_3lChsum3],
+                category  = cat3lChsum3,
+            )
+
 
 
         ######### Fill 1d histos #########
