@@ -14,8 +14,8 @@ import ewkcoffea.modules.plotting_tools as plt_tools
 import topcoffea.modules.MakeLatexTable as mlt
 
 
-HTML_PC = "/home/users/kmohrman/ref_scripts/html_stuff/index.php"
-#HTML_PC = "/home/k.mohrman/ref_scirpts/html_stuff/index.php"
+#HTML_PC = "/home/users/kmohrman/ref_scripts/html_stuff/index.php"
+HTML_PC = "/home/k.mohrman/ref_scirpts/html_stuff/index.php"
 
 #CLR_LST = ['#d55e00', '#e69f00', '#f0e442', '#009e73', '#0072b2', '#56b4e9', '#cc79a7', '#6e3600', '#a17500'] #, '#a39b2f', '#00664f', '#005d87', '#999999', '#8c5d77']
 #CLR_LST = ['#d55e00', '#e69f00']
@@ -23,16 +23,24 @@ HTML_PC = "/home/users/kmohrman/ref_scripts/html_stuff/index.php"
 UNBLIND_CATS = [
     "all_events",
     "2lOSSF_nFJ1",
+    "2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5", # 2l 1FJ training region
+
     "3l_prelowmllcut",
     "3l",
+    "3l_chsum3", # 3l chargesum 3 training region
+    "3l_chsum1",
+    "3l_chsum1_mjj500", # l chargesum 1 training region
+
+    "2lOSSF_nFJ1_onZ_0b", # DY CR
+    "2lOSSF_nFJ1_offZ_2b", # ttbar CR
 ]
 
 CAT_LST_2l = [
     #"all_events",
     "2lOSSF_nFJ1",
-    "2lOSSF_nFJ1_massHi",
-    "2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5",
-    "2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5_A",
+    #"2lOSSF_nFJ1_massHi",
+    #"2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5",
+    #"2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5_A",
     #"2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5_B",
     #"2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5_C",
     #"2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5_D",
@@ -47,9 +55,9 @@ CAT_LST_3l = [
     #"all_events",
     #"3l_prelowmllcut",
     "3l",
-    "3l_chsum3",
-    "3l_chsum1",
-    "3l_chsum1_mjj500",
+    #"3l_chsum3",
+    #"3l_chsum1",
+    #"3l_chsum1_mjj500",
 
     # WZ CR
     #"3l_onZ_0b",
@@ -141,16 +149,16 @@ GRP_DICT_FULL_R3 = {
         "Wto2Q-3Jets_Bin-HT-2500_TuneCP5_13p6TeV",
         "Wto2Q-3Jets_Bin-HT-400to800_TuneCP5_13p6TeV",
         "Wto2Q-3Jets_Bin-HT-800to1500_TuneCP5_13p6TeV",
-        "WtoLNu-2Jets_Bin-1J-PTLNu-100to200_TuneCP5_13p6TeV",
-        "WtoLNu-2Jets_Bin-1J-PTLNu-200to400_TuneCP5_13p6TeV",
-        "WtoLNu-2Jets_Bin-1J-PTLNu-400to600_TuneCP5_13p6TeV",
-        "WtoLNu-2Jets_Bin-1J-PTLNu-40to100_TuneCP5_13p6TeV",
-        "WtoLNu-2Jets_Bin-1J-PTLNu-600_TuneCP5_13p6TeV",
-        "WtoLNu-2Jets_Bin-2J-PTLNu-100to200_TuneCP5_13p6TeV",
-        "WtoLNu-2Jets_Bin-2J-PTLNu-200to400_TuneCP5_13p6TeV",
-        "WtoLNu-2Jets_Bin-2J-PTLNu-400to600_TuneCP5_13p6TeV",
-        "WtoLNu-2Jets_Bin-2J-PTLNu-40to100_TuneCP5_13p6TeV",
-        "WtoLNu-2Jets_Bin-2J-PTLNu-600_TuneCP5_13p6TeV",
+        #"WtoLNu-2Jets_Bin-1J-PTLNu-100to200_TuneCP5_13p6TeV",
+        #"WtoLNu-2Jets_Bin-1J-PTLNu-200to400_TuneCP5_13p6TeV",
+        #"WtoLNu-2Jets_Bin-1J-PTLNu-400to600_TuneCP5_13p6TeV",
+        #"WtoLNu-2Jets_Bin-1J-PTLNu-40to100_TuneCP5_13p6TeV",
+        #"WtoLNu-2Jets_Bin-1J-PTLNu-600_TuneCP5_13p6TeV",
+        #"WtoLNu-2Jets_Bin-2J-PTLNu-100to200_TuneCP5_13p6TeV",
+        #"WtoLNu-2Jets_Bin-2J-PTLNu-200to400_TuneCP5_13p6TeV",
+        #"WtoLNu-2Jets_Bin-2J-PTLNu-400to600_TuneCP5_13p6TeV",
+        #"WtoLNu-2Jets_Bin-2J-PTLNu-40to100_TuneCP5_13p6TeV",
+        #"WtoLNu-2Jets_Bin-2J-PTLNu-600_TuneCP5_13p6TeV",
         "WtoLNu-4Jets_Bin-1J_TuneCP5_13p6TeV",
         "WtoLNu-4Jets_Bin-2J_TuneCP5_13p6TeV",
         "WtoLNu-4Jets_Bin-3J_TuneCP5_13p6TeV",
@@ -320,7 +328,7 @@ GRP_DICT_FULL_R2 = {
         "WJetsToLNu_HT-800To1200_TuneCP5_13TeV",
         "WJetsToLNu_HT-1200To2500_TuneCP5_13TeV",
         "WJetsToLNu_HT-2500ToInf_TuneCP5_13TeV",
-        "WJetsToLNu_TuneCP5_13TeV",
+        #"WJetsToLNu_TuneCP5_13TeV",
         "WJetsToQQ_HT-200to400_TuneCP5_13TeV",
         "WJetsToQQ_HT-400to600_TuneCP5_13TeV",
         "WJetsToQQ_HT-600to800_TuneCP5_13TeV",
@@ -1049,10 +1057,12 @@ def print_yields(histo_dict,grp_dict,cat_lst,years_to_prepend,roundat=None,print
                 #if group_name not in ["Signal","SignalC2V","SignalC3","Background","Data"]: continue
                 if group_name == "metric": continue
                 if group_name == "metricX100": continue
-                if group_name == "Data/MC": continue
+                #if group_name == "Data/MC": continue
                 yld, err = yld_dict[cat][group_name]
-                perr = 100*(err/yld)
-                print(f"    {group_name}:  {np.round(yld,roundat)} +- {np.round(err,2)}")
+                #perr = 100*(err/yld)
+                perr = 100*(err/yld) if (err is not None and yld) else float("nan")
+                err_str = np.round(err, 2) if err is not None else "None"
+                print(f"    {group_name}:  {np.round(yld,roundat)} +- {err_str}")
                 #print(f"    {group_name}:  {np.round(yld,roundat)} +- {np.round(perr,2)}%")
             #print(f"    -> Metric: {np.round(yld_dict[cat]['metric'][0],3)}")
             #print(f"    -> For copy pasting: python dump_toy_card.py {yld_dict[cat]['Signal'][0]} {yld_dict[cat]['Background'][0]}")
@@ -1077,7 +1087,7 @@ def print_yields(histo_dict,grp_dict,cat_lst,years_to_prepend,roundat=None,print
                 if group_name == "metric": continue
                 yld, err = yld_dict[cat][group_name]
                 if err is not None:
-                    perr = 100*(err/yld)
+                    perr = 100*(err/yld) if (err is not None and yld) else float("nan")
                     #line_str = line_str + f" , {np.round(yld,roundat)} ± {np.round(perr,2)}%"
                     line_str = line_str + f" , {np.round(yld,roundat)} , ± , {np.round(err,roundat)}"
                 else:
