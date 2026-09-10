@@ -651,6 +651,7 @@ def make_vvh_fig(histo_mc,histo_mc_sig,histo_mc_bkg,histo_dat=None,title="test",
     histo_mc_sig_scale_to_bkg = plt_tools.scale(copy.deepcopy(histo_mc_sig), "process_grp", {"Signal":yld_bkg/yld_sig})
     histo_mc_sig_norm         = plt_tools.scale(copy.deepcopy(histo_mc_sig), "process_grp", {"Signal":1.0/yld_sig})
     histo_mc_bkg_norm         = plt_tools.scale(copy.deepcopy(histo_mc_bkg), "process_grp", {"Background":1.0/yld_bkg}) 
+
     histo_mc_sig_scale_to_bkg.plot1d(color=["red"], ax=ax1, zorder=100)
     histo_mc_sig_norm.plot1d(color="red",  ax=ax2, zorder=100)
     histo_mc_bkg_norm.plot1d(color="gray", ax=ax2, zorder=100)
