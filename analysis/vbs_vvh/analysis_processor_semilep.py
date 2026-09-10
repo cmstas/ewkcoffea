@@ -336,6 +336,7 @@ class AnalysisProcessor(processor.ProcessorABC):
         self._siphon_output_path = f"histos/{siphon_out_name}.root"
         self._siphon_bdt_data = siphon_bdt_data
         #self._siphon_selection = ["2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5"] # NOTE this is hard coded
+        #self._siphon_selection = ["3l_chsum1_mjj500"] # NOTE this is hard coded
         self._siphon_selection = ["3l_chsum3"] # NOTE this is hard coded
         self._bdt_vars = []
         for varname in list(self._dense_axes_dict.keys()):
@@ -697,16 +698,14 @@ class AnalysisProcessor(processor.ProcessorABC):
         mass_lep_jbscore0 = ak.fill_none((to_vec(closest_l_to_jbscore0) + jbscore0).mass, -1)
 		
         # Variable related to ttbar system (2 jets with highest b-score + 2 leptons)
-        ll_pairs_tt = ak.combinations(l_vvh_t, 2, fields=["l0", "l1"])
-        bbll_4vec = to_vec(ll_pairs_tt.l0) + to_vec(ll_pairs_tt.l1) + jbscore0 + jbscore1
+        bbll_4vec = to_vec(ll_pairs.l0) + to_vec(ll_pairs.l1) + jbscore0 + jbscore1
         diff_from_ttbar = abs(bbll_4vec.mass - 345.0)
         best_tt_idx = ak.argmin(diff_from_ttbar, axis=-1, keepdims=True)
         mass_bbll_ttbar_closest = ak.fill_none(ak.firsts(bbll_4vec[best_tt_idx].mass), -1) 
 
 		#  Min DR and Min Mass between all lepton combinations
-        ll_pairs_all = ak.combinations(l_vvh_t_padded, 2, fields=["l0", "l1"])
-        dr_pairs = ll_pairs_all.l0.delta_r(ll_pairs_all.l1)
-        mass_pairs = (to_vec(ll_pairs_all.l0) + to_vec(ll_pairs_all.l1)).mass
+        dr_pairs = ll_pairs.l0.delta_r(ll_pairs.l1)
+        mass_pairs = (to_vec(ll_pairs.l0) + to_vec(ll_pairs.l1)).mass
         min_dr_leps = ak.fill_none(ak.min(dr_pairs, axis=-1), -1)
         min_mll_leps = ak.fill_none(ak.min(mass_pairs, axis=-1), -1)
 
@@ -1043,7 +1042,6 @@ class AnalysisProcessor(processor.ProcessorABC):
 
         A_2lH, B_2lH, C_2lH, D_2lH = get_abcd_region_masks(x_var=dnn_score_2lH, y_var=vbsjets.mjj, x_cut=0.54, y_cut=1300.0)
         A_3lChsum1, B_3lChsum1, C_3lChsum1, D_3lChsum1 = get_abcd_region_masks(x_var=dnn_score_3lChsum1, y_var=vbsjets.score, x_cut=0.71, y_cut=0.61)
-        #A_3lChsum3, B_3lChsum3, C_3lChsum3, D_3lChsum3 = get_abcd_region_masks(x_var=dnn_score_3lChsum3, y_var=vbsjets.score, x_cut=0.71, y_cut=0.61)
         A_3lChsum3, B_3lChsum3, C_3lChsum3, D_3lChsum3 = get_abcd_region_masks(x_var=dnn_score_3lChsum3, y_var=vbsjets.score, x_cut=0.480, y_cut=0.580)
 
         selections.add("all_events", pass_through)
@@ -1144,7 +1142,7 @@ class AnalysisProcessor(processor.ProcessorABC):
                 "3l_chsum3_A",
                 "3l_chsum3_B",
                 "3l_chsum3_C",
-                "3l_chsum3_D"
+                "3l_chsum3_D",
 
                 # WZ CR
                 #"3l_onZ_0b",

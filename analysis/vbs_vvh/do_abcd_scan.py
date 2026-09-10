@@ -1323,10 +1323,10 @@ def main():
     #########################################################
     ############# NOTE: Configure your run here #############
 
-    cat_for_dnn    = "3l_chsum3" # 3l_chsum1_nSFOS0_VBS0p2 2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5
-    abcd_hist_name = "abcd2d_3lChsum3" # abcd2d_2lH abcd2d_3lChsum1
+    cat_for_dnn    = "3l_chsum3" # 3l_chsum1_mjj500 3l_chsum1_nSFOS0_VBS0p2 2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5
+    abcd_hist_name = "abcd2d_3lChsum3" # abcd2d_3lChsum1 abcd2d_2lH abcd2d_3lChsum1
     constrain_var  = "vbs_score" # vbs_mjj
-    abcdbkg_names  = ["DY", "ttbar", "VV", "ewkVV", "ttX", "VVV", "VH", "rare-top", "single-t"]
+    abcdbkg_names  = ["ttbar", "single-t", "ttX", "rare-top", "DY", "VV", "ewkVV", "VH", "VVV"]
     #abcdbkg_names  = ["ttbar", "single-t", "ttX", "rare-top", "DY", "ewkV", "VV", "ewkVV", "VH", "VVV"]
     guardrails = {
         "min_significance" : 0.0,
