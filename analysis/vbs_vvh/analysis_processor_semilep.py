@@ -294,7 +294,7 @@ class AnalysisProcessor(processor.ProcessorABC):
             "min_dr_leps"    : axis.Regular(180, 0, 5, name="min_dr_leps", label="Min DR between any two leptons"),
             "mass_3l"        : axis.Regular(180, 0, 1000, name="mass_3l", label="Invariant mass of all 3 leptons"),
             "min_mll_leps"   : axis.Regular(180, 0, 500, name="min_mll_leps", label="Min invariant mass of any two leptons"),
-            }
+        }
 
         # Add histograms to dictionary that will be passed on to dict_accumulator
         dout = {}
