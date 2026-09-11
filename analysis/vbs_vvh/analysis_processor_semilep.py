@@ -725,10 +725,10 @@ class AnalysisProcessor(processor.ProcessorABC):
         dr_l_jbscore0 = l_vvh_t.delta_r(jbscore0)
         idx_closest_l = ak.argmin(dr_l_jbscore0, axis=-1, keepdims=True)
         closest_l_to_jbscore0 = ak.firsts(l_vvh_t[idx_closest_l])
-        mass_lep_jbscore0 = ak.fill_none((to_vec(closest_l_to_jbscore0) + jbscore0).mass, -1)
+        mass_lep_jbscore0 = ak.fill_none((closest_l_to_jbscore0 + jbscore0).mass, -1)
 
         # Variable related to ttbar system (2 jets with highest b-score + 2 leptons)
-        bbll_4vec = to_vec(ll_pairs.l0) + to_vec(ll_pairs.l1) + jbscore0 + jbscore1
+        bbll_4vec = ll_pairs.l0 + ll_pairs.l1 + jbscore0 + jbscore1
         diff_from_ttbar = abs(bbll_4vec.mass - 345.0)
         best_tt_idx = ak.argmin(diff_from_ttbar, axis=-1, keepdims=True)
         mass_bbll_ttbar_closest = ak.fill_none(ak.firsts(bbll_4vec[best_tt_idx].mass), -1)
