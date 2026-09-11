@@ -288,10 +288,10 @@ class AnalysisProcessor(processor.ProcessorABC):
             "vbs2_eta" : axis.Regular(180, -5, 5,           name="vbs2_eta", label="VBS jet 2 eta"),
             "vbs1_phi" : axis.Regular(180, -3.1416, 3.1416, name="vbs1_phi", label="VBS jet 1 phi"),
             "vbs2_phi" : axis.Regular(180, -3.1416, 3.1416, name="vbs2_phi", label="VBS jet 2 phi"),
-            
+
             "mass_lep_jbscore0"       : axis.Regular(180, 0, 500, name="mass_lep_jbscore0", label="Mass of lep and highest b-score jet"),
             "mass_bbll_ttbar_closest" : axis.Regular(180, 0, 1000, name="mass_bbll_ttbar_closest", label="Mass of 2b+2l closest to 345 GeV"),
-			"min_dr_leps"    : axis.Regular(180, 0, 5, name="min_dr_leps", label="Min DR between any two leptons"),
+            "min_dr_leps"    : axis.Regular(180, 0, 5, name="min_dr_leps", label="Min DR between any two leptons"),
             "mass_3l"        : axis.Regular(180, 0, 1000, name="mass_3l", label="Invariant mass of all 3 leptons"),
             "min_mll_leps"   : axis.Regular(180, 0, 500, name="min_mll_leps", label="Min invariant mass of any two leptons"),
             }
@@ -696,14 +696,14 @@ class AnalysisProcessor(processor.ProcessorABC):
         idx_closest_l = ak.argmin(dr_l_jbscore0, axis=-1, keepdims=True)
         closest_l_to_jbscore0 = ak.firsts(l_vvh_t[idx_closest_l])
         mass_lep_jbscore0 = ak.fill_none((to_vec(closest_l_to_jbscore0) + jbscore0).mass, -1)
-		
+
         # Variable related to ttbar system (2 jets with highest b-score + 2 leptons)
         bbll_4vec = to_vec(ll_pairs.l0) + to_vec(ll_pairs.l1) + jbscore0 + jbscore1
         diff_from_ttbar = abs(bbll_4vec.mass - 345.0)
         best_tt_idx = ak.argmin(diff_from_ttbar, axis=-1, keepdims=True)
-        mass_bbll_ttbar_closest = ak.fill_none(ak.firsts(bbll_4vec[best_tt_idx].mass), -1) 
+        mass_bbll_ttbar_closest = ak.fill_none(ak.firsts(bbll_4vec[best_tt_idx].mass), -1)
 
-		#  Min DR and Min Mass between all lepton combinations
+        #  Min DR and Min Mass between all lepton combinations
         dr_pairs = ll_pairs.l0.delta_r(ll_pairs.l1)
         mass_pairs = (to_vec(ll_pairs.l0) + to_vec(ll_pairs.l1)).mass
         min_dr_leps = ak.fill_none(ak.min(dr_pairs, axis=-1), -1)
@@ -712,7 +712,7 @@ class AnalysisProcessor(processor.ProcessorABC):
         # Tri-lepton system mass
         l3_system = to_vec(l0) + to_vec(l1) + to_vec(l2)
         mass_3l = ak.fill_none(l3_system.mass, -1)
-        
+
         # Mjj max from any jets
         jjCentFwd_pairs = ak.combinations( goodJets_ptordered_padded, 2, fields=["j0", "j1"] )
         mjj_max_any     = ak.fill_none(ak.max((jjCentFwd_pairs.j0 + jjCentFwd_pairs.j1).mass,axis=-1),0)
@@ -741,7 +741,7 @@ class AnalysisProcessor(processor.ProcessorABC):
         ll_idx_pairs = ak.argcombinations(l_vvh_t, 2, fields=["i0", "i1"])
         os_pairs_mask   = ak.fill_none((ll_pairs_tmp.i0.pdgId*ll_pairs_tmp.i1.pdgId < 0),False) # Maks for opposite-sign pairs
         sfos_pairs_mask = ak.fill_none((ll_pairs_tmp.i0.pdgId == -ll_pairs_tmp.i1.pdgId),False) # Mask for same-flavor-opposite-sign pairs
-        sf_pairs_mask   = ak.fill_none((abs(ll_pairs_tmp.i0.pdgId) == abs(ll_pairs_tmp.i1.pdgId)),False) 
+        sf_pairs_mask   = ak.fill_none((abs(ll_pairs_tmp.i0.pdgId) == abs(ll_pairs_tmp.i1.pdgId)),False)
         ll_absdphi_pairs = abs(ll_pairs_tmp.i0.delta_phi(ll_pairs_tmp.i1))
         ll_mass_pairs = (ll_pairs_tmp.i0+ll_pairs_tmp.i1).mass            # The mll for each ll pair
         absdphi_min_afas = ak.min(ll_absdphi_pairs,axis=-1)
@@ -897,7 +897,7 @@ class AnalysisProcessor(processor.ProcessorABC):
             "mass_jbscore0jbscore1" : mass_jbscore0jbscore1,
             "mass_lep_jbscore0"       : mass_lep_jbscore0,
             "mass_bbll_ttbar_closest" : mass_bbll_ttbar_closest,
-			"min_dr_leps"    : min_dr_leps,
+            "min_dr_leps"    : min_dr_leps,
             "min_mll_leps"   : min_mll_leps,
             "mass_3l"        : mass_3l,
 
@@ -941,7 +941,7 @@ class AnalysisProcessor(processor.ProcessorABC):
 
             "mll_min_afos" : mll_min_afos,
             "mll_z" : mll_z,
-			"mll_z_sf" : mll_z_sf,
+            "mll_z_sf" : mll_z_sf,
             "pt_z"  : pt_z,
             "mt_wlep":mt_wlep,
             "dr_wlepmet":dr_wlepmet,
