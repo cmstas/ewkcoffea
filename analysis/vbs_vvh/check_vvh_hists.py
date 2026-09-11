@@ -594,24 +594,11 @@ def make_data_mc_fig(histo_mc, histo_dat, histo_mc_sig, histo_mc_bkg, title="tes
             sys_up_ratio = np.where(mc_arr > 0, sys_up_arr / mc_arr, np.nan)
             sys_down_ratio = np.where(mc_arr > 0, sys_down_arr / mc_arr, np.nan)
 
-        ax2.plot(bin_centers_arr, sys_up_ratio,
-                color="cyan",
-                linewidth=1.5,        # Thinner line
-                linestyle='--',       # Dashed line
-                marker='o',
-                markersize=3,         # Smaller markers
-                label=f'{systematic_name} Up' if systematic_name else 'Syst Up')
-        ax2.plot(bin_centers_arr, sys_down_ratio,
-                color="magenta",
-                linewidth=1.5,        # Thinner line
-                linestyle='--',       # Dashed line
-                marker='s',
-                markersize=3,         # Smaller markers
-                label=f'{systematic_name} Down' if systematic_name else 'Syst Down')
+        ax2.plot(bin_centers_arr, sys_up_ratio, color="cyan", linewidth=1.5, linestyle='--', marker='o', markersize=3, label=f'{systematic_name} Up' if systematic_name else 'Syst Up')
+        ax2.plot(bin_centers_arr, sys_down_ratio, color="magenta", linewidth=1.5, linestyle='--', marker='s', markersize=3, label=f'{systematic_name} Down' if systematic_name else 'Syst Down')
 
     # Plot data/MC ratio points
-    ax2.errorbar(bin_centers_arr, ratio, yerr=ratio_err,
-                 fmt='o', color='k', zorder=10)
+    ax2.errorbar(bin_centers_arr, ratio, yerr=ratio_err, fmt='o', color='k', zorder=10)
 
     # Reference line at 1
     ax2.axhline(1.0, linestyle='-', color='k', linewidth=0.8)
