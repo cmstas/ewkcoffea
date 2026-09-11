@@ -27,9 +27,14 @@ UNBLIND_CATS = [
 
     "3l_prelowmllcut",
     "3l",
-    "3l_chsum3", # 3l chargesum 3 training region
+
     "3l_chsum1",
     "3l_chsum1_mjj500", # l chargesum 1 training region
+
+    "3l_chsum3",       # Unblind the inclusive training region
+    "3l_chsum3_B",     # Unblind Control Region B
+    "3l_chsum3_C",     # Unblind Control Region C
+    "3l_chsum3_D",     # Unblind Control Region D
 
     "2lOSSF_nFJ1_onZ_0b", # DY CR
     "2lOSSF_nFJ1_offZ_2b", # ttbar CR
@@ -55,9 +60,14 @@ CAT_LST_3l = [
     #"all_events",
     #"3l_prelowmllcut",
     "3l",
-    #"3l_chsum3",
-    #"3l_chsum1",
-    #"3l_chsum1_mjj500",
+    "3l_chsum1",
+    "3l_chsum1_mjj500",
+
+    "3l_chsum3",
+    "3l_chsum3_A",
+    #"3l_chsum3_B",
+    #"3l_chsum3_C",
+    #"3l_chsum3_D",
 
     # WZ CR
     #"3l_onZ_0b",
@@ -1158,7 +1168,8 @@ def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend,cat_lst,lepflav_bin=
             histo_mc  = histo[{"process_grp":sample_group_names_lst_mc}]
             histo_sig = histo[{"process_grp":["Signal"]}]
             histo_bkg = plt_tools.group(histo,"process_grp","process_grp",{"Background": sample_group_names_lst_bkg})
-            if do_data: histo_dat = histo[{"process_grp":["Data"]}]
+            #Only include data for unblind categories
+            if do_data and (cat in UNBLIND_CATS): histo_dat = histo[{"process_grp":["Data"]}]
             else: histo_dat = None
 
             # Get systematic histograms if requested - AFTER all processing is defined
