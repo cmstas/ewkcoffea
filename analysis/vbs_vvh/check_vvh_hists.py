@@ -14,8 +14,8 @@ import ewkcoffea.modules.plotting_tools as plt_tools
 import topcoffea.modules.MakeLatexTable as mlt
 
 
-HTML_PC = "/home/users/kmohrman/ref_scripts/html_stuff/index.php"
-#HTML_PC = "/home/k.mohrman/ref_scirpts/html_stuff/index.php"
+#HTML_PC = "/home/users/kmohrman/ref_scripts/html_stuff/index.php"
+HTML_PC = "/home/k.mohrman/ref_scirpts/html_stuff/index.php"
 
 #CLR_LST = ['#d55e00', '#e69f00', '#f0e442', '#009e73', '#0072b2', '#56b4e9', '#cc79a7', '#6e3600', '#a17500'] #, '#a39b2f', '#00664f', '#005d87', '#999999', '#8c5d77']
 #CLR_LST = ['#d55e00', '#e69f00']
@@ -23,20 +23,29 @@ HTML_PC = "/home/users/kmohrman/ref_scripts/html_stuff/index.php"
 UNBLIND_CATS = [
     "all_events",
     "2lOSSF_nFJ1",
+    "2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5", # 2l 1FJ training region
+
     "3l_prelowmllcut",
     "3l",
+
+    "3l_chsum1",
+    "3l_chsum1_mjj500", # l chargesum 1 training region
+
     "3l_chsum3",       # Unblind the inclusive training region
     "3l_chsum3_B",     # Unblind Control Region B
     "3l_chsum3_C",     # Unblind Control Region C
     "3l_chsum3_D",     # Unblind Control Region D
+
+    "2lOSSF_nFJ1_onZ_0b", # DY CR
+    "2lOSSF_nFJ1_offZ_2b", # ttbar CR
 ]
 
 CAT_LST_2l = [
     #"all_events",
     "2lOSSF_nFJ1",
-    "2lOSSF_nFJ1_massHi",
-    "2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5",
-    "2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5_A",
+    #"2lOSSF_nFJ1_massHi",
+    #"2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5",
+    #"2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5_A",
     #"2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5_B",
     #"2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5_C",
     #"2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5_D",
@@ -51,13 +60,14 @@ CAT_LST_3l = [
     #"all_events",
     #"3l_prelowmllcut",
     "3l",
-    "3l_chsum3",
-    "3l_chsum3_A",
-    "3l_chsum3_B",
-    "3l_chsum3_C",
-    "3l_chsum3_D",
     "3l_chsum1",
     "3l_chsum1_mjj500",
+
+    "3l_chsum3",
+    "3l_chsum3_A",
+    #"3l_chsum3_B",
+    #"3l_chsum3_C",
+    #"3l_chsum3_D",
 
     # WZ CR
     #"3l_onZ_0b",
@@ -149,16 +159,16 @@ GRP_DICT_FULL_R3 = {
         "Wto2Q-3Jets_Bin-HT-2500_TuneCP5_13p6TeV",
         "Wto2Q-3Jets_Bin-HT-400to800_TuneCP5_13p6TeV",
         "Wto2Q-3Jets_Bin-HT-800to1500_TuneCP5_13p6TeV",
-        "WtoLNu-2Jets_Bin-1J-PTLNu-100to200_TuneCP5_13p6TeV",
-        "WtoLNu-2Jets_Bin-1J-PTLNu-200to400_TuneCP5_13p6TeV",
-        "WtoLNu-2Jets_Bin-1J-PTLNu-400to600_TuneCP5_13p6TeV",
-        "WtoLNu-2Jets_Bin-1J-PTLNu-40to100_TuneCP5_13p6TeV",
-        "WtoLNu-2Jets_Bin-1J-PTLNu-600_TuneCP5_13p6TeV",
-        "WtoLNu-2Jets_Bin-2J-PTLNu-100to200_TuneCP5_13p6TeV",
-        "WtoLNu-2Jets_Bin-2J-PTLNu-200to400_TuneCP5_13p6TeV",
-        "WtoLNu-2Jets_Bin-2J-PTLNu-400to600_TuneCP5_13p6TeV",
-        "WtoLNu-2Jets_Bin-2J-PTLNu-40to100_TuneCP5_13p6TeV",
-        "WtoLNu-2Jets_Bin-2J-PTLNu-600_TuneCP5_13p6TeV",
+        #"WtoLNu-2Jets_Bin-1J-PTLNu-100to200_TuneCP5_13p6TeV",
+        #"WtoLNu-2Jets_Bin-1J-PTLNu-200to400_TuneCP5_13p6TeV",
+        #"WtoLNu-2Jets_Bin-1J-PTLNu-400to600_TuneCP5_13p6TeV",
+        #"WtoLNu-2Jets_Bin-1J-PTLNu-40to100_TuneCP5_13p6TeV",
+        #"WtoLNu-2Jets_Bin-1J-PTLNu-600_TuneCP5_13p6TeV",
+        #"WtoLNu-2Jets_Bin-2J-PTLNu-100to200_TuneCP5_13p6TeV",
+        #"WtoLNu-2Jets_Bin-2J-PTLNu-200to400_TuneCP5_13p6TeV",
+        #"WtoLNu-2Jets_Bin-2J-PTLNu-400to600_TuneCP5_13p6TeV",
+        #"WtoLNu-2Jets_Bin-2J-PTLNu-40to100_TuneCP5_13p6TeV",
+        #"WtoLNu-2Jets_Bin-2J-PTLNu-600_TuneCP5_13p6TeV",
         "WtoLNu-4Jets_Bin-1J_TuneCP5_13p6TeV",
         "WtoLNu-4Jets_Bin-2J_TuneCP5_13p6TeV",
         "WtoLNu-4Jets_Bin-3J_TuneCP5_13p6TeV",
@@ -328,7 +338,7 @@ GRP_DICT_FULL_R2 = {
         "WJetsToLNu_HT-800To1200_TuneCP5_13TeV",
         "WJetsToLNu_HT-1200To2500_TuneCP5_13TeV",
         "WJetsToLNu_HT-2500ToInf_TuneCP5_13TeV",
-        "WJetsToLNu_TuneCP5_13TeV",
+        #"WJetsToLNu_TuneCP5_13TeV",
         "WJetsToQQ_HT-200to400_TuneCP5_13TeV",
         "WJetsToQQ_HT-400to600_TuneCP5_13TeV",
         "WJetsToQQ_HT-600to800_TuneCP5_13TeV",
@@ -498,7 +508,7 @@ def get_yields_per_cat(histo_dict,var_name,grp_dict,year_name_lst_to_prepend, ca
 
 
 # Make data/mc figures, written by claude
-def make_data_mc_fig(histo_mc, histo_dat, histo_mc_sig, histo_mc_bkg, title="test", axisrangex=None):
+def make_data_mc_fig(histo_mc, histo_dat, histo_mc_sig, histo_mc_bkg, title="test", axisrangex=None, histo_sys_up=None, histo_sys_down=None, systematic_name=None):
 
     fig, (ax1, ax2) = plt.subplots(
         nrows=2,
@@ -530,16 +540,38 @@ def make_data_mc_fig(histo_mc, histo_dat, histo_mc_sig, histo_mc_bkg, title="tes
     # Get MC sum and errors
     histo_mc_sum = histo_mc[{"process_grp": sum}]
     mc_arr = histo_mc_sum.values()
-    mc_err_arr = np.sqrt(histo_mc_sum.variances())
+    mc_stat_err_arr = np.sqrt(histo_mc_sum.variances())
     bin_edges_arr = histo_mc_sum.axes[0].edges
     bin_centers_arr = histo_mc_sum.axes[0].centers
 
-    # Plot MC stat uncertainty band on main plot
-    err_p = np.append(mc_arr + mc_err_arr, 0)
-    err_m = np.append(mc_arr - mc_err_arr, 0)
+    # Plot MC statistical uncertainty band on main plot
+    err_p = np.append(mc_arr + mc_stat_err_arr, 0)
+    err_m = np.append(mc_arr - mc_stat_err_arr, 0)
     ax1.fill_between(bin_edges_arr, err_m, err_p,
                      step='post', facecolor='none', edgecolor='gray',
                      alpha=0.5, linewidth=0.0, label='MC stat', hatch='/////', zorder=11)
+
+    # Plot systematic variations as thin dashed colored lines if provided
+    if histo_sys_up is not None and histo_sys_down is not None:
+        # Plot on main plot with thin dashed lines
+        histo_sys_up.plot1d(
+            histtype="step",
+            color="cyan",        # Changed from dodgerblue to cyan
+            linewidth=1.5,       # Thinner line
+            linestyle='--',      # Dashed line
+            label=f'{systematic_name} Up' if systematic_name else 'Syst Up',
+            ax=ax1,
+            zorder=12
+        )
+        histo_sys_down.plot1d(
+            histtype="step",
+            color="magenta",     # Changed from darkorange to magenta
+            linewidth=1.5,       # Thinner line
+            linestyle='--',      # Dashed line
+            label=f'{systematic_name} Down' if systematic_name else 'Syst Down',
+            ax=ax1,
+            zorder=12
+        )
 
     # Compute data/MC ratio and error
     yld_sig = sum(sum(histo_mc_sig.values(flow=True)))
@@ -553,47 +585,137 @@ def make_data_mc_fig(histo_mc, histo_dat, histo_mc_sig, histo_mc_bkg, title="tes
     with np.errstate(divide='ignore', invalid='ignore'):
         ratio = np.where(mc_arr > 0, dat_arr / mc_arr, np.nan)
         ratio_err = np.where(mc_arr > 0, dat_err_arr / mc_arr, np.nan)
-        mc_rel_err_p = np.where(mc_arr > 0, 1.0 + mc_err_arr / mc_arr, np.nan)
-        mc_rel_err_m = np.where(mc_arr > 0, 1.0 - mc_err_arr / mc_arr, np.nan)
+        mc_rel_err_p = np.where(mc_arr > 0, 1.0 + mc_stat_err_arr / mc_arr, np.nan)
+        mc_rel_err_m = np.where(mc_arr > 0, 1.0 - mc_stat_err_arr / mc_arr, np.nan)
 
-    # Plot MC uncertainty band on ratio plot
+    # Plot MC statistical uncertainty band on ratio plot
     mc_rel_err_p_plot = np.append(mc_rel_err_p, 0)
     mc_rel_err_m_plot = np.append(mc_rel_err_m, 0)
     ax2.fill_between(bin_edges_arr, mc_rel_err_m_plot, mc_rel_err_p_plot,
                      step='post', facecolor='none', edgecolor='gray',
                      alpha=0.5, linewidth=0.0, label='MC stat', hatch='/////')
 
+    # Plot systematic variation ratios on ratio plot with thin dashed lines
+    if histo_sys_up is not None and histo_sys_down is not None:
+        sys_up_arr = histo_sys_up.values()
+        sys_down_arr = histo_sys_down.values()
+
+        with np.errstate(divide='ignore', invalid='ignore'):
+            sys_up_ratio = np.where(mc_arr > 0, sys_up_arr / mc_arr, np.nan)
+            sys_down_ratio = np.where(mc_arr > 0, sys_down_arr / mc_arr, np.nan)
+
+        ax2.plot(bin_centers_arr, sys_up_ratio, color="cyan", linewidth=1.5, linestyle='--', marker='o', markersize=3, label=f'{systematic_name} Up' if systematic_name else 'Syst Up')
+        ax2.plot(bin_centers_arr, sys_down_ratio, color="magenta", linewidth=1.5, linestyle='--', marker='s', markersize=3, label=f'{systematic_name} Down' if systematic_name else 'Syst Down')
+
     # Plot data/MC ratio points
-    ax2.errorbar(bin_centers_arr, ratio, yerr=ratio_err,
-                 fmt='o', color='k', zorder=10)
+    ax2.errorbar(bin_centers_arr, ratio, yerr=ratio_err, fmt='o', color='k', zorder=10)
 
     # Reference line at 1
     ax2.axhline(1.0, linestyle='-', color='k', linewidth=0.8)
 
     # Text block
+    syst_text = f" (with {systematic_name})" if systematic_name else ""
     plt.text(0.15, 0.85, f"Sig. yield: {np.round(yld_sig, 2)}",                          fontsize=11, transform=fig.transFigure)
     plt.text(0.15, 0.82, f"Bkg. yield: {np.round(yld_bkg, 2)}",                          fontsize=11, transform=fig.transFigure)
     plt.text(0.15, 0.79, f"Data: {np.round(yld_dat, 2)}",                                fontsize=11, transform=fig.transFigure)
-    plt.text(0.15, 0.76, f"Data/MC: {np.round(yld_dat / yld_mc, 2) if yld_dat > 0 else 'N/A'}", fontsize=11, transform=fig.transFigure)
+    plt.text(0.15, 0.76, f"Data/MC: {np.round(yld_dat / yld_mc, 2) if yld_dat > 0 else 'N/A'}{syst_text}", fontsize=11, transform=fig.transFigure)
+
+    # Add systematic yield info if present
+    if histo_sys_up is not None and histo_sys_down is not None:
+        yld_sys_up = sum(histo_sys_up.values(flow=True))
+        yld_sys_down = sum(histo_sys_down.values(flow=True))
+        plt.text(0.15, 0.73, f"{systematic_name} Up: {np.round(yld_sys_up, 2)} ({np.round(100*(yld_sys_up/yld_mc - 1), 1)}%)", fontsize=10, transform=fig.transFigure)
+        plt.text(0.15, 0.71, f"{systematic_name} Down: {np.round(yld_sys_down, 2)} ({np.round(100*(yld_sys_down/yld_mc - 1), 1)}%)", fontsize=10, transform=fig.transFigure)
 
     # Labels, legend, formatting
-    extr = ax1.legend(loc="upper left", bbox_to_anchor=(1, 1), fontsize="12", frameon=False)
+    extr = ax1.legend(loc="upper left", bbox_to_anchor=(1, 1), fontsize="10", frameon=False)
     extt = ax1.set_title(title)
     ax1.set_xlabel(None)
     ax1.autoscale(axis='y')
     ax2.set_ylabel('Data / MC')
     ax2.set_ylim(0.0, 2.0)
     ax2.grid(True)
+    ax2.legend(loc="upper left", bbox_to_anchor=(1, 1), fontsize="8", frameon=False)
 
     # Plot a dummy hist on ax2 to get the x axis label to show up
     histo_mc.plot1d(alpha=0, ax=ax2)
-    ax2.get_legend().remove()
+    ax2.get_legend().remove()  # Remove the dummy legend, keep the systematic legend
 
     if axisrangex is not None:
         ax1.set_xlim(axisrangex[0], axisrangex[1])
         ax2.set_xlim(axisrangex[0], axisrangex[1])
 
     return fig, (extt, extr)
+
+
+# Extract systematic varitions, from claude
+def get_systematic_histograms(histo_dict, var, cat, systematic_name, lepflav_bin=None, grouping_dict=None, sample_group_names_lst_mc=None, mc_scale=1.0):
+    """
+    Get systematic variation histograms (Up and Down).
+    Applies the same processing (rebinning, grouping, overflow) as nominal histogram.
+
+    Returns:
+    --------
+    tuple: (histo_sys_up, histo_sys_down) or (None, None) if systematic not found
+    """
+
+    try:
+        # Get up and down histograms - same extraction as in make_plots
+        if lepflav_bin is None:
+            histo_up = copy.deepcopy(histo_dict[var][{"systematic":f"{systematic_name}Up", "category":cat}])
+            histo_down = copy.deepcopy(histo_dict[var][{"systematic":f"{systematic_name}Down", "category":cat}])
+        elif lepflav_bin == "all":
+            histo_up = copy.deepcopy(histo_dict[var][{"systematic":f"{systematic_name}Up", "category":cat, "lepflav":sum}])
+            histo_down = copy.deepcopy(histo_dict[var][{"systematic":f"{systematic_name}Down", "category":cat, "lepflav":sum}])
+        elif isinstance(lepflav_bin, int):
+            histo_up = copy.deepcopy(histo_dict[var][{"systematic":f"{systematic_name}Up", "category":cat, "lepflav":lepflav_bin}])
+            histo_down = copy.deepcopy(histo_dict[var][{"systematic":f"{systematic_name}Down", "category":cat, "lepflav":lepflav_bin}])
+        else:
+            raise Exception(f"Unknown lep flav handling: {lepflav_bin}")
+
+        # Apply EXACT same processing as in make_plots()
+
+        # 1. Rebinning (same logic as make_plots)
+        if var not in ["njets","nleps","nbtagsl","nbtagsm","nbtagst","njets_counts","nleps_counts","nfatjets","njets_forward","njets_tot","n_ll_sfos","abs_ch_sum_3l","l0_truth","l1_truth","l2_truth", "nlep_truth_real", "nlep_truth_fake", "abs_pdgid_sum"]:
+            histo_up = plt_tools.rebin(histo_up, 6)
+            histo_down = plt_tools.rebin(histo_down, 6)
+
+        # 2. Process grouping (same as make_plots)
+        if grouping_dict is not None:
+            histo_up = plt_tools.group(histo_up, "process", "process_grp", grouping_dict)
+            histo_down = plt_tools.group(histo_down, "process", "process_grp", grouping_dict)
+
+        # 3. Overflow handling (same as make_plots)
+        histo_up = plt_tools.merge_overflow(histo_up)
+        histo_down = plt_tools.merge_overflow(histo_down)
+
+        # 4. MC scaling (same as make_plots)
+        if mc_scale != 1.0:
+            for grp in histo_up.axes["process_grp"]:
+                if grp == "Data": continue
+                histo_up = plt_tools.scale(histo_up, "process_grp", {grp: mc_scale})
+                histo_down = plt_tools.scale(histo_down, "process_grp", {grp: mc_scale})
+
+        # 5. Select MC processes (same as make_plots)
+        if sample_group_names_lst_mc is None:
+            # Default: exclude Data
+            sample_group_names_lst_mc = [grp for grp in histo_up.axes["process_grp"] if grp != "Data"]
+
+        histo_up_mc = histo_up[{"process_grp": sample_group_names_lst_mc}]
+        histo_down_mc = histo_down[{"process_grp": sample_group_names_lst_mc}]
+
+        # Sum over process groups to get total MC
+        histo_up_total = histo_up_mc[{"process_grp": sum}]
+        histo_down_total = histo_down_mc[{"process_grp": sum}]
+
+        return histo_up_total, histo_down_total
+
+    except KeyError as e:
+        print(f"Warning: Systematic {systematic_name} not found for {var} in {cat}: {e}")
+        return None, None
+    except Exception as e:
+        print(f"Error calculating systematic {systematic_name}: {e}")
+        return None, None
 
 
 # Make the figures for the vvh study
@@ -932,10 +1054,12 @@ def print_yields(histo_dict,grp_dict,cat_lst,years_to_prepend,roundat=None,print
                 #if group_name not in ["Signal","SignalC2V","SignalC3","Background","Data"]: continue
                 if group_name == "metric": continue
                 if group_name == "metricX100": continue
-                if group_name == "Data/MC": continue
+                #if group_name == "Data/MC": continue
                 yld, err = yld_dict[cat][group_name]
-                perr = 100*(err/yld)
-                print(f"    {group_name}:  {np.round(yld,roundat)} +- {np.round(err,2)}")
+                #perr = 100*(err/yld)
+                perr = 100*(err/yld) if (err is not None and yld) else float("nan")
+                err_str = np.round(err, 2) if err is not None else "None"
+                print(f"    {group_name}:  {np.round(yld,roundat)} +- {err_str}")
                 #print(f"    {group_name}:  {np.round(yld,roundat)} +- {np.round(perr,2)}%")
             #print(f"    -> Metric: {np.round(yld_dict[cat]['metric'][0],3)}")
             #print(f"    -> For copy pasting: python dump_toy_card.py {yld_dict[cat]['Signal'][0]} {yld_dict[cat]['Background'][0]}")
@@ -960,7 +1084,7 @@ def print_yields(histo_dict,grp_dict,cat_lst,years_to_prepend,roundat=None,print
                 if group_name == "metric": continue
                 yld, err = yld_dict[cat][group_name]
                 if err is not None:
-                    perr = 100*(err/yld)
+                    perr = 100*(err/yld) if (err is not None and yld) else float("nan")
                     #line_str = line_str + f" , {np.round(yld,roundat)} ± {np.round(perr,2)}%"
                     line_str = line_str + f" , {np.round(yld,roundat)} , ± , {np.round(err,roundat)}"
                 else:
@@ -991,7 +1115,7 @@ def print_yields(histo_dict,grp_dict,cat_lst,years_to_prepend,roundat=None,print
 
 
 ### Make the plots ###
-def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend,cat_lst,lepflav_bin=None,save_dir_path="plots",make_cat_subdirs=True,vars_to_plot=None,mc_scale=1,do_data=True):
+def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend,cat_lst,lepflav_bin=None,save_dir_path="plots",make_cat_subdirs=True,vars_to_plot=None,mc_scale=1,do_data=True,systematic_to_show=None):
 
     #grouping_dict = append_years(grp_dict,year_name_lst_to_prepend) # For fromnano
     grouping_dict = copy.deepcopy(grp_dict)
@@ -1032,7 +1156,6 @@ def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend,cat_lst,lepflav_bin=
             # Clean up a bit (rebin, regroup, and handle overflow)
             if var not in ["njets","nleps","nbtagsl","nbtagsm","nbtagst","njets_counts","nleps_counts","nfatjets","njets_forward","njets_tot","n_ll_sfos","abs_ch_sum_3l","l0_truth","l1_truth","l2_truth", "nlep_truth_real", "nlep_truth_fake", "abs_pdgid_sum"]:
                 histo = plt_tools.rebin(histo,6)
-            #histo = plt_tools.group(histo,"process","process_grp",grouping_dict_mc)
             histo = plt_tools.group(histo,"process","process_grp",grouping_dict)
             histo = plt_tools.merge_overflow(histo)
 
@@ -1048,6 +1171,24 @@ def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend,cat_lst,lepflav_bin=
             #Only include data for unblind categories
             if do_data and (cat in UNBLIND_CATS): histo_dat = histo[{"process_grp":["Data"]}]
             else: histo_dat = None
+
+            # Get systematic histograms if requested - AFTER all processing is defined
+            histo_sys_up = None
+            histo_sys_down = None
+            if systematic_to_show is not None:
+                histo_sys_up, histo_sys_down = get_systematic_histograms(
+                    histo_dict, var, cat, systematic_to_show,
+                    lepflav_bin=lepflav_bin,
+                    grouping_dict=grouping_dict,
+                    sample_group_names_lst_mc=sample_group_names_lst_mc,
+                    mc_scale=mc_scale
+                )
+                # Debug: print if we found the systematic
+                if histo_sys_up is not None:
+                    yld_nominal = sum(sum(histo_mc.values(flow=True)))
+                    yld_up = sum(histo_sys_up.values(flow=True))
+                    yld_down = sum(histo_sys_down.values(flow=True))
+                    print(f"Debug {systematic_to_show}: Nominal={yld_nominal:.2f}, Up={yld_up:.2f} ({100*(yld_up/yld_nominal-1):.1f}%), Down={yld_down:.2f} ({100*(yld_down/yld_nominal-1):.1f}%)")
 
             # Make the figure
             title = f"{cat}__{var}"
@@ -1066,7 +1207,10 @@ def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend,cat_lst,lepflav_bin=
                     histo_dat = histo_dat,
                     histo_mc_sig = histo_sig,
                     histo_mc_bkg = histo_bkg,
-                    title=title
+                    title=title,
+                    histo_sys_up=histo_sys_up,
+                    histo_sys_down=histo_sys_down,
+                    systematic_name=systematic_to_show
                 )
 
             # Save
@@ -1076,7 +1220,7 @@ def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend,cat_lst,lepflav_bin=
             else:
                 save_dir_path_cat = save_dir_path
             if not os.path.exists(save_dir_path_cat): os.mkdir(save_dir_path_cat)
-            fig.savefig(os.path.join(save_dir_path_cat,title+".png"),bbox_extra_artists=ext_tup,bbox_inches='tight')
+            #fig.savefig(os.path.join(save_dir_path_cat,title+".png"),bbox_extra_artists=ext_tup,bbox_inches='tight')
             if histo_dat is not None: fig_datamc.savefig(os.path.join(save_dir_path_cat,title+"_dataMC.png"),bbox_inches='tight')
             shutil.copyfile(HTML_PC, os.path.join(save_dir_path_cat,"index.php"))
 
@@ -1142,8 +1286,7 @@ def main():
     if args.datacard:
         dump_datacard(histo_dict,grp_dict,name)
     if args.make_plots:
-        make_plots(histo_dict,grp_dict,years_to_prepend,cat_lst,lepflav_bin="all",do_data=True) # mc_scale=110.84/109.95 for 2024 to 2025 scaling
-
+        make_plots(histo_dict,grp_dict,years_to_prepend,cat_lst,lepflav_bin="all",do_data=True, systematic_to_show=None) # mc_scale=110.84/109.95 for 2024 to 2025 scaling
 
 
 if __name__ == '__main__':

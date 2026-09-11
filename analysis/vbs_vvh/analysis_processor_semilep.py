@@ -33,6 +33,18 @@ def to_vec(obj,with_name="PtEtaPhiMCollection"):
         "mass": obj.mass,
     }, with_name=with_name)
 
+
+# True for events with >= njet_min good jets in the nominal OR any JEC/JER variation.
+#   Counts are rebuilt from Jet.isGood / Jet.isGood_<sfx>, not from the njet* branches,
+#   because NanoAODSchema consumes every njet* branch as a collection counter and never
+#   exposes it as a field. Degrades to the nominal-only cut when no variations exist.
+def pass_njet_any_variation(events, njet_min=2):
+    keep = ak.num(events.Jet[events.Jet.isGood == 1]) >= njet_min
+    for f in events.Jet.fields:
+        if f.startswith("isGood_"):
+            keep = keep | (ak.num(events.Jet[events.Jet[f] == 1]) >= njet_min)
+    return keep
+
 # Returns masks for the 4 ABCD regions from the 2d plane
 #     - x_var would generally be your dnn score
 #     - y_var would generally be your constrain var
@@ -427,22 +439,27 @@ class AnalysisProcessor(processor.ProcessorABC):
     # Main function: run on a given chunk
     def process(self, events):
 
+        # Pre requirement: all events must have at least 2 jets
+        #events = events[pass_njet_any_variation(events, njet_min=2)] # NOTE use this once we have JEC variations in place
+        events = events[ak.num(events.Jet[events.Jet.isGood == 1]) >= 2] # NOTE For now just directly apply cut approprate to nominal
+        if len(events) == 0: return self.accumulator
+
+        # Initialize meta data and identify the kind of of chunk
+        # Note this check assumes all events in this chunk are of the same kind, should be true
         histAxisName = events.shortname
         year         = events.year
-        xsec         = events.xsec
+        isSig  = events.kind[0]=="sig"
+        isData = events.kind[0]=="data"
 
         # Initialize objects
         ele     = events.electron
         mu      = events.muon
-        jets    = events.jet
+        jets    = events.Jet[events.Jet.isGood == 1] # Do not use events.jet directly, as these do not have the JEC variations
         met     = events.met
         fatjets = events.fatjet
         vbsjets = events.vbs
 
-        # Identify the kind of of chunk that this is (note this check assumes all events in this chunk are of the same kind, should be true)
-        isSig  = events.kind[0]=="sig"
-        isData = events.kind[0]=="data"
-
+        # Augment fatjet objects
         # Put the relevant tagging scores in fatjets object (this should be in RDF in the future)
         fatjets["gptHvsQCD"] = fatjets.globalParT3_Xbb / (fatjets.globalParT3_Xbb + fatjets.globalParT3_QCD)
         fatjets["gptWvsQCD"] = (fatjets.globalParT3_Xqq/3 + fatjets.globalParT3_Xcs) / (fatjets.globalParT3_Xqq/3 + fatjets.globalParT3_Xcs + fatjets.globalParT3_QCD)
@@ -467,7 +484,7 @@ class AnalysisProcessor(processor.ProcessorABC):
         vbs1 = ak.flatten(jets[ak.local_index(jets)==vbsjets.jet1_idx])
         vbs2 = ak.flatten(jets[ak.local_index(jets)==vbsjets.jet2_idx])
 
-        # "4-vector" for met
+        # Construct "4-vector" for met
         met4 = ak.zip(
             {
                 "pt": met.pt,
@@ -492,9 +509,10 @@ class AnalysisProcessor(processor.ProcessorABC):
         # RDF writes out loosest selection (veto for e, loose for m), which is what we veto on
         n_lep_veto = ak.num(ele) + ak.num(mu)
 
-        # We will use loose e and medium m for analysis, be sure to convert the 0 and 1 in the array to T and F before using as a mask
+        # We will use loose e and tight m (medium ID + tight PF iso) for analysis
+        # Be sure to convert the 0 and 1 in the array to T and F before using as a mask
         ele = ele[ak.values_astype(ele.isLoose,bool)]
-        mu  = mu[ak.values_astype(mu.isMedium,bool)]
+        mu  = mu[ak.values_astype(mu.isTight,bool)]
 
         # Get tight leptons for VVH selection, using mask from RDF
         l_vvh_t = ak.with_name(ak.concatenate([ele,mu],axis=1),'PtEtaPhiMCandidate')
@@ -525,7 +543,14 @@ class AnalysisProcessor(processor.ProcessorABC):
         # Weights object
         # Note: add() will generally modify up/down weights, so if these are needed for any reason after this point, we should instead pass copies to add()
         weights_obj_base = coffea.analysis_tools.Weights(len(events),storeIndividual=True)
-        weights_obj_base.add("norm",events.baseweight)
+        #weights_obj_base.add("norm",events.baseweight) # No SFs
+        weights_obj_base.add("norm",events.weight) # All SFs
+
+        # SFs and systematics
+        #if not isData:
+        #    weighttest = events.weighttest
+        #    weights_obj_base.add('lepSf', weighttest.lepSF1[:,0], weighttest.lepSF1[:,1], weighttest.lepSF1[:,2])
+
 
 
         #################### Jets ####################
@@ -575,8 +600,8 @@ class AnalysisProcessor(processor.ProcessorABC):
 
         mjjjany  = ak.where(njets>=3, (j0+j1+j2).mass, -1)
         mjjjcnt  = ak.where(njets>=3, (j0cent+j1cent+j2cent).mass, -1)
-        #mljjjany  = ak.where(njets>=3, (l0+j0+j1+j2).mass, -1)
-        mljjjany  = ak.where(njets>=3, (l0v + j0+j1+j2).mass, -1)
+        mljjjany  = ak.where(njets>=3, (l0+j0+j1+j2).mass, -1)
+        #mljjjany  = ak.where(njets>=3, (l0v + j0+j1+j2).mass, -1)
 
 
         ### Bjets ###
@@ -638,16 +663,20 @@ class AnalysisProcessor(processor.ProcessorABC):
         scalarptsum_lepmetcentjets = scalarptsum_lep + met.pt + scalarptsum_jetCent
         scalarptsum_lepmetfwdjets = scalarptsum_lep + met.pt + scalarptsum_jetFwd
         scalarptsum_lepmetvbsFJ0 = scalarptsum_lep + met.pt + vbs1.pt + vbs2.pt + fj0.pt
-        vectorsum_lepmetvbsFJ0_pt = (l0v + l1v + vbs1 + vbs2 + met4 + fj0).pt
+        #vectorsum_lepmetvbsFJ0_pt = (l0v + l1v + vbs1 + vbs2 + met4 + fj0).pt
+        vectorsum_lepmetvbsFJ0_pt = (l0 + l1 + vbs1 + vbs2 + met4 + fj0).pt
 
         # lb pairs (i.e. always one lep, one bjet)
-        lb_pairs = ak.cartesian({"l":to_vec(l_vvh_t),"j": bjetsm})
+        #lb_pairs = ak.cartesian({"l":to_vec(l_vvh_t),"j": bjetsm})
+        lb_pairs = ak.cartesian({"l":l_vvh_t,"j": bjetsm})
         mlb_min = ak.min((lb_pairs["l"] + lb_pairs["j"]).mass,axis=-1)
         mlb_max = ak.max((lb_pairs["l"] + lb_pairs["j"]).mass,axis=-1)
 
         # lj pairs (i.e. always one lep, one jet)
-        lj_pairs     = ak.cartesian({"l":to_vec(l_vvh_t),"j": jets})
-        ljnvbs_pairs = ak.cartesian({"l":to_vec(l_vvh_t),"j": nvbsjets})
+        #lj_pairs     = ak.cartesian({"l":to_vec(l_vvh_t),"j": jets})
+        #ljnvbs_pairs = ak.cartesian({"l":to_vec(l_vvh_t),"j": nvbsjets})
+        lj_pairs     = ak.cartesian({"l":l_vvh_t,"j": jets})
+        ljnvbs_pairs = ak.cartesian({"l":l_vvh_t,"j": nvbsjets})
         dr_lj_min     = ak.min(lj_pairs["l"].delta_r(lj_pairs["j"]),axis=-1)
         dr_lj_max     = ak.max(lj_pairs["l"].delta_r(lj_pairs["j"]),axis=-1)
         mass_lj_min   = ak.min((lj_pairs["l"]+lj_pairs["j"]).mass,axis=-1)
@@ -656,7 +685,8 @@ class AnalysisProcessor(processor.ProcessorABC):
         dr_ljnvbs_max = ak.max(ljnvbs_pairs["l"].delta_r(ljnvbs_pairs["j"]),axis=-1)
 
         # FJj pairs (i.e. always one FJ, one jet)
-        FJj_pairs     = ak.cartesian({"fj":fatjets,"j": jets})
+        #FJj_pairs     = ak.cartesian({"fj":fatjets,"j": jets})
+        FJj_pairs     = ak.cartesian({"fj":fatjets,"j": to_vec(jets)})
         mass_jFJ_min   = ak.min((FJj_pairs["fj"]+FJj_pairs["j"]).mass,axis=-1)
         mass_jFJ_max   = ak.max((FJj_pairs["fj"]+FJj_pairs["j"]).mass,axis=-1)
 
@@ -695,10 +725,10 @@ class AnalysisProcessor(processor.ProcessorABC):
         dr_l_jbscore0 = l_vvh_t.delta_r(jbscore0)
         idx_closest_l = ak.argmin(dr_l_jbscore0, axis=-1, keepdims=True)
         closest_l_to_jbscore0 = ak.firsts(l_vvh_t[idx_closest_l])
-        mass_lep_jbscore0 = ak.fill_none((to_vec(closest_l_to_jbscore0) + jbscore0).mass, -1)
+        mass_lep_jbscore0 = ak.fill_none((closest_l_to_jbscore0 + jbscore0).mass, -1)
 
         # Variable related to ttbar system (2 jets with highest b-score + 2 leptons)
-        bbll_4vec = to_vec(ll_pairs.l0) + to_vec(ll_pairs.l1) + jbscore0 + jbscore1
+        bbll_4vec = ll_pairs.l0 + ll_pairs.l1 + jbscore0 + jbscore1
         diff_from_ttbar = abs(bbll_4vec.mass - 345.0)
         best_tt_idx = ak.argmin(diff_from_ttbar, axis=-1, keepdims=True)
         mass_bbll_ttbar_closest = ak.fill_none(ak.firsts(bbll_4vec[best_tt_idx].mass), -1)
@@ -1124,8 +1154,8 @@ class AnalysisProcessor(processor.ProcessorABC):
                 #"2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5_D",
 
                 # DY and ttbar CRs
-                #"2lOSSF_nFJ1_onZ_0b",
-                #"2lOSSF_nFJ1_offZ_2b",
+                "2lOSSF_nFJ1_onZ_0b",
+                "2lOSSF_nFJ1_offZ_2b",
 
                 #### 3l ###
 
@@ -1136,9 +1166,10 @@ class AnalysisProcessor(processor.ProcessorABC):
                 "3l_chsum1",
                 "3l_chsum1_mjj500",
                 "3l_chsum1_mjj500_A",
-                "3l_chsum1_mjj500_B",
-                "3l_chsum1_mjj500_C",
-                "3l_chsum1_mjj500_D",
+                #"3l_chsum1_mjj500_B",
+                #"3l_chsum1_mjj500_C",
+                #"3l_chsum1_mjj500_D",
+
                 "3l_chsum3_A",
                 "3l_chsum3_B",
                 "3l_chsum3_C",
@@ -1284,7 +1315,12 @@ class AnalysisProcessor(processor.ProcessorABC):
 
         # Set up the list of weight fluctuations to loop over
         # For now the syst do not depend on the category, so we can figure this out outside of the filling loop
-        wgt_var_lst = ["nominal"]
+        #wgt_var_lst = ["nominal"]
+        if not isData:
+            #wgt_var_lst = ["nominal", "lepSfUp", "lepSfDown"]
+            wgt_var_lst = ["nominal"]
+        else:
+            wgt_var_lst = ["nominal"]
 
         # Loop over the hists we want to fill
         for dense_axis_name, dense_axis_vals in dense_variables_dict.items():
