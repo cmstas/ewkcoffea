@@ -13,7 +13,9 @@ from mt2 import mt2
 #import ewkcoffea.modules.objects_wwz as os_ec
 #import ewkcoffea.modules.selection_wwz as es_ec
 
-#from ewkcoffea.modules.paths import ewkcoffea_path as ewkcoffea_path
+from ewkcoffea.modules.abcd_model import ABCDLightningModule
+
+from ewkcoffea.modules.paths import ewkcoffea_path as ewkcoffea_path
 
 import torch
 torch.set_num_threads(1)
@@ -107,7 +109,16 @@ class AnalysisProcessor(processor.ProcessorABC):
             "l1_phi"  : axis.Regular(180, -3.1416, 3.1416, name="l1_phi", label="l1 phi"),
             "l2_pt"  : axis.Regular(180, 0, 300, name="l2_pt", label="l2 pt"),
             "l2_eta"  : axis.Regular(180, -3,3, name="l2_eta", label="l2 eta"),
-            "l2_phi"  : axis.Regular(180, -3.1416, 3.1416, name="l2_phi", label="l1 phi"),
+            "l2_phi"  : axis.Regular(180, -3.1416, 3.1416, name="l2_phi", label="l2 phi"),
+            "l3_pt"  : axis.Regular(180, 0, 300, name="l3_pt", label="l3 pt"),
+            "l3_eta"  : axis.Regular(180, -3,3, name="l3_eta", label="l3 eta"),
+            "l3_phi"  : axis.Regular(180, -3.1416, 3.1416, name="l3_phi", label="l3 phi"),
+            "l4_pt"  : axis.Regular(180, 0, 300, name="l4_pt", label="l4 pt"),
+            "l4_eta"  : axis.Regular(180, -3,3, name="l4_eta", label="l4 eta"),
+            "l4_phi"  : axis.Regular(180, -3.1416, 3.1416, name="l4_phi", label="l4 phi"),
+            "l5_pt"  : axis.Regular(180, 0, 300, name="l5_pt", label="l5 pt"),
+            "l5_eta"  : axis.Regular(180, -3,3, name="l5_eta", label="l5 eta"),
+            "l5_phi"  : axis.Regular(180, -3.1416, 3.1416, name="l5_phi", label="l5 phi"),
 
             "l0_iso"     : axis.Regular(180, 0,0.2, name="l0_iso", label="l0 pfRelIso03_all"),
             "l0_miniiso" : axis.Regular(180, 0,0.2, name="l0_miniiso", label="l0 miniPFRelIso_all"),
@@ -233,6 +244,7 @@ class AnalysisProcessor(processor.ProcessorABC):
             "mljjjany" : axis.Regular(180, 0, 4000, name="mljjjany", label="mljjj of leading (in pt) lep and three central or fwd jets"),
 
             "abs_pdgid_sum" : axis.Regular(20, 20, 40, name="abs_pdgid_sum", label="Sum of abs pdgId for the 3 lep"),
+            "n_mu_sel"      : axis.Regular(10, 0, 10,  name="n_mu_sel", label="Number of muons  in the event"),
 
             #"ghiggs0_pt" : axis.Regular(180, 0, 1500, name="ghiggs0_pt", label="Gen higgs pt"),
             #"gvectorboson0_pt" : axis.Regular(180, 0, 1500, name="gvectorboson0_pt", label="Gen V pt"),
@@ -255,6 +267,7 @@ class AnalysisProcessor(processor.ProcessorABC):
             "mt2_zmin" : axis.Regular(180, 0, 360, name="mt2_zmin", label="min MT2 over Z1,Z2 leptons and met"),
             "mt2_zlead" : axis.Regular(180, 0, 360, name="mt2_zlead", label="MT2 of leading-pt Z leptons and met"),
             "mt2_zsub"  : axis.Regular(180, 0, 360, name="mt2_zsub",  label="MT2 of subleading-pt Z leptons and met"),
+            "dnn_score_zzz" : axis.Regular(180, 0, 1, name="dnn_score_zzz",      label="DNN ABCDnet score for zzz 4l+met region"),
 
 
             "l0_truth"          : axis.Regular(36, -1, 34, name="l0_truth", label="l0 truth flag"),
@@ -291,7 +304,8 @@ class AnalysisProcessor(processor.ProcessorABC):
                 hist.axis.StrCategory([], growth=True, name="category", label="category"),
                 hist.axis.StrCategory([], growth=True, name="systematic", label="systematic"),
                 #hist.axis.StrCategory([], growth=True, name="year", label="year"),
-                hist.axis.Integer(0,40, growth=True, name="lepflav", label="lepflav"),
+                #hist.axis.Integer(0,40, growth=True, name="lepflav", label="lepflav"),
+                hist.axis.IntCategory([0,1,2,3,4,5,6], growth=True, name="lepflav", label="n muons"),
                 self._dense_axes_dict[dense_axis_name],
                 storage="weight", # Keeps track of sumw2
                 name="Counts",
@@ -321,7 +335,7 @@ class AnalysisProcessor(processor.ProcessorABC):
         self._siphon_output_path = f"histos/{siphon_out_name}.root"
         self._siphon_bdt_data = siphon_bdt_data
         #self._siphon_selection = ["2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5"] # NOTE this is hard coded
-        self._siphon_selection = ["3l_chsum1_mjj500"] # NOTE this is hard coded
+        self._siphon_selection = ["4l_minmll_2z_0b_4lx_0fj_met40"] # NOTE this is hard coded
         self._bdt_vars = []
         for varname in list(self._dense_axes_dict.keys()):
             self._bdt_vars.append(varname)
@@ -339,6 +353,63 @@ class AnalysisProcessor(processor.ProcessorABC):
     @property
     def columns(self):
         return self._columns
+
+    #################################################################################
+    ### For ABCDnet evaluations ###
+    def _load_model(self, checkpoint_path, model_key):
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self._device = device
+        if not hasattr(self, '_models'):
+            self._models = {}
+        self._models[model_key] = ABCDLightningModule.load_from_checkpoint(checkpoint_path, map_location=device)
+        self._models[model_key].to(device)
+        self._models[model_key].eval()
+
+    def _run_abcd_inference(self, events, dense_variables_dict, model):
+        if model == "zzz":
+            scaler_path = ewkcoffea_path("data/zzz_nn_models/single_abcdisco_zzz_scaler_params.json")
+            checkpoint_path = ewkcoffea_path("data/zzz_nn_models/single_abcdisco_zzz.ckpt")
+        else:
+            raise Exception(f"Unknown model {model}")
+
+        if not hasattr(self, '_models'):
+            self._models = {}
+        if model not in self._models:
+            self._load_model(checkpoint_path, model)
+
+        if not hasattr(self, '_scaler_params_dict'):
+            self._scaler_params_dict = {}
+        if model not in self._scaler_params_dict:
+            import json
+            with open(scaler_path) as f:
+                self._scaler_params_dict[model] = json.load(f)
+
+        scaler_params = self._scaler_params_dict[model]
+
+        def scale(name, values):
+            params = scaler_params[name]
+            arr = np.array(values, dtype=np.float64)
+            if params["transform"] == "log":
+                arr = np.log(np.clip(arr, 1e-9, None))
+            lo, hi = params["min"], params["max"]
+            denom = hi - lo
+            if denom > 0:
+                arr = (arr - lo) / denom
+            return np.clip(arr, 0.0, 1.0).astype(np.float32)
+
+        feature_matrix = np.column_stack([
+            scale(feat, ak.to_numpy(ak.fill_none(dense_variables_dict[feat], -1.0)))
+            for feat in scaler_params["_training_features"]
+        ])
+
+        features_tensor = torch.from_numpy(feature_matrix).to(self._device)
+        with torch.no_grad():
+            logits = self._models[model](features_tensor)
+            if logits.ndim == 1:
+                logits = logits.unsqueeze(-1)
+            scores = torch.sigmoid(logits).cpu().numpy()[:, 0]
+        return scores
+    #################################################################################
 
 
     # Main function: run on a given chunk
@@ -409,10 +480,13 @@ class AnalysisProcessor(processor.ProcessorABC):
         l_vvh_t = l_vvh_t[ak.argsort(l_vvh_t.pt, axis=-1,ascending=False)] # Sort by pt
         events["l_vvh_t"] = l_vvh_t
 
-        l_vvh_t_padded = ak.pad_none(l_vvh_t, 4)
+        l_vvh_t_padded = ak.pad_none(l_vvh_t, 6)
         l0 = l_vvh_t_padded[:,0]
         l1 = l_vvh_t_padded[:,1]
         l2 = l_vvh_t_padded[:,2]
+        l3 = l_vvh_t_padded[:,3]
+        l4 = l_vvh_t_padded[:,4]
+        l5 = l_vvh_t_padded[:,5]
         nleps = ak.num(l_vvh_t)
         abs_ch_sum_3l = abs(l0.charge + l1.charge + l2.charge)
 
@@ -651,7 +725,9 @@ class AnalysisProcessor(processor.ProcessorABC):
         dr_wlepmet = ak.where(sfos_mask,l_w.delta_r(met4),-1)
 
         # NOTE Only defind for exactly 2 and 3 lep
-        abs_pdgid_sum = ak.fill_none(ak.where(nleps==3,abs(l0.pdgId) + abs(l1.pdgId) + abs(l2.pdgId),abs(l0.pdgId) + abs(l1.pdgId)),0)
+        #abs_pdgid_sum = ak.fill_none(ak.where(nleps==3,abs(l0.pdgId) + abs(l1.pdgId) + abs(l2.pdgId),abs(l0.pdgId) + abs(l1.pdgId)),0)
+        abs_pdgid_sum = ak.fill_none(ak.sum(abs(l_vvh_t.pdgId), axis=1), 0)
+        n_mu_sel = ak.fill_none(ak.sum(abs(l_vvh_t.pdgId)==13, axis=1), 0)
 
         ########################################################################
         ######### Find the Zs ##########
@@ -776,6 +852,15 @@ class AnalysisProcessor(processor.ProcessorABC):
             "l2_pt"  : l2.pt,
             "l2_eta" : l2.eta,
             "l2_phi" : l2.phi,
+            "l3_pt"  : l3.pt,
+            "l3_eta" : l3.eta,
+            "l3_phi" : l3.phi,
+            "l4_pt"  : l4.pt,
+            "l4_eta" : l4.eta,
+            "l4_phi" : l4.phi,
+            "l5_pt"  : l5.pt,
+            "l5_eta" : l5.eta,
+            "l5_phi" : l5.phi,
             "mass_l0l1" : mass_l0l1,
             "dr_l0l1" : dr_l0l1,
             "pt_l0l1" : (l0+l1).pt,
@@ -933,6 +1018,12 @@ class AnalysisProcessor(processor.ProcessorABC):
 
         }
 
+        # For ABCDnet evaluations
+        # This must come after dense_variables_dict since pass all vars from dense_variables_dict to evaluation since any/all might be needed (depending on which model we're using)
+        # Once we finish evaluating, add the score to the dense_variables_dict too
+        dnn_score_zzz = self._run_abcd_inference(events, dense_variables_dict,"zzz")
+        dense_variables_dict["dnn_score_zzz"] = dnn_score_zzz
+
 
         ### Lepton truth variables ###
         if not isData:
@@ -1012,6 +1103,14 @@ class AnalysisProcessor(processor.ProcessorABC):
         selections.add("4l_minmll_2z_2b_4lx",                     is_4l_minmll & (n_sfosz>=2) & (nbtagst>=2) & (nleps==4))
 
         selections.add("4l_minmll_2z_0b_4lx_0fj",                is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==4) & (nfatjets==0))
+        selections.add("4l_minmll_2z_0b_4lx_0fj_met40",          is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==4) & (nfatjets==0) & (met.pt>40))
+        selections.add("4l_minmll_2z_0b_4lx_0fj_met40_NNp7",     is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==4) & (nfatjets==0) & (met.pt>40) & (dnn_score_zzz>0.7))
+        selections.add("4l_minmll_2z_0b_4lx_0fj_met40_NNp8",     is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==4) & (nfatjets==0) & (met.pt>40) & (dnn_score_zzz>0.8))
+        selections.add("4l_minmll_2z_0b_4lx_0fj_met40_NNp9",     is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==4) & (nfatjets==0) & (met.pt>40) & (dnn_score_zzz>0.9))
+        selections.add("4l_minmll_2z_0b_4lx_0fj_met40_NNp95",    is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==4) & (nfatjets==0) & (met.pt>40) & (dnn_score_zzz>0.95))
+        selections.add("4l_minmll_2z_0b_4lx_0fj_met40_NNp98",    is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==4) & (nfatjets==0) & (met.pt>40) & (dnn_score_zzz>0.98))
+        selections.add("4l_minmll_2z_0b_4lx_0fj_met40_NNp99",    is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==4) & (nfatjets==0) & (met.pt>40) & (dnn_score_zzz>0.99))
+
         selections.add("4l_minmll_2z_0b_4lx_0fj_met90",          is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==4) & (nfatjets==0) & (met.pt>90))
         selections.add("4l_minmll_2z_0b_4lx_0fj_met90_phimetzz", is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==4) & (nfatjets==0) & (met.pt>90) & (abs(met4.delta_phi(Z1+Z2))>2))
         selections.add("4l_minmll_2z_0b_4lx_1fj",                is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==4) & (nfatjets==1))
@@ -1043,6 +1142,14 @@ class AnalysisProcessor(processor.ProcessorABC):
                 "4l_minmll_2z_2b_4lx",
 
                 "4l_minmll_2z_0b_4lx_0fj",
+                "4l_minmll_2z_0b_4lx_0fj_met40",
+                "4l_minmll_2z_0b_4lx_0fj_met40_NNp7",
+                "4l_minmll_2z_0b_4lx_0fj_met40_NNp8",
+                "4l_minmll_2z_0b_4lx_0fj_met40_NNp9",
+                "4l_minmll_2z_0b_4lx_0fj_met40_NNp95",
+                "4l_minmll_2z_0b_4lx_0fj_met40_NNp98",
+                "4l_minmll_2z_0b_4lx_0fj_met40_NNp99",
+
                 "4l_minmll_2z_0b_4lx_0fj_met90",
                 "4l_minmll_2z_0b_4lx_0fj_met90_phimetzz",
                 "4l_minmll_2z_0b_4lx_1fj",
@@ -1182,7 +1289,8 @@ class AnalysisProcessor(processor.ProcessorABC):
                         "category"      : sr_cat,
                         "systematic"    : wgt_fluct,
                         #"year"          : events.year[all_cuts_mask],
-                        "lepflav"       : abs_pdgid_sum[all_cuts_mask],
+                        #"lepflav"       : abs_pdgid_sum[all_cuts_mask],
+                        "lepflav"       : n_mu_sel[all_cuts_mask],
                     }
 
                     self.accumulator[dense_axis_name].fill(**axes_fill_info_dict)
