@@ -20,7 +20,7 @@ from ewkcoffea.modules.abcd_model import ABCDLightningModule
 import warnings
 warnings.filterwarnings(
     "ignore",
-    message="Missing cross-reference index",
+    message="Missing cross-reference",
     category=RuntimeWarning,
     module="coffea.nanoevents.schemas.nanoaod"
 )
