@@ -62,6 +62,7 @@ CAT_LST_3l = [
     "3l",
     "3l_chsum1",
     "3l_chsum1_mjj500",
+    "3l_chsum1_mjj500_A",
 
     "3l_chsum3",
     "3l_chsum3_A",
@@ -1058,7 +1059,7 @@ def print_yields(histo_dict,grp_dict,cat_lst,years_to_prepend,roundat=None,print
                 yld, err = yld_dict[cat][group_name]
                 #perr = 100*(err/yld)
                 perr = 100*(err/yld) if (err is not None and yld) else float("nan")
-                err_str = np.round(err, 2) if err is not None else "None"
+                err_str = np.round(err, 3) if err is not None else "None"
                 print(f"    {group_name}:  {np.round(yld,roundat)} +- {err_str}")
                 #print(f"    {group_name}:  {np.round(yld,roundat)} +- {np.round(perr,2)}%")
             #print(f"    -> Metric: {np.round(yld_dict[cat]['metric'][0],3)}")
@@ -1073,8 +1074,8 @@ def print_yields(histo_dict,grp_dict,cat_lst,years_to_prepend,roundat=None,print
         header = "cat name"
         for proc_name in group_lst_order:
             #header = header + f", {proc_name}"
-            header = header + f", {proc_name}, pm, error"
-        header = header + ", metric"
+            header = header + f",{proc_name},pm,error"
+        header = header + ",metric"
         out_str = out_str + header
 
         # Appead a line for each category, with yields and metric
@@ -1085,13 +1086,13 @@ def print_yields(histo_dict,grp_dict,cat_lst,years_to_prepend,roundat=None,print
                 yld, err = yld_dict[cat][group_name]
                 if err is not None:
                     perr = 100*(err/yld) if (err is not None and yld) else float("nan")
-                    #line_str = line_str + f" , {np.round(yld,roundat)} ± {np.round(perr,2)}%"
-                    line_str = line_str + f" , {np.round(yld,roundat)} , ± , {np.round(err,roundat)}"
+                    #line_str = line_str + f",{np.round(yld,roundat)}±{np.round(perr,2)}%"
+                    line_str = line_str + f",{np.round(yld,roundat)},±,{np.round(err,roundat)}"
                 else:
-                    line_str = line_str + f" , {np.round(yld,roundat)} , ± , None"
+                    line_str = line_str + f",{np.round(yld,roundat)},±,None"
             # And also append the metric
             metric = yld_dict[cat]["metric"][0]
-            line_str = line_str + f" , {np.round(metric,3)}"
+            line_str = line_str + f",{np.round(metric,3)}"
             # Append the string for this line to the out string
             out_str = out_str + f"\n{line_str}"
 
@@ -1220,7 +1221,7 @@ def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend,cat_lst,lepflav_bin=
             else:
                 save_dir_path_cat = save_dir_path
             if not os.path.exists(save_dir_path_cat): os.mkdir(save_dir_path_cat)
-            #fig.savefig(os.path.join(save_dir_path_cat,title+".png"),bbox_extra_artists=ext_tup,bbox_inches='tight')
+            fig.savefig(os.path.join(save_dir_path_cat,title+".png"),bbox_extra_artists=ext_tup,bbox_inches='tight')
             if histo_dat is not None: fig_datamc.savefig(os.path.join(save_dir_path_cat,title+"_dataMC.png"),bbox_inches='tight')
             shutil.copyfile(HTML_PC, os.path.join(save_dir_path_cat,"index.php"))
 
