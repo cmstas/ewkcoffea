@@ -1069,24 +1069,27 @@ def print_yields(histo_dict,grp_dict,cat_lst,years_to_prepend,roundat=None,print
 
         ### Print csv, build up as an out string ###
 
+        # Build the column list once, so the header and the rows cannot disagree
+        cols = []
+        for group_name in group_lst_order:
+            if group_name == "metric": continue
+            cols.append(group_name)
+
         # Append the header
         out_str = ""
-        header = "cat name"
-        for proc_name in group_lst_order:
-            #header = header + f", {proc_name}"
-            header = header + f",{proc_name},pm,error"
+        header = "catname"
+        for proc_name in cols:
+            header = header + f",{proc_name},," # The empty col are for pm and err
         header = header + ",metric"
         out_str = out_str + header
 
         # Appead a line for each category, with yields and metric
         for cat in yld_dict:
             line_str = cat
-            for group_name in group_lst_order:
-                if group_name == "metric": continue
+            for group_name in cols:
                 yld, err = yld_dict[cat][group_name]
                 if err is not None:
                     perr = 100*(err/yld) if (err is not None and yld) else float("nan")
-                    #line_str = line_str + f",{np.round(yld,roundat)}±{np.round(perr,2)}%"
                     line_str = line_str + f",{np.round(yld,roundat)},±,{np.round(err,roundat)}"
                 else:
                     line_str = line_str + f",{np.round(yld,roundat)},±,None"
