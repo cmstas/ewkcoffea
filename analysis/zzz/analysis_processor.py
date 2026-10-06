@@ -243,13 +243,14 @@ class AnalysisProcessor(processor.ProcessorABC):
 
             "mljjjany" : axis.Regular(180, 0, 4000, name="mljjjany", label="mljjj of leading (in pt) lep and three central or fwd jets"),
 
-            "abs_pdgid_sum" : axis.Regular(20, 20, 40, name="abs_pdgid_sum", label="Sum of abs pdgId for the 3 lep"),
+            "abs_pdgid_sum" : axis.Regular(50, 40, 90, name="abs_pdgid_sum", label="Sum of abs pdgId, all selected leptons"),
             "n_mu_sel"      : axis.Regular(10, 0, 10,  name="n_mu_sel", label="Number of muons  in the event"),
 
             #"ghiggs0_pt" : axis.Regular(180, 0, 1500, name="ghiggs0_pt", label="Gen higgs pt"),
             #"gvectorboson0_pt" : axis.Regular(180, 0, 1500, name="gvectorboson0_pt", label="Gen V pt"),
 
             "mll_min_afos" : axis.Regular(180, -2, 48, name="mll_min_afos",  label="min mll of all OS pairs"),
+            "mll_min_sfos" : axis.Regular(180, -2, 48, name="mll_min_sfos",  label="min mll of SF OS pairs"),
             "mll_z" : axis.Regular(180, 0, 150, name="mll_z",  label="mll of the pair of leptons closest to z"),
             "pt_z"  : axis.Regular(180, 0, 150, name="pt_z",   label="pt of the pair of leptons closest to z"),
             #"mt_wlep" : axis.Regular(180,-2,298, name="mt_wlep", label="MT of MET and W lep (ie, lep that is not the SFOS Z pair)"),
@@ -289,9 +290,9 @@ class AnalysisProcessor(processor.ProcessorABC):
             "nlep_truth_fake"   : axis.Regular(5, 0, 5, name="nlep_truth_fake",   label="Lep (truth, fake) multiplicity"),
             "pt_z1z2met"        : axis.Regular(180, 0, 360, name="pt_z1z2met", label="pt of (Z1 + Z2 + met) system"),
             "mass_z1z2z3"       : axis.Regular(180, 0, 1000, name="mass_z1z2z3", label="mass of (Z1 + Z2 + Z3) system"),
-            "mass_z3cand"       : axis.Regular(51, -4, 200, name="mass_z3cand", label="m(third pair) [GeV]"),
-            "mass_h_cand"       : axis.Regular(101, -5, 500, name="mass_h_cand", label="m(4l) Higgs candidate [GeV]"),
-            "pt_lep_unpaired"   : axis.Regular(51, -4, 200, name="pt_lep_unpaired", label="pt of unpaired lepton after Z1 and Z2 selection (only relevant for 5l)"),
+            "mass_z3cand"       : axis.Regular(180, -4, 200, name="mass_z3cand", label="m(third pair) [GeV]"),
+            "mass_h_cand"       : axis.Regular(180, -5, 500, name="mass_h_cand", label="m(4l) Higgs candidate [GeV]"),
+            "pt_lep_unpaired"   : axis.Regular(180, -4, 200, name="pt_lep_unpaired", label="pt of unpaired lepton after Z1 and Z2 selection (only relevant for 5l)"),
 
 
         }
@@ -509,6 +510,8 @@ class AnalysisProcessor(processor.ProcessorABC):
         weights_obj_base = coffea.analysis_tools.Weights(len(events),storeIndividual=True)
         #weights_obj_base.add("norm",events.baseweight)
         weights_obj_base.add("norm",events.weight)
+        #if isData: weights_obj_base.add("norm",events.weight)
+        #else: weights_obj_base.add("norm",events.weight*28.06/110.84)
 
 
         #################### Jets ####################
@@ -988,8 +991,10 @@ class AnalysisProcessor(processor.ProcessorABC):
             "n_ll_sfos": n_ll_sfos,
             "abs_ch_sum_3l": abs_ch_sum_3l,
             "abs_pdgid_sum": abs_pdgid_sum,
+            "n_mu_sel": n_mu_sel,
 
             "mll_min_afos" : mll_min_afos,
+            "mll_min_sfos" : mll_min_sfos,
             "mll_z" : mll_z,
             "pt_z"  : pt_z,
             #"mt_wlep":mt_wlep,
@@ -1099,6 +1104,9 @@ class AnalysisProcessor(processor.ProcessorABC):
         selections.add("4l_minmll_2z",          is_4l_minmll & (n_sfosz>=2))
         selections.add("4l_minmll_2z_0b",       is_4l_minmll & (n_sfosz>=2) & (nbtagst==0))
 
+        # ttX CR
+        selections.add("4l_minmll_1z_2b",      is_4l_minmll & (n_sfosz==1) & (nbtagst>=2))
+
         selections.add("4l_minmll_2z_0b_4lx_0fj_met90l",          is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==4) & (nfatjets==0) & (met.pt<90))
         selections.add("4l_minmll_2z_2b_4lx",                     is_4l_minmll & (n_sfosz>=2) & (nbtagst>=2) & (nleps==4))
 
@@ -1121,8 +1129,19 @@ class AnalysisProcessor(processor.ProcessorABC):
 
         selections.add("4l_minmll_2z_0b_6l",           is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==6))
         selections.add("4l_minmll_2z_0b_6l_2z",        is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==6) & (n_sfosz==2))
-        selections.add("4l_minmll_2z_0b_6l_2z_mh150l", is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==6) & (n_sfosz==2) & (mass_h_cand<150))
-        selections.add("4l_minmll_2z_0b_6l_3z",        is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==6) & (n_sfosz==3))
+        #selections.add("4l_minmll_2z_0b_6l_2z_mh150l", is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==6) & (n_sfosz==2) & (mass_h_cand<150))
+        #selections.add("4l_minmll_2z_0b_6l_3z",        is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==6) & (n_sfosz==3))
+
+        sr_6l_2z = is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==6) & (n_sfosz==2) & (mass_h_cand<150)
+        sr_6l_3z = is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==6) & (n_sfosz==3)
+        selections.add("4l_minmll_2z_0b_6l_2z_mh150l", sr_6l_2z)
+        selections.add("4l_minmll_2z_0b_6l_3z",        sr_6l_3z)
+
+        # All 6l events that land in neither of the two 6l SRs
+        selections.add("6l_other",        (nleps==6) & ak.fill_none(~sr_6l_3z & ~sr_6l_2z, True))
+        selections.add("6l_other_mll",    (nleps==6) & ak.fill_none(~sr_6l_3z & ~sr_6l_2z, True) & (mll_min_afos>6))
+        selections.add("6l_other_mll_0b", (nleps==6) & ak.fill_none(~sr_6l_3z & ~sr_6l_2z, True) & (mll_min_afos>6) & (nbtagst==0))
+
 
 
         # Keep track of the cats we want to actually fill
@@ -1138,15 +1157,17 @@ class AnalysisProcessor(processor.ProcessorABC):
                 "4l_minmll_2z",
                 "4l_minmll_2z_0b",
 
+                "4l_minmll_1z_2b", # ttZ CR
+
                 "4l_minmll_2z_0b_4lx_0fj_met90l",
                 "4l_minmll_2z_2b_4lx",
 
                 "4l_minmll_2z_0b_4lx_0fj",
                 "4l_minmll_2z_0b_4lx_0fj_met40",
-                "4l_minmll_2z_0b_4lx_0fj_met40_NNp7",
-                "4l_minmll_2z_0b_4lx_0fj_met40_NNp8",
-                "4l_minmll_2z_0b_4lx_0fj_met40_NNp9",
-                "4l_minmll_2z_0b_4lx_0fj_met40_NNp95",
+                #"4l_minmll_2z_0b_4lx_0fj_met40_NNp7",
+                #"4l_minmll_2z_0b_4lx_0fj_met40_NNp8",
+                #"4l_minmll_2z_0b_4lx_0fj_met40_NNp9",
+                #"4l_minmll_2z_0b_4lx_0fj_met40_NNp95",
                 "4l_minmll_2z_0b_4lx_0fj_met40_NNp98",
                 "4l_minmll_2z_0b_4lx_0fj_met40_NNp99",
 
@@ -1162,6 +1183,10 @@ class AnalysisProcessor(processor.ProcessorABC):
                 "4l_minmll_2z_0b_6l_2z",
                 "4l_minmll_2z_0b_6l_2z_mh150l",
                 "4l_minmll_2z_0b_6l_3z",
+
+                "6l_other",
+                "6l_other_mll",
+                "6l_other_mll_0b",
 
             ]
         }

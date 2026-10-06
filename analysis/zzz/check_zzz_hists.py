@@ -34,39 +34,55 @@ CLR_LST = {
 
 
 CAT_LST = [
-    "all_events",
+    #"all_events",
+    #"6l",
+    #"g6l",
 
     #"4l",
     #"4l_minmll",
-    #"4l_minmll_2z",
+    "4l_minmll_2z",
     "4l_minmll_2z_0b",
 
-    "4l_minmll_2z_0b_4lx_0fj_met90l",
-    "4l_minmll_2z_2b_4lx",
+    #"4l_minmll_1z_2b", # ttZ CR
 
-    "4l_minmll_2z_0b_4lx_0fj",
-    "4l_minmll_2z_0b_4lx_0fj_met90",
-    "4l_minmll_2z_0b_4lx_0fj_met90_phimetzz",
-    "4l_minmll_2z_0b_4lx_1fj",
-    "4l_minmll_2z_0b_4lx_1fj_gpt0p5",
-    "4l_minmll_2z_0b_4lx_1fj_pn0p5",
+    #"4l_minmll_2z_0b_4lx_0fj_met90l",
+    #"4l_minmll_2z_2b_4lx",
 
-    "4l_minmll_2z_0b_5lx",
+    #"4l_minmll_2z_0b_4lx_0fj",
+    #"4l_minmll_2z_0b_4lx_0fj_met40",
+    ##"4l_minmll_2z_0b_4lx_0fj_met40_NNp7",
+    ##"4l_minmll_2z_0b_4lx_0fj_met40_NNp8",
+    ##"4l_minmll_2z_0b_4lx_0fj_met40_NNp9",
+    ##"4l_minmll_2z_0b_4lx_0fj_met40_NNp95",
+    #"4l_minmll_2z_0b_4lx_0fj_met40_NNp98",
+    #"4l_minmll_2z_0b_4lx_0fj_met40_NNp99",
 
-    "4l_minmll_2z_0b_6l",
-    "4l_minmll_2z_0b_6l_2z",
-    "4l_minmll_2z_0b_6l_2z_mh150l",
-    "4l_minmll_2z_0b_6l_3z",
+    #"4l_minmll_2z_0b_4lx_0fj_met90",
+    #"4l_minmll_2z_0b_4lx_0fj_met90_phimetzz",
+    #"4l_minmll_2z_0b_4lx_1fj",
+    #"4l_minmll_2z_0b_4lx_1fj_gpt0p5",
+    #"4l_minmll_2z_0b_4lx_1fj_pn0p5",
+
+    #"4l_minmll_2z_0b_5lx",
+
+    #"4l_minmll_2z_0b_6l",
+    #"4l_minmll_2z_0b_6l_2z",
+    #"4l_minmll_2z_0b_6l_2z_mh150l",
+    #"4l_minmll_2z_0b_6l_3z",
+
+    #"6l_other",
+    #"6l_other_mll",
+    #"6l_other_mll_0b",
 ]
 
 UNBLIND_CATS = [
     "all_events",
-
     "4l",
     "4l_minmll",
     "4l_minmll_2z",
     "4l_minmll_2z_0b",
-    "4l_minmll_2z_0b_4lx_0fj_met90l" # ZZ CR
+    "4l_minmll_2z_0b_4lx_0fj_met90l", # ZZ CR
+    "4l_minmll_1z_2b", # ttX CR
 ]
 
 
@@ -822,9 +838,11 @@ def print_yields(histo_dict,grp_dict,cat_lst,years_to_prepend,roundat=None,print
                 yld, err = yld_dict[cat][group_name]
                 #perr = 100*(err/yld) if yld else float("nan")
                 perr = 100*(err/yld) if (err is not None and yld) else float("nan")
-                err_str = np.round(err, 4) if err is not None else "None"
+                err_str = err if err is not None else "None"
+                #err_str = np.round(err, 4) if err is not None else "None"
                 #print(f"    {group_name}:  {yld} +- {err_str}")
-                print(f"    {group_name}:  {np.round(yld,roundat)} +- {err_str}")
+                print(f"    {group_name}:  {yld} +- {err_str}")
+                #print(f"    {group_name}:  {np.round(yld,roundat)} +- {err_str}")
                 #print(f"    {group_name}:  {np.round(yld,roundat)} +- {np.round(err,4)}")
                 #print(f"    {group_name}:  {np.round(yld,roundat)} +- {np.round(perr,2)}%")
             #print(f"    -> Metric: {np.round(yld_dict[cat]['metric'][0],3)}")
@@ -933,6 +951,7 @@ def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend,cat_lst,lepflav_bin=
 
             # Clean up a bit (rebin, regroup, and handle overflow)
             if var not in ["njets","nleps","nbtagsl","nbtagsm","nbtagst","njets_counts","nleps_counts","nfatjets","njets_forward","njets_tot","n_ll_sfos","abs_ch_sum_3l","l0_truth","l1_truth","l2_truth", "nlep_truth_real", "nlep_truth_fake", "abs_pdgid_sum"]:
+                #histo = plt_tools.rebin(histo,2)
                 histo = plt_tools.rebin(histo,6)
                 #histo = plt_tools.rebin(histo,12)
             #histo = plt_tools.group(histo,"process","process_grp",grouping_dict_mc)
@@ -948,7 +967,7 @@ def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend,cat_lst,lepflav_bin=
             histo_mc  = histo[{"process_grp":sample_group_names_lst_mc}]
             histo_sig = histo[{"process_grp":["Signal"]}]
             histo_bkg = plt_tools.group(histo,"process_grp","process_grp",{"Background": sample_group_names_lst_bkg})
-            if do_data: histo_dat = histo[{"process_grp":["Data"]}]
+            if do_data and (cat in UNBLIND_CATS): histo_dat = histo[{"process_grp":["Data"]}]
             else: histo_dat = None
 
             # Make the figure
@@ -1048,7 +1067,7 @@ def main():
     if args.make_plots:
         #make_plots(histo_dict,grp_dict,years_to_prepend,cat_lst,lepflav_bin="all",do_data=True) # mc_scale=110.84/109.95 for 2024 to 2025 scaling
         #make_plots(histo_dict,grp_dict,years_to_prepend,cat_lst,lepflav_bin="all",do_data=True, mc_scale=110.84/109.95) #, mc_scale=450/138)
-        make_plots(histo_dict,grp_dict,years_to_prepend,cat_lst,lepflav_bin="all",do_data=False) #, mc_scale=450/138)
+        make_plots(histo_dict,grp_dict,years_to_prepend,cat_lst,lepflav_bin="all",do_data=True) #, mc_scale=450/138)
         #make_plots(histo_dict,grp_dict,years_to_prepend,cat_lst,lepflav_bin="all",do_data=True, mc_scale=110.84/109.95)
 
 
