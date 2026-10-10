@@ -582,6 +582,11 @@ class AnalysisProcessor(processor.ProcessorABC):
         nbtagsm = ak.num(goodJets[isBtagJetsMedium])
         nbtagst = ak.num(goodJets[isBtagJetsTight])
 
+        # Central only (b tagging is not meaningful in the forward region)
+        nbtagsl_cent = ak.num(goodJets_central[goodJets_central.isLooseBTag])
+        nbtagsm_cent = ak.num(goodJets_central[goodJets_central.isMediumBTag])
+        nbtagst_cent = ak.num(goodJets_central[goodJets_central.isTightBTag])
+
 
         ######### Get variables we haven't already calculated #########
 
@@ -675,11 +680,11 @@ class AnalysisProcessor(processor.ProcessorABC):
         jbscore1_bscore = ak.fill_none(jbscore1.btagDeepFlavB,0)
 
         # mbb for jets with highest b tag score
-        goodJets_bscoreordered_upart = goodJets[ak.argsort(goodJets.btagUParTAK4B,axis=-1,ascending=False)]
+        goodJets_bscoreordered_upart = goodJets_central[ak.argsort(goodJets_central.btagUParTAK4B,axis=-1,ascending=False)]
         goodJets_bscoreordered_upart_padded = ak.pad_none(goodJets_bscoreordered_upart, 2)
         jup0 = goodJets_bscoreordered_upart_padded[:,0]
         jup1 = goodJets_bscoreordered_upart_padded[:,1]
-        mass_jjbscore = ak.where(njets>1, (jup0+jup1).mass, -1)
+        mass_jjbscore = ak.where(njets_central>1, (jup0+jup1).mass, -1)
 
         # Mjj max from any jets
         jjCentFwd_pairs = ak.combinations( goodJets_ptordered_padded, 2, fields=["j0", "j1"] )
@@ -1122,18 +1127,18 @@ class AnalysisProcessor(processor.ProcessorABC):
 
         # ZZbb
         is_mbbZ = (mass_jjbscore>40) & (mass_jjbscore<120)
-        selections.add("4l_minmll_2z_4lx_2j_0bl",      is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets>=2) & (nbtagsl==0))
-        selections.add("4l_minmll_2z_4lx_2j_2bl",      is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets>=2) & (nbtagsl>=2))
-        selections.add("4l_minmll_2z_4lx_2j_2bm",      is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets>=2) & (nbtagsm>=2))
-        selections.add("4l_minmll_2z_4lx_2j_2bt",      is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets>=2) & (nbtagst>=2))
-        selections.add("4l_minmll_2z_4lx_2j_0bl_onZ",  is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets>=2) & (nbtagsl==0) & is_mbbZ)
-        selections.add("4l_minmll_2z_4lx_2j_2bl_onZ",  is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets>=2) & (nbtagsl>=2) & is_mbbZ)
-        selections.add("4l_minmll_2z_4lx_2j_2bm_onZ",  is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets>=2) & (nbtagsm>=2) & is_mbbZ)
-        selections.add("4l_minmll_2z_4lx_2j_2bt_onZ",  is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets>=2) & (nbtagst>=2) & is_mbbZ)
-        selections.add("4l_minmll_2z_4lx_2j_0bl_offZ", is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets>=2) & (nbtagsl==0) & ~is_mbbZ)
-        selections.add("4l_minmll_2z_4lx_2j_2bl_offZ", is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets>=2) & (nbtagsl>=2) & ~is_mbbZ)
-        selections.add("4l_minmll_2z_4lx_2j_2bm_offZ", is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets>=2) & (nbtagsm>=2) & ~is_mbbZ)
-        selections.add("4l_minmll_2z_4lx_2j_2bt_offZ", is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets>=2) & (nbtagst>=2) & ~is_mbbZ)
+        selections.add("4l_minmll_2z_4lx_2j_0bl",      is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets_central>=2) & (nbtagsl_cent==0))
+        selections.add("4l_minmll_2z_4lx_2j_2bl",      is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets_central>=2) & (nbtagsl_cent>=2))
+        selections.add("4l_minmll_2z_4lx_2j_2bm",      is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets_central>=2) & (nbtagsm_cent>=2))
+        selections.add("4l_minmll_2z_4lx_2j_2bt",      is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets_central>=2) & (nbtagst_cent>=2))
+        selections.add("4l_minmll_2z_4lx_2j_0bl_onZ",  is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets_central>=2) & (nbtagsl_cent==0) & is_mbbZ)
+        selections.add("4l_minmll_2z_4lx_2j_2bl_onZ",  is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets_central>=2) & (nbtagsl_cent>=2) & is_mbbZ)
+        selections.add("4l_minmll_2z_4lx_2j_2bm_onZ",  is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets_central>=2) & (nbtagsm_cent>=2) & is_mbbZ)
+        selections.add("4l_minmll_2z_4lx_2j_2bt_onZ",  is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets_central>=2) & (nbtagst_cent>=2) & is_mbbZ)
+        selections.add("4l_minmll_2z_4lx_2j_0bl_offZ", is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets_central>=2) & (nbtagsl_cent==0) & ~is_mbbZ)
+        selections.add("4l_minmll_2z_4lx_2j_2bl_offZ", is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets_central>=2) & (nbtagsl_cent>=2) & ~is_mbbZ)
+        selections.add("4l_minmll_2z_4lx_2j_2bm_offZ", is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets_central>=2) & (nbtagsm_cent>=2) & ~is_mbbZ)
+        selections.add("4l_minmll_2z_4lx_2j_2bt_offZ", is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets_central>=2) & (nbtagst_cent>=2) & ~is_mbbZ)
 
         selections.add("4l_minmll_2z_0b_4lx_0fj",                is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==4) & (nfatjets==0))
         selections.add("4l_minmll_2z_0b_4lx_0fj_met40",          is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==4) & (nfatjets==0) & (met.pt>40))
