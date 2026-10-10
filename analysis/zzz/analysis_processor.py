@@ -224,6 +224,8 @@ class AnalysisProcessor(processor.ProcessorABC):
             "bbscore1_bscore"  : axis.Regular(180, 0, 1, name="bbscore1_bscore", label="Btag score of b jet with second highest btag score"),
 
             "mass_jbscore0jbscore1" : axis.Regular(180, 0, 250, name="mass_jbscore0jbscore1", label="mjj of two leading (in score) jets"),
+
+            "mass_jjbscore" : axis.Regular(180, -5, 250, name="mass_jjbscore", label="mjj of the two highest UParTAK4 score jets"),
             "jbscore0_bscore"  : axis.Regular(180, 0, 1, name="jbscore0_bscore", label="Btag score of jet with highest btag score"),
             "jbscore1_bscore"  : axis.Regular(180, 0, 1, name="jbscore1_bscore", label="Btag score of jet with second highest btag score"),
 
@@ -672,6 +674,13 @@ class AnalysisProcessor(processor.ProcessorABC):
         jbscore0_bscore = ak.fill_none(jbscore0.btagDeepFlavB,0)
         jbscore1_bscore = ak.fill_none(jbscore1.btagDeepFlavB,0)
 
+        # mbb for jets with highest b tag score
+        goodJets_bscoreordered_upart = goodJets[ak.argsort(goodJets.btagUParTAK4B,axis=-1,ascending=False)]
+        goodJets_bscoreordered_upart_padded = ak.pad_none(goodJets_bscoreordered_upart, 2)
+        jup0 = goodJets_bscoreordered_upart_padded[:,0]
+        jup1 = goodJets_bscoreordered_upart_padded[:,1]
+        mass_jjbscore = ak.where(njets>1, (jup0+jup1).mass, -1)
+
         # Mjj max from any jets
         jjCentFwd_pairs = ak.combinations( goodJets_ptordered_padded, 2, fields=["j0", "j1"] )
         mjj_max_any     = ak.fill_none(ak.max((jjCentFwd_pairs.j0 + jjCentFwd_pairs.j1).mass,axis=-1),0)
@@ -955,6 +964,7 @@ class AnalysisProcessor(processor.ProcessorABC):
             "jbscore0_bscore" : jbscore0_bscore,
             "jbscore1_bscore" : jbscore1_bscore,
             "mass_jbscore0jbscore1" : mass_jbscore0jbscore1,
+            "mass_jjbscore" : mass_jjbscore,
 
             "mjj_max_any" : mjj_max_any,
             "mjj_max_cent" : mjj_max_cent,
@@ -1110,6 +1120,21 @@ class AnalysisProcessor(processor.ProcessorABC):
         selections.add("4l_minmll_2z_0b_4lx_0fj_met90l",          is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==4) & (nfatjets==0) & (met.pt<90))
         selections.add("4l_minmll_2z_2b_4lx",                     is_4l_minmll & (n_sfosz>=2) & (nbtagst>=2) & (nleps==4))
 
+        # ZZbb
+        is_mbbZ = (mass_jjbscore>40) & (mass_jjbscore<120)
+        selections.add("4l_minmll_2z_4lx_2j_0bl",      is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets>=2) & (nbtagsl==0))
+        selections.add("4l_minmll_2z_4lx_2j_2bl",      is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets>=2) & (nbtagsl>=2))
+        selections.add("4l_minmll_2z_4lx_2j_2bm",      is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets>=2) & (nbtagsm>=2))
+        selections.add("4l_minmll_2z_4lx_2j_2bt",      is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets>=2) & (nbtagst>=2))
+        selections.add("4l_minmll_2z_4lx_2j_0bl_onZ",  is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets>=2) & (nbtagsl==0) & is_mbbZ)
+        selections.add("4l_minmll_2z_4lx_2j_2bl_onZ",  is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets>=2) & (nbtagsl>=2) & is_mbbZ)
+        selections.add("4l_minmll_2z_4lx_2j_2bm_onZ",  is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets>=2) & (nbtagsm>=2) & is_mbbZ)
+        selections.add("4l_minmll_2z_4lx_2j_2bt_onZ",  is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets>=2) & (nbtagst>=2) & is_mbbZ)
+        selections.add("4l_minmll_2z_4lx_2j_0bl_offZ", is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets>=2) & (nbtagsl==0) & ~is_mbbZ)
+        selections.add("4l_minmll_2z_4lx_2j_2bl_offZ", is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets>=2) & (nbtagsl>=2) & ~is_mbbZ)
+        selections.add("4l_minmll_2z_4lx_2j_2bm_offZ", is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets>=2) & (nbtagsm>=2) & ~is_mbbZ)
+        selections.add("4l_minmll_2z_4lx_2j_2bt_offZ", is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets>=2) & (nbtagst>=2) & ~is_mbbZ)
+
         selections.add("4l_minmll_2z_0b_4lx_0fj",                is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==4) & (nfatjets==0))
         selections.add("4l_minmll_2z_0b_4lx_0fj_met40",          is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==4) & (nfatjets==0) & (met.pt>40))
         selections.add("4l_minmll_2z_0b_4lx_0fj_met40_NNp7",     is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==4) & (nfatjets==0) & (met.pt>40) & (dnn_score_zzz>0.7))
@@ -1161,6 +1186,20 @@ class AnalysisProcessor(processor.ProcessorABC):
 
                 "4l_minmll_2z_0b_4lx_0fj_met90l",
                 "4l_minmll_2z_2b_4lx",
+
+                # ZZbb study
+                "4l_minmll_2z_4lx_2j_0bl",
+                "4l_minmll_2z_4lx_2j_2bl",
+                "4l_minmll_2z_4lx_2j_2bm",
+                "4l_minmll_2z_4lx_2j_2bt",
+                "4l_minmll_2z_4lx_2j_0bl_onZ",
+                "4l_minmll_2z_4lx_2j_2bl_onZ",
+                "4l_minmll_2z_4lx_2j_2bm_onZ",
+                "4l_minmll_2z_4lx_2j_2bt_onZ",
+                "4l_minmll_2z_4lx_2j_0bl_offZ",
+                "4l_minmll_2z_4lx_2j_2bl_offZ",
+                "4l_minmll_2z_4lx_2j_2bm_offZ",
+                "4l_minmll_2z_4lx_2j_2bt_offZ",
 
                 "4l_minmll_2z_0b_4lx_0fj",
                 "4l_minmll_2z_0b_4lx_0fj_met40",
