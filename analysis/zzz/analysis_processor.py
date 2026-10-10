@@ -226,6 +226,9 @@ class AnalysisProcessor(processor.ProcessorABC):
             "mass_jbscore0jbscore1" : axis.Regular(180, 0, 250, name="mass_jbscore0jbscore1", label="mjj of two leading (in score) jets"),
 
             "mass_jjbscore" : axis.Regular(180, -5, 250, name="mass_jjbscore", label="mjj of the two highest UParTAK4 score jets"),
+            "dr_jjbscore"     : axis.Regular(180, -2, 6, name="dr_jjbscore", label="dR of the two highest UParTAK4 score jets"),
+            "pt_jjbscore"     : axis.Regular(180, -5, 400, name="pt_jjbscore", label="pt of the two highest UParTAK4 score jets"),
+            "mass_4ljjbscore" : axis.Regular(180, -5, 1000, name="mass_4ljjbscore", label="mass of (Z1 + Z2 + jj) system"),
             "jbscore0_bscore"  : axis.Regular(180, 0, 1, name="jbscore0_bscore", label="Btag score of jet with highest btag score"),
             "jbscore1_bscore"  : axis.Regular(180, 0, 1, name="jbscore1_bscore", label="Btag score of jet with second highest btag score"),
 
@@ -292,6 +295,8 @@ class AnalysisProcessor(processor.ProcessorABC):
             "nlep_truth_fake"   : axis.Regular(5, 0, 5, name="nlep_truth_fake",   label="Lep (truth, fake) multiplicity"),
             "pt_z1z2met"        : axis.Regular(180, 0, 360, name="pt_z1z2met", label="pt of (Z1 + Z2 + met) system"),
             "mass_z1z2z3"       : axis.Regular(180, 0, 1000, name="mass_z1z2z3", label="mass of (Z1 + Z2 + Z3) system"),
+            "mass_z1"           : axis.Regular(180, -4, 200, name="mass_z1", label="m(Z1) [GeV]"),
+            "mass_z2"           : axis.Regular(180, -4, 200, name="mass_z2", label="m(Z2) [GeV]"),
             "mass_z3cand"       : axis.Regular(180, -4, 200, name="mass_z3cand", label="m(third pair) [GeV]"),
             "mass_h_cand"       : axis.Regular(180, -5, 500, name="mass_h_cand", label="m(4l) Higgs candidate [GeV]"),
             "pt_lep_unpaired"   : axis.Regular(180, -4, 200, name="pt_lep_unpaired", label="pt of unpaired lepton after Z1 and Z2 selection (only relevant for 5l)"),
@@ -522,7 +527,7 @@ class AnalysisProcessor(processor.ProcessorABC):
         #cleanedJets = os_ec.get_cleaned_collection(l_vvh_t,jets) # Clean against leps
         #cleanedJets = os_ec.get_cleaned_collection(fatjets,cleanedJets,drcut=0.8) # Clean against fat jets
         cleanedJets = jets
-        goodJets = cleanedJets
+        goodJets = cleanedJets[(abs(cleanedJets.eta) <= 2.4)] # TEST
         goodJets_central = cleanedJets[(abs(cleanedJets.eta) <= 2.4)]
         goodJets_forward = cleanedJets[(abs(cleanedJets.eta) > 2.4)]
 
@@ -685,6 +690,8 @@ class AnalysisProcessor(processor.ProcessorABC):
         jup0 = goodJets_bscoreordered_upart_padded[:,0]
         jup1 = goodJets_bscoreordered_upart_padded[:,1]
         mass_jjbscore = ak.where(njets_central>1, (jup0+jup1).mass, -1)
+        dr_jjbscore = ak.fill_none(jup0.delta_r(jup1), -1)
+        pt_jjbscore = ak.fill_none((jup0+jup1).pt, -1)
 
         # Mjj max from any jets
         jjCentFwd_pairs = ak.combinations( goodJets_ptordered_padded, 2, fields=["j0", "j1"] )
@@ -784,10 +791,16 @@ class AnalysisProcessor(processor.ProcessorABC):
         leps_minus_z1z2 = leps_minus_z1[(leps_minus_z1.lep_idx != ak.fill_none(z2_i0, -1)) & (leps_minus_z1.lep_idx != ak.fill_none(z2_i1, -1))]
         Z3, z3_l0, z3_l1, z3_i0, z3_i1 = best_sfos_pair(leps_minus_z1z2)
 
+        mass_z1 = ak.fill_none(Z1.mass, -1)
+        mass_z2 = ak.fill_none(Z2.mass, -1)
+
         # The two leptons beyond Z1 and Z2 (the third pair). On Z in the 6l 3Z channel,
         # outside the window in the 6l 2Z channel. Exists only for 6l with both Z1 and Z2 found.
         has_pair3 = (ak.num(leps_minus_z1z2, axis=1) == 2)
         mass_z3cand = ak.fill_none(ak.mask(leps_minus_z1z2.sum(axis=1).mass, has_pair3), -1)
+
+        # Full ZZZ -> 4l + bb system: the two leptonic Z candidates plus the bb pair
+        mass_4ljjbscore = ak.fill_none((Z1+Z2+jup0+jup1).mass, -1)
 
         # The single lepton left unpaired once Z1 and Z2 have claimed theirs (5l channel).
         # Prompt and hard when signal has lost a 6th lepton to acceptance; soft when it is
@@ -970,6 +983,9 @@ class AnalysisProcessor(processor.ProcessorABC):
             "jbscore1_bscore" : jbscore1_bscore,
             "mass_jbscore0jbscore1" : mass_jbscore0jbscore1,
             "mass_jjbscore" : mass_jjbscore,
+            "dr_jjbscore" : dr_jjbscore,
+            "pt_jjbscore" : pt_jjbscore,
+            "mass_4ljjbscore" : mass_4ljjbscore,
 
             "mjj_max_any" : mjj_max_any,
             "mjj_max_cent" : mjj_max_cent,
@@ -1032,6 +1048,8 @@ class AnalysisProcessor(processor.ProcessorABC):
             "mt2_zsub"  : mt2_zsub,
             "pt_z1z2met" : (Z1 + Z2 + met4).pt,
             "mass_z1z2z3" : l_vvh_t.sum(axis=1).mass,
+            "mass_z1" : mass_z1,
+            "mass_z2" : mass_z2,
             "mass_z3cand" : mass_z3cand,
             "mass_h_cand" : mass_h_cand,
             "pt_lep_unpaired" : pt_lep_unpaired,
@@ -1129,14 +1147,17 @@ class AnalysisProcessor(processor.ProcessorABC):
         is_mbbZ = (mass_jjbscore>40) & (mass_jjbscore<120)
         selections.add("4l_minmll_2z_4lx_2j_0bl",      is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets_central>=2) & (nbtagsl_cent==0))
         selections.add("4l_minmll_2z_4lx_2j_2bl",      is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets_central>=2) & (nbtagsl_cent>=2))
+        selections.add("4l_minmll_2z_4lx_2j_2blm",      is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets_central>=2) & (nbtagsl_cent>=2) & (nbtagsm_cent>=1))
         selections.add("4l_minmll_2z_4lx_2j_2bm",      is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets_central>=2) & (nbtagsm_cent>=2))
         selections.add("4l_minmll_2z_4lx_2j_2bt",      is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets_central>=2) & (nbtagst_cent>=2))
         selections.add("4l_minmll_2z_4lx_2j_0bl_onZ",  is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets_central>=2) & (nbtagsl_cent==0) & is_mbbZ)
         selections.add("4l_minmll_2z_4lx_2j_2bl_onZ",  is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets_central>=2) & (nbtagsl_cent>=2) & is_mbbZ)
+        selections.add("4l_minmll_2z_4lx_2j_2blm_onZ",  is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets_central>=2) & (nbtagsl_cent>=2) & (nbtagsm_cent>=1) & is_mbbZ)
         selections.add("4l_minmll_2z_4lx_2j_2bm_onZ",  is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets_central>=2) & (nbtagsm_cent>=2) & is_mbbZ)
         selections.add("4l_minmll_2z_4lx_2j_2bt_onZ",  is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets_central>=2) & (nbtagst_cent>=2) & is_mbbZ)
         selections.add("4l_minmll_2z_4lx_2j_0bl_offZ", is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets_central>=2) & (nbtagsl_cent==0) & ~is_mbbZ)
         selections.add("4l_minmll_2z_4lx_2j_2bl_offZ", is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets_central>=2) & (nbtagsl_cent>=2) & ~is_mbbZ)
+        selections.add("4l_minmll_2z_4lx_2j_2blm_offZ", is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets_central>=2) & (nbtagsl_cent>=2) & (nbtagsm_cent>=1) & ~is_mbbZ)
         selections.add("4l_minmll_2z_4lx_2j_2bm_offZ", is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets_central>=2) & (nbtagsm_cent>=2) & ~is_mbbZ)
         selections.add("4l_minmll_2z_4lx_2j_2bt_offZ", is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets_central>=2) & (nbtagst_cent>=2) & ~is_mbbZ)
 
@@ -1195,14 +1216,17 @@ class AnalysisProcessor(processor.ProcessorABC):
                 # ZZbb study
                 "4l_minmll_2z_4lx_2j_0bl",
                 "4l_minmll_2z_4lx_2j_2bl",
+                "4l_minmll_2z_4lx_2j_2blm",
                 "4l_minmll_2z_4lx_2j_2bm",
                 "4l_minmll_2z_4lx_2j_2bt",
                 "4l_minmll_2z_4lx_2j_0bl_onZ",
                 "4l_minmll_2z_4lx_2j_2bl_onZ",
+                "4l_minmll_2z_4lx_2j_2blm_onZ",
                 "4l_minmll_2z_4lx_2j_2bm_onZ",
                 "4l_minmll_2z_4lx_2j_2bt_onZ",
                 "4l_minmll_2z_4lx_2j_0bl_offZ",
                 "4l_minmll_2z_4lx_2j_2bl_offZ",
+                "4l_minmll_2z_4lx_2j_2blm_offZ",
                 "4l_minmll_2z_4lx_2j_2bm_offZ",
                 "4l_minmll_2z_4lx_2j_2bt_offZ",
 
