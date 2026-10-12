@@ -25,6 +25,13 @@ warnings.filterwarnings(
     module="coffea.nanoevents.schemas.nanoaod"
 )
 
+
+# SM ABCD working points for 3l |Sum q| = 3, one per run
+ABCD_WP_3LCHSUM3 = {
+    "run2" : {"x_cut" : 0.07, "y_cut" : 0.40},
+    "run3" : {"x_cut" : 0.75, "y_cut" : 0.87},
+}
+
 def to_vec(obj,with_name="PtEtaPhiMCollection"):
     return ak.zip({
         "pt": obj.pt,
@@ -381,6 +388,7 @@ class AnalysisProcessor(processor.ProcessorABC):
         self._models[model_key].eval()
 
     def _run_abcd_inference(self, events, dense_variables_dict, model):
+        model_key = model   # overridden for models split by era
         if model == "2lH":
             scaler_path = ewkcoffea_path("data/vvh_abcd_models/single_abcdisco_2l1fj_forH_scaler_params.json")
             checkpoint_path = ewkcoffea_path("data/vvh_abcd_models/single_abcdisco_2l1fj_forH.ckpt")
@@ -391,24 +399,27 @@ class AnalysisProcessor(processor.ProcessorABC):
             scaler_path = ewkcoffea_path("data/vvh_abcd_models/single_abcdisco_3lChsum1_scaler_params.json")
             checkpoint_path = ewkcoffea_path("data/vvh_abcd_models/single_abcdisco_3lChsum1.ckpt")
         elif model == "3lChsum3":
-            scaler_path = ewkcoffea_path("data/vvh_abcd_models/single_abcdisco_3lChsum3_total_v1_scaler_params.json")
-            checkpoint_path = ewkcoffea_path("data/vvh_abcd_models/single_abcdisco_3lChsum3_total_v1.ckpt")
+            # Trained separately per run, so pick the checkpoint matching the era
+            run_tag = "r3_v1" if ak.any(events.isRun3) else "r2_v1"
+            model_key = f"{model}_{run_tag}"
+            scaler_path = ewkcoffea_path(f"data/vvh_abcd_models/single_abcdisco_3lChsum3_{run_tag}_scaler_params.json")
+            checkpoint_path = ewkcoffea_path(f"data/vvh_abcd_models/single_abcdisco_3lChsum3_{run_tag}.ckpt")
         else:
             raise Exception(f"Unknown model {model}")
 
         if not hasattr(self, '_models'):
             self._models = {}
-        if model not in self._models:
-            self._load_model(checkpoint_path, model)
+        if model_key not in self._models:
+            self._load_model(checkpoint_path, model_key)
 
         if not hasattr(self, '_scaler_params_dict'):
             self._scaler_params_dict = {}
-        if model not in self._scaler_params_dict:
+        if model_key not in self._scaler_params_dict:
             import json
             with open(scaler_path) as f:
-                self._scaler_params_dict[model] = json.load(f)
+                self._scaler_params_dict[model_key] = json.load(f)
 
-        scaler_params = self._scaler_params_dict[model]
+        scaler_params = self._scaler_params_dict[model_key]
 
         def scale(name, values):
             params = scaler_params[name]
@@ -428,7 +439,7 @@ class AnalysisProcessor(processor.ProcessorABC):
 
         features_tensor = torch.from_numpy(feature_matrix).to(self._device)
         with torch.no_grad():
-            logits = self._models[model](features_tensor)
+            logits = self._models[model_key](features_tensor)
             if logits.ndim == 1:
                 logits = logits.unsqueeze(-1)
             scores = torch.sigmoid(logits).cpu().numpy()[:, 0]
@@ -1072,7 +1083,10 @@ class AnalysisProcessor(processor.ProcessorABC):
 
         A_2lH, B_2lH, C_2lH, D_2lH = get_abcd_region_masks(x_var=dnn_score_2lH, y_var=vbsjets.mjj, x_cut=0.54, y_cut=1300.0)
         A_3lChsum1, B_3lChsum1, C_3lChsum1, D_3lChsum1 = get_abcd_region_masks(x_var=dnn_score_3lChsum1, y_var=vbsjets.score, x_cut=0.71, y_cut=0.61)
-        A_3lChsum3, B_3lChsum3, C_3lChsum3, D_3lChsum3 = get_abcd_region_masks(x_var=dnn_score_3lChsum3, y_var=vbsjets.score, x_cut=0.480, y_cut=0.580)
+        # Working point differs per run
+        x_cut_3lChsum3 = ak.where(events.isRun3, ABCD_WP_3LCHSUM3["run3"]["x_cut"], ABCD_WP_3LCHSUM3["run2"]["x_cut"])
+        y_cut_3lChsum3 = ak.where(events.isRun3, ABCD_WP_3LCHSUM3["run3"]["y_cut"], ABCD_WP_3LCHSUM3["run2"]["y_cut"])
+        A_3lChsum3, B_3lChsum3, C_3lChsum3, D_3lChsum3 = get_abcd_region_masks(x_var=dnn_score_3lChsum3, y_var=vbsjets.score, x_cut=x_cut_3lChsum3, y_cut=y_cut_3lChsum3)
 
         selections.add("all_events", pass_through)
 
