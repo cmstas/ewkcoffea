@@ -388,7 +388,6 @@ class AnalysisProcessor(processor.ProcessorABC):
         self._models[model_key].eval()
 
     def _run_abcd_inference(self, events, dense_variables_dict, model):
-        model_key = model   # overridden for models split by era
         if model == "2lH":
             scaler_path = ewkcoffea_path("data/vvh_abcd_models/single_abcdisco_2l1fj_forH_scaler_params.json")
             checkpoint_path = ewkcoffea_path("data/vvh_abcd_models/single_abcdisco_2l1fj_forH.ckpt")
@@ -401,7 +400,6 @@ class AnalysisProcessor(processor.ProcessorABC):
         elif model == "3lChsum3":
             # Trained separately per run, so pick the checkpoint matching the era
             run_tag = "r3_v1" if ak.any(events.isRun3) else "r2_v1"
-            model_key = f"{model}_{run_tag}"
             scaler_path = ewkcoffea_path(f"data/vvh_abcd_models/single_abcdisco_3lChsum3_{run_tag}_scaler_params.json")
             checkpoint_path = ewkcoffea_path(f"data/vvh_abcd_models/single_abcdisco_3lChsum3_{run_tag}.ckpt")
         else:
@@ -409,17 +407,17 @@ class AnalysisProcessor(processor.ProcessorABC):
 
         if not hasattr(self, '_models'):
             self._models = {}
-        if model_key not in self._models:
-            self._load_model(checkpoint_path, model_key)
+        if model not in self._models:
+            self._load_model(checkpoint_path, model)
 
         if not hasattr(self, '_scaler_params_dict'):
             self._scaler_params_dict = {}
-        if model_key not in self._scaler_params_dict:
+        if model not in self._scaler_params_dict:
             import json
             with open(scaler_path) as f:
-                self._scaler_params_dict[model_key] = json.load(f)
+                self._scaler_params_dict[model] = json.load(f)
 
-        scaler_params = self._scaler_params_dict[model_key]
+        scaler_params = self._scaler_params_dict[model]
 
         def scale(name, values):
             params = scaler_params[name]
@@ -439,7 +437,7 @@ class AnalysisProcessor(processor.ProcessorABC):
 
         features_tensor = torch.from_numpy(feature_matrix).to(self._device)
         with torch.no_grad():
-            logits = self._models[model_key](features_tensor)
+            logits = self._models[model](features_tensor)
             if logits.ndim == 1:
                 logits = logits.unsqueeze(-1)
             scores = torch.sigmoid(logits).cpu().numpy()[:, 0]
