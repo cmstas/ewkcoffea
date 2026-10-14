@@ -10,8 +10,8 @@ import matplotlib.pyplot as plt
 import ewkcoffea.modules.plotting_tools as plt_tools
 import check_vvh_hists as cvh
 
-HTML_PC = "/home/users/kmohrman/ref_scripts/html_stuff/index.php"
-#HTML_PC = "/home/k.mohrman/ref_scirpts/html_stuff/index.php"
+#HTML_PC = "/home/users/kmohrman/ref_scripts/html_stuff/index.php"
+HTML_PC = "/home/k.mohrman/ref_scirpts/html_stuff/index.php"
 
 
 def get_yield(h2d, score_slice, mjj_slice):
@@ -1318,16 +1318,25 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("pkl_file_path", help="The path to the pkl file")
     args = parser.parse_args()
-    grp_dict = cvh.GRP_DICT_FULL_R2
 
     #########################################################
     ############# NOTE: Configure your run here #############
 
-    cat_for_dnn    = "3l_chsum3" # 3l_chsum1_mjj500 3l_chsum1_nSFOS0_VBS0p2 2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5
-    abcd_hist_name = "abcd2d_3lChsum3" # abcd2d_3lChsum1 abcd2d_2lH abcd2d_3lChsum1
-    constrain_var  = "vbs_score" # vbs_mjj
-    abcdbkg_names  = ["ttbar", "single-t", "ttX", "rare-top", "DY", "VV", "ewkVV", "VH", "VVV"]
-    #abcdbkg_names  = ["ttbar", "single-t", "ttX", "rare-top", "DY", "ewkV", "VV", "ewkVV", "VH", "VVV"]
+    #grp_dict       = cvh.GRP_DICT_FULL_R2
+    grp_dict       = cvh.GRP_DICT_FULL_R3
+
+    # 2l
+    #cat_for_dnn    = "2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5"
+    #abcd_hist_name = "abcd2d_2lH"
+    #constrain_var  = "vbs_mjj"
+
+    # 3l
+    cat_for_dnn    = "3l_chsum1_mjj500"
+    abcd_hist_name = "abcd2d_3lChsum1"
+    constrain_var  = "vbs_score"
+
+    abcdbkg_names  = ["ttbar", "single-t", "ttX", "rare-top", "DY", "VV", "VH", "VVV"] # ewkV
+
     guardrails = {
         "min_significance" : 0.0,
         "max_closure_sd"   : 1.2,
