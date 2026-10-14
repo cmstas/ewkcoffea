@@ -1,0 +1,226 @@
+{
+  "_training_features": [
+    "abs_pdgid_sum",
+    "absdphi_FJ0lepmet",
+    "absdphi_l0l1",
+    "absdphi_lepmet",
+    "dr_lepmet",
+    "dr_lj_max",
+    "dr_lj_min",
+    "dr_wlepmet",
+    "l0_eta",
+    "l0_phi",
+    "l0_pt",
+    "l1_eta",
+    "l1_phi",
+    "l1_pt",
+    "l2_eta",
+    "l2_phi",
+    "l2_pt",
+    "mass_b0b1",
+    "mass_l0l1",
+    "met",
+    "metphi",
+    "mlb_max",
+    "mlb_min",
+    "mll_min_afos",
+    "mll_z",
+    "pt_z",
+    "mt_wlep",
+    "n_ll_sfos",
+    "nbtagst",
+    "nfatjets",
+    "njets",
+    "njets_central",
+    "njets_forward",
+    "scalarptsum_lep",
+    "scalarptsum_lepmet",
+    "scalarptsum_lepmetalljets"
+  ],
+  "_constraint_var": "vbs_score",
+  "abs_pdgid_sum": {
+    "transform": "minmax",
+    "min": 33.0,
+    "max": 39.0
+  },
+  "absdphi_FJ0lepmet": {
+    "transform": "minmax",
+    "min": 0.0022410652600228786,
+    "max": 3.141577959060669
+  },
+  "absdphi_l0l1": {
+    "transform": "minmax",
+    "min": 0.0,
+    "max": 3.1415884494781494
+  },
+  "absdphi_lepmet": {
+    "transform": "minmax",
+    "min": 9.775161743164062e-06,
+    "max": 3.141584873199463
+  },
+  "dr_lepmet": {
+    "transform": "minmax",
+    "min": 0.002513137413188815,
+    "max": 9.271223068237305
+  },
+  "dr_lj_max": {
+    "transform": "minmax",
+    "min": 2.027578115463257,
+    "max": 8.091114044189453
+  },
+  "dr_lj_min": {
+    "transform": "minmax",
+    "min": 0.40000107884407043,
+    "max": 4.865716934204102
+  },
+  "dr_wlepmet": {
+    "transform": "minmax",
+    "min": -1.0,
+    "max": 4.014218330383301
+  },
+  "l0_eta": {
+    "transform": "minmax",
+    "min": -2.5244140625,
+    "max": 2.53173828125
+  },
+  "l0_phi": {
+    "transform": "minmax",
+    "min": -3.1416015625,
+    "max": 3.1416015625
+  },
+  "l0_pt": {
+    "transform": "log",
+    "min": 3.2188977972830557,
+    "max": 7.591779304794958
+  },
+  "l1_eta": {
+    "transform": "minmax",
+    "min": -2.5283203125,
+    "max": 2.525390625
+  },
+  "l1_phi": {
+    "transform": "minmax",
+    "min": -3.1416015625,
+    "max": 3.1416015625
+  },
+  "l1_pt": {
+    "transform": "log",
+    "min": 2.708092924798915,
+    "max": 6.975023226142133
+  },
+  "l2_eta": {
+    "transform": "minmax",
+    "min": -2.66552734375,
+    "max": 2.583984375
+  },
+  "l2_phi": {
+    "transform": "minmax",
+    "min": -3.1416015625,
+    "max": 3.1416015625
+  },
+  "l2_pt": {
+    "transform": "log",
+    "min": 2.3025877632785665,
+    "max": 6.57989780603727
+  },
+  "mass_b0b1": {
+    "transform": "log",
+    "min": 2.3535142845441435,
+    "max": 7.9437791403708315
+  },
+  "mass_l0l1": {
+    "transform": "log",
+    "min": -2.0794415416798357,
+    "max": 8.046703115749624
+  },
+  "met": {
+    "transform": "log",
+    "min": -4.576307747930118,
+    "max": 7.64136716367923
+  },
+  "metphi": {
+    "transform": "minmax",
+    "min": -3.1416015625,
+    "max": 3.1416015625
+  },
+  "mlb_max": {
+    "transform": "log",
+    "min": 3.172729383593317,
+    "max": 8.130509825477947
+  },
+  "mlb_min": {
+    "transform": "log",
+    "min": 1.9518142536670156,
+    "max": 7.415122708401235
+  },
+  "mll_min_afos": {
+    "transform": "log",
+    "min": 2.484920239554668,
+    "max": 7.486343887374823
+  },
+  "mll_z": {
+    "transform": "log",
+    "min": 2.484967683081681,
+    "max": 7.806746053953907
+  },
+  "pt_z": {
+    "transform": "log",
+    "min": -4.155247736243521,
+    "max": 7.727162699798341
+  },
+  "mt_wlep": {
+    "transform": "log",
+    "min": -7.6830683719752,
+    "max": 7.775700977093806
+  },
+  "n_ll_sfos": {
+    "transform": "minmax",
+    "min": 0.0,
+    "max": 2.0
+  },
+  "nbtagst": {
+    "transform": "minmax",
+    "min": 0.0,
+    "max": 5.0
+  },
+  "nfatjets": {
+    "transform": "minmax",
+    "min": 0.0,
+    "max": 3.0
+  },
+  "njets": {
+    "transform": "minmax",
+    "min": 2.0,
+    "max": 13.0
+  },
+  "njets_central": {
+    "transform": "minmax",
+    "min": 0.0,
+    "max": 11.0
+  },
+  "njets_forward": {
+    "transform": "minmax",
+    "min": 0.0,
+    "max": 10.0
+  },
+  "scalarptsum_lep": {
+    "transform": "log",
+    "min": 3.921860626398699,
+    "max": 7.954731046878224
+  },
+  "scalarptsum_lepmet": {
+    "transform": "log",
+    "min": 4.052929299046325,
+    "max": 8.256290285401965
+  },
+  "scalarptsum_lepmetalljets": {
+    "transform": "log",
+    "min": 4.65224597338948,
+    "max": 8.61392999870007
+  },
+  "vbs_score": {
+    "transform": "none",
+    "min": 0.004987434949725866,
+    "max": 0.9943589568138123
+  }
+}
