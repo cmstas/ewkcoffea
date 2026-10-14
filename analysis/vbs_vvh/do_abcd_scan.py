@@ -10,8 +10,8 @@ import matplotlib.pyplot as plt
 import ewkcoffea.modules.plotting_tools as plt_tools
 import check_vvh_hists as cvh
 
-HTML_PC = "/home/users/kmohrman/ref_scripts/html_stuff/index.php"
-#HTML_PC = "/home/k.mohrman/ref_scirpts/html_stuff/index.php"
+#HTML_PC = "/home/users/kmohrman/ref_scripts/html_stuff/index.php"
+HTML_PC = "/home/k.mohrman/ref_scirpts/html_stuff/index.php"
 
 
 def get_yield(h2d, score_slice, mjj_slice):
@@ -48,7 +48,7 @@ def eval_at_fixed_cut(histo_sig, histo_abcdbkg, histo_otherbkg, score_cut, label
 def write_single_datacard(A_sig, A_bkg, score_cut, mjj_cut, output_path):
     A_obs = A_sig + A_bkg
     with open(output_path, "w") as f:
-        f.write(f"# Counting experiment datacard: score>{score_cut:.4f}, constrainvar>{mjj_cut:.1f}\n")
+        f.write(f"# Counting experiment datacard: score>{score_cut:.4f}, constrainvar>{mjj_cut:.4f}\n")
         f.write( "imax 1  number of channels\n")
         f.write( "jmax 1  number of backgrounds\n")
         f.write( "kmax 0  number of nuisance parameters\n")
@@ -725,7 +725,7 @@ def write_abcd_datacards(histo_sig, histo_abcdbkg, histo_otherbkg, histo_dat, re
         closure_sd   = (abcd_est - A_abcd) / denom if denom > 0 else np.nan
         fpath = os.path.join(output_dir, f"{fname_base}.txt")
         with open(fpath, "w") as f:
-            f.write(f"# Counting experiment datacard: rank={rank}, score>{score_cut:.4f}, constrainvar>{mjj_cut:.1f}\n")
+            f.write(f"# Counting experiment datacard: rank={rank}, score>{score_cut:.4f}, constrainvar>{mjj_cut:.4f}\n")
             f.write(f"# S/sqrt(B_total)={sig_val:.4f}\n")
             f.write(f"# A_abcd_true={A_abcd:.2f}, A_abcd_est={abcd_est:.2f}, A_other={A_other:.2f}\n\n")
             f.write( "# Details:\n")
@@ -1318,16 +1318,25 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("pkl_file_path", help="The path to the pkl file")
     args = parser.parse_args()
-    grp_dict = cvh.GRP_DICT_FULL_R2
 
     #########################################################
     ############# NOTE: Configure your run here #############
 
-    cat_for_dnn    = "3l_chsum3" # 3l_chsum1_mjj500 3l_chsum1_nSFOS0_VBS0p2 2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5
-    abcd_hist_name = "abcd2d_3lChsum3" # abcd2d_3lChsum1 abcd2d_2lH abcd2d_3lChsum1
-    constrain_var  = "vbs_score" # vbs_mjj
-    abcdbkg_names  = ["ttbar", "single-t", "ttX", "rare-top", "DY", "VV", "ewkVV", "VH", "VVV"]
-    #abcdbkg_names  = ["ttbar", "single-t", "ttX", "rare-top", "DY", "ewkV", "VV", "ewkVV", "VH", "VVV"]
+    #grp_dict       = cvh.GRP_DICT_FULL_R2
+    grp_dict       = cvh.GRP_DICT_FULL_R3
+
+    # 2l
+    #cat_for_dnn    = "2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5"
+    #abcd_hist_name = "abcd2d_2lH"
+    #constrain_var  = "vbs_mjj"
+
+    # 3l
+    cat_for_dnn    = "3l_chsum1_mjj500"
+    abcd_hist_name = "abcd2d_3lChsum1"
+    constrain_var  = "vbs_score"
+
+    abcdbkg_names  = ["ttbar", "single-t", "ttX", "rare-top", "DY", "VV", "VH", "VVV"] # ewkV
+
     guardrails = {
         "min_significance" : 0.0,
         "max_closure_sd"   : 1.2,
