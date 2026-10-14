@@ -48,7 +48,7 @@ def eval_at_fixed_cut(histo_sig, histo_abcdbkg, histo_otherbkg, score_cut, label
 def write_single_datacard(A_sig, A_bkg, score_cut, mjj_cut, output_path):
     A_obs = A_sig + A_bkg
     with open(output_path, "w") as f:
-        f.write(f"# Counting experiment datacard: score>{score_cut:.4f}, constrainvar>{mjj_cut:.1f}\n")
+        f.write(f"# Counting experiment datacard: score>{score_cut:.4f}, constrainvar>{mjj_cut:.4f}\n")
         f.write( "imax 1  number of channels\n")
         f.write( "jmax 1  number of backgrounds\n")
         f.write( "kmax 0  number of nuisance parameters\n")
@@ -725,7 +725,7 @@ def write_abcd_datacards(histo_sig, histo_abcdbkg, histo_otherbkg, histo_dat, re
         closure_sd   = (abcd_est - A_abcd) / denom if denom > 0 else np.nan
         fpath = os.path.join(output_dir, f"{fname_base}.txt")
         with open(fpath, "w") as f:
-            f.write(f"# Counting experiment datacard: rank={rank}, score>{score_cut:.4f}, constrainvar>{mjj_cut:.1f}\n")
+            f.write(f"# Counting experiment datacard: rank={rank}, score>{score_cut:.4f}, constrainvar>{mjj_cut:.4f}\n")
             f.write(f"# S/sqrt(B_total)={sig_val:.4f}\n")
             f.write(f"# A_abcd_true={A_abcd:.2f}, A_abcd_est={abcd_est:.2f}, A_other={A_other:.2f}\n\n")
             f.write( "# Details:\n")

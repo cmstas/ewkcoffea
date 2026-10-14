@@ -28,9 +28,9 @@ warnings.filterwarnings(
 
 # SM ABCD working points, per channel and per run
 ABCD_WP = {
-    "2lH"      : {"r2" : {"x_cut" : 0.54,  "y_cut" : 1300.0}, "r3" : {"x_cut" : 0.54,  "y_cut" : 1300.0}},
-    "3lChsum1" : {"r2" : {"x_cut" : 0.71,  "y_cut" : 0.61},   "r3" : {"x_cut" : 0.71,  "y_cut" : 0.61}},
-    "3lChsum3" : {"r2" : {"x_cut" : 0.07,  "y_cut" : 0.40},   "r3" : {"x_cut" : 0.75,  "y_cut" : 0.87}},
+    "2lH"      : {"r2" : {"x_cut" : 0.52, "y_cut" : 1200.0}, "r3" : {"x_cut" : 0.54, "y_cut" : 800.0}},
+    "3lChsum1" : {"r2" : {"x_cut" : 0.73, "y_cut" : 0.6},    "r3" : {"x_cut" : 0.96, "y_cut" : 0.9}},
+    "3lChsum3" : {"r2" : {"x_cut" : 0.07, "y_cut" : 0.40},   "r3" : {"x_cut" : 0.75, "y_cut" : 0.87}},
 }
 
 def to_vec(obj,with_name="PtEtaPhiMCollection"):
