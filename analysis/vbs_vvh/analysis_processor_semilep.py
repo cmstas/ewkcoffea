@@ -323,7 +323,8 @@ class AnalysisProcessor(processor.ProcessorABC):
                 hist.axis.StrCategory([], growth=True, name="category", label="category"),
                 hist.axis.StrCategory([], growth=True, name="systematic", label="systematic"),
                 #hist.axis.StrCategory([], growth=True, name="year", label="year"),
-                hist.axis.Integer(0,40, growth=True, name="lepflav", label="lepflav"),
+                #hist.axis.Integer(0,40, growth=True, name="lepflav", label="lepflav"),
+                hist.axis.IntCategory([0,1,2,3,4,5,6], growth=True, name="lepflav", label="n muons"),
                 self._dense_axes_dict[dense_axis_name],
                 storage="weight", # Keeps track of sumw2
                 name="Counts",
@@ -823,6 +824,7 @@ class AnalysisProcessor(processor.ProcessorABC):
 
         # NOTE Only defind for exactly 2 and 3 lep
         abs_pdgid_sum = ak.fill_none(ak.where(nleps==3,abs(l0.pdgId) + abs(l1.pdgId) + abs(l2.pdgId),abs(l0.pdgId) + abs(l1.pdgId)),0)
+        n_mu_sel = ak.fill_none(ak.sum(abs(l_vvh_t.pdgId)==13, axis=1), 0)
 
 
         # Put the variables we'll plot into a dictionary for easy access later
@@ -1394,7 +1396,8 @@ class AnalysisProcessor(processor.ProcessorABC):
                         "category"      : sr_cat,
                         "systematic"    : wgt_fluct,
                         #"year"          : events.year[all_cuts_mask],
-                        "lepflav"       : abs_pdgid_sum[all_cuts_mask],
+                        #"lepflav"       : abs_pdgid_sum[all_cuts_mask],
+                        "lepflav"       : n_mu_sel[all_cuts_mask],
                     }
 
                     self.accumulator[dense_axis_name].fill(**axes_fill_info_dict)
