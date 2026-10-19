@@ -448,6 +448,13 @@ class AnalysisProcessor(processor.ProcessorABC):
     # Main function: run on a given chunk
     def process(self, events):
 
+        # DY stitching: drop from the inclusive DY the phase space covered by the binned samples
+        if events.shortname[0] in ["DYto2E-2Jets_Bin-MLL-50_TuneCP5_13p6TeV", "DYto2Mu-2Jets_Bin-MLL-50_TuneCP5_13p6TeV", "DYto2Tau-2Jets_Bin-MLL-50_TuneCP5_13p6TeV"]:
+            events = events[~((events.LHE.NpNLO >= 1) & (events.LHE.Vpt >= 40))] # Run 3: 1J/2J x PTLL>40 bins
+        if events.shortname[0] == "DYJetsToLL_M-50_TuneCP5_13TeV":
+            events = events[events.LHE.HT < 70] # Run 2: HT>70 bins
+        if len(events) == 0: return self.accumulator
+
         # Pre requirement: all events must have at least 2 jets
         #events = events[pass_njet_any_variation(events, njet_min=2)] # NOTE use this once we have JEC variations in place
         events = events[ak.num(events.Jet[events.Jet.isGood == 1]) >= 2] # NOTE For now just directly apply cut approprate to nominal
