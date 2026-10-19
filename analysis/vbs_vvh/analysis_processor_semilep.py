@@ -623,9 +623,11 @@ class AnalysisProcessor(processor.ProcessorABC):
 
         ### Bjets ###
 
-        isBtagJetsLoose  = goodJets.isLooseBTag
-        isBtagJetsMedium = goodJets.isMediumBTag
-        isBtagJetsTight  = goodJets.isTightBTag
+        # 2016 b-tag SFs only cover |eta|<2.4 (RDF bTagMaxAbsEta), so jets beyond that cannot be b jets in 2016
+        isBtagEta = (abs(goodJets.eta) < 2.4) if year[0] in ["2016preVFP", "2016postVFP"] else ak.ones_like(goodJets.eta, dtype=bool)
+        isBtagJetsLoose  = goodJets.isLooseBTag & isBtagEta
+        isBtagJetsMedium = goodJets.isMediumBTag & isBtagEta
+        isBtagJetsTight  = goodJets.isTightBTag & isBtagEta
         isNotBtagJetsLoose = np.invert(isBtagJetsLoose)
 
         bjetsl = goodJets[isBtagJetsLoose]
