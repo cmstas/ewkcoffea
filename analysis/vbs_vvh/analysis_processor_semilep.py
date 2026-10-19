@@ -714,28 +714,28 @@ class AnalysisProcessor(processor.ProcessorABC):
         mass_b0b1 = ak.where(nbtagsl>1,mass_b0b1_tmp,-1)
 
         # Variables related to leading b jet score of b jets
-        bjets_bscoreordered = bjetsl[ak.argsort(bjetsl.btagDeepFlavB,axis=-1,ascending=False)]
+        bjets_bscoreordered = bjetsl[ak.argsort(bjetsl.btagUParTAK4B,axis=-1,ascending=False)]
         bjets_bscoreordered_padded = ak.pad_none(bjets_bscoreordered, 2)
         bbscore0 = bjets_bscoreordered_padded[:,0]
         bbscore1 = bjets_bscoreordered_padded[:,1]
         mass_bbscore0bbscore1 = ak.fill_none((bbscore0+bbscore1).mass,0)
-        bbscore0_bscore = ak.fill_none(bbscore0.btagDeepFlavB,0)
-        bbscore1_bscore = ak.fill_none(bbscore1.btagDeepFlavB,0)
+        bbscore0_bscore = ak.fill_none(bbscore0.btagUParTAK4B,0)
+        bbscore1_bscore = ak.fill_none(bbscore1.btagUParTAK4B,0)
 
         # Variables related to leading b jet score of med b jets
-        bjetsm_bscoreordered = bjetsm[ak.argsort(bjetsm.btagDeepFlavB,axis=-1,ascending=False)]
+        bjetsm_bscoreordered = bjetsm[ak.argsort(bjetsm.btagUParTAK4B,axis=-1,ascending=False)]
         bjetsm_bscoreordered_padded = ak.pad_none(bjetsm_bscoreordered, 2)
         bmbscore0 = bjetsm_bscoreordered_padded[:,0]
         bmbscore1 = bjetsm_bscoreordered_padded[:,1]
         mass_bmbscore0bmbscore1 = ak.fill_none((bmbscore0+bmbscore1).mass,0)
 
         # Variables related to leading b jet score of jets
-        jets_bscoreordered = goodJets_ptordered_padded[ak.argsort(goodJets_ptordered_padded.btagDeepFlavB,axis=-1,ascending=False)]
+        jets_bscoreordered = goodJets_ptordered_padded[ak.argsort(goodJets_ptordered_padded.btagUParTAK4B,axis=-1,ascending=False)]
         jbscore0 = jets_bscoreordered[:,0]
         jbscore1 = jets_bscoreordered[:,1]
         mass_jbscore0jbscore1 = ak.fill_none((jbscore0+jbscore1).mass,0)
-        jbscore0_bscore = ak.fill_none(jbscore0.btagDeepFlavB,0)
-        jbscore1_bscore = ak.fill_none(jbscore1.btagDeepFlavB,0)
+        jbscore0_bscore = ak.fill_none(jbscore0.btagUParTAK4B,0)
+        jbscore1_bscore = ak.fill_none(jbscore1.btagUParTAK4B,0)
 
         #Variables related to lepton closest to the jet with the highest b-tag score (jbscore0)
         dr_l_jbscore0 = l_vvh_t.delta_r(jbscore0)
