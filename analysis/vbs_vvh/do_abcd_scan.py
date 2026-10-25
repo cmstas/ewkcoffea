@@ -688,7 +688,7 @@ def plot_best_working_point(histo_sig, histo_abcdbkg_dict, histo_abcdbkg, histo_
     )
 
 
-def write_abcd_datacards(histo_sig, histo_abcdbkg, histo_otherbkg, histo_dat, results, constrain_var, abcd_label="", output_dir="abcd_scan_plots", n_top=5, min_significance=0, guardrails={}):
+def write_abcd_datacards(histo_sig, histo_abcdbkg, histo_otherbkg, histo_dat, results, constrain_var, abcd_label="", other_label="", output_dir="abcd_scan_plots", n_top=5, min_significance=0, guardrails={}):
     os.makedirs(output_dir, exist_ok=True)
     top_indices = get_top_scan_indices(results, n_top=n_top, **guardrails)
     sig_h     = histo_sig[{"process_grp": sum}]
@@ -712,48 +712,93 @@ def write_abcd_datacards(histo_sig, histo_abcdbkg, histo_otherbkg, histo_dat, re
         D_abcd       = get_yield(abcd_h,  slice(None, si), slice(None, mj))
         A_other      = get_yield(other_h, slice(si, None), slice(mj, None))
         abcd_est = (B_abcd * C_abcd / D_abcd) if D_abcd > 0 else 0.0
-        A_bkg    = abcd_est + A_other
-        A_obs    = A_sig + A_bkg
+        A_bkg_mc = abcd_est + A_other
         fname_base = f"dc_wp{rank}"
         A_sig_err    = results["S_err"][i, j]
         A_abcd_err   = results["B_abcd_true_err"][i, j]
         abcd_est_err = results["B_abcd_est_err"][i, j]
         A_other_err  = results["B_other_err"][i, j]
-        A_bkg_err    = results["B_total_err"][i, j]
+        A_bkg_mc_err = results["B_total_err"][i, j]
         A_abcd       = results["B_abcd_true"][i, j]
         denom        = np.sqrt(A_abcd_err**2 + abcd_est_err**2)
         closure_sd   = (abcd_est - A_abcd) / denom if denom > 0 else np.nan
+        # The background written to the card is the data-driven estimate B_data*C_data/D_data (MC only if there is no data)
+        has_data_est = not np.isnan(results["B_data_est"][i, j])
+        A_bkg     = results["B_data_est"][i, j]     if has_data_est else A_bkg_mc
+        A_bkg_err = results["B_data_est_err"][i, j] if has_data_est else A_bkg_mc_err
+        A_obs     = A_bkg # Blinded: A observation is the bkg estimate (fits are run with -t -1 anyway)
+        # Signal in the control regions (signal contamination)
+        B_sig = get_yield(sig_h, slice(None, si), slice(mj, None))
+        C_sig = get_yield(sig_h, slice(si, None), slice(None, mj))
+        D_sig = get_yield(sig_h, slice(None, si), slice(None, mj))
+        # Observations in B, C, D: data counts (MC total bkg if there is no data)
+        if has_data_est:
+            B_obs, C_obs, D_obs = results["B_data_yield"][i, j], results["C_data_yield"][i, j], results["D_data_yield"][i, j]
+        else:
+            B_obs = B_abcd + get_yield(other_h, slice(None, si), slice(mj, None))
+            C_obs = C_abcd + get_yield(other_h, slice(si, None), slice(None, mj))
+            D_obs = D_abcd + get_yield(other_h, slice(None, si), slice(None, mj))
         fpath = os.path.join(output_dir, f"{fname_base}.txt")
         with open(fpath, "w") as f:
             f.write(f"# Counting experiment datacard: rank={rank}, score>{score_cut:.4f}, constrainvar>{mjj_cut:.1f}\n")
-            f.write(f"# S/sqrt(B_total)={sig_val:.4f}\n")
-            f.write(f"# A_abcd_true={A_abcd:.2f}, A_abcd_est={abcd_est:.2f}, A_other={A_other:.2f}\n\n")
-            f.write( "# Details:\n")
+            f.write(f"# S/sqrt(B)={sig_val:.4f}, with B = {'data B*C/D estimate' if has_data_est else 'MC estimate'}\n")
+            f.write(f"# ABCD bkgs: {abcd_label}\n")
+            f.write(f"# Other bkgs: {other_label}\n\n")
+            f.write( "# Data:\n")
+            if has_data_est:
+                f.write(f"#   Data in B, C, D: {results['B_data_yield'][i, j]:.0f}, {results['C_data_yield'][i, j]:.0f}, {results['D_data_yield'][i, j]:.0f}\n")
+                f.write(f"#   Data est bkg in A (B*C/D): {A_bkg:.4f} +/- {A_bkg_err:.4f}\n\n")
+            else:
+                f.write( "#   No data estimate available, MC used for the bkg rate\n\n")
+            f.write( "# MC (for reference):\n")
             f.write(f"#   Sig in A: {A_sig:.4f} +/- {A_sig_err:.4f}\n")
             f.write(f"#   Est ABCD bkg in A: {abcd_est:.4f} +/- {abcd_est_err:.4f}\n")
             f.write(f"#   Truth ABCD bkg in A: {A_abcd:.4f} +/- {A_abcd_err:.4f}\n")
             f.write(f"#   Other bkg in A: {A_other:.4f} +/- {A_other_err:.4f}\n")
-            f.write(f"#   Tot bkg in A: {A_bkg:.4f} +/- {A_bkg_err:.4f}\n")
-            f.write(f"#   Closure of ABCD bkgs: {closure_sd:.4f} s.d.\n\n")
-            f.write( "imax 1  number of channels\n")
+            f.write(f"#   Tot bkg in A (est ABCD + other): {A_bkg_mc:.4f} +/- {A_bkg_mc_err:.4f}\n")
+            f.write(f"#   Closure of ABCD bkgs: {closure_sd:.4f} s.d.\n")
+            # MC yields (truth) per region, next to the data counts
+            regions = {"A": (slice(si, None), slice(mj, None)), "B": (slice(None, si), slice(mj, None)),
+                       "C": (slice(si, None), slice(None, mj)), "D": (slice(None, si), slice(None, mj))}
+            dat_yields = {"B": results["B_data_yield"][i, j], "C": results["C_data_yield"][i, j], "D": results["D_data_yield"][i, j]}
+            f.write(f"#   Per region (MC truth):\n")
+            f.write(f"#   {'reg':<4}{'sig':>20}{'ABCD bkg':>24}{'other bkg':>22}{'tot bkg':>24}{'data':>8}{'data/tot bkg':>14}\n")
+            for reg, (s_sl, m_sl) in regions.items():
+                ys = {}
+                for name, h in [("sig", sig_h), ("abcd", abcd_h), ("other", other_h)]:
+                    sub = h[s_sl, m_sl].sum(flow=False)
+                    ys[name] = (sub.value, np.sqrt(sub.variance))
+                tot     = ys["abcd"][0] + ys["other"][0]
+                tot_err = np.sqrt(ys["abcd"][1]**2 + ys["other"][1]**2)
+                dat     = dat_yields.get(reg, np.nan)
+                dat_str   = "blind" if reg == "A" else ("-" if np.isnan(dat) else f"{dat:.0f}")
+                ratio_str = "-" if (reg == "A" or np.isnan(dat) or tot <= 0) else f"{dat/tot:.3f}"
+                f.write(f"#   {reg:<4}" + "".join(f"{f'{v:.4f} +/- {e:.4f}':>{w}}" for (v, e), w in [(ys["sig"], 20), (ys["abcd"], 24), (ys["other"], 22), ((tot, tot_err), 24)]) + f"{dat_str:>8}{ratio_str:>14}\n")
+            f.write("\n")
+            # ABCD card: bkg rate is 1 in every region and is set by the rateParams, with nA = nB*nC/nD
+            f.write( "imax 4  number of channels\n")
             f.write( "jmax 1  number of backgrounds\n")
-            f.write( "kmax 0  number of nuisance parameters\n")
+            f.write( "kmax *  number of nuisance parameters\n")
             f.write( "-" * 60 + "\n")
-            f.write( "bin          A\n")
-            f.write(f"observation  {A_obs:.4f}\n")
+            f.write(f"{'bin':<12} {'A':>10} {'B':>10} {'C':>10} {'D':>10}\n")
+            f.write(f"{'observation':<12} {A_obs:>10.4f} {B_obs:>10.4f} {C_obs:>10.4f} {D_obs:>10.4f}\n")
             f.write( "-" * 60 + "\n")
-            f.write( "bin          A       A\n")
-            f.write( "process      sig     bkg\n")
-            f.write( "process      0       1\n")
-            f.write(f"rate         {A_sig:.4f}  {A_bkg:.4f}\n")
+            f.write(f"{'bin':<12}" + "".join(f" {r:>10} {r:>10}" for r in "ABCD") + "\n")
+            f.write(f"{'process':<12}" + f" {'sig':>10} {'bkg':>10}" * 4 + "\n")
+            f.write(f"{'process':<12}" + f" {0:>10} {1:>10}" * 4 + "\n")
+            f.write(f"{'rate':<12}" + "".join(f" {s:>10.4f} {1:>10}" for s in [A_sig, B_sig, C_sig, D_sig]) + "\n")
             f.write( "-" * 60 + "\n")
+            for name, reg, val in [("nB", "B", B_obs), ("nC", "C", C_obs), ("nD", "D", D_obs)]:
+                f.write(f"{name} rateParam {reg} bkg {val:.4f} [0,{max(10*val, 10):.1f}]\n")
+            f.write( "nA rateParam A bkg (@0*@1/@2) nB,nC,nD\n")
         print(f"Wrote {fpath}")
         extra_text = (
             f"Sig in A: {A_sig:.4f} +/- {A_sig_err:.4f}\n"
             f"Est ABCD bkg in A: {abcd_est:.4f} +/- {abcd_est_err:.4f}\n"
             f"Truth ABCD bkg in A: {A_abcd:.4f} +/- {A_abcd_err:.4f}\n"
             f"Other bkg in A: {A_other:.4f} +/- {A_other_err:.4f}\n"
-            f"Tot bkg in A: {A_bkg:.4f} +/- {A_bkg_err:.4f}\n"
+            f"Tot MC bkg in A: {A_bkg_mc:.4f} +/- {A_bkg_mc_err:.4f}\n"
+            f"Data est bkg in A (B*C/D): {A_bkg:.4f} +/- {A_bkg_err:.4f}\n"
             f"Closure of ABCD bkgs: {closure_sd:.4f} s.d.\n"
             f"Where ABCD bkgs are: {abcd_label}\n"
         )
@@ -763,8 +808,8 @@ def write_abcd_datacards(histo_sig, histo_abcdbkg, histo_otherbkg, histo_dat, re
             constrain_var,
             title=(
                 f"rank={rank}: score>{score_cut:.3f}, constrainvar>{mjj_cut:.3f}\n"
-                f"S={A_sig:.3f}, B_abcd_est={abcd_est:.1f}, B_other={A_other:.1f}, "
-                f"B_total={A_bkg:.1f}, S/sqrt(B_total)={sig_val:.3f}"
+                f"S={A_sig:.3f}, B_abcd_est(MC)={abcd_est:.1f}, B_other={A_other:.1f}, "
+                f"B(data est)={A_bkg:.1f}, S/sqrt(B)={sig_val:.3f}"
             ),
             cbar_label="Total background yield",
             output_path=os.path.join(output_dir, f"{fname_base}.png"),
@@ -960,7 +1005,7 @@ def plot_abcd_2d_snapshots(histo_sig, histo_abcdbkg_dict, histo_abcdbkg, histo_o
             plt.close()
             print(f"Saved scan block {i}")
 
-def get_top_scan_indices(results, n_top=1, min_significance=0.0, max_closure_sd=np.inf, min_S=0.0, max_B_total=np.inf, min_bcd_yield=0.0):
+def get_top_scan_indices(results, n_top=1, min_significance=0.0, max_closure_sd=np.inf, min_S=0.0, max_B_total=np.inf, min_bcd_yield=0.0, min_bcd_data_yield=0.0):
     sig_flat             = results["significance"].flatten()
     S_flat               = results["S"].flatten()
     B_total_flat         = results["B_total"].flatten()
@@ -971,6 +1016,10 @@ def get_top_scan_indices(results, n_top=1, min_significance=0.0, max_closure_sd=
     B_flat               = results["B_abcd_yield"].flatten()
     C_flat               = results["C_abcd_yield"].flatten()
     D_flat               = results["D_abcd_yield"].flatten()
+    # Data yields in B, C, D (nan where there is no data, those points are not cut on here)
+    B_dat_flat           = results["B_data_yield"].flatten()
+    C_dat_flat           = results["C_data_yield"].flatten()
+    D_dat_flat           = results["D_data_yield"].flatten()
 
     denom = np.sqrt(B_abcd_true_err_flat**2 + B_abcd_est_err_flat**2)
     closure_sd_flat = np.where(denom > 0, np.abs(B_abcd_est_flat - B_abcd_true_flat) / denom, np.nan)
@@ -984,7 +1033,10 @@ def get_top_scan_indices(results, n_top=1, min_significance=0.0, max_closure_sd=
         (closure_sd_flat <= max_closure_sd) &
         (B_flat >= min_bcd_yield)           &
         (C_flat >= min_bcd_yield)           &
-        (D_flat >= min_bcd_yield)
+        (D_flat >= min_bcd_yield)           &
+        (np.isnan(B_dat_flat) | (B_dat_flat >= min_bcd_data_yield)) &
+        (np.isnan(C_dat_flat) | (C_dat_flat >= min_bcd_data_yield)) &
+        (np.isnan(D_dat_flat) | (D_dat_flat >= min_bcd_data_yield))
     )
 
     valid_indices = np.where(valid_mask)[0]
@@ -1096,6 +1148,12 @@ def do_abcd_scan(histo_sig, histo_abcdbkg, histo_otherbkg, constrain_axis_name, 
     data_closure_B_err = np.full((n_scan_score, n_scan_mjj), np.nan)
     data_closure_C_err = np.full((n_scan_score, n_scan_mjj), np.nan)
     data_closure_D_err = np.full((n_scan_score, n_scan_mjj), np.nan)
+    # Data-driven estimate of the total background in A: B_data*C_data/D_data (all backgrounds, nothing added from MC)
+    B_data_est         = np.full((n_scan_score, n_scan_mjj), np.nan)
+    B_data_est_err     = np.full((n_scan_score, n_scan_mjj), np.nan)
+    B_data_yield       = np.full((n_scan_score, n_scan_mjj), np.nan)
+    C_data_yield       = np.full((n_scan_score, n_scan_mjj), np.nan)
+    D_data_yield       = np.full((n_scan_score, n_scan_mjj), np.nan)
     for i, si in enumerate(score_cut_bins):
         for j, mj in enumerate(mjj_cut_bins):
             A_sig   = get_yield(sig_h,   slice(si, None), slice(mj, None))
@@ -1144,6 +1202,19 @@ def do_abcd_scan(histo_sig, histo_abcdbkg, histo_otherbkg, constrain_axis_name, 
             C_abcd_yield[i, j]    = C_abcd + C_otherbkg
             D_abcd_yield[i, j]    = D_abcd + D_otherbkg
             if dat_h is not None:
+                B_dat = get_yield(dat_h, slice(None, si), slice(mj, None))
+                C_dat = get_yield(dat_h, slice(si, None), slice(None, mj))
+                D_dat = get_yield(dat_h, slice(None, si), slice(None, mj))
+                B_data_yield[i, j] = B_dat
+                C_data_yield[i, j] = C_dat
+                D_data_yield[i, j] = D_dat
+                if B_dat > 0 and C_dat > 0 and D_dat > 0:
+                    data_est = B_dat * C_dat / D_dat
+                    B_data_est[i, j]     = data_est
+                    B_data_est_err[i, j] = data_est * np.sqrt(1/B_dat + 1/C_dat + 1/D_dat) # Poisson
+                    significance[i, j]   = A_sig / np.sqrt(data_est) # The optimization uses the data estimate
+                else:
+                    significance[i, j] = np.nan
                 sb = compute_data_sideband_closure(dat_h, score_edges, mjj_edges, si, mj)
                 if "B" in sb:
                     data_closure_B[i, j]     = sb["B"]["closure"]
@@ -1178,6 +1249,11 @@ def do_abcd_scan(histo_sig, histo_abcdbkg, histo_otherbkg, constrain_axis_name, 
         "data_closure_B_err": data_closure_B_err,
         "data_closure_C_err": data_closure_C_err,
         "data_closure_D_err": data_closure_D_err,
+        "B_data_est"       : B_data_est,
+        "B_data_est_err"   : B_data_est_err,
+        "B_data_yield"     : B_data_yield,
+        "C_data_yield"     : C_data_yield,
+        "D_data_yield"     : D_data_yield,
     }
 
 
@@ -1333,7 +1409,8 @@ def main():
         "max_closure_sd"   : 1.2,
         "min_S"            : 0.03,
         "max_B_total"      : 1e99,
-        "min_bcd_yield"    : 10.0,
+        "min_bcd_yield"    : 10.0, # On MC
+        "min_bcd_data_yield" : 10.0, # On data
     }
 
     #########################################################
@@ -1431,7 +1508,7 @@ def main():
 
     # Write datacards
     print("\nWriting datacards for top points...")
-    write_abcd_datacards(histo_sig, histo_abcdbkg, histo_otherbkg, histo_dat, results, constrain_var, output_dir=out_dir_dc, n_top=200, guardrails=guardrails)
+    write_abcd_datacards(histo_sig, histo_abcdbkg, histo_otherbkg, histo_dat, results, constrain_var, abcd_label=abcd_label, other_label=" + ".join(sorted(other_bkg_names)), output_dir=out_dir_dc, n_top=200, guardrails=guardrails)
 
 
     ####################### Plot ABCD regions for a specific working point #######################
@@ -1457,4 +1534,6 @@ def main():
             histo_otherbkg=histo_otherbkg,
         )
 
-main()
+
+if __name__ == "__main__":
+    main()
