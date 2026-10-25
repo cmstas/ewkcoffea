@@ -761,7 +761,7 @@ def write_abcd_datacards(histo_sig, histo_abcdbkg, histo_otherbkg, histo_dat, re
             regions = {"A": (slice(si, None), slice(mj, None)), "B": (slice(None, si), slice(mj, None)),
                        "C": (slice(si, None), slice(None, mj)), "D": (slice(None, si), slice(None, mj))}
             dat_yields = {"B": results["B_data_yield"][i, j], "C": results["C_data_yield"][i, j], "D": results["D_data_yield"][i, j]}
-            f.write(f"#   Per region (MC truth):\n")
+            f.write("#   Per region (MC truth):\n")
             f.write(f"#   {'reg':<4}{'sig':>20}{'ABCD bkg':>24}{'other bkg':>22}{'tot bkg':>24}{'data':>8}{'data/tot bkg':>14}\n")
             for reg, (s_sl, m_sl) in regions.items():
                 ys = {}
