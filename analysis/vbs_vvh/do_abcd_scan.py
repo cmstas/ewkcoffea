@@ -1533,7 +1533,4 @@ def main():
             histo_abcdbkg=histo_abcdbkg,
             histo_otherbkg=histo_otherbkg,
         )
-
-
-if __name__ == "__main__":
-    main()
+main()
