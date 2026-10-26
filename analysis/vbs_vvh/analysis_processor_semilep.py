@@ -26,10 +26,11 @@ warnings.filterwarnings(
 )
 
 
-# SM ABCD working points for 3l |Sum q| = 3, one per run
-ABCD_WP_3LCHSUM3 = {
-    "run2" : {"x_cut" : 0.07, "y_cut" : 0.40},
-    "run3" : {"x_cut" : 0.75, "y_cut" : 0.87},
+# SM ABCD working points, per channel and per run
+ABCD_WP = {
+    "2lH"      : {"r2" : {"x_cut" : 0.52, "y_cut" : 1200.0}, "r3" : {"x_cut" : 0.54, "y_cut" : 800.0}},
+    "3lChsum1" : {"r2" : {"x_cut" : 0.73, "y_cut" : 0.6},    "r3" : {"x_cut" : 0.96, "y_cut" : 0.9}},
+    "3lChsum3" : {"r2" : {"x_cut" : 0.07, "y_cut" : 0.40},   "r3" : {"x_cut" : 0.75, "y_cut" : 0.87}},
 }
 
 def to_vec(obj,with_name="PtEtaPhiMCollection"):
@@ -293,7 +294,7 @@ class AnalysisProcessor(processor.ProcessorABC):
             "nlep_truth_fake"   : axis.Regular(5, 0, 5, name="nlep_truth_fake",   label="Lep (truth, fake) multiplicity"),
 
             "dnn_score_2lH"      : axis.Regular(180, 0, 1, name="dnn_score_2lH",      label="DNN ABCDnet score for 2l1FJ H region"),
-            "dnn_score_2lV"      : axis.Regular(180, 0, 1, name="dnn_score_2lV",      label="DNN ABCDnet score for 1l1FJ V region"),
+            #"dnn_score_2lV"      : axis.Regular(180, 0, 1, name="dnn_score_2lV",      label="DNN ABCDnet score for 1l1FJ V region"),
             "dnn_score_3lChsum1" : axis.Regular(180, 0, 1, name="dnn_score_3lChsum1", label="DNN ABCDnet score for 3l chargesum=1 region"),
             "dnn_score_3lChsum3" : axis.Regular(180, 0, 1, name="dnn_score_3lChsum3", label="DNN ABCDnet score for 3l chargesum=3 region"),
 
@@ -389,22 +390,15 @@ class AnalysisProcessor(processor.ProcessorABC):
         self._models[model_key].eval()
 
     def _run_abcd_inference(self, events, dense_variables_dict, model):
-        if model == "2lH":
-            scaler_path = ewkcoffea_path("data/vvh_abcd_models/single_abcdisco_2l1fj_forH_scaler_params.json")
-            checkpoint_path = ewkcoffea_path("data/vvh_abcd_models/single_abcdisco_2l1fj_forH.ckpt")
-        elif model == "2lV":
-            scaler_path = ewkcoffea_path("data/vvh_abcd_models/single_abcdisco_2l1fj_forV_scaler_params.json")
-            checkpoint_path = ewkcoffea_path("data/vvh_abcd_models/single_abcdisco_2l1fj_forV.ckpt")
-        elif model == "3lChsum1":
-            scaler_path = ewkcoffea_path("data/vvh_abcd_models/single_abcdisco_3lChsum1_scaler_params.json")
-            checkpoint_path = ewkcoffea_path("data/vvh_abcd_models/single_abcdisco_3lChsum1.ckpt")
-        elif model == "3lChsum3":
-            # Trained separately per run, so pick the checkpoint matching the era
-            run_tag = "r3_v1" if ak.any(events.isRun3) else "r2_v1"
-            scaler_path = ewkcoffea_path(f"data/vvh_abcd_models/single_abcdisco_3lChsum3_{run_tag}_scaler_params.json")
-            checkpoint_path = ewkcoffea_path(f"data/vvh_abcd_models/single_abcdisco_3lChsum3_{run_tag}.ckpt")
-        else:
-            raise Exception(f"Unknown model {model}")
+        # All networks are trained per run, so the era is part of the model name (the caching below is keyed on `model`)
+        channel, run_tag = model.rsplit("_", 1)
+        if   channel == "2lH":      stem = f"single_abcdisco_2l1fj_forH_{run_tag}"
+        elif channel == "2lV":      stem = f"single_abcdisco_2l1fj_forV_{run_tag}"
+        elif channel == "3lChsum1": stem = f"single_abcdisco_3lChsum1_{run_tag}"
+        elif channel == "3lChsum3": stem = f"single_abcdisco_3lChsum3_{run_tag}_v1"
+        else: raise Exception(f"Unknown model {model}")
+        scaler_path = ewkcoffea_path(f"data/vvh_abcd_models/{stem}_scaler_params.json")
+        checkpoint_path = ewkcoffea_path(f"data/vvh_abcd_models/{stem}.ckpt")
 
         if not hasattr(self, '_models'):
             self._models = {}
@@ -1015,12 +1009,17 @@ class AnalysisProcessor(processor.ProcessorABC):
         # For ABCDnet evaluations
         # This must come after dense_variables_dict since pass all vars from dense_variables_dict to evaluation since any/all might be needed (depending on which model we're using)
         # Once we finish evaluating, add the score to the dense_variables_dict too
-        dnn_score_2lH = self._run_abcd_inference(events, dense_variables_dict,"2lH")
-        dnn_score_2lV = self._run_abcd_inference(events, dense_variables_dict,"2lV")
-        dnn_score_3lChsum1 = self._run_abcd_inference(events, dense_variables_dict,"3lChsum1")
-        dnn_score_3lChsum3 = self._run_abcd_inference(events, dense_variables_dict,"3lChsum3")
+        # Models are picked once per chunk, so a chunk mixing eras cannot be scored correctly
+        is_run3 = ak.to_numpy(events.isRun3)
+        if len(is_run3) and is_run3.any() and not is_run3.all():
+            raise Exception("Chunk mixes Run 2 and Run 3 events; the per-run models cannot be chosen")
+        run_tag = "r3" if (len(is_run3) and is_run3.all()) else "r2"
+        dnn_score_2lH = self._run_abcd_inference(events, dense_variables_dict,f"2lH_{run_tag}")
+        #dnn_score_2lV = self._run_abcd_inference(events, dense_variables_dict,f"2lV_{run_tag}")
+        dnn_score_3lChsum1 = self._run_abcd_inference(events, dense_variables_dict,f"3lChsum1_{run_tag}")
+        dnn_score_3lChsum3 = self._run_abcd_inference(events, dense_variables_dict,f"3lChsum3_{run_tag}")
         dense_variables_dict["dnn_score_2lH"] = dnn_score_2lH
-        dense_variables_dict["dnn_score_2lV"] = dnn_score_2lV
+        #dense_variables_dict["dnn_score_2lV"] = dnn_score_2lV
         dense_variables_dict["dnn_score_3lChsum1"] = dnn_score_3lChsum1
         dense_variables_dict["dnn_score_3lChsum3"] = dnn_score_3lChsum3
 
@@ -1090,12 +1089,10 @@ class AnalysisProcessor(processor.ProcessorABC):
         is_HFJ       = (fj0_mparticlenet >  110.) & (fj0_mparticlenet <= 150.)
         is_HFJTagHbb = (fj0_pNetHbbvsQCD > 0.95)
 
-        A_2lH, B_2lH, C_2lH, D_2lH = get_abcd_region_masks(x_var=dnn_score_2lH, y_var=vbsjets.mjj, x_cut=0.54, y_cut=1300.0)
-        A_3lChsum1, B_3lChsum1, C_3lChsum1, D_3lChsum1 = get_abcd_region_masks(x_var=dnn_score_3lChsum1, y_var=vbsjets.score, x_cut=0.71, y_cut=0.61)
-        # Working point differs per run
-        x_cut_3lChsum3 = ak.where(events.isRun3, ABCD_WP_3LCHSUM3["run3"]["x_cut"], ABCD_WP_3LCHSUM3["run2"]["x_cut"])
-        y_cut_3lChsum3 = ak.where(events.isRun3, ABCD_WP_3LCHSUM3["run3"]["y_cut"], ABCD_WP_3LCHSUM3["run2"]["y_cut"])
-        A_3lChsum3, B_3lChsum3, C_3lChsum3, D_3lChsum3 = get_abcd_region_masks(x_var=dnn_score_3lChsum3, y_var=vbsjets.score, x_cut=x_cut_3lChsum3, y_cut=y_cut_3lChsum3)
+        # Working points differ per run; the chunk is single-era by construction, so these are scalars
+        A_2lH, B_2lH, C_2lH, D_2lH = get_abcd_region_masks(x_var=dnn_score_2lH, y_var=vbsjets.mjj, x_cut=ABCD_WP["2lH"][run_tag]["x_cut"], y_cut=ABCD_WP["2lH"][run_tag]["y_cut"])
+        A_3lChsum1, B_3lChsum1, C_3lChsum1, D_3lChsum1 = get_abcd_region_masks(x_var=dnn_score_3lChsum1, y_var=vbsjets.score, x_cut=ABCD_WP["3lChsum1"][run_tag]["x_cut"], y_cut=ABCD_WP["3lChsum1"][run_tag]["y_cut"])
+        A_3lChsum3, B_3lChsum3, C_3lChsum3, D_3lChsum3 = get_abcd_region_masks(x_var=dnn_score_3lChsum3, y_var=vbsjets.score, x_cut=ABCD_WP["3lChsum3"][run_tag]["x_cut"], y_cut=ABCD_WP["3lChsum3"][run_tag]["y_cut"])
 
         selections.add("all_events", pass_through)
 
@@ -1283,11 +1280,11 @@ class AnalysisProcessor(processor.ProcessorABC):
         if fill_abcd_2d:
             # Specify the regions to use for 2d hists
             cat2lH = "2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5"
-            cat2lV = "2lOSSF_nFJ1_massLo_Zp2"
+            #cat2lV = "2lOSSF_nFJ1_massLo_Zp2"
             cat3lChsum1 = "3l_chsum1_mjj500"
             cat3lChsum3 = "3l_chsum3"
             all_cuts_mask_H = selections.all(cat2lH)
-            all_cuts_mask_V = selections.all(cat2lV)
+            #all_cuts_mask_V = selections.all(cat2lV)
             all_cuts_mask_3lChsum1 = selections.all(cat3lChsum1)
             all_cuts_mask_3lChsum3 = selections.all(cat3lChsum3)
             self.accumulator["abcd2d_2lH"].fill(
@@ -1297,13 +1294,13 @@ class AnalysisProcessor(processor.ProcessorABC):
                 process   = histAxisName[all_cuts_mask_H],
                 category  = cat2lH,
             )
-            self.accumulator["abcd2d_2lV"].fill(
-                vbs_mjj   = vbs_mjj_flow[all_cuts_mask_V],
-                dnn_score = dnn_score_2lV[all_cuts_mask_V],
-                weight    = weights_obj_base.weight(None)[all_cuts_mask_V],
-                process   = histAxisName[all_cuts_mask_V],
-                category  = cat2lV,
-            )
+            #self.accumulator["abcd2d_2lV"].fill(
+            #    vbs_mjj   = vbs_mjj_flow[all_cuts_mask_V],
+            #    dnn_score = dnn_score_2lV[all_cuts_mask_V],
+            #    weight    = weights_obj_base.weight(None)[all_cuts_mask_V],
+            #    process   = histAxisName[all_cuts_mask_V],
+            #    category  = cat2lV,
+            #)
             self.accumulator["abcd2d_3lChsum1"].fill(
                 vbs_score = vbsjets.score[all_cuts_mask_3lChsum1],
                 dnn_score = dnn_score_3lChsum1[all_cuts_mask_3lChsum1],

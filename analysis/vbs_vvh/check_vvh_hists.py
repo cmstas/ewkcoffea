@@ -23,6 +23,7 @@ HTML_PC = "/home/k.mohrman/ref_scirpts/html_stuff/index.php"
 UNBLIND_CATS = [
     "all_events",
     "2lOSSF_nFJ1",
+    "2lOSSF_nFJ1_massHi",
     "2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5", # 2l 1FJ training region
 
     "3l_prelowmllcut",
@@ -41,11 +42,13 @@ UNBLIND_CATS = [
 ]
 
 CAT_LST_2l = [
+
     #"all_events",
+
     "2lOSSF_nFJ1",
-    #"2lOSSF_nFJ1_massHi",
-    #"2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5",
-    #"2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5_A",
+    "2lOSSF_nFJ1_massHi",
+    "2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5",
+    "2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5_A",
     #"2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5_B",
     #"2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5_C",
     #"2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5_D",
