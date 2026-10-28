@@ -443,16 +443,21 @@ class AnalysisProcessor(processor.ProcessorABC):
     # Main function: run on a given chunk
     def process(self, events):
 
-        # DY stitching: drop from the inclusive DY the phase space covered by the binned samples
-        if events.shortname[0] in ["DYto2E-2Jets_Bin-MLL-50_TuneCP5_13p6TeV", "DYto2Mu-2Jets_Bin-MLL-50_TuneCP5_13p6TeV", "DYto2Tau-2Jets_Bin-MLL-50_TuneCP5_13p6TeV"]:
-            events = events[~((events.LHE.NpNLO >= 1) & (events.LHE.Vpt >= 40))] # Run 3: 1J/2J x PTLL>40 bins
-        if events.shortname[0] == "DYJetsToLL_M-50_TuneCP5_13TeV":
-            events = events[events.LHE.HT < 70] # Run 2: HT>70 bins
-        if len(events) == 0: return self.accumulator
-
         # Pre requirement: all events must have at least 2 jets
         #events = events[pass_njet_any_variation(events, njet_min=2)] # NOTE use this once we have JEC variations in place
         events = events[ak.num(events.Jet[events.Jet.isGood == 1]) >= 2] # NOTE For now just directly apply cut approprate to nominal
+        if len(events) == 0: return self.accumulator
+
+        # DY stitching: drop from the inclusive DY the phase space covered by the binned samples
+        # Per-event flags, so this is correct even if a chunk mixes samples
+        # The LHE branches only exist in the DY skims, so they are only read if the chunk has inclusive DY events
+        shortname = events.shortname
+        isInclDY_r3 = (shortname == "DYto2E-2Jets_Bin-MLL-50_TuneCP5_13p6TeV") | (shortname == "DYto2Mu-2Jets_Bin-MLL-50_TuneCP5_13p6TeV") | (shortname == "DYto2Tau-2Jets_Bin-MLL-50_TuneCP5_13p6TeV")
+        isInclDY_r2 = (shortname == "DYJetsToLL_M-50_TuneCP5_13TeV")
+        dropForStitch = ak.zeros_like(isInclDY_r3)
+        if ak.any(isInclDY_r3): dropForStitch = dropForStitch | (isInclDY_r3 & (events.LHE.NpNLO >= 1) & (events.LHE.Vpt >= 40)) # Run 3: 1J/2J x PTLL>40 bins
+        if ak.any(isInclDY_r2): dropForStitch = dropForStitch | (isInclDY_r2 & (events.LHE.HT >= 70)) # Run 2: HT>70 bins
+        events = events[~dropForStitch]
         if len(events) == 0: return self.accumulator
 
         # Initialize meta data and identify the kind of of chunk
@@ -618,7 +623,9 @@ class AnalysisProcessor(processor.ProcessorABC):
         ### Bjets ###
 
         # 2016 b-tag SFs only cover |eta|<2.4 (RDF bTagMaxAbsEta), so jets beyond that cannot be b jets in 2016
-        isBtagEta = (abs(goodJets.eta) < 2.4) if year[0] in ["2016preVFP", "2016postVFP"] else ak.ones_like(goodJets.eta, dtype=bool)
+        # Per-event flag, so this is correct even if a chunk mixes years
+        is2016 = (year == "2016preVFP") | (year == "2016postVFP")
+        isBtagEta = (abs(goodJets.eta) < 2.4) | ~is2016
         isBtagJetsLoose  = goodJets.isLooseBTag & isBtagEta
         isBtagJetsMedium = goodJets.isMediumBTag & isBtagEta
         isBtagJetsTight  = goodJets.isTightBTag & isBtagEta
