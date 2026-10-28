@@ -63,7 +63,14 @@ jobs:
           # W503 line break before binary operator
 
   Full_Analyses:
-    runs-on: ubuntu-latest
+    # Pinned to 24.04: this job relies on the Miniconda preinstalled on the runner image
+    # (see the "Add conda to system path" step below, which uses $CONDA). The ubuntu-26.04
+    # image does not ship conda and leaves $CONDA empty, so on "ubuntu-latest" that step
+    # silently succeeds and the env creation then fails with "conda: command not found".
+    # GitHub is migrating ubuntu-latest from 24.04 to 26.04 between 2026-10-19 and 2026-11-19:
+    # https://github.blog/changelog/2026-09-17-ubuntu-26-generally-available-and-latest-migration
+    # Unpin once this job installs its own conda (e.g. conda-incubator/setup-miniconda).
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
