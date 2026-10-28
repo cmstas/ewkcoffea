@@ -324,7 +324,8 @@ class AnalysisProcessor(processor.ProcessorABC):
                 hist.axis.StrCategory([], growth=True, name="category", label="category"),
                 hist.axis.StrCategory([], growth=True, name="systematic", label="systematic"),
                 #hist.axis.StrCategory([], growth=True, name="year", label="year"),
-                hist.axis.Integer(0,40, growth=True, name="lepflav", label="lepflav"),
+                #hist.axis.Integer(0,40, growth=True, name="lepflav", label="lepflav"),
+                hist.axis.IntCategory([0,1,2,3,4,5,6], growth=True, name="lepflav", label="n muons"),
                 self._dense_axes_dict[dense_axis_name],
                 storage="weight", # Keeps track of sumw2
                 name="Counts",
@@ -445,6 +446,18 @@ class AnalysisProcessor(processor.ProcessorABC):
         # Pre requirement: all events must have at least 2 jets
         #events = events[pass_njet_any_variation(events, njet_min=2)] # NOTE use this once we have JEC variations in place
         events = events[ak.num(events.Jet[events.Jet.isGood == 1]) >= 2] # NOTE For now just directly apply cut approprate to nominal
+        if len(events) == 0: return self.accumulator
+
+        # DY stitching: drop from the inclusive DY the phase space covered by the binned samples
+        # Per-event flags, so this is correct even if a chunk mixes samples
+        # The LHE branches only exist in the DY skims, so they are only read if the chunk has inclusive DY events
+        shortname = events.shortname
+        isInclDY_r3 = (shortname == "DYto2E-2Jets_Bin-MLL-50_TuneCP5_13p6TeV") | (shortname == "DYto2Mu-2Jets_Bin-MLL-50_TuneCP5_13p6TeV") | (shortname == "DYto2Tau-2Jets_Bin-MLL-50_TuneCP5_13p6TeV")
+        isInclDY_r2 = (shortname == "DYJetsToLL_M-50_TuneCP5_13TeV")
+        dropForStitch = ak.zeros_like(isInclDY_r3)
+        if ak.any(isInclDY_r3): dropForStitch = dropForStitch | (isInclDY_r3 & (events.LHE.NpNLO >= 1) & (events.LHE.Vpt >= 40)) # Run 3: 1J/2J x PTLL>40 bins
+        if ak.any(isInclDY_r2): dropForStitch = dropForStitch | (isInclDY_r2 & (events.LHE.HT >= 70)) # Run 2: HT>70 bins
+        events = events[~dropForStitch]
         if len(events) == 0: return self.accumulator
 
         # Initialize meta data and identify the kind of of chunk
@@ -609,9 +622,13 @@ class AnalysisProcessor(processor.ProcessorABC):
 
         ### Bjets ###
 
-        isBtagJetsLoose  = goodJets.isLooseBTag
-        isBtagJetsMedium = goodJets.isMediumBTag
-        isBtagJetsTight  = goodJets.isTightBTag
+        # 2016 b-tag SFs only cover |eta|<2.4 (RDF bTagMaxAbsEta), so jets beyond that cannot be b jets in 2016
+        # Per-event flag, so this is correct even if a chunk mixes years
+        is2016 = (year == "2016preVFP") | (year == "2016postVFP")
+        isBtagEta = (abs(goodJets.eta) < 2.4) | ~is2016
+        isBtagJetsLoose  = goodJets.isLooseBTag & isBtagEta
+        isBtagJetsMedium = goodJets.isMediumBTag & isBtagEta
+        isBtagJetsTight  = goodJets.isTightBTag & isBtagEta
         isNotBtagJetsLoose = np.invert(isBtagJetsLoose)
 
         bjetsl = goodJets[isBtagJetsLoose]
@@ -701,28 +718,28 @@ class AnalysisProcessor(processor.ProcessorABC):
         mass_b0b1 = ak.where(nbtagsl>1,mass_b0b1_tmp,-1)
 
         # Variables related to leading b jet score of b jets
-        bjets_bscoreordered = bjetsl[ak.argsort(bjetsl.btagDeepFlavB,axis=-1,ascending=False)]
+        bjets_bscoreordered = bjetsl[ak.argsort(bjetsl.btagUParTAK4B,axis=-1,ascending=False)]
         bjets_bscoreordered_padded = ak.pad_none(bjets_bscoreordered, 2)
         bbscore0 = bjets_bscoreordered_padded[:,0]
         bbscore1 = bjets_bscoreordered_padded[:,1]
         mass_bbscore0bbscore1 = ak.fill_none((bbscore0+bbscore1).mass,0)
-        bbscore0_bscore = ak.fill_none(bbscore0.btagDeepFlavB,0)
-        bbscore1_bscore = ak.fill_none(bbscore1.btagDeepFlavB,0)
+        bbscore0_bscore = ak.fill_none(bbscore0.btagUParTAK4B,0)
+        bbscore1_bscore = ak.fill_none(bbscore1.btagUParTAK4B,0)
 
         # Variables related to leading b jet score of med b jets
-        bjetsm_bscoreordered = bjetsm[ak.argsort(bjetsm.btagDeepFlavB,axis=-1,ascending=False)]
+        bjetsm_bscoreordered = bjetsm[ak.argsort(bjetsm.btagUParTAK4B,axis=-1,ascending=False)]
         bjetsm_bscoreordered_padded = ak.pad_none(bjetsm_bscoreordered, 2)
         bmbscore0 = bjetsm_bscoreordered_padded[:,0]
         bmbscore1 = bjetsm_bscoreordered_padded[:,1]
         mass_bmbscore0bmbscore1 = ak.fill_none((bmbscore0+bmbscore1).mass,0)
 
         # Variables related to leading b jet score of jets
-        jets_bscoreordered = goodJets_ptordered_padded[ak.argsort(goodJets_ptordered_padded.btagDeepFlavB,axis=-1,ascending=False)]
+        jets_bscoreordered = goodJets_ptordered_padded[ak.argsort(goodJets_ptordered_padded.btagUParTAK4B,axis=-1,ascending=False)]
         jbscore0 = jets_bscoreordered[:,0]
         jbscore1 = jets_bscoreordered[:,1]
         mass_jbscore0jbscore1 = ak.fill_none((jbscore0+jbscore1).mass,0)
-        jbscore0_bscore = ak.fill_none(jbscore0.btagDeepFlavB,0)
-        jbscore1_bscore = ak.fill_none(jbscore1.btagDeepFlavB,0)
+        jbscore0_bscore = ak.fill_none(jbscore0.btagUParTAK4B,0)
+        jbscore1_bscore = ak.fill_none(jbscore1.btagUParTAK4B,0)
 
         #Variables related to lepton closest to the jet with the highest b-tag score (jbscore0)
         dr_l_jbscore0 = l_vvh_t.delta_r(jbscore0)
@@ -810,6 +827,7 @@ class AnalysisProcessor(processor.ProcessorABC):
 
         # NOTE Only defind for exactly 2 and 3 lep
         abs_pdgid_sum = ak.fill_none(ak.where(nleps==3,abs(l0.pdgId) + abs(l1.pdgId) + abs(l2.pdgId),abs(l0.pdgId) + abs(l1.pdgId)),0)
+        n_mu_sel = ak.fill_none(ak.sum(abs(l_vvh_t.pdgId)==13, axis=1), 0)
 
 
         # Put the variables we'll plot into a dictionary for easy access later
@@ -1384,7 +1402,8 @@ class AnalysisProcessor(processor.ProcessorABC):
                         "category"      : sr_cat,
                         "systematic"    : wgt_fluct,
                         #"year"          : events.year[all_cuts_mask],
-                        "lepflav"       : abs_pdgid_sum[all_cuts_mask],
+                        #"lepflav"       : abs_pdgid_sum[all_cuts_mask],
+                        "lepflav"       : n_mu_sel[all_cuts_mask],
                     }
 
                     self.accumulator[dense_axis_name].fill(**axes_fill_info_dict)
