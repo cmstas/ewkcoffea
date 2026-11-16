@@ -195,6 +195,13 @@ class AnalysisProcessor(processor.ProcessorABC):
             "j0_eta" : axis.Regular(180, 0, 5, name="j0_eta", label="j0 abs eta (all regular jets)"),
             "j0_phi" : axis.Regular(180, -3.1416, 3.1416, name="j0_phi", label="j0 phi (all regular jets)"),
 
+            "jup0_pt"  : axis.Regular(180, -5, 250, name="jup0_pt",  label="pt of highest UParTAK4 score jet"),
+            "jup0_eta" : axis.Regular(180, -5, 5, name="jup0_eta", label="eta of highest UParTAK4 score jet"),
+            "jup0_phi" : axis.Regular(180, -3.1416, 3.1416, name="jup0_phi", label="phi of highest UParTAK4 score jet"),
+            "jup1_pt"  : axis.Regular(180, -5, 250, name="jup1_pt",  label="pt of second highest UParTAK4 score jet"),
+            "jup1_eta" : axis.Regular(180, -5, 5, name="jup1_eta", label="eta of second highest UParTAK4 score jet"),
+            "jup1_phi" : axis.Regular(180, -3.1416, 3.1416, name="jup1_phi", label="phi of second highest UParTAK4 score jet"),
+
             "dr_fj0l0" : axis.Regular(180, 0, 6, name="dr_fj0l0", label="dr between FJ and lepton"),
             "dr_j0fwdj1fwd" : axis.Regular(180, 0, 6, name="dr_j0fwdj1fwd", label="dr between leading two forward jets"),
             "dr_j0centj1cent" : axis.Regular(180, 0, 6, name="dr_j0centj1cent", label="dr between leading two central jets"),
@@ -274,6 +281,7 @@ class AnalysisProcessor(processor.ProcessorABC):
             "mt2_zlead" : axis.Regular(180, 0, 360, name="mt2_zlead", label="MT2 of leading-pt Z leptons and met"),
             "mt2_zsub"  : axis.Regular(180, 0, 360, name="mt2_zsub",  label="MT2 of subleading-pt Z leptons and met"),
             "dnn_score_zzz" : axis.Regular(180, 0, 1, name="dnn_score_zzz",      label="DNN ABCDnet score for zzz 4l+met region"),
+            "dnn_score_zzz_zzbb" : axis.Regular(180, 0, 1, name="dnn_score_zzz_zzbb",      label="DNN ABCDnet score for zzz zz+bb region"),
 
 
             "l0_truth"          : axis.Regular(36, -1, 34, name="l0_truth", label="l0 truth flag"),
@@ -343,7 +351,8 @@ class AnalysisProcessor(processor.ProcessorABC):
         self._siphon_output_path = f"histos/{siphon_out_name}.root"
         self._siphon_bdt_data = siphon_bdt_data
         #self._siphon_selection = ["2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5"] # NOTE this is hard coded
-        self._siphon_selection = ["4l_minmll_2z_0b_4lx_0fj_met40"] # NOTE this is hard coded
+        #self._siphon_selection = ["4l_minmll_2z_0b_4lx_0fj_met40"] # NOTE this is hard coded
+        self._siphon_selection = ["4l_minmll_2z_4lx_2j_2blm"] # NOTE this is hard coded
         self._bdt_vars = []
         for varname in list(self._dense_axes_dict.keys()):
             self._bdt_vars.append(varname)
@@ -377,6 +386,9 @@ class AnalysisProcessor(processor.ProcessorABC):
         if model == "zzz":
             scaler_path = ewkcoffea_path("data/zzz_nn_models/single_abcdisco_zzz_scaler_params.json")
             checkpoint_path = ewkcoffea_path("data/zzz_nn_models/single_abcdisco_zzz.ckpt")
+        elif model == "zzz_zzbb":
+            scaler_path = ewkcoffea_path("data/zzz_nn_models/single_abcdisco_zzz_zzbb_scaler_params.json")
+            checkpoint_path = ewkcoffea_path("data/zzz_nn_models/single_abcdisco_zzz_zzbb.ckpt")
         else:
             raise Exception(f"Unknown model {model}")
 
@@ -482,6 +494,7 @@ class AnalysisProcessor(processor.ProcessorABC):
         # We will use loose e and medium m for analysis, be sure to convert the 0 and 1 in the array to T and F before using as a mask
         #ele = ele[ak.values_astype(ele.isLoose,bool)]
         #mu  = mu[ak.values_astype(mu.isMedium,bool)]
+        #mu = mu[mu.pfIsoId >= 2]
 
         # Get tight leptons for VVH selection, using mask from RDF
         l_vvh_t = ak.with_name(ak.concatenate([ele,mu],axis=1),'PtEtaPhiMCandidate')
@@ -527,7 +540,8 @@ class AnalysisProcessor(processor.ProcessorABC):
         #cleanedJets = os_ec.get_cleaned_collection(l_vvh_t,jets) # Clean against leps
         #cleanedJets = os_ec.get_cleaned_collection(fatjets,cleanedJets,drcut=0.8) # Clean against fat jets
         cleanedJets = jets
-        goodJets = cleanedJets[(abs(cleanedJets.eta) <= 2.4)] # TEST
+        goodJets = cleanedJets
+        #goodJets = cleanedJets[(abs(cleanedJets.eta) <= 2.4)] # TEST
         goodJets_central = cleanedJets[(abs(cleanedJets.eta) <= 2.4)]
         goodJets_forward = cleanedJets[(abs(cleanedJets.eta) > 2.4)]
 
@@ -692,6 +706,12 @@ class AnalysisProcessor(processor.ProcessorABC):
         mass_jjbscore = ak.where(njets_central>1, (jup0+jup1).mass, -1)
         dr_jjbscore = ak.fill_none(jup0.delta_r(jup1), -1)
         pt_jjbscore = ak.fill_none((jup0+jup1).pt, -1)
+        jup0_pt  = ak.fill_none(jup0.pt, -1)
+        jup0_eta = ak.fill_none(jup0.eta, -99)
+        jup0_phi = ak.fill_none(jup0.phi, -99)
+        jup1_pt  = ak.fill_none(jup1.pt, -1)
+        jup1_eta = ak.fill_none(jup1.eta, -99)
+        jup1_phi = ak.fill_none(jup1.phi, -99)
 
         # Mjj max from any jets
         jjCentFwd_pairs = ak.combinations( goodJets_ptordered_padded, 2, fields=["j0", "j1"] )
@@ -917,6 +937,12 @@ class AnalysisProcessor(processor.ProcessorABC):
             "j0_pt"  : j0.pt,
             "j0_eta" : j0.eta,
             "j0_phi" : j0.phi,
+            "jup0_pt" : jup0_pt,
+            "jup0_eta" : jup0_eta,
+            "jup0_phi" : jup0_phi,
+            "jup1_pt" : jup1_pt,
+            "jup1_eta" : jup1_eta,
+            "jup1_phi" : jup1_phi,
 
             "nleps" : nleps,
             "njets" : njets,
@@ -1061,6 +1087,8 @@ class AnalysisProcessor(processor.ProcessorABC):
         # Once we finish evaluating, add the score to the dense_variables_dict too
         dnn_score_zzz = self._run_abcd_inference(events, dense_variables_dict,"zzz")
         dense_variables_dict["dnn_score_zzz"] = dnn_score_zzz
+        dnn_score_zzz_zzbb = self._run_abcd_inference(events, dense_variables_dict,"zzz_zzbb")
+        dense_variables_dict["dnn_score_zzz_zzbb"] = dnn_score_zzz_zzbb
 
 
         ### Lepton truth variables ###
@@ -1145,21 +1173,10 @@ class AnalysisProcessor(processor.ProcessorABC):
 
         # ZZbb
         is_mbbZ = (mass_jjbscore>40) & (mass_jjbscore<120)
-        selections.add("4l_minmll_2z_4lx_2j_0bl",      is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets_central>=2) & (nbtagsl_cent==0))
-        selections.add("4l_minmll_2z_4lx_2j_2bl",      is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets_central>=2) & (nbtagsl_cent>=2))
         selections.add("4l_minmll_2z_4lx_2j_2blm",      is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets_central>=2) & (nbtagsl_cent>=2) & (nbtagsm_cent>=1))
-        selections.add("4l_minmll_2z_4lx_2j_2bm",      is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets_central>=2) & (nbtagsm_cent>=2))
-        selections.add("4l_minmll_2z_4lx_2j_2bt",      is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets_central>=2) & (nbtagst_cent>=2))
-        selections.add("4l_minmll_2z_4lx_2j_0bl_onZ",  is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets_central>=2) & (nbtagsl_cent==0) & is_mbbZ)
-        selections.add("4l_minmll_2z_4lx_2j_2bl_onZ",  is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets_central>=2) & (nbtagsl_cent>=2) & is_mbbZ)
         selections.add("4l_minmll_2z_4lx_2j_2blm_onZ",  is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets_central>=2) & (nbtagsl_cent>=2) & (nbtagsm_cent>=1) & is_mbbZ)
-        selections.add("4l_minmll_2z_4lx_2j_2bm_onZ",  is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets_central>=2) & (nbtagsm_cent>=2) & is_mbbZ)
-        selections.add("4l_minmll_2z_4lx_2j_2bt_onZ",  is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets_central>=2) & (nbtagst_cent>=2) & is_mbbZ)
-        selections.add("4l_minmll_2z_4lx_2j_0bl_offZ", is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets_central>=2) & (nbtagsl_cent==0) & ~is_mbbZ)
-        selections.add("4l_minmll_2z_4lx_2j_2bl_offZ", is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets_central>=2) & (nbtagsl_cent>=2) & ~is_mbbZ)
         selections.add("4l_minmll_2z_4lx_2j_2blm_offZ", is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets_central>=2) & (nbtagsl_cent>=2) & (nbtagsm_cent>=1) & ~is_mbbZ)
-        selections.add("4l_minmll_2z_4lx_2j_2bm_offZ", is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets_central>=2) & (nbtagsm_cent>=2) & ~is_mbbZ)
-        selections.add("4l_minmll_2z_4lx_2j_2bt_offZ", is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets_central>=2) & (nbtagst_cent>=2) & ~is_mbbZ)
+        selections.add("4l_minmll_2z_4lx_2j_2blm_NNp7", is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets_central>=2) & (nbtagsl_cent>=2) & (nbtagsm_cent>=1) & (dnn_score_zzz_zzbb>0.7))
 
         selections.add("4l_minmll_2z_0b_4lx_0fj",                is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==4) & (nfatjets==0))
         selections.add("4l_minmll_2z_0b_4lx_0fj_met40",          is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==4) & (nfatjets==0) & (met.pt>40))
@@ -1172,9 +1189,10 @@ class AnalysisProcessor(processor.ProcessorABC):
 
         selections.add("4l_minmll_2z_0b_4lx_0fj_met90",          is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==4) & (nfatjets==0) & (met.pt>90))
         selections.add("4l_minmll_2z_0b_4lx_0fj_met90_phimetzz", is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==4) & (nfatjets==0) & (met.pt>90) & (abs(met4.delta_phi(Z1+Z2))>2))
-        selections.add("4l_minmll_2z_0b_4lx_1fj",                is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==4) & (nfatjets==1))
-        selections.add("4l_minmll_2z_0b_4lx_1fj_gpt0p5",         is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==4) & (nfatjets==1) & (fj0.gptZvsQCD>0.5))
-        selections.add("4l_minmll_2z_0b_4lx_1fj_pn0p5",          is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==4) & (nfatjets==1) & (fj0_pNetZvsQCD>0.5))
+
+        #selections.add("4l_minmll_2z_0b_4lx_1fj",                is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==4) & (nfatjets==1))
+        #selections.add("4l_minmll_2z_0b_4lx_1fj_gpt0p5",         is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==4) & (nfatjets==1) & (fj0.gptZvsQCD>0.5))
+        #selections.add("4l_minmll_2z_0b_4lx_1fj_pn0p5",          is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==4) & (nfatjets==1) & (fj0_pNetZvsQCD>0.5))
 
         selections.add("4l_minmll_2z_0b_5lx",                    is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==5))
 
@@ -1214,21 +1232,10 @@ class AnalysisProcessor(processor.ProcessorABC):
                 "4l_minmll_2z_2b_4lx",
 
                 # ZZbb study
-                "4l_minmll_2z_4lx_2j_0bl",
-                "4l_minmll_2z_4lx_2j_2bl",
                 "4l_minmll_2z_4lx_2j_2blm",
-                "4l_minmll_2z_4lx_2j_2bm",
-                "4l_minmll_2z_4lx_2j_2bt",
-                "4l_minmll_2z_4lx_2j_0bl_onZ",
-                "4l_minmll_2z_4lx_2j_2bl_onZ",
                 "4l_minmll_2z_4lx_2j_2blm_onZ",
-                "4l_minmll_2z_4lx_2j_2bm_onZ",
-                "4l_minmll_2z_4lx_2j_2bt_onZ",
-                "4l_minmll_2z_4lx_2j_0bl_offZ",
-                "4l_minmll_2z_4lx_2j_2bl_offZ",
                 "4l_minmll_2z_4lx_2j_2blm_offZ",
-                "4l_minmll_2z_4lx_2j_2bm_offZ",
-                "4l_minmll_2z_4lx_2j_2bt_offZ",
+                "4l_minmll_2z_4lx_2j_2blm_NNp7",
 
                 "4l_minmll_2z_0b_4lx_0fj",
                 "4l_minmll_2z_0b_4lx_0fj_met40",
