@@ -9,13 +9,15 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import copy
+import hist
 
 import ewkcoffea.modules.plotting_tools as plt_tools
 import topcoffea.modules.MakeLatexTable as mlt
 
 
 #HTML_PC = "/home/users/kmohrman/ref_scripts/html_stuff/index.php"
-HTML_PC = "/home/k.mohrman/ref_scirpts/html_stuff/index.php"
+#HTML_PC = "/home/k.mohrman/ref_scirpts/html_stuff/index.php"
+HTML_PC = "/blue/avery/aaponteutani/html_stuff/index.php"
 
 #CLR_LST = ['#d55e00', '#e69f00', '#f0e442', '#009e73', '#0072b2', '#56b4e9', '#cc79a7', '#6e3600', '#a17500'] #, '#a39b2f', '#00664f', '#005d87', '#999999', '#8c5d77']
 #CLR_LST = ['#d55e00', '#e69f00']
@@ -512,6 +514,110 @@ def get_yields_per_cat(histo_dict,var_name,grp_dict,year_name_lst_to_prepend, ca
 
 
 # Make data/mc figures, written by claude
+# Signal nominal vs Up/Down of one systematic, with the Up/nom and Down/nom ratios
+# (the weight systematics are only applied to signal, so on the total MC they are invisible)
+def make_sig_syst_fig(histo_sig, histo_sig_up, histo_sig_down, systematic_name, title="test"):
+
+    fig, (ax1, ax2) = plt.subplots(nrows=2, ncols=1, figsize=(7, 7), gridspec_kw={"height_ratios": (3, 1)}, sharex=True)
+    fig.subplots_adjust(hspace=.07)
+
+    edges = histo_sig.axes[0].edges
+    nom = histo_sig.values()
+    up = histo_sig_up.values()
+    down = histo_sig_down.values()
+
+    ax1.stairs(nom, edges, color="k", linewidth=1.5, label="Signal nominal")
+    ax1.stairs(up, edges, color="tab:red", linewidth=1.5, linestyle="--", label=f"{systematic_name} Up")
+    ax1.stairs(down, edges, color="tab:blue", linewidth=1.5, linestyle=":", label=f"{systematic_name} Down")
+    ax1.stairs((up + down)/2, edges, color="tab:purple", linewidth=1.5, linestyle="-.", label="Mean (Up+Down)/2")
+    ax1.plot([], [], color="tab:green", linewidth=1.5, label="Avg (|Up|+|Down|)/2")
+    ax1.set_ylabel("Signal events")
+    ax1.set_ylim(0, 1.8*max(np.max(nom), np.max(up), np.max(down), 1e-6))
+    ax1.legend(fontsize=10, loc="upper right")
+    ax1.set_title(title)
+
+    with np.errstate(divide="ignore", invalid="ignore"):
+        ax2.stairs(np.where(nom > 0, up/nom, np.nan), edges, color="tab:red", linewidth=1.5, linestyle="--")
+        ax2.stairs(np.where(nom > 0, down/nom, np.nan), edges, color="tab:blue", linewidth=1.5, linestyle=":")
+        # Average size of the Up and Down shifts, drawn symmetric around 1
+        avg = np.where(nom > 0, (abs(up-nom) + abs(down-nom))/(2*nom), np.nan)
+        ax2.stairs(1 + avg, edges, color="tab:green", linewidth=1.5)
+        ax2.stairs(1 - avg, edges, color="tab:green", linewidth=1.5)
+        # Average of the Up and Down histograms (equal to the nominal if the variation is symmetric)
+        ax2.stairs(np.where(nom > 0, (up + down)/(2*nom), np.nan), edges, color="tab:purple", linewidth=1.5, linestyle="-.")
+    ax2.axhline(1.0, color="k", linewidth=0.8)
+    ax2.set_ylabel("Var / nom")
+    ax2.set_ylim(0.8, 1.2)
+    ax2.set_xlabel(histo_sig.axes[0].label)
+
+    yld_nom = sum(histo_sig.values(flow=True))
+    yld_up = sum(histo_sig_up.values(flow=True))
+    yld_down = sum(histo_sig_down.values(flow=True))
+    if yld_nom > 0:
+        ax1.text(0.03, 0.93, f"Signal nominal: {yld_nom:.3f}", fontsize=10, transform=ax1.transAxes)
+        ax1.text(0.03, 0.87, f"Up: {yld_up:.3f} ({100*(yld_up/yld_nom-1):+.2f}%)", fontsize=10, color="tab:red", transform=ax1.transAxes)
+        ax1.text(0.03, 0.81, f"Down: {yld_down:.3f} ({100*(yld_down/yld_nom-1):+.2f}%)", fontsize=10, color="tab:blue", transform=ax1.transAxes)
+        ax1.text(0.03, 0.75, f"Avg: \u00b1{100*(abs(yld_up-yld_nom)+abs(yld_down-yld_nom))/(2*yld_nom):.2f}%", fontsize=10, color="tab:green", transform=ax1.transAxes)
+        ax1.text(0.03, 0.69, f"Mean: {(yld_up+yld_down)/2:.3f} ({100*((yld_up+yld_down)/(2*yld_nom)-1):+.2f}%)", fontsize=10, color="tab:purple", transform=ax1.transAxes)
+
+    return fig
+
+
+# High score region (ABCD region A) for the one-bin systematic plots: 2d hist, its category, the two axes
+# The cuts are the ABCD_WP of analysis_processor_semilep.py (x is the DNN score, y the VBS variable), the region is x >= x_cut and y >= y_cut
+HIGH_SCORE_REGION = {
+    "3l" : {"hist" : "abcd2d_3lChsum3", "cat" : "3l_chsum3", "x" : "dnn_score", "y" : "vbs_score",
+            "cuts" : {"r2" : (0.54, 0.06), "r3" : (0.75, 0.87)}},
+    "2l" : {"hist" : "abcd2d_2lH", "cat" : "2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5", "x" : "dnn_score", "y" : "vbs_mjj",
+            "cuts" : {"r2" : (0.52, 1200.0), "r3" : (0.54, 800.0)}},
+}
+
+# Signal yield (sum of weights and variance, flow bins included) for one systematic layer
+#   - var_or_region: name of a 1d hist (whole category), or the HIGH_SCORE_REGION dict with the (x_cut, y_cut) to use
+def get_sig_yield(histo_dict, grp_dict, var_or_region, cat, systematic, cuts=None):
+    if isinstance(var_or_region, str):
+        h = histo_dict[var_or_region][{"systematic":systematic, "category":cat, "lepflav":sum}]
+    else:
+        h = histo_dict[var_or_region["hist"]][{"systematic":systematic, "category":var_or_region["cat"]}]
+    h = plt_tools.group(h, "process", "process_grp", grp_dict)[{"process_grp":"Signal"}]
+    val = h.values(flow=True)
+    var = h.variances(flow=True)
+    if isinstance(var_or_region, str):
+        return val.sum(), var.sum()
+    # Index of the cut bin in the flow arrays (+1 for the underflow), the cuts should be on bin edges
+    idx = []
+    for ax_name, cut in zip([var_or_region["x"], var_or_region["y"]], cuts):
+        ax = h.axes[ax_name]
+        if not np.isclose(ax.edges, cut).any(): print(f"WARNING: cut {cut} is not on a bin edge of {ax_name}, it will be rounded")
+        idx.append(ax.index(cut) + 1)
+    return val[idx[0]:, idx[1]:].sum(), var[idx[0]:, idx[1]:].sum()
+
+# One-bin version of the signal systematic figure (one plot for the whole category, one for the high score region)
+def make_onebin_syst_plots(histo_dict, grp_dict, systematic_name, channel, run, cat_lst, save_dir_path):
+    def onebin(val_var, label):
+        h = hist.Hist(hist.axis.Regular(1, 0, 1, name="onebin", label=label), storage="weight")
+        h.view().value[0] = val_var[0]
+        h.view().variance[0] = val_var[1]
+        return h
+    region = HIGH_SCORE_REGION[channel]
+    cuts = region["cuts"][run]
+    var = SYST_VARS_ALWAYS[channel][0]
+    jobs = [(var, cat, f"{cat} (all events)", f"{cat}__onebin_all") for cat in cat_lst]
+    jobs.append((region, None, f"{region['cat']}: {region['x']} >= {cuts[0]:g}, {region['y']} >= {cuts[1]:g}", f"{region['cat']}__onebin_highscore"))
+    os.makedirs(save_dir_path, exist_ok=True)
+    rows = []
+    for var_or_region, cat, label, name in jobs:
+        ylds = {s: get_sig_yield(histo_dict, grp_dict, var_or_region, cat, s, cuts) for s in ["nominal", f"{systematic_name}Up", f"{systematic_name}Down"]}
+        fig = make_sig_syst_fig(onebin(ylds["nominal"], label), onebin(ylds[f"{systematic_name}Up"], label), onebin(ylds[f"{systematic_name}Down"], label), systematic_name, title=name)
+        fig.axes[1].set_xticks([])
+        fig.savefig(os.path.join(save_dir_path, name+".png"), bbox_inches='tight')
+        plt.close(fig)
+        nom, up, down = ylds["nominal"][0], ylds[f"{systematic_name}Up"][0], ylds[f"{systematic_name}Down"][0]
+        if nom > 0: rows.append((name, nom, 100*(up/nom-1), 100*(down/nom-1), 100*(abs(up-nom)+abs(down-nom))/(2*nom), 100*((up+down)/(2*nom)-1)))
+    shutil.copyfile(HTML_PC, os.path.join(save_dir_path, "index.php"))
+    return rows
+
+
 def make_data_mc_fig(histo_mc, histo_dat, histo_mc_sig, histo_mc_bkg, title="test", axisrangex=None, histo_sys_up=None, histo_sys_down=None, systematic_name=None):
 
     fig, (ax1, ax2) = plt.subplots(
@@ -653,7 +759,30 @@ def make_data_mc_fig(histo_mc, histo_dat, histo_mc_sig, histo_mc_bkg, title="tes
 
 
 # Extract systematic varitions, from claude
-def get_systematic_histograms(histo_dict, var, cat, systematic_name, lepflav_bin=None, grouping_dict=None, sample_group_names_lst_mc=None, mc_scale=1.0):
+# Variables to plot for each systematic (with -s), the scores of the channel are always included
+SYST_VARS_ALWAYS = {"3l" : ["dnn_score_3lChsum3", "vbs_score"], "2l" : ["dnn_score_2lH", "vbs_score"]}
+# Category of the systematics plots per channel (the processor only fills the JES/JER/MET variations for SYST_1D_CATS)
+SYST_CATS = {"3l": ["3l"], "2l": ["2lOSSF_nFJ1"]}
+
+SYST_VARS = {
+    "eleSF"       : ["l0_pt", "l0_eta", "l0_phi", "l1_pt", "l1_eta", "l2_pt", "l2_eta"],
+    "muoSF"       : ["l0_pt", "l0_eta", "l0_phi", "l1_pt", "l1_eta", "l2_pt", "l2_eta"],
+    "btag"        : ["nbtagsl", "nbtagsm", "nbtagst", "njets"],
+    "pileup"      : ["njets", "met", "l0_pt"],
+    "l1prefiring" : ["j0_eta", "vbs1_eta", "vbs2_eta", "l0_eta"],
+    "PS"          : ["njets", "vbs_mjj", "l0_pt"],
+    "mu"          : ["njets", "vbs_mjj", "l0_pt"],
+    "jes"         : ["njets", "nbtagst", "vbs_mjj", "met", "j0_eta", "vbs1_eta", "vbs2_eta"],
+    "jer"         : ["njets", "nbtagst", "vbs_mjj", "met", "j0_eta", "vbs1_eta", "vbs2_eta"],
+    "metuncl"     : ["met"],
+}
+def get_syst_vars(syst, channel="3l"):
+    for key,var_lst in SYST_VARS.items():
+        if syst.startswith(key): return SYST_VARS_ALWAYS[channel] + var_lst
+    return SYST_VARS_ALWAYS[channel]
+
+
+def get_systematic_histograms(histo_dict, var, cat, systematic_name, lepflav_bin=None, grouping_dict=None, sample_group_names_lst_mc=None, mc_scale=1.0, histo_dict_syst=None):
     """
     Get systematic variation histograms (Up and Down).
     Applies the same processing (rebinning, grouping, overflow) as nominal histogram.
@@ -661,19 +790,24 @@ def get_systematic_histograms(histo_dict, var, cat, systematic_name, lepflav_bin
     Returns:
     --------
     tuple: (histo_sys_up, histo_sys_down) or (None, None) if systematic not found
+
+    If histo_dict_syst is given (e.g. a signal-only --do-systs run), the Up/Down layers are
+    taken from it, and the nominal (for the groups without the variation) from histo_dict.
     """
+
+    histo_dict_var = histo_dict if histo_dict_syst is None else histo_dict_syst
 
     try:
         # Get up and down histograms - same extraction as in make_plots
         if lepflav_bin is None:
-            histo_up = copy.deepcopy(histo_dict[var][{"systematic":f"{systematic_name}Up", "category":cat}])
-            histo_down = copy.deepcopy(histo_dict[var][{"systematic":f"{systematic_name}Down", "category":cat}])
+            histo_up = copy.deepcopy(histo_dict_var[var][{"systematic":f"{systematic_name}Up", "category":cat}])
+            histo_down = copy.deepcopy(histo_dict_var[var][{"systematic":f"{systematic_name}Down", "category":cat}])
         elif lepflav_bin == "all":
-            histo_up = copy.deepcopy(histo_dict[var][{"systematic":f"{systematic_name}Up", "category":cat, "lepflav":sum}])
-            histo_down = copy.deepcopy(histo_dict[var][{"systematic":f"{systematic_name}Down", "category":cat, "lepflav":sum}])
+            histo_up = copy.deepcopy(histo_dict_var[var][{"systematic":f"{systematic_name}Up", "category":cat, "lepflav":sum}])
+            histo_down = copy.deepcopy(histo_dict_var[var][{"systematic":f"{systematic_name}Down", "category":cat, "lepflav":sum}])
         elif isinstance(lepflav_bin, int):
-            histo_up = copy.deepcopy(histo_dict[var][{"systematic":f"{systematic_name}Up", "category":cat, "lepflav":lepflav_bin}])
-            histo_down = copy.deepcopy(histo_dict[var][{"systematic":f"{systematic_name}Down", "category":cat, "lepflav":lepflav_bin}])
+            histo_up = copy.deepcopy(histo_dict_var[var][{"systematic":f"{systematic_name}Up", "category":cat, "lepflav":lepflav_bin}])
+            histo_down = copy.deepcopy(histo_dict_var[var][{"systematic":f"{systematic_name}Down", "category":cat, "lepflav":lepflav_bin}])
         else:
             raise Exception(f"Unknown lep flav handling: {lepflav_bin}")
 
@@ -705,12 +839,38 @@ def get_systematic_histograms(histo_dict, var, cat, systematic_name, lepflav_bin
             # Default: exclude Data
             sample_group_names_lst_mc = [grp for grp in histo_up.axes["process_grp"] if grp != "Data"]
 
-        histo_up_mc = histo_up[{"process_grp": sample_group_names_lst_mc}]
-        histo_down_mc = histo_down[{"process_grp": sample_group_names_lst_mc}]
+        # Nominal, with the same processing, for the groups that do not have this variation
+        # (e.g. the weight systematics are only filled for signal, so the backgrounds stay at their nominal)
+        if lepflav_bin is None:
+            histo_nom = copy.deepcopy(histo_dict[var][{"systematic":"nominal", "category":cat}])
+        elif lepflav_bin == "all":
+            histo_nom = copy.deepcopy(histo_dict[var][{"systematic":"nominal", "category":cat, "lepflav":sum}])
+        else:
+            histo_nom = copy.deepcopy(histo_dict[var][{"systematic":"nominal", "category":cat, "lepflav":lepflav_bin}])
+        if var not in ["njets","nleps","nbtagsl","nbtagsm","nbtagst","njets_counts","nleps_counts","nfatjets","njets_forward","njets_tot","n_ll_sfos","abs_ch_sum_3l","l0_truth","l1_truth","l2_truth", "nlep_truth_real", "nlep_truth_fake", "abs_pdgid_sum"]:
+            histo_nom = plt_tools.rebin(histo_nom, 6)
+        if grouping_dict is not None:
+            histo_nom = plt_tools.group(histo_nom, "process", "process_grp", grouping_dict)
+        histo_nom = plt_tools.merge_overflow(histo_nom)
+        if mc_scale != 1.0:
+            for grp in histo_nom.axes["process_grp"]:
+                if grp == "Data": continue
+                histo_nom = plt_tools.scale(histo_nom, "process_grp", {grp: mc_scale})
 
-        # Sum over process groups to get total MC
-        histo_up_total = histo_up_mc[{"process_grp": sum}]
-        histo_down_total = histo_down_mc[{"process_grp": sum}]
+        # Sum over process groups to get total MC, taking the nominal for the groups without this variation
+        def sum_groups(histo_var):
+            total = None
+            for grp in sample_group_names_lst_mc:
+                h_nom = histo_nom[{"process_grp": grp}]
+                if grp not in list(histo_var.axes["process_grp"]):
+                    h_use = h_nom # Group not in the systematics hist (e.g. backgrounds with a signal-only --syst-pkl)
+                else:
+                    h_var = histo_var[{"process_grp": grp}]
+                    h_use = h_nom if (h_var.values(flow=True).sum() == 0 and h_nom.values(flow=True).sum() != 0) else h_var
+                total = h_use if total is None else total + h_use
+            return total
+        histo_up_total = sum_groups(histo_up)
+        histo_down_total = sum_groups(histo_down)
 
         return histo_up_total, histo_down_total
 
@@ -1122,7 +1282,7 @@ def print_yields(histo_dict,grp_dict,cat_lst,years_to_prepend,roundat=None,print
 
 
 ### Make the plots ###
-def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend,cat_lst,lepflav_bin=None,save_dir_path="plots",make_cat_subdirs=True,vars_to_plot=None,mc_scale=1,do_data=True,systematic_to_show=None):
+def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend,cat_lst,lepflav_bin=None,save_dir_path="plots",make_cat_subdirs=True,vars_to_plot=None,mc_scale=1,do_data=True,systematic_to_show=None,histo_dict_syst=None):
 
     #grouping_dict = append_years(grp_dict,year_name_lst_to_prepend) # For fromnano
     grouping_dict = copy.deepcopy(grp_dict)
@@ -1181,6 +1341,7 @@ def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend,cat_lst,lepflav_bin=
 
             # Get systematic histograms if requested - AFTER all processing is defined
             histo_sys_up = None
+            histo_sig_sys_up = None
             histo_sys_down = None
             if systematic_to_show is not None:
                 histo_sys_up, histo_sys_down = get_systematic_histograms(
@@ -1188,7 +1349,8 @@ def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend,cat_lst,lepflav_bin=
                     lepflav_bin=lepflav_bin,
                     grouping_dict=grouping_dict,
                     sample_group_names_lst_mc=sample_group_names_lst_mc,
-                    mc_scale=mc_scale
+                    mc_scale=mc_scale,
+                    histo_dict_syst=histo_dict_syst
                 )
                 # Debug: print if we found the systematic
                 if histo_sys_up is not None:
@@ -1197,8 +1359,21 @@ def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend,cat_lst,lepflav_bin=
                     yld_down = sum(histo_sys_down.values(flow=True))
                     print(f"Debug {systematic_to_show}: Nominal={yld_nominal:.2f}, Up={yld_up:.2f} ({100*(yld_up/yld_nominal-1):.1f}%), Down={yld_down:.2f} ({100*(yld_down/yld_nominal-1):.1f}%)")
 
+                # Same for the signal alone (the weight systematics only vary the signal)
+                histo_sig_sys_up, histo_sig_sys_down = get_systematic_histograms(
+                    histo_dict, var, cat, systematic_to_show,
+                    lepflav_bin=lepflav_bin,
+                    grouping_dict=grouping_dict,
+                    sample_group_names_lst_mc=["Signal"],
+                    mc_scale=mc_scale,
+                    histo_dict_syst=histo_dict_syst
+                )
+
             # Make the figure
             title = f"{cat}__{var}"
+            fig_sig_syst = None
+            if (systematic_to_show is not None) and (histo_sig_sys_up is not None):
+                fig_sig_syst = make_sig_syst_fig(histo_sig[{"process_grp": sum}], histo_sig_sys_up, histo_sig_sys_down, systematic_to_show, title=title)
             fig,ext_tup = make_vvh_fig(
                 histo_mc = histo_mc,
                 histo_mc_sig = histo_sig,
@@ -1221,14 +1396,16 @@ def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend,cat_lst,lepflav_bin=
                 )
 
             # Save
-            if not os.path.exists(f"./{save_dir_path}"): os.mkdir(f"./{save_dir_path}")
+            os.makedirs(f"./{save_dir_path}", exist_ok=True)
             if make_cat_subdirs:
                 save_dir_path_cat = os.path.join(save_dir_path,cat)
             else:
                 save_dir_path_cat = save_dir_path
-            if not os.path.exists(save_dir_path_cat): os.mkdir(save_dir_path_cat)
+            os.makedirs(save_dir_path_cat, exist_ok=True)
             fig.savefig(os.path.join(save_dir_path_cat,title+".png"),bbox_extra_artists=ext_tup,bbox_inches='tight')
             if histo_dat is not None: fig_datamc.savefig(os.path.join(save_dir_path_cat,title+"_dataMC.png"),bbox_inches='tight')
+            if fig_sig_syst is not None: fig_sig_syst.savefig(os.path.join(save_dir_path_cat,title+"_sigSyst.png"),bbox_inches='tight')
+            if fig_sig_syst is not None: plt.close(fig_sig_syst)
             shutil.copyfile(HTML_PC, os.path.join(save_dir_path_cat,"index.php"))
 
 
@@ -1247,6 +1424,8 @@ def main():
     parser.add_argument('-o', "--output-name", default='vvh', help = "What to name the outputs")
     parser.add_argument('-r', "--run", default='r2', help = "Which year")
     parser.add_argument('-c', "--channel", default='3l', help = "Which channel", choices=["2l","3l"])
+    parser.add_argument('-s', "--systs", nargs='+', default=None, help = "With -p: also make the plots with the Up/Down variation of these systematics (or 'all'), one output dir per systematic")
+    parser.add_argument("--syst-pkl", default=None, help = "With -s: take the Up/Down layers from this pkl (e.g. a signal-only --do-systs run) and the nominal from pkl_file_path")
     args = parser.parse_args()
 
     if args.channel == "2l":
@@ -1257,6 +1436,7 @@ def main():
     # Get the dictionary of histograms from the input pkl file
     histo_dict = pickle.load(gzip.open(args.pkl_file_path))
     name = args.pkl_file_path.split("/")[1][:-7] # Drops leading histos/ and trailing .pkl.gz
+    histo_dict_syst = pickle.load(gzip.open(args.syst_pkl)) if args.syst_pkl is not None else None
 
     # Print total raw events
     #print(sum(histo_dict["njets_counts"][{"systematic":"nominal", "category":"all_events", "process":sum, "lepflav":sum}].values(flow=True)))
@@ -1293,7 +1473,24 @@ def main():
     if args.datacard:
         dump_datacard(histo_dict,grp_dict,name)
     if args.make_plots:
-        make_plots(histo_dict,grp_dict,years_to_prepend,cat_lst,lepflav_bin="all",do_data=True, systematic_to_show=None) # mc_scale=110.84/109.95 for 2024 to 2025 scaling
+        if args.systs is None:
+            make_plots(histo_dict,grp_dict,years_to_prepend,cat_lst,lepflav_bin="all",do_data=True, systematic_to_show=None) # mc_scale=110.84/109.95 for 2024 to 2025 scaling
+        else:
+            # One set of plots per systematic, with its Up/Down variation drawn on the data/MC plots
+            syst_lst = args.systs
+            if syst_lst == ["all"]:
+                syst_lst = sorted({s[:-2] for s in plt_tools.get_axis_cats((histo_dict if histo_dict_syst is None else histo_dict_syst)["njets"],"systematic") if s.endswith("Up")})
+            onebin_rows = []
+            for syst in syst_lst:
+                make_plots(histo_dict,grp_dict,years_to_prepend,SYST_CATS[args.channel],lepflav_bin="all",do_data=True,save_dir_path=f"plots_syst_{args.output_name}/{syst}",systematic_to_show=syst,histo_dict_syst=histo_dict_syst,vars_to_plot=get_syst_vars(syst, args.channel))
+                # One-bin plots (whole category, and the high score region), from the file with the systematic layers
+                onebin_rows += [(syst,) + row for row in make_onebin_syst_plots((histo_dict if histo_dict_syst is None else histo_dict_syst), grp_dict, syst, args.channel, args.run, SYST_CATS[args.channel], f"plots_syst_{args.output_name}/{syst}/onebin")]
+            # Summary of the one-bin numbers for all the systematics
+            with open(f"plots_syst_{args.output_name}/onebin_summary.txt", "w") as f_out:
+                f_out.write(f"{'systematic':34s} {'region':45s} {'nominal':>9s} {'Up %':>8s} {'Down %':>8s} {'Avg %':>7s} {'Mean %':>8s}\n")
+                for row in onebin_rows:
+                    f_out.write(f"{row[0]:34s} {row[1]:45s} {row[2]:9.4f} {row[3]:+8.3f} {row[4]:+8.3f} {row[5]:7.3f} {row[6]:+8.3f}\n")
+            print(f"One-bin summary: plots_syst_{args.output_name}/onebin_summary.txt")
 
 
 if __name__ == '__main__':
