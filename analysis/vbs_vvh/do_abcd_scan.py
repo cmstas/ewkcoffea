@@ -748,7 +748,9 @@ N_TOP_EXPORT = 5
 # thresholds at the bin indices ix_t (s1 = x) and iy_t (s2 = y), and the scanned ones at every bin edge below them
 def closure_scan_steps(a, ix_t, iy_t):
     nx, ny = a.shape
-    def n(x0, x1, y0, y1): return float(a[x0:x1, y0:y1].sum())
+
+    def n(x0, x1, y0, y1):
+        return float(a[x0:x1, y0:y1].sum())
     return {
         # Inside D: A' = t1'<s1<t1 & t2'<s2<t2, B' = t1'<s1<t1 & s2<t2', C' = s1<t1' & t2'<s2<t2, D' = s1<t1' & s2<t2'
         "D"   : [(n(ixp, ix_t, iyp, iy_t), n(ixp, ix_t, 0, iyp), n(0, ixp, iyp, iy_t), n(0, ixp, 0, iyp))
