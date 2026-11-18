@@ -1513,6 +1513,8 @@ def main():
 
     # Run (for the luminosity lines) and channel name in the nuisance names
     run = "r2" if grp_dict is cvh.GRP_DICT_FULL_R2 else "r3"
+    if run == "r2" and abcd_hist_name.startswith("abcd2d_3l"):
+        grp_dict = {k: v for k, v in grp_dict.items() if k != "QCD"} # We don't have QCD in Run 2 3l skims (as check_vvh_hists)
     card_tag = abcd_hist_name.removeprefix("abcd2d_") + ("_Run2" if run == "r2" else "_Run3")
 
     # Signal with the systematic layers, from the --do-systs run
