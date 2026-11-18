@@ -782,7 +782,7 @@ def get_syst_vars(syst, channel="3l"):
     return SYST_VARS_ALWAYS[channel]
 
 
-def get_systematic_histograms(histo_dict, var, cat, systematic_name, lepflav_bin=None, grouping_dict=None, sample_group_names_lst_mc=None, mc_scale=1.0, histo_dict_syst=None):
+def get_systematic_histograms(histo_dict, var, cat, systematic_name, lepflav_bin=None, grouping_dict=None, sample_group_names_lst_mc=None, mc_scale=1.0):
     """
     Get systematic variation histograms (Up and Down).
     Applies the same processing (rebinning, grouping, overflow) as nominal histogram.
@@ -791,11 +791,10 @@ def get_systematic_histograms(histo_dict, var, cat, systematic_name, lepflav_bin
     --------
     tuple: (histo_sys_up, histo_sys_down) or (None, None) if systematic not found
 
-    If histo_dict_syst is given (e.g. a signal-only --do-systs run), the Up/Down layers are
-    taken from it, and the nominal (for the groups without the variation) from histo_dict.
+    The groups without the variation (the systematics are only filled for signal) take their nominal.
     """
 
-    histo_dict_var = histo_dict if histo_dict_syst is None else histo_dict_syst
+    histo_dict_var = histo_dict
 
     try:
         # Get up and down histograms - same extraction as in make_plots
@@ -863,7 +862,7 @@ def get_systematic_histograms(histo_dict, var, cat, systematic_name, lepflav_bin
             for grp in sample_group_names_lst_mc:
                 h_nom = histo_nom[{"process_grp": grp}]
                 if grp not in list(histo_var.axes["process_grp"]):
-                    h_use = h_nom # Group not in the systematics hist (e.g. backgrounds with a signal-only --syst-pkl)
+                    h_use = h_nom # Group not in the systematics hist
                 else:
                     h_var = histo_var[{"process_grp": grp}]
                     h_use = h_nom if (h_var.values(flow=True).sum() == 0 and h_nom.values(flow=True).sum() != 0) else h_var
@@ -1282,7 +1281,7 @@ def print_yields(histo_dict,grp_dict,cat_lst,years_to_prepend,roundat=None,print
 
 
 ### Make the plots ###
-def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend,cat_lst,lepflav_bin=None,save_dir_path="plots",make_cat_subdirs=True,vars_to_plot=None,mc_scale=1,do_data=True,systematic_to_show=None,histo_dict_syst=None):
+def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend,cat_lst,lepflav_bin=None,save_dir_path="plots",make_cat_subdirs=True,vars_to_plot=None,mc_scale=1,do_data=True,systematic_to_show=None):
 
     #grouping_dict = append_years(grp_dict,year_name_lst_to_prepend) # For fromnano
     grouping_dict = copy.deepcopy(grp_dict)
@@ -1350,7 +1349,6 @@ def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend,cat_lst,lepflav_bin=
                     grouping_dict=grouping_dict,
                     sample_group_names_lst_mc=sample_group_names_lst_mc,
                     mc_scale=mc_scale,
-                    histo_dict_syst=histo_dict_syst
                 )
                 # Debug: print if we found the systematic
                 if histo_sys_up is not None:
@@ -1366,7 +1364,6 @@ def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend,cat_lst,lepflav_bin=
                     grouping_dict=grouping_dict,
                     sample_group_names_lst_mc=["Signal"],
                     mc_scale=mc_scale,
-                    histo_dict_syst=histo_dict_syst
                 )
 
             # Make the figure
@@ -1425,7 +1422,6 @@ def main():
     parser.add_argument('-r', "--run", default='r2', help = "Which year")
     parser.add_argument('-c', "--channel", default='3l', help = "Which channel", choices=["2l","3l"])
     parser.add_argument('-s', "--systs", nargs='+', default=None, help = "With -p: also make the plots with the Up/Down variation of these systematics (or 'all'), one output dir per systematic")
-    parser.add_argument("--syst-pkl", default=None, help = "With -s: take the Up/Down layers from this pkl (e.g. a signal-only --do-systs run) and the nominal from pkl_file_path")
     args = parser.parse_args()
 
     if args.channel == "2l":
@@ -1436,7 +1432,6 @@ def main():
     # Get the dictionary of histograms from the input pkl file
     histo_dict = pickle.load(gzip.open(args.pkl_file_path))
     name = args.pkl_file_path.split("/")[1][:-7] # Drops leading histos/ and trailing .pkl.gz
-    histo_dict_syst = pickle.load(gzip.open(args.syst_pkl)) if args.syst_pkl is not None else None
 
     # Print total raw events
     #print(sum(histo_dict["njets_counts"][{"systematic":"nominal", "category":"all_events", "process":sum, "lepflav":sum}].values(flow=True)))
@@ -1479,12 +1474,12 @@ def main():
             # One set of plots per systematic, with its Up/Down variation drawn on the data/MC plots
             syst_lst = args.systs
             if syst_lst == ["all"]:
-                syst_lst = sorted({s[:-2] for s in plt_tools.get_axis_cats((histo_dict if histo_dict_syst is None else histo_dict_syst)["njets"],"systematic") if s.endswith("Up")})
+                syst_lst = sorted({s[:-2] for s in plt_tools.get_axis_cats(histo_dict["njets"],"systematic") if s.endswith("Up")})
             onebin_rows = []
             for syst in syst_lst:
-                make_plots(histo_dict,grp_dict,years_to_prepend,SYST_CATS[args.channel],lepflav_bin="all",do_data=True,save_dir_path=f"plots_syst_{args.output_name}/{syst}",systematic_to_show=syst,histo_dict_syst=histo_dict_syst,vars_to_plot=get_syst_vars(syst, args.channel))
+                make_plots(histo_dict,grp_dict,years_to_prepend,SYST_CATS[args.channel],lepflav_bin="all",do_data=True,save_dir_path=f"plots_syst_{args.output_name}/{syst}",systematic_to_show=syst,vars_to_plot=get_syst_vars(syst, args.channel))
                 # One-bin plots (whole category, and the high score region), from the file with the systematic layers
-                onebin_rows += [(syst,) + row for row in make_onebin_syst_plots((histo_dict if histo_dict_syst is None else histo_dict_syst), grp_dict, syst, args.channel, args.run, SYST_CATS[args.channel], f"plots_syst_{args.output_name}/{syst}/onebin")]
+                onebin_rows += [(syst,) + row for row in make_onebin_syst_plots(histo_dict, grp_dict, syst, args.channel, args.run, SYST_CATS[args.channel], f"plots_syst_{args.output_name}/{syst}/onebin")]
             # Summary of the one-bin numbers for all the systematics
             with open(f"plots_syst_{args.output_name}/onebin_summary.txt", "w") as f_out:
                 f_out.write(f"{'systematic':34s} {'region':45s} {'nominal':>9s} {'Up %':>8s} {'Down %':>8s} {'Avg %':>7s} {'Mean %':>8s}\n")

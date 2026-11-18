@@ -33,24 +33,6 @@ ABCD_WP = {
     "3lChsum3" : {"r2" : {"x_cut" : 0.54, "y_cut" : 0.06},   "r3" : {"x_cut" : 0.75, "y_cut" : 0.87}}, # r2: v5 model, from the vbsvvh-stat scan (was 0.07, 0.40 with v1)
 }
 
-# Data-driven ABCD closure (HIG-24-003 method), measured in the data sidebands only and computed once, in postprocess,
-# from the abcd2d_closure_<plane> histos. Labels as in HIG-24-003, with s1 = x (dnn_score) and s2 = y (constraining var):
-#   A = s1>t1 & s2>t2 (blinded in data), B = s1>t1 & s2<t2, C = s1<t1 & s2>t2, D = s1<t1 & s2<t2
-# (note: in get_abcd_region_masks B and C are the other way around; B*C/D is the same)
-# Three scan schemes, each with a smaller A'/B'/C'/D' grid inside a sideband and its thresholds scanned:
-#   "D":   inside D, scan t1' < t1 and t2' < t2
-#   "B+D": inside s2 < t2 (full s1), t1' = t1, scan t2' < t2
-#   "C+D": inside s1 < t1 (full s2), t2' = t2, scan t1' < t1
-# Per step r = (N_A' - N_B' N_C' / N_D') / (N_B' N_C' / N_D'), skipped if N_B', N_C', N_D' or the predicted
-# N_A' = N_B' N_C' / N_D' is below the minimum count; per scheme the mean and sd of r over the steps;
-# delta = max over the schemes of |r_mean|, used in the cards as lnN 1 + delta on the background in A
-CLOSURE_MIN_COUNT = 10   # minimum data in B', C', D' and in the predicted A' of a scan step
-CLOSURE_PLANES = {
-    # ABCD plane: channel tag in vbsvvh-stat, category of the plane
-    "3lChsum3" : {"tag" : "UF3l", "category" : "3l_chsum3"},
-}
-PLANE_OF_RUN = {"r2" : "Run2", "r3" : "Run3"}
-
 # Year-specific weight systematics (e.g. weightsyst_btag_HF_uncorrelated_2017) only exist in the files of that year
 # Every variation layer must still contain all events, so for the other years of the same run they are added with ratio 1
 YEAR_SPECIFIC_WGT_SYSTS = ["btag_HF_uncorrelated", "btag_LF_uncorrelated"]
@@ -152,100 +134,6 @@ def get_abcd_region_masks(x_var,y_var,x_cut,y_cut):
     D_mask = (x_var <  x_cut) & (y_var <  y_cut)
     return (A_mask, B_mask, C_mask, D_mask)
 
-# The A', B', C', D' counts of every step of the three closure scan schemes, on a 2d array a[x, y] (no flow),
-# with the real thresholds at the bin indices ix_t (s1 = x) and iy_t (s2 = y), and the scanned ones at every bin edge
-def closure_scan_steps(a, ix_t, iy_t):
-    nx, ny = a.shape
-    def n(x0, x1, y0, y1): return float(a[x0:x1, y0:y1].sum())
-    return {
-        # Inside D: A' = t1'<s1<t1 & t2'<s2<t2, B' = t1'<s1<t1 & s2<t2', C' = s1<t1' & t2'<s2<t2, D' = s1<t1' & s2<t2'
-        "D"   : [((ixp, iyp), n(ixp, ix_t, iyp, iy_t), n(ixp, ix_t, 0, iyp), n(0, ixp, iyp, iy_t), n(0, ixp, 0, iyp))
-                 for ixp in range(1, ix_t) for iyp in range(1, iy_t)],
-        # Inside s2 < t2: A' = s1>t1 & t2'<s2<t2, B' = s1>t1 & s2<t2', C' = s1<t1 & t2'<s2<t2, D' = s1<t1 & s2<t2'
-        "B+D" : [((ix_t, iyp), n(ix_t, nx, iyp, iy_t), n(ix_t, nx, 0, iyp), n(0, ix_t, iyp, iy_t), n(0, ix_t, 0, iyp))
-                 for iyp in range(1, iy_t)],
-        # Inside s1 < t1: A' = t1'<s1<t1 & s2>t2, B' = t1'<s1<t1 & s2<t2, C' = s1<t1' & s2>t2, D' = s1<t1' & s2<t2
-        "C+D" : [((ixp, iy_t), n(ixp, ix_t, iy_t, ny), n(ixp, ix_t, 0, iy_t), n(0, ixp, iy_t, ny), n(0, ixp, 0, iy_t))
-                 for ixp in range(1, ix_t)],
-    }
-
-# Per scheme: r_k = (N_A' - N_hat_A') / N_hat_A' with N_hat_A' = N_B' N_C' / N_D', skipping the steps with N_B', N_C'
-# or N_D' below min_count (or not positive) or with N_hat_A' below min_pred_a, then the mean and the sd of r_k over
-# the steps. The cut is on the predicted N_A' (from B', C', D' only), not the observed one, which would bias r_k
-def closure_per_scheme(a, ix_t, iy_t, x_edges, y_edges, min_count, min_pred_a):
-    out = {}
-    for scheme, steps in closure_scan_steps(a, ix_t, iy_t).items():
-        r_k, thresholds, n_skipped = [], [], 0
-        for (ixp, iyp), n_a, n_b, n_c, n_d in steps:
-            if min(n_b, n_c, n_d) < max(min_count, 1e-12):
-                n_skipped += 1
-                continue
-            n_hat = n_b * n_c / n_d
-            if n_hat < max(min_pred_a, 1e-12):
-                n_skipped += 1
-                continue
-            r_k.append((n_a - n_hat) / n_hat)
-            thresholds.append([round(float(x_edges[ixp]), 6), round(float(y_edges[iyp]), 6)])
-        out[scheme] = {"r_mean": float(np.mean(r_k)) if r_k else None, "r_sd": float(np.std(r_k)) if r_k else None,
-                       "n_steps": len(r_k), "n_skipped": n_skipped, "r_k": [float(r) for r in r_k], "thresholds": thresholds}
-    return out
-
-# The data-driven closure of every plane in CLOSURE_PLANES with data in the output: the eras of the run summed into
-# one plane (as the vbsvvh-stat default), delta = max |r_mean| over the schemes, and the MC cross-check
-#   { "<channel_tag>": { "<plane>": { "delta", "scheme", "per_scheme", "mc_kappa_A", "mc_per_scheme", ... } } }
-def compute_abcd_closures(output):
-    closures = {}
-    for plane_name, cfg in CLOSURE_PLANES.items():
-        h = output.get(f"abcd2d_closure_{plane_name}")
-        if (h is None) or ("data" not in list(h.axes["kind"])):
-            continue
-        eras = [e for e in h.axes["era"]]
-        run_tag = next((r for r, toks in YEAR_TOKENS_PER_RUN.items() if all(e in toks for e in eras)), None)
-        if run_tag is None:
-            print(f"ABCD closure {plane_name}: eras {eras} are not all from one run, skipped")
-            continue
-        x_cut, y_cut = ABCD_WP[plane_name][run_tag]["x_cut"], ABCD_WP[plane_name][run_tag]["y_cut"]
-        x_edges, y_edges = h.axes["dnn_score"].edges, h.axes["vbs_score"].edges
-        ix_t, iy_t = int(np.argmin(abs(x_edges - x_cut))), int(np.argmin(abs(y_edges - y_cut)))
-        if not (np.isclose(x_edges[ix_t], x_cut) and np.isclose(y_edges[iy_t], y_cut)):
-            raise Exception(f"ABCD closure {plane_name}: the thresholds ({x_cut}, {y_cut}) are not bin edges")
-        data = h[{"kind": "data", "era": sum}].values()
-
-        per_scheme = closure_per_scheme(data, ix_t, iy_t, x_edges, y_edges, CLOSURE_MIN_COUNT, CLOSURE_MIN_COUNT)
-        done = {s: v for s, v in per_scheme.items() if v["n_steps"] > 0}
-        scheme = max(done, key=lambda s: abs(done[s]["r_mean"])) if done else None
-        result = {"delta": abs(done[scheme]["r_mean"]) if scheme else None, "scheme": scheme,
-                  "thresholds": {"t1": float(x_cut), "t2": float(y_cut)}, "eras": eras, "min_count": CLOSURE_MIN_COUNT,
-                  "convention": "HIG-24-003: s1 = dnn_score, s2 = vbs_score; A = s1>t1 & s2>t2, B = s1>t1 & s2<t2, C = s1<t1 & s2>t2, D = s1<t1 & s2<t2",
-                  "per_scheme": {s: {k: v[k] for k in ("r_mean", "r_sd", "n_steps", "n_skipped")} for s, v in per_scheme.items()},
-                  "r_k": {s: {"r_k": v["r_k"], "thresholds": v["thresholds"]} for s, v in per_scheme.items()}}
-
-        # MC cross-check: kappa_A in the true A, and the same sideband schemes on MC (only empty steps skipped)
-        if "bkg" in list(h.axes["kind"]):
-            mc = h[{"kind": "bkg", "era": sum}].values()
-            nx, ny = mc.shape
-            n_a, n_b, n_c, n_d = (float(mc[ix_t:, iy_t:].sum()), float(mc[ix_t:, :iy_t].sum()), float(mc[:ix_t, iy_t:].sum()), float(mc[:ix_t, :iy_t].sum()))
-            result["mc_kappa_A"] = n_a * n_d / (n_b * n_c) if min(n_b, n_c, n_d) > 0 else None
-            result["mc_per_scheme"] = {s: {k: v[k] for k in ("r_mean", "r_sd", "n_steps", "n_skipped")}
-                                       for s, v in closure_per_scheme(mc, ix_t, iy_t, x_edges, y_edges, 0, 0).items()}
-        else:
-            result["mc_kappa_A"], result["mc_per_scheme"] = None, None
-
-        closures.setdefault(cfg["tag"], {})[PLANE_OF_RUN[run_tag]] = result
-        print(f"\nABCD closure {cfg['tag']} {PLANE_OF_RUN[run_tag]} ({plane_name}, t1 = {x_cut}, t2 = {y_cut}, eras {eras}):")
-        for s, v in result["per_scheme"].items():
-            r = "-" if v["r_mean"] is None else f"{v['r_mean']:+.4f} +- {v['r_sd']:.4f}"
-            print(f"  data {s:4s}: r_mean {r}  ({v['n_steps']} steps, {v['n_skipped']} skipped)")
-        print(f"  -> delta = {result['delta']} (scheme {scheme}), lnN {1 + result['delta'] if result['delta'] is not None else '-'}")
-        if result["mc_kappa_A"] is not None:
-            mc_a = abs(result["mc_kappa_A"] - 1)
-            print(f"  MC cross-check: kappa_A = {result['mc_kappa_A']:.4f} (|kappa_A - 1| = {mc_a:.4f}), "
-                  + "MC r_mean " + ", ".join(f"{s} {v['r_mean']:+.4f}" for s, v in result["mc_per_scheme"].items() if v["r_mean"] is not None))
-            if result["delta"] is not None:
-                print(f"  MC non-closure in the true A is {'covered' if mc_a <= result['delta'] else 'NOT covered'} by the data sideband delta")
-    return closures
-
-
 class AnalysisProcessor(processor.ProcessorABC):
 
     def __init__(self, samples, wc_names_lst=[], hist_lst=None, do_systematics=False, skip_obj_systematics=False, skip_signal_regions=False, skip_control_regions=False, muonSyst='nominal', dtype=np.float32, siphon_bdt_data=False, rwgt_to_sm=False, ele_cutBased_val=None, mu_pfIsoId_val=None, siphon_out_name="bdt_output"):
@@ -292,15 +180,6 @@ class AnalysisProcessor(processor.ProcessorABC):
                 axis.Regular(100, 0, 1, name="dnn_score",   label="DNN score from ABCDnet"),
                 axis.Regular(100, 0, 1, name="vbs_score",   label="VBS jets score from tagger"),
                 #axis.Regular(100, 0, self.mjj_cap, name="vbs_mjj", label="Mjj of vbs"),
-                storage="weight", name="Counts",
-            ),
-            # For the data-driven closure: data (region A never filled, blinded) and MC background, per era, nominal weight.
-            # The ABCD_WP thresholds and the scanned ones are bin edges (0.01 binning)
-            "abcd2d_closure_3lChsum3": hist.Hist(
-                hist.axis.StrCategory([], growth=True, name="kind", label="data or bkg (MC)"),
-                hist.axis.StrCategory([], growth=True, name="era", label="era"),
-                axis.Regular(100, 0, 1, name="dnn_score",   label="DNN score from ABCDnet"),
-                axis.Regular(100, 0, 1, name="vbs_score",   label="VBS jets score from tagger"),
                 storage="weight", name="Counts",
             ),
         }
@@ -1597,18 +1476,6 @@ class AnalysisProcessor(processor.ProcessorABC):
                     systematic = syst_3lChsum3,
                 )
 
-            # The plane of the data-driven closure: data without region A (blinded), and MC background (A included, for the cross-check)
-            if (kin_syst is None) and (not isSig):
-                mask_closure = all_cuts_mask_3lChsum3
-                if isData: mask_closure = mask_closure & ~ak.fill_none(A_3lChsum3, False)
-                self.accumulator["abcd2d_closure_3lChsum3"].fill(
-                    kind      = "data" if isData else "bkg",
-                    era       = np.asarray(ak.to_list(year[mask_closure]), dtype=str),
-                    dnn_score = dnn_score_3lChsum3[mask_closure],
-                    vbs_score = vbsjets.score[mask_closure],
-                    weight    = weights_obj_base.weight(None)[mask_closure],
-                )
-
         # For a JES/JER/MET-unclustered variation, the 1d histos below are only filled for SYST_1D_VARS in SYST_1D_CATS
 
 
@@ -1713,7 +1580,4 @@ class AnalysisProcessor(processor.ProcessorABC):
             with uproot.recreate(self._siphon_output_path) as f:
                 f["Events"] = out_dict
 
-        # Data-driven ABCD closure (non linear, so only here, on the merged histos), saved in the output pkl;
-        # export_vbsvvh_stat.py reads it from there
-        accumulator["abcd_closure"] = compute_abcd_closures(accumulator)
         return accumulator

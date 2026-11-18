@@ -1,23 +1,25 @@
 # Export the ABCD regions of a channel to the vbsvvh-stat inputs (shapes.root + channel.yaml),
 # with the whole run as one summed era ("Run2" or "Run3", see vbsvvh-stat INPUTS.md).
 #
-#   - Signal: one process per hypothesis, its nominal and Up/Down from the signal-only --do-systs pkl(s),
-#     and the PDF (pdf_Higgs_qqbar) from the Hessian members pdf_1 ... pdf_100 of that pkl
+# from the pkl of one processor run on all samples with --do-systs:
+#   - Signal: one process per hypothesis, its nominal and Up/Down, and the PDF (pdf_Higgs_qqbar) from the Hessian
+#     members pdf_1 ... pdf_100
 #   - bkg: the MC of the ABCD backgrounds (only used by vbsvvh-stat for the MC closure)
 #   - data_obs: data in B, C, D; region A is written as 0 (blinded) unless --unblind-a
-#   - the data-driven ABCD closure the processor saved in the nominal pkl ("abcd_closure"), at its working point:
-#     recorded in channel.yaml (provenance) and printed as the line for the vbsvvh-stat result config,
-#     closure: {<tag>: {<run>: <delta>}}
+#   - result.yaml: the vbsvvh-stat result config of the folder (its channel.yaml, the signals, the run), so that
+#       vbsvvh-stat run <folder>/result.yaml
+#     makes the cards and limits; with --wp-file it has the data-driven ABCD closure of the working point that
+#     do_abcd_scan.py computed (closure_delta column of its top_working_points.txt), closure: {<tag>: {<run>: <delta>}};
+#     without a closure, vbsvvh-stat uses its MC closure
 #
 # Every systematic is one nuisance for the whole run (named with the energy tag where CMS splits it per era, e.g.
 # CMS_scale_j_Absolute_13TeV), except the b-tag uncorrelated ones, which the processor fills per era
 #
-#   python export_vbsvvh_stat.py --nominal-pkl histos/vvh_3l_r2_v5_nominal.pkl.gz \
-#       --syst-pkl histos/vvh_3l_r2_v5_sig_systs.pkl.gz --x-cut 0.54 --y-cut 0.06 -o vbsvvh_stat_inputs/UF3l_Run2_v5
+#   python export_vbsvvh_stat.py --pkl histos/vvh_3l_r2_v5_all.pkl.gz --x-cut 0.54 --y-cut 0.06 -o vbsvvh_stat_inputs/UF3l_Run2_v5
 #
 # or, for many working points (e.g. the top_working_points.txt that do_abcd_scan writes next to its datacards),
 # one input folder per working point under -o:
-#   python export_vbsvvh_stat.py --nominal-pkl ... --syst-pkl ... --wp-file <dir>/top_working_points.txt -o vbsvvh_stat_inputs/top_wps
+#   python export_vbsvvh_stat.py --pkl ... --wp-file <dir>/top_working_points.txt -o vbsvvh_stat_inputs/top_wps
 
 import argparse
 import copy
@@ -89,23 +91,19 @@ def th1(value, variance):
     return h
 
 
-# The data-driven closure of this channel and run that the processor saved in the nominal pkl, if it is at this working point
-def closure_at(closures, tag, run_tag, x_cut, y_cut):
-    by_tag = closures.get(tag) or (next(iter(closures.values())) if len(closures) == 1 else {})
-    c = by_tag.get(run_tag)
-    if c is None or not (np.isclose(c["thresholds"]["t1"], x_cut) and np.isclose(c["thresholds"]["t2"], y_cut)):
-        return None
-    return c
-
-
-# Working points of a --wp-file: one per line, "rank x_cut y_cut [anything else]", lines starting with # skipped
+# Working points of a --wp-file (top_working_points.txt of do_abcd_scan.py): one per line,
+# "rank x_cut y_cut significance closure_delta closure_scheme", lines starting with # skipped; the closure is None
+# if the file has no closure columns or a "-" there
 def read_wp_file(path):
     wps = []
     with open(path) as f:
         for line in f:
             if not line.strip() or line.startswith("#"): continue
-            rank, x_cut, y_cut = line.split()[:3]
-            wps.append((int(rank), float(x_cut), float(y_cut)))
+            cols = line.split()
+            closure = None
+            if len(cols) >= 6 and cols[4] != "-":
+                closure = {"delta": float(cols[4]), "scheme": cols[5]}
+            wps.append((int(cols[0]), float(cols[1]), float(cols[2]), closure))
     return wps
 
 
@@ -149,21 +147,29 @@ def write_inputs(sig, h_nom, x_cut, y_cut, out_dir, args, extra_provenance={}, c
     channel = {
         "channel": args.tag,
         "abcd": {"background": "bkg", "A": "A", "B": "B", "C": "C", "D": "D"},
-        "provenance": {"nominal_pkl": os.path.abspath(args.nominal_pkl), "syst_pkl": os.path.abspath(args.syst_pkl),
+        "provenance": {"pkl": os.path.abspath(args.pkl),
                        "hist": args.hist, "category": args.cat, "x_cut": x_cut, "y_cut": y_cut, **extra_provenance,
                        "abcd_bkgs": ABCD_BKGS, "region_A_data": "unblinded" if args.unblind_a else "0 (blinded)"},
     }
     if closure is not None:
-        channel["provenance"]["abcd_closure"] = {k: closure[k] for k in ("delta", "scheme", "per_scheme", "mc_kappa_A", "min_count", "thresholds") if k in closure}
+        channel["provenance"]["abcd_closure"] = {**closure, "source": "do_abcd_scan.py, data-driven (HIG-24-003)",
+                                                 "vbsvvh_stat_config": f"closure: {{{args.tag}: {{{RUN_TAG[args.run]}: {closure['delta']:.6g}}}}}"}
     with open(os.path.join(out_dir, "channel.yaml"), "w") as f:
         yaml.safe_dump(channel, f, sort_keys=False)
+    # The vbsvvh-stat result config of this folder
+    result = {"name": f"{args.tag}_{run_tag}_{os.path.basename(os.path.normpath(out_dir))}",
+              "channels": {args.tag: {"input": os.path.abspath(os.path.join(out_dir, "channel.yaml"))}},
+              "signals": list(SIGNALS), "fits": {run_tag: [run_tag]}}
+    if closure is not None:
+        result["closure"] = {args.tag: {run_tag: closure["delta"]}}
+    with open(os.path.join(out_dir, "result.yaml"), "w") as f:
+        yaml.safe_dump(result, f, sort_keys=False, default_flow_style=None)
     return out
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--nominal-pkl", required=True, help="Pkl of the nominal run on all samples (bkg MC and data)")
-    parser.add_argument("--syst-pkl", required=True, help="Pkl of the signal-only --do-systs run, one layer per source")
+    parser.add_argument("--pkl", required=True, help="Pkl of the processor run on all samples (data, bkg MC, signal) with --do-systs")
     parser.add_argument("-r", "--run", default="r2", choices=["r2", "r3"])
     parser.add_argument("--hist", default="abcd2d_3lChsum3", help="The 2d ABCD hist")
     parser.add_argument("--cat", default="3l_chsum3", help="Its category")
@@ -177,41 +183,34 @@ def main():
     if (args.wp_file is None) == (args.x_cut is None or args.y_cut is None):
         parser.error("give either --x-cut and --y-cut, or --wp-file")
 
-    # Signal, from the systematics pkl, and ABCD background MC and data, from the nominal pkl (read once)
-    h = pickle.load(gzip.open(args.syst_pkl))[args.hist][{"category": args.cat}]
+    # Signal (with its systematic layers), and ABCD background MC and data (nominal), from the one pkl (read once)
+    h = pickle.load(gzip.open(args.pkl))[args.hist][{"category": args.cat}]
     sig = {name: h[{"process": [p for p in h.axes["process"] if p.endswith(tag)]}][{"process": sum}] for name, tag in SIGNALS.items()}
-    nom_out = pickle.load(gzip.open(args.nominal_pkl))
-    closures = nom_out.get("abcd_closure") or {}
-    h_nom = nom_out[args.hist][{"category": args.cat}]
-    del nom_out
-    if "systematic" in h_nom.axes.name: h_nom = h_nom[{"systematic": "nominal"}]
+    h_nom = h[{"systematic": "nominal"}] if "systematic" in h.axes.name else h
+    del h
     grp_dict = copy.deepcopy(cvh.GRP_DICT_FULL_R2 if args.run == "r2" else cvh.GRP_DICT_FULL_R3)
     h_nom = plt_tools.group(h_nom, "process", "process_grp", grp_dict)
     run_tag = RUN_TAG[args.run]
 
     if args.wp_file is None:
-        closure = closure_at(closures, args.tag, run_tag, args.x_cut, args.y_cut)
-        out = write_inputs(sig, h_nom, args.x_cut, args.y_cut, args.out_dir, args, closure=closure)
+        out = write_inputs(sig, h_nom, args.x_cut, args.y_cut, args.out_dir, args)
         print(f"Wrote {len(out)} histograms to {args.out_dir}/shapes.root")
         for r in "ABCD":
             print(f"  {r}: signal SM {out[f'{run_tag}/{r}/Signal_C2V_1p0_C3_1p0'][0]:.5f}, bkg MC {out[f'{run_tag}/{r}/bkg'][0]:.3f}")
         for name in SIGNALS:
             up, nom = out.get(f"{run_tag}/A/{name}__{PDF_NAME}Up"), out[f"{run_tag}/A/{name}"]
             if up is not None: print(f"  {name}: PDF kappa in A = {up[0] / nom[0]:.4f}")
-        if closure is None:
-            print("No data-driven closure in the nominal pkl at this working point: vbsvvh-stat would use its MC closure")
-        else:
-            print(f"Data-driven ABCD closure: delta = {closure['delta']:.4f} (scheme {closure['scheme']}). In the vbsvvh-stat result config:")
-            print(f"  closure: {{{args.tag}: {{{run_tag}: {closure['delta']:.4f}}}}}")
+        print(f"vbsvvh-stat config: {args.out_dir}/result.yaml (no data-driven closure: use --wp-file with do_abcd_scan.py's top_working_points.txt")
+        print("  to have it, otherwise vbsvvh-stat uses its MC closure)")
         return
 
     wps = read_wp_file(args.wp_file)
-    for rank, x_cut, y_cut in wps:
+    for rank, x_cut, y_cut, closure in wps:
         name = f"wp{rank:03d}_x{x_cut:g}_y{y_cut:g}".replace(".", "p")
         write_inputs(sig, h_nom, x_cut, y_cut, os.path.join(args.out_dir, name), args,
-                     {"wp_file": os.path.abspath(args.wp_file), "wp_rank": rank},
-                     closure=closure_at(closures, args.tag, run_tag, x_cut, y_cut))
+                     {"wp_file": os.path.abspath(args.wp_file), "wp_rank": rank}, closure=closure)
     print(f"Wrote the inputs of {len(wps)} working points to {args.out_dir}/wp<rank>_x<x_cut>_y<y_cut>/")
+    print("Each folder has its vbsvvh-stat config, with the data-driven closure of that working point: vbsvvh-stat run <folder>/result.yaml")
 
 
 if __name__ == "__main__":
