@@ -30,8 +30,28 @@ warnings.filterwarnings(
 ABCD_WP = {
     "2lH"      : {"r2" : {"x_cut" : 0.52, "y_cut" : 1200.0}, "r3" : {"x_cut" : 0.54, "y_cut" : 800.0}},
     "3lChsum1" : {"r2" : {"x_cut" : 0.73, "y_cut" : 0.6},    "r3" : {"x_cut" : 0.96, "y_cut" : 0.9}},
-    "3lChsum3" : {"r2" : {"x_cut" : 0.07, "y_cut" : 0.40},   "r3" : {"x_cut" : 0.75, "y_cut" : 0.87}},
+    "3lChsum3" : {"r2" : {"x_cut" : 0.54, "y_cut" : 0.06},   "r3" : {"x_cut" : 0.75, "y_cut" : 0.87}}, # r2: v5 model, from the vbsvvh-stat scan (was 0.07, 0.40 with v1)
 }
+
+# Year-specific weight systematics (e.g. weightsyst_btag_HF_uncorrelated_2017) only exist in the files of that year
+# Every variation layer must still contain all events, so for the other years of the same run they are added with ratio 1
+YEAR_SPECIFIC_WGT_SYSTS = ["btag_HF_uncorrelated", "btag_LF_uncorrelated"]
+# B-tag: simplified scheme of the BTV payload, correlated + uncorrelated_<year> is the full b-tag SF uncertainty
+# The breakdown sources (statistic, pdf, as, ttbar, type3, ...) are already contained in them, so they are not used (would double count),
+# and neither are the "_withbSF" versions of the other weights or the BTV jes/jer responses, which belong to the full breakdown scheme
+BTAG_WGT_SYSTS = ["btag_HF_correlated", "btag_LF_correlated"]
+BTAG_BREAKDOWN_ONLY_WGT_SYSTS = ["jes", "jer"]
+YEAR_TOKENS_PER_RUN = {"r2" : ["2016preVFP", "2016postVFP", "2017", "2018"], "r3" : ["2024Prompt", "2025"]}
+
+# PDF uncertainty: the Hessian members of LHEPdfWeight (index 0 is the nominal). Each member is filled as its own layer
+# pdf_<i> (nominal weight x LHEPdfWeight[i]/LHEPdfWeight[0]), like the weight systematics; the members are combined
+# later on the yield of each region, kappa = 1 + sqrt(sum_i (Y_i - Y_0)^2) / Y_0 (not per event)
+N_PDF_MEMBERS = 100
+
+# Categories for which the 1d histos are also filled with the weight systematic variations (for the systematics plots)
+SYST_1D_CATS = ["3l", "3l_chsum1", "3l_chsum3", "2lOSSF_nFJ1"]
+# Variables for which the 1d histos are filled with the weight systematic variations (the other hists only get the nominal, keeps the memory down)
+SYST_1D_VARS = ["dnn_score_3lChsum3", "dnn_score_3lChsum1", "dnn_score_2lH", "vbs_score", "l0_pt"]
 
 def to_vec(obj,with_name="PtEtaPhiMCollection"):
     return ak.zip({
@@ -52,6 +72,55 @@ def pass_njet_any_variation(events, njet_min=2):
         if f.startswith("isGood_"):
             keep = keep | (ak.num(events.Jet[events.Jet[f] == 1]) >= njet_min)
     return keep
+
+# Names of the JES/JER/MET-unclustered variations stored by the RDF (e.g. jesAbsoluteUp, jerDn, metunclUp)
+# The met has all of them (the JES/JER ones and the MET-unclustered ones), the jets only the JES/JER ones
+def get_kin_syst_lst(events):
+    return [f[len("pt_"):] for f in events.met.fields if f.startswith("pt_")]
+
+# Combine expects Up/Down, the RDF names end in Up/Dn
+def kin_syst_hist_name(sfx):
+    return sfx[:-2] + "Down" if sfx.endswith("Dn") else sfx
+
+# Good AK4 jets, met, good fat jets, and VBS jet pair for a JES/JER/MET-unclustered variation (sfx=None is the nominal)
+#   - The varied pt/mass/isGood (and met pt/phi) from the RDF replace the nominal ones, all other fields are kept
+#   - The RDF only stores the VBS score and jet indices per variation, so mjj, detajj and the
+#     index in the good-jet collection (jet1_idx, jet2_idx) are recomputed from the varied jets
+#   - Variations that do not exist for an object (e.g. MET-unclustered for the jets) leave it nominal
+def get_kin_objects(events, sfx=None):
+    if sfx is None:
+        return events.Jet[events.Jet.isGood == 1], events.met, events.fatjet, events.vbs
+
+    def vary(coll, field_lst):
+        for field in field_lst:
+            if f"{field}_{sfx}" in coll.fields:
+                coll = ak.with_field(coll, coll[f"{field}_{sfx}"], field)
+        return coll
+
+    all_jets = vary(events.Jet, ["pt", "mass", "isGood"])
+    jets     = all_jets[all_jets.isGood == 1]
+    met      = vary(events.met, ["pt", "phi"])
+    all_fjs  = vary(events.FatJet, ["pt", "mass", "isGood"])
+    # Same record type as the nominal events.fatjet (the FatJet type cannot be added to the other 4-vectors)
+    fatjets  = ak.with_name(all_fjs[all_fjs.isGood == 1], "PtEtaPhiMCollection")
+
+    vbs = events.vbs
+    if f"score_{sfx}" in vbs.fields:
+        is_good = all_jets.isGood == 1
+        jet_idx_lst = []
+        for jetidx in [vbs[f"jet1_Jetidx_{sfx}"], vbs[f"jet2_Jetidx_{sfx}"]]:
+            # Position of the jet (index in the full Jet collection) among the good jets, -1 if there is no VBS pair
+            jet_idx_lst.append(ak.where(jetidx < 0, -1, ak.sum(is_good & (ak.local_index(all_jets) < jetidx), axis=1)))
+        vbs1 = ak.firsts(jets[ak.local_index(jets) == jet_idx_lst[0]])
+        vbs2 = ak.firsts(jets[ak.local_index(jets) == jet_idx_lst[1]])
+        has_pair = (jet_idx_lst[0] >= 0) & (jet_idx_lst[1] >= 0)
+        vbs = ak.with_field(vbs, vbs[f"score_{sfx}"], "score")
+        vbs = ak.with_field(vbs, ak.where(has_pair, ak.fill_none((vbs1 + vbs2).mass, -999.0), -999.0), "mjj")
+        vbs = ak.with_field(vbs, ak.where(has_pair, ak.fill_none(abs(vbs1.eta - vbs2.eta), -999.0), -999.0), "detajj")
+        vbs = ak.with_field(vbs, jet_idx_lst[0], "jet1_idx")
+        vbs = ak.with_field(vbs, jet_idx_lst[1], "jet2_idx")
+
+    return jets, met, fatjets, vbs
 
 # Returns masks for the 4 ABCD regions from the 2d plane
 #     - x_var would generally be your dnn score
@@ -81,6 +150,7 @@ class AnalysisProcessor(processor.ProcessorABC):
             "abcd2d_2lH": hist.Hist(
                 hist.axis.StrCategory([], growth=True, name="process", label="process"),
                 hist.axis.StrCategory([], growth=True, name="category", label="category"),
+                hist.axis.StrCategory([], growth=True, name="systematic", label="systematic"),
                 axis.Regular(50, 0, 1, name="dnn_score",   label="DNN score from ABCDnet"),
                 axis.Regular(50, 0, self.mjj_cap, name="vbs_mjj", label="Mjj of vbs"),
                 #axis.Regular(50, 0, 1, name="vbs_score", label="Score of vbs"),
@@ -105,6 +175,7 @@ class AnalysisProcessor(processor.ProcessorABC):
             "abcd2d_3lChsum3": hist.Hist(
                 hist.axis.StrCategory([], growth=True, name="process", label="process"),
                 hist.axis.StrCategory([], growth=True, name="category", label="category"),
+                hist.axis.StrCategory([], growth=True, name="systematic", label="systematic"),
                 axis.Regular(100, 0, 1, name="dnn_score",   label="DNN score from ABCDnet"),
                 axis.Regular(100, 0, 1, name="vbs_score",   label="VBS jets score from tagger"),
                 #axis.Regular(100, 0, self.mjj_cap, name="vbs_mjj", label="Mjj of vbs"),
@@ -347,11 +418,17 @@ class AnalysisProcessor(processor.ProcessorABC):
                     raise Exception(f"Error: Cannot specify hist \"{hist_to_include}\", it is not defined in the processor.")
             self._hist_lst = hist_lst # Which hists to fill
 
+        # Whether to fill the weight systematic variations (set with --do-systs in run_analysis.py)
+        self._do_systematics = do_systematics
+        # Whether to skip the JES/JER/MET-unclustered variations, which need a full re-run of the analysis per variation (set with --skip-obj-systs)
+        self._skip_obj_systematics = skip_obj_systematics
+
         if ele_cutBased_val is not None: self._ele_cutBased_val = float(ele_cutBased_val)
         else: self._ele_cutBased_val = ele_cutBased_val
 
         if mu_pfIsoId_val is not None: self._mu_pfIsoId_val = float(mu_pfIsoId_val)
         else: self._mu_pfIsoId_val = mu_pfIsoId_val
+
 
         # Siphon the outputs (these outputs are the inputs for the ML training)
         self._siphon_output_path = f"histos/{siphon_out_name}.root"
@@ -395,7 +472,7 @@ class AnalysisProcessor(processor.ProcessorABC):
         if   channel == "2lH":      stem = f"single_abcdisco_2l1fj_forH_{run_tag}"
         elif channel == "2lV":      stem = f"single_abcdisco_2l1fj_forV_{run_tag}"
         elif channel == "3lChsum1": stem = f"single_abcdisco_3lChsum1_{run_tag}"
-        elif channel == "3lChsum3": stem = f"single_abcdisco_3lChsum3_{run_tag}_v1"
+        elif channel == "3lChsum3": stem = f"single_abcdisco_3lChsum3_{run_tag}"
         else: raise Exception(f"Unknown model {model}")
         scaler_path = ewkcoffea_path(f"data/vvh_abcd_models/{stem}_scaler_params.json")
         checkpoint_path = ewkcoffea_path(f"data/vvh_abcd_models/{stem}.ckpt")
@@ -441,11 +518,17 @@ class AnalysisProcessor(processor.ProcessorABC):
 
 
     # Main function: run on a given chunk
+    # Runs the analysis once for the nominal, and (for signal with --do-systs) once more for each
+    # JES/JER/MET-unclustered variation stored in the RDF, with the varied jets/met/fat jets/VBS pair
     def process(self, events):
 
+        # The JES/JER/MET-unclustered variations to run (only for signal with --do-systs, the background is from data)
+        kin_syst_lst = get_kin_syst_lst(events) if (self._do_systematics and (not self._skip_obj_systematics) and events.kind[0]=="sig") else []
+
         # Pre requirement: all events must have at least 2 jets
-        #events = events[pass_njet_any_variation(events, njet_min=2)] # NOTE use this once we have JEC variations in place
-        events = events[ak.num(events.Jet[events.Jet.isGood == 1]) >= 2] # NOTE For now just directly apply cut approprate to nominal
+        # When running the variations, keep the events that pass in any of them (each one then applies its own cut)
+        if kin_syst_lst: events = events[pass_njet_any_variation(events, njet_min=2)]
+        else: events = events[ak.num(events.Jet[events.Jet.isGood == 1]) >= 2]
         if len(events) == 0: return self.accumulator
 
         # DY stitching: drop from the inclusive DY the phase space covered by the binned samples
@@ -460,6 +543,22 @@ class AnalysisProcessor(processor.ProcessorABC):
         events = events[~dropForStitch]
         if len(events) == 0: return self.accumulator
 
+        # Nominal, then each variation
+        self._process_events(events)
+        for kin_syst in kin_syst_lst:
+            self._process_events(events, kin_syst)
+        return self.accumulator
+
+
+    # The analysis on a given chunk, for the nominal (kin_syst=None) or for one JES/JER/MET-unclustered variation
+    # For a variation only the abcd2d_2lH and abcd2d_3lChsum3 planes and the 1d histos of SYST_1D_VARS (in SYST_1D_CATS)
+    # are filled, with systematic=<variation>
+    def _process_events(self, events, kin_syst=None):
+
+        # At least 2 good jets, for this variation
+        events = events[ak.num(get_kin_objects(events, kin_syst)[0]) >= 2]
+        if len(events) == 0: return self.accumulator
+
         # Initialize meta data and identify the kind of of chunk
         # Note this check assumes all events in this chunk are of the same kind, should be true
         histAxisName = events.shortname
@@ -470,10 +569,9 @@ class AnalysisProcessor(processor.ProcessorABC):
         # Initialize objects
         ele     = events.electron
         mu      = events.muon
-        jets    = events.Jet[events.Jet.isGood == 1] # Do not use events.jet directly, as these do not have the JEC variations
-        met     = events.met
-        fatjets = events.fatjet
-        vbsjets = events.vbs
+        # Jets, met, fat jets and VBS pair for this variation (nominal if kin_syst is None)
+        # Do not use events.jet directly, as these do not have the JEC variations
+        jets, met, fatjets, vbsjets = get_kin_objects(events, kin_syst)
 
         # Augment fatjet objects
         # Put the relevant tagging scores in fatjets object (this should be in RDF in the future)
@@ -561,6 +659,48 @@ class AnalysisProcessor(processor.ProcessorABC):
         weights_obj_base = coffea.analysis_tools.Weights(len(events),storeIndividual=True)
         #weights_obj_base.add("norm",events.baseweight) # No SFs
         weights_obj_base.add("norm",events.weight) # All SFs
+
+        # Weight systematics from the RDF: events.weightsyst.<src> = [nom, up, dn] per event
+        # events.weight already contains the nominal of each source, so each one is added with nominal 1 and up/nom, dn/nom ratios
+        # Only for signal, since the background is estimated from data with the ABCD method
+        # B-tag: only the simplified scheme (BTAG_WGT_SYSTS and the year-specific uncorrelated ones), see BTAG_WGT_SYSTS
+        # Only in the nominal pass (the JES/JER variations are filled with the nominal weight)
+        wgt_syst_lst = []
+        if self._do_systematics and isSig and (kin_syst is None):
+            wgt_fields = list(events.weightsyst.fields)
+            # Year-specific sources: take all the years of the run this chunk belongs to
+            all_year_specific = [f"{src}_{tok}" for src in YEAR_SPECIFIC_WGT_SYSTS for toks in YEAR_TOKENS_PER_RUN.values() for tok in toks]
+            run_toks = next((toks for toks in YEAR_TOKENS_PER_RUN.values() if any(f"{src}_{tok}" in wgt_fields for src in YEAR_SPECIFIC_WGT_SYSTS for tok in toks)), [])
+            src_lst = [src for src in wgt_fields if (not src.endswith("_withbSF")) and (src not in all_year_specific) and (src not in BTAG_BREAKDOWN_ONLY_WGT_SYSTS) and ((not src.startswith("btag_")) or (src in BTAG_WGT_SYSTS))]
+            src_lst += [f"{src}_{tok}" for src in YEAR_SPECIFIC_WGT_SYSTS for tok in run_toks]
+            for src in src_lst:
+                if src in wgt_fields:
+                    wgt_trip = events.weightsyst[src]
+                    wgt_nom = wgt_trip[:,0]
+                    wgt_up = ak.where(wgt_nom != 0, wgt_trip[:,1]/wgt_nom, 1.0)
+                    wgt_dn = ak.where(wgt_nom != 0, wgt_trip[:,2]/wgt_nom, 1.0)
+                else:
+                    # Source of another year: no shift for the events of this chunk
+                    wgt_up = ak.ones_like(events.weight)
+                    wgt_dn = ak.ones_like(events.weight)
+                weights_obj_base.add(src, ak.ones_like(events.weight), wgt_up, wgt_dn)
+                wgt_syst_lst.append(src)
+
+        # PDF members (only for signal with --do-systs, only in the nominal pass): ratio to the nominal per event,
+        # a member the event lacks (or a zero nominal) reads 1
+        pdf_ratios = {}
+        if self._do_systematics and isSig and (kin_syst is None) and ("LHEPdfWeight" in events.fields):
+            n_lhe_pdf = ak.to_numpy(ak.num(events.LHEPdfWeight))
+            lhe_pdf = ak.fill_none(ak.pad_none(events.LHEPdfWeight, N_PDF_MEMBERS + 1, clip=True), 1.0)
+            lhe_pdf_nom = ak.to_numpy(lhe_pdf[:, 0]).astype(np.float64)
+            for i in range(1, N_PDF_MEMBERS + 1):
+                has_member = (n_lhe_pdf > i) & (lhe_pdf_nom != 0)
+                pdf_ratios[f"pdf_{i}"] = np.where(has_member, ak.to_numpy(lhe_pdf[:, i]) / np.where(has_member, lhe_pdf_nom, 1.0), 1.0)
+
+        # Weight of a variation: None is the nominal, pdf_<i> the nominal times that PDF member, else a weight systematic
+        def get_weight(wgt_fluct):
+            if wgt_fluct in pdf_ratios: return weights_obj_base.weight(None) * pdf_ratios[wgt_fluct]
+            return weights_obj_base.weight(wgt_fluct)
 
         # SFs and systematics
         #if not isData:
@@ -1266,7 +1406,7 @@ class AnalysisProcessor(processor.ProcessorABC):
 
         ######### Siphon outputs for ABCDnet training #########
 
-        if self._siphon_bdt_data:
+        if self._siphon_bdt_data and (kin_syst is None):
             siphon_mask = selections.all(*self._siphon_selection)
             for var in self._bdt_vars:
                 if var not in dense_variables_dict:
@@ -1294,34 +1434,49 @@ class AnalysisProcessor(processor.ProcessorABC):
             #all_cuts_mask_V = selections.all(cat2lV)
             all_cuts_mask_3lChsum1 = selections.all(cat3lChsum1)
             all_cuts_mask_3lChsum3 = selections.all(cat3lChsum3)
-            self.accumulator["abcd2d_2lH"].fill(
-                vbs_mjj   = vbs_mjj_flow[all_cuts_mask_H],
-                dnn_score = dnn_score_2lH[all_cuts_mask_H],
-                weight    = weights_obj_base.weight(None)[all_cuts_mask_H],
-                process   = histAxisName[all_cuts_mask_H],
-                category  = cat2lH,
-            )
-            #self.accumulator["abcd2d_2lV"].fill(
-            #    vbs_mjj   = vbs_mjj_flow[all_cuts_mask_V],
-            #    dnn_score = dnn_score_2lV[all_cuts_mask_V],
-            #    weight    = weights_obj_base.weight(None)[all_cuts_mask_V],
-            #    process   = histAxisName[all_cuts_mask_V],
-            #    category  = cat2lV,
-            #)
-            self.accumulator["abcd2d_3lChsum1"].fill(
-                vbs_score = vbsjets.score[all_cuts_mask_3lChsum1],
-                dnn_score = dnn_score_3lChsum1[all_cuts_mask_3lChsum1],
-                weight    = weights_obj_base.weight(None)[all_cuts_mask_3lChsum1],
-                process   = histAxisName[all_cuts_mask_3lChsum1],
-                category  = cat3lChsum1,
-            )
-            self.accumulator["abcd2d_3lChsum3"].fill(
-                vbs_score = vbsjets.score[all_cuts_mask_3lChsum3],
-                dnn_score = dnn_score_3lChsum3[all_cuts_mask_3lChsum3],
-                weight    = weights_obj_base.weight(None)[all_cuts_mask_3lChsum3],
-                process   = histAxisName[all_cuts_mask_3lChsum3],
-                category  = cat3lChsum3,
-            )
+            # (systematic name, weight variation) to fill:
+            #   - nominal pass: the nominal, and each weight systematic variation (only for signal with --do-systs)
+            #   - JES/JER/MET-unclustered pass: the variation, with the nominal weight
+            if kin_syst is None:
+                fluct_lst_abcd = [("nominal", None)] + [(f"{src}{d}", f"{src}{d}") for src in wgt_syst_lst for d in ["Up","Down"]] + [(name, name) for name in pdf_ratios]
+            else:
+                fluct_lst_abcd = [(kin_syst_hist_name(kin_syst), None)]
+            for syst_2lH, wgt_fluct_2lH in fluct_lst_abcd:
+                self.accumulator["abcd2d_2lH"].fill(
+                    vbs_mjj    = vbs_mjj_flow[all_cuts_mask_H],
+                    dnn_score  = dnn_score_2lH[all_cuts_mask_H],
+                    weight     = get_weight(wgt_fluct_2lH)[all_cuts_mask_H],
+                    process    = histAxisName[all_cuts_mask_H],
+                    category   = cat2lH,
+                    systematic = syst_2lH,
+                )
+            if kin_syst is None:
+                #self.accumulator["abcd2d_2lV"].fill(
+                #    vbs_mjj   = vbs_mjj_flow[all_cuts_mask_V],
+                #    dnn_score = dnn_score_2lV[all_cuts_mask_V],
+                #    weight    = weights_obj_base.weight(None)[all_cuts_mask_V],
+                #    process   = histAxisName[all_cuts_mask_V],
+                #    category  = cat2lV,
+                #)
+                self.accumulator["abcd2d_3lChsum1"].fill(
+                    vbs_score = vbsjets.score[all_cuts_mask_3lChsum1],
+                    dnn_score = dnn_score_3lChsum1[all_cuts_mask_3lChsum1],
+                    weight    = weights_obj_base.weight(None)[all_cuts_mask_3lChsum1],
+                    process   = histAxisName[all_cuts_mask_3lChsum1],
+                    category  = cat3lChsum1,
+                )
+            for syst_3lChsum3, wgt_fluct_3lChsum3 in fluct_lst_abcd:
+                weight_3lChsum3 = get_weight(wgt_fluct_3lChsum3)
+                self.accumulator["abcd2d_3lChsum3"].fill(
+                    vbs_score  = vbsjets.score[all_cuts_mask_3lChsum3],
+                    dnn_score  = dnn_score_3lChsum3[all_cuts_mask_3lChsum3],
+                    weight     = weight_3lChsum3[all_cuts_mask_3lChsum3],
+                    process    = histAxisName[all_cuts_mask_3lChsum3],
+                    category   = cat3lChsum3,
+                    systematic = syst_3lChsum3,
+                )
+
+        # For a JES/JER/MET-unclustered variation, the 1d histos below are only filled for SYST_1D_VARS in SYST_1D_CATS
 
 
 
@@ -1343,11 +1498,16 @@ class AnalysisProcessor(processor.ProcessorABC):
         # Set up the list of weight fluctuations to loop over
         # For now the syst do not depend on the category, so we can figure this out outside of the filling loop
         #wgt_var_lst = ["nominal"]
-        if not isData:
+        # (systematic name, weight variation) pairs, the variations are only filled for SYST_1D_VARS in SYST_1D_CATS
+        if kin_syst is not None:
+            # JES/JER/MET-unclustered pass: only this variation, with the nominal weight
+            wgt_var_lst = [(kin_syst_hist_name(kin_syst), None)]
+        elif not isData:
             #wgt_var_lst = ["nominal", "lepSfUp", "lepSfDown"]
-            wgt_var_lst = ["nominal"]
+            # The weight systematic variations (only non-empty for signal with --do-systs)
+            wgt_var_lst = [("nominal", None)] + [(f"{src}{d}", f"{src}{d}") for src in wgt_syst_lst for d in ["Up","Down"]] + [(name, name) for name in pdf_ratios]
         else:
-            wgt_var_lst = ["nominal"]
+            wgt_var_lst = [("nominal", None)]
 
         # Loop over the hists we want to fill
         for dense_axis_name, dense_axis_vals in dense_variables_dict.items():
@@ -1355,20 +1515,21 @@ class AnalysisProcessor(processor.ProcessorABC):
                 #print(f"Skipping \"{dense_axis_name}\", it is not in the list of hists to include.")
                 continue
 
-            # Loop over weight fluctuations
-            for wgt_fluct in wgt_var_lst:
+            # A JES/JER/MET-unclustered pass only fills the hists in SYST_1D_VARS
+            if (kin_syst is not None) and (dense_axis_name not in SYST_1D_VARS): continue
 
-                # Get the appropriate weight fluctuation
-                if (wgt_fluct == "nominal"):
-                    # In the case of "nominal", no weight systematic variation is used
-                    weight = weights_obj_base.weight(None)
-                else:
-                    # Otherwise get the weight from the Weights object
-                    weight = weights_obj_base.weight(wgt_fluct)
+            # Loop over the variations (only the nominal for the hists not in SYST_1D_VARS)
+            for syst_name, wgt_fluct in (wgt_var_lst if dense_axis_name in SYST_1D_VARS else [("nominal", None)]):
+
+                # Get the appropriate weight fluctuation (None is the nominal weight)
+                weight = get_weight(wgt_fluct)
 
 
                 # Loop over categories
                 for sr_cat in cat_dict["lep_chan_lst"]:
+
+                    # The systematic variations are only filled for a few categories (keeps the output small), and not for the counts hists
+                    if (syst_name != "nominal") and ((sr_cat not in SYST_1D_CATS) or dense_axis_name.endswith("_counts")): continue
 
                     # If this is a counts hist, forget the weights and just fill with unit weights
                     if dense_axis_name.endswith("_counts"): weight = events.nom
@@ -1400,7 +1561,7 @@ class AnalysisProcessor(processor.ProcessorABC):
                         "weight"        : ak.fill_none(weight[all_cuts_mask],-1),          # Don't like this fill_none
                         "process"       : histAxisName[all_cuts_mask],
                         "category"      : sr_cat,
-                        "systematic"    : wgt_fluct,
+                        "systematic"    : syst_name,
                         #"year"          : events.year[all_cuts_mask],
                         #"lepflav"       : abs_pdgid_sum[all_cuts_mask],
                         "lepflav"       : n_mu_sel[all_cuts_mask],
@@ -1418,4 +1579,5 @@ class AnalysisProcessor(processor.ProcessorABC):
             os.makedirs(os.path.dirname(self._siphon_output_path), exist_ok=True)
             with uproot.recreate(self._siphon_output_path) as f:
                 f["Events"] = out_dict
+
         return accumulator
