@@ -472,7 +472,7 @@ class AnalysisProcessor(processor.ProcessorABC):
         if   channel == "2lH":      stem = f"single_abcdisco_2l1fj_forH_{run_tag}"
         elif channel == "2lV":      stem = f"single_abcdisco_2l1fj_forV_{run_tag}"
         elif channel == "3lChsum1": stem = f"single_abcdisco_3lChsum1_{run_tag}"
-        elif channel == "3lChsum3": stem = f"single_abcdisco_3lChsum3_{run_tag}_" + ("v5" if run_tag == "r2" else "v1") # Run 2: retrained model v5
+        elif channel == "3lChsum3": stem = f"single_abcdisco_3lChsum3_{run_tag}"
         else: raise Exception(f"Unknown model {model}")
         scaler_path = ewkcoffea_path(f"data/vvh_abcd_models/{stem}_scaler_params.json")
         checkpoint_path = ewkcoffea_path(f"data/vvh_abcd_models/{stem}.ckpt")
