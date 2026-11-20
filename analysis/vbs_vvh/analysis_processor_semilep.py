@@ -49,10 +49,9 @@ YEAR_TOKENS_PER_RUN = {"r2" : ["2016preVFP", "2016postVFP", "2017", "2018"], "r3
 N_PDF_MEMBERS = 100
 
 # Categories for which the 1d histos are also filled with the weight systematic variations (for the systematics plots)
-SYST_1D_CATS = ["3l", "2lOSSF_nFJ1"]
+SYST_1D_CATS = ["3l", "3l_chsum1", "3l_chsum3", "2lOSSF_nFJ1"]
 # Variables for which the 1d histos are filled with the weight systematic variations (the other hists only get the nominal, keeps the memory down)
-SYST_1D_VARS = ["dnn_score_3lChsum3", "dnn_score_2lH", "vbs_score", "l0_pt", "l0_eta", "l0_phi", "l1_pt", "l1_eta", "l2_pt", "l2_eta",
-                "nbtagsl", "nbtagsm", "nbtagst", "njets", "met", "j0_eta", "vbs1_eta", "vbs2_eta", "vbs_mjj"]
+SYST_1D_VARS = ["dnn_score_3lChsum3", "dnn_score_3lChsum1", "dnn_score_2lH", "vbs_score", "l0_pt"]
 
 def to_vec(obj,with_name="PtEtaPhiMCollection"):
     return ak.zip({
@@ -552,7 +551,8 @@ class AnalysisProcessor(processor.ProcessorABC):
 
 
     # The analysis on a given chunk, for the nominal (kin_syst=None) or for one JES/JER/MET-unclustered variation
-    # For a variation only the abcd2d_3lChsum3 histo is filled, with systematic=<variation>
+    # For a variation only the abcd2d_2lH and abcd2d_3lChsum3 planes and the 1d histos of SYST_1D_VARS (in SYST_1D_CATS)
+    # are filled, with systematic=<variation>
     def _process_events(self, events, kin_syst=None):
 
         # At least 2 good jets, for this variation

@@ -760,26 +760,14 @@ def make_data_mc_fig(histo_mc, histo_dat, histo_mc_sig, histo_mc_bkg, title="tes
 
 # Extract systematic varitions, from claude
 # Variables to plot for each systematic (with -s), the scores of the channel are always included
-SYST_VARS_ALWAYS = {"3l" : ["dnn_score_3lChsum3", "vbs_score"], "2l" : ["dnn_score_2lH", "vbs_score"]}
+SYST_VARS_ALWAYS = {"3l" : ["dnn_score_3lChsum3", "dnn_score_3lChsum1", "vbs_score", "l0_pt"], "2l" : ["dnn_score_2lH", "vbs_score", "l0_pt"]}
 # Category of the systematics plots per channel (the processor only fills the JES/JER/MET variations for SYST_1D_CATS)
-SYST_CATS = {"3l": ["3l"], "2l": ["2lOSSF_nFJ1"]}
+SYST_CATS = {"3l": ["3l", "3l_chsum1", "3l_chsum3"], "2l": ["2lOSSF_nFJ1"]}
 
-SYST_VARS = {
-    "eleSF"       : ["l0_pt", "l0_eta", "l0_phi", "l1_pt", "l1_eta", "l2_pt", "l2_eta"],
-    "muoSF"       : ["l0_pt", "l0_eta", "l0_phi", "l1_pt", "l1_eta", "l2_pt", "l2_eta"],
-    "btag"        : ["nbtagsl", "nbtagsm", "nbtagst", "njets"],
-    "pileup"      : ["njets", "met", "l0_pt"],
-    "l1prefiring" : ["j0_eta", "vbs1_eta", "vbs2_eta", "l0_eta"],
-    "PS"          : ["njets", "vbs_mjj", "l0_pt"],
-    "mu"          : ["njets", "vbs_mjj", "l0_pt"],
-    "jes"         : ["njets", "nbtagst", "vbs_mjj", "met", "j0_eta", "vbs1_eta", "vbs2_eta"],
-    "jer"         : ["njets", "nbtagst", "vbs_mjj", "met", "j0_eta", "vbs1_eta", "vbs2_eta"],
-    "metuncl"     : ["met"],
-}
-def get_syst_vars(syst, channel="3l"):
-    for key,var_lst in SYST_VARS.items():
-        if syst.startswith(key): return SYST_VARS_ALWAYS[channel] + var_lst
-    return SYST_VARS_ALWAYS[channel]
+# Variables of the systematics plots: the ones the processor fills with the variations (SYST_1D_VARS there), that have entries
+# in the pkl (with --hist-list in run_analysis.py some 1d histos are not filled)
+def get_syst_vars(histo_dict, channel="3l"):
+    return [var for var in SYST_VARS_ALWAYS[channel] if var in histo_dict and len(histo_dict[var].axes["process"]) > 0]
 
 
 def get_systematic_histograms(histo_dict, var, cat, systematic_name, lepflav_bin=None, grouping_dict=None, sample_group_names_lst_mc=None, mc_scale=1.0):
@@ -1477,7 +1465,7 @@ def main():
                 syst_lst = sorted({s[:-2] for s in plt_tools.get_axis_cats(histo_dict["njets"],"systematic") if s.endswith("Up")})
             onebin_rows = []
             for syst in syst_lst:
-                make_plots(histo_dict,grp_dict,years_to_prepend,SYST_CATS[args.channel],lepflav_bin="all",do_data=True,save_dir_path=f"plots_syst_{args.output_name}/{syst}",systematic_to_show=syst,vars_to_plot=get_syst_vars(syst, args.channel))
+                make_plots(histo_dict,grp_dict,years_to_prepend,SYST_CATS[args.channel],lepflav_bin="all",do_data=True,save_dir_path=f"plots_syst_{args.output_name}/{syst}",systematic_to_show=syst,vars_to_plot=get_syst_vars(histo_dict, args.channel))
                 # One-bin plots (whole category, and the high score region), from the file with the systematic layers
                 onebin_rows += [(syst,) + row for row in make_onebin_syst_plots(histo_dict, grp_dict, syst, args.channel, args.run, SYST_CATS[args.channel], f"plots_syst_{args.output_name}/{syst}/onebin")]
             # Summary of the one-bin numbers for all the systematics
