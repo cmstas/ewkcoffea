@@ -2,6 +2,7 @@ import argparse
 import pickle
 import gzip
 import os
+import re
 import shutil
 import numpy as np
 import matplotlib
@@ -11,7 +12,46 @@ import ewkcoffea.modules.plotting_tools as plt_tools
 import check_vvh_hists as cvh
 
 #HTML_PC = "/home/users/kmohrman/ref_scripts/html_stuff/index.php"
-HTML_PC = "/home/k.mohrman/ref_scirpts/html_stuff/index.php"
+#HTML_PC = "/home/k.mohrman/ref_scirpts/html_stuff/index.php"
+HTML_PC = "/blue/avery/aaponteutani/html_stuff/index.php"
+
+# Luminosity uncertainty of a card that sums all the eras of a run: one line per run, the luminosity-weighted
+# average of the per-era pieces (as in the vbsvvh-stat lumi.yaml): Run 2 0.73%, Run 3 2.63%. Signal only, the background is from data
+LUMI_UNC = {"r2" : ("lumi_13TeV", 1.0073), "r3" : ("lumi_13p6TeV", 1.0263)}
+# Year tokens of the year-specific systematics (e.g. btag_HF_uncorrelated_2017)
+YEAR_TOKENS = ["2016preVFP", "2016postVFP", "2017", "2018", "2024Prompt", "2025"]
+
+# Datacard names of the signal systematics (same names as the other VBS VVH channels, so they are correlated in the combination)
+CARD_SYST_NAMES = {
+    "eleSF"               : "CMS_eff_e",
+    "muoSF"               : "CMS_eff_m",
+    "l1prefiring"         : "CMS_l1_ecal_prefiring",
+    "pileup"              : "CMS_pileup",
+    "muF"                 : "QCDscale_fac_vbsvvh",
+    "muR"                 : "QCDscale_ren_vbsvvh",
+    "PSFSR"               : "ps_fsr",
+    "PSISR"               : "ps_isr",
+    "btag_HF_correlated"  : "CMS_btag_fixedWP_bc_correlated",
+    "btag_HF_uncorrelated": "CMS_btag_fixedWP_bc_uncorrelated",
+    "btag_LF_correlated"  : "CMS_btag_fixedWP_light_correlated",
+    "btag_LF_uncorrelated": "CMS_btag_fixedWP_light_uncorrelated",
+    "jer"                 : "CMS_res_j",
+    "metuncl"             : "CMS_scale_met_unclustered_energy",
+}
+
+
+# Card name of a systematic layer name from the processor (without Up/Down), e.g.
+#   eleSF -> CMS_eff_e, jesFlavorQCD -> CMS_scale_j_FlavorQCD, jesAbsoluteYear_2017 -> CMS_scale_j_Absolute_2017, jer_2018 -> CMS_res_j_2018
+def card_syst_name(src):
+    year_tok = ""
+    m = re.match(r"(.+)_(" + "|".join(YEAR_TOKENS) + r")$", src)
+    if m: src, year_tok = m.groups()
+    if src.startswith("jes"):
+        # The Year JES sources take the year instead of "Year" (kept if there is no year, to not collide with the correlated source)
+        name = "CMS_scale_j_" + (src[len("jes"):].removesuffix("Year") if year_tok else src[len("jes"):])
+    else:
+        name = CARD_SYST_NAMES.get(src, src)
+    return f"{name}_{year_tok}" if year_tok else name
 
 
 def get_yield(h2d, score_slice, mjj_slice):
@@ -688,7 +728,62 @@ def plot_best_working_point(histo_sig, histo_abcdbkg_dict, histo_abcdbkg, histo_
     )
 
 
-def write_abcd_datacards(histo_sig, histo_abcdbkg, histo_otherbkg, histo_dat, results, constrain_var, abcd_label="", other_label="", output_dir="abcd_scan_plots", n_top=5, min_significance=0, guardrails={}):
+# Data-driven ABCD closure (HIG-24-003 method), measured in the data sidebands of a working point (t1 on the DNN score,
+# t2 on the constraining variable). Labels as in HIG-24-003, with s1 = DNN score, s2 = constraining variable:
+#   A = s1>t1 & s2>t2, B = s1>t1 & s2<t2, C = s1<t1 & s2>t2, D = s1<t1 & s2<t2
+# (in the rest of this script B and C are the other way around; B*C/D is the same)
+# Three scan schemes, each with a smaller A'/B'/C'/D' grid inside a sideband and its thresholds scanned (never region A):
+#   "D":   inside D, scan t1' < t1 and t2' < t2
+#   "B+D": inside s2 < t2 (full s1), t1' = t1, scan t2' < t2
+#   "C+D": inside s1 < t1 (full s2), t2' = t2, scan t1' < t1
+# Per step r = (N_A' - N_B' N_C' / N_D') / (N_B' N_C' / N_D'), skipped if N_B', N_C', N_D' or the predicted
+# N_A' = N_B' N_C' / N_D' is below CLOSURE_MIN_COUNT; per scheme the mean of r over the steps;
+# delta = max over the schemes of |r_mean|, used in the datacards as lnN 1 + delta on the background in A
+CLOSURE_MIN_COUNT = 10
+# Number of the best working points written to top_working_points.txt (the inputs of export_vbsvvh_stat.py --wp-file);
+# the datacards are still written for all the top working points
+N_TOP_EXPORT = 5
+
+# The A', B', C', D' counts of every step of the three schemes, on a 2d array a[x, y] (no flow), with the real
+# thresholds at the bin indices ix_t (s1 = x) and iy_t (s2 = y), and the scanned ones at every bin edge below them
+def closure_scan_steps(a, ix_t, iy_t):
+    nx, ny = a.shape
+
+    def n(x0, x1, y0, y1):
+        return float(a[x0:x1, y0:y1].sum())
+    return {
+        # Inside D: A' = t1'<s1<t1 & t2'<s2<t2, B' = t1'<s1<t1 & s2<t2', C' = s1<t1' & t2'<s2<t2, D' = s1<t1' & s2<t2'
+        "D"   : [(n(ixp, ix_t, iyp, iy_t), n(ixp, ix_t, 0, iyp), n(0, ixp, iyp, iy_t), n(0, ixp, 0, iyp))
+                 for ixp in range(1, ix_t) for iyp in range(1, iy_t)],
+        # Inside s2 < t2: A' = s1>t1 & t2'<s2<t2, B' = s1>t1 & s2<t2', C' = s1<t1 & t2'<s2<t2, D' = s1<t1 & s2<t2'
+        "B+D" : [(n(ix_t, nx, iyp, iy_t), n(ix_t, nx, 0, iyp), n(0, ix_t, iyp, iy_t), n(0, ix_t, 0, iyp))
+                 for iyp in range(1, iy_t)],
+        # Inside s1 < t1: A' = t1'<s1<t1 & s2>t2, B' = t1'<s1<t1 & s2<t2, C' = s1<t1' & s2>t2, D' = s1<t1' & s2<t2
+        "C+D" : [(n(ixp, ix_t, iy_t, ny), n(ixp, ix_t, 0, iy_t), n(0, ixp, iy_t, ny), n(0, ixp, 0, iy_t))
+                 for ixp in range(1, ix_t)],
+    }
+
+# The data-driven closure of a working point: {"delta", "scheme", "per_scheme": {scheme: {"r_mean", "n_steps", "n_skipped"}}}
+# (delta None if no scheme has a step passing the minimum counts)
+def data_driven_closure(dat_vals, ix_t, iy_t, min_count=CLOSURE_MIN_COUNT):
+    per_scheme = {}
+    for scheme, steps in closure_scan_steps(dat_vals, ix_t, iy_t).items():
+        r_k, n_skipped = [], 0
+        for n_a, n_b, n_c, n_d in steps:
+            n_hat = n_b * n_c / n_d if n_d > 0 else 0.0
+            if min(n_b, n_c, n_d, n_hat) < max(min_count, 1e-12):
+                n_skipped += 1
+                continue
+            r_k.append((n_a - n_hat) / n_hat)
+        per_scheme[scheme] = {"r_mean": float(np.mean(r_k)) if r_k else None, "n_steps": len(r_k), "n_skipped": n_skipped}
+    done = {k: v for k, v in per_scheme.items() if v["r_mean"] is not None}
+    scheme = max(done, key=lambda k: abs(done[k]["r_mean"])) if done else None
+    return {"delta": abs(done[scheme]["r_mean"]) if scheme else None, "scheme": scheme, "per_scheme": per_scheme}
+
+
+#   - histo_sig_syst: signal (summed over processes) with a systematic axis (a --do-systs run), for the signal lnN lines (none if None)
+#   - run: "r2" or "r3", for the luminosity lines; card_tag: name of the channel in the nuisance names (e.g. 3lChsum3_Run2)
+def write_abcd_datacards(histo_sig, histo_abcdbkg, histo_otherbkg, histo_dat, results, constrain_var, abcd_label="", other_label="", output_dir="abcd_scan_plots", n_top=5, min_significance=0, guardrails={}, histo_sig_syst=None, run="r2", card_tag="VVH"):
     os.makedirs(output_dir, exist_ok=True)
     top_indices = get_top_scan_indices(results, n_top=n_top, **guardrails)
     sig_h     = histo_sig[{"process_grp": sum}]
@@ -698,6 +793,21 @@ def write_abcd_datacards(histo_sig, histo_abcdbkg, histo_otherbkg, histo_dat, re
     mjj_edges    = sig_h.axes[constrain_var].edges
     abcdbkg_vals = abcd_h.values(flow=False)
     allbkg_vals  = abcdbkg_vals + other_h.values(flow=False)
+    dat_vals     = histo_dat[{"process_grp": sum}].values(flow=False) if histo_dat is not None else None
+    # The data-driven closure of each top working point (needs data), and the list of the best N_TOP_EXPORT working points
+    # with it, for export_vbsvvh_stat.py --wp-file (the vbsvvh-stat inputs of each, same ranks as dc_wp<rank>)
+    closures = {}
+    with open(os.path.join(output_dir, "top_working_points.txt"), "w") as f:
+        f.write(f"# rank  dnn_score_cut  {constrain_var}_cut  significance  closure_delta  closure_scheme\n")
+        for rank, flat_idx in enumerate(top_indices):
+            i, j = np.unravel_index(flat_idx, results["significance"].shape)
+            si = int(np.searchsorted(score_edges, results["score_cuts"][i]))
+            mj = int(np.searchsorted(mjj_edges,   results["mjj_cuts"][j]))
+            closures[rank] = data_driven_closure(dat_vals, si, mj) if dat_vals is not None else {"delta": None, "scheme": None, "per_scheme": {}}
+            delta = closures[rank]["delta"]
+            if rank < N_TOP_EXPORT:
+                f.write(f"{rank} {results['score_cuts'][i]:.6g} {results['mjj_cuts'][j]:.6g} {results['significance'][i, j]:.6g} "
+                        f"{'-' if delta is None else f'{delta:.6g}'} {closures[rank]['scheme'] or '-'}\n")
     for rank, flat_idx in enumerate(top_indices):
         i, j = np.unravel_index(flat_idx, results["significance"].shape)
         score_cut = results["score_cuts"][i]
@@ -738,12 +848,55 @@ def write_abcd_datacards(histo_sig, histo_abcdbkg, histo_otherbkg, histo_dat, re
             B_obs = B_abcd + get_yield(other_h, slice(None, si), slice(mj, None))
             C_obs = C_abcd + get_yield(other_h, slice(si, None), slice(None, mj))
             D_obs = D_abcd + get_yield(other_h, slice(None, si), slice(None, mj))
+        # Nuisances (all signal-only, except the ABCD closure on the region-A background)
+        reg_slices = {"A": (slice(si, None), slice(mj, None)), "B": (slice(None, si), slice(mj, None)),
+                      "C": (slice(si, None), slice(None, mj)), "D": (slice(None, si), slice(None, mj))}
+        nuis_lines, null_nuis = [], []
+        # Signal systematics: down/up = varied/nominal signal yield in each region, from the systematic layers
+        if histo_sig_syst is not None:
+            def get_reg_yields(layer):
+                h = histo_sig_syst[{"systematic": layer}]
+                return [get_yield(h, *reg_slices[reg]) for reg in "ABCD"]
+            nom_ylds = get_reg_yields("nominal")
+            for src in sorted({layer[:-2] for layer in histo_sig_syst.axes["systematic"] if layer.endswith("Up")}):
+                up_ylds, dn_ylds = get_reg_yields(src+"Up"), get_reg_yields(src+"Down")
+                cells = []
+                for nom, up, dn in zip(nom_ylds, up_ylds, dn_ylds):
+                    if (nom <= 0) or (abs(up/nom - 1) < 1e-5 and abs(dn/nom - 1) < 1e-5): cells.append("-")
+                    else: cells.append(f"{dn/nom:.5g}/{up/nom:.5g}")
+                if all(c == "-" for c in cells): null_nuis.append(card_syst_name(src))
+                else: nuis_lines.append((card_syst_name(src), [c for cell in cells for c in (cell, "-")]))
+        # Signal MC statistics, one per region
+        for reg in "ABCD":
+            sub = sig_h[reg_slices[reg]].sum(flow=False)
+            if sub.value > 0:
+                nuis_lines.append((f"mcstat_sig_{card_tag}_{reg}", [f"{1 + np.sqrt(sub.variance)/sub.value:.5g}" if (r == reg and c == 0) else "-" for r in "ABCD" for c in (0, 1)]))
+        # Luminosity (signal only, the background is from data)
+        lumi_name, lumi_kappa = LUMI_UNC[run]
+        nuis_lines.append((lumi_name, [f"{lumi_kappa:.5g}" if c == 0 else "-" for r in "ABCD" for c in (0, 1)]))
+        # ABCD non-closure on the region-A background: the data-driven closure, or the MC closure (estimate vs truth) if there is none
+        closure = closures[rank]
+        mc_closure = abs(abcd_est/A_abcd - 1) if A_abcd > 0 else None
+        closure_delta = closure["delta"] if closure["delta"] is not None else mc_closure
+        if closure_delta is not None:
+            nuis_lines.append((f"CMS_VBSVVH_{card_tag}_abcd_syst", ["-", f"{1 + closure_delta:.5g}"] + ["-"]*6))
+
         fpath = os.path.join(output_dir, f"{fname_base}.txt")
         with open(fpath, "w") as f:
             f.write(f"# Counting experiment datacard: rank={rank}, score>{score_cut:.4f}, constrainvar>{mjj_cut:.4f}\n")
             f.write(f"# S/sqrt(B)={sig_val:.4f}, with B = {'data B*C/D estimate' if has_data_est else 'MC estimate'}\n")
             f.write(f"# ABCD bkgs: {abcd_label}\n")
-            f.write(f"# Other bkgs: {other_label}\n\n")
+            f.write(f"# Other bkgs: {other_label}\n")
+            f.write( "# Nuisances: signal systematics (lnN down/up = varied/nominal signal yield per region)" + (" from the systematics histos" if histo_sig_syst is not None else ": not included, no systematics histos given") + "\n")
+            f.write(f"#   luminosity: {LUMI_UNC[run][0]} {LUMI_UNC[run][1]} (total for {run})\n")
+            if closure["delta"] is not None:
+                f.write(f"#   ABCD closure on the region-A background: data-driven (HIG-24-003), 1 + delta = {1 + closure['delta']:.5g}, scheme {closure['scheme']} ("
+                        + ", ".join(f"{k} r_mean {v['r_mean']:+.4f} in {v['n_steps']} steps" for k, v in closure["per_scheme"].items() if v["r_mean"] is not None)
+                        + (f"); MC est/MC truth - 1 = {abcd_est/A_abcd - 1:+.4f}\n" if mc_closure is not None else ")\n"))
+            else:
+                f.write( "#   ABCD closure on the region-A background: no data-driven closure (no step with enough data), 1 + |MC est/MC truth - 1|\n")
+            if null_nuis: f.write(f"#   null nuisances dropped (kappa == 1 in every region): {', '.join(null_nuis)}\n")
+            f.write( "\n")
             f.write( "# Data:\n")
             if has_data_est:
                 f.write(f"#   Data in B, C, D: {results['B_data_yield'][i, j]:.0f}, {results['C_data_yield'][i, j]:.0f}, {results['D_data_yield'][i, j]:.0f}\n")
@@ -788,6 +941,9 @@ def write_abcd_datacards(histo_sig, histo_abcdbkg, histo_otherbkg, histo_dat, re
             f.write(f"{'process':<12}" + f" {0:>10} {1:>10}" * 4 + "\n")
             f.write(f"{'rate':<12}" + "".join(f" {s:>10.4f} {1:>10}" for s in [A_sig, B_sig, C_sig, D_sig]) + "\n")
             f.write( "-" * 60 + "\n")
+            for name, cells in nuis_lines:
+                f.write(f"{name:<48} lnN" + "".join(f" {c:>18}" for c in cells) + "\n")
+            if nuis_lines: f.write( "-" * 60 + "\n")
             for name, reg, val in [("nB", "B", B_obs), ("nC", "C", C_obs), ("nD", "D", D_obs)]:
                 f.write(f"{name} rateParam {reg} bkg {val:.4f} [0,{max(10*val, 10):.1f}]\n")
             f.write( "nA rateParam A bkg (@0*@1/@2) nB,nC,nD\n")
@@ -1424,10 +1580,22 @@ def main():
 
     #########################################################
 
+    # Run (for the luminosity lines) and channel name in the nuisance names
+    run = "r2" if grp_dict is cvh.GRP_DICT_FULL_R2 else "r3"
+    if run == "r2" and abcd_hist_name.startswith("abcd2d_3l"):
+        grp_dict = {k: v for k, v in grp_dict.items() if k != "QCD"} # We don't have QCD in Run 2 3l skims (as check_vvh_hists)
+    card_tag = abcd_hist_name.removeprefix("abcd2d_") + ("_Run2" if run == "r2" else "_Run3")
+
     # Get the input histo
     histo_dict = pickle.load(gzip.open(args.pkl_file_path))
     histo = histo_dict[abcd_hist_name]
     histo = histo[{"category": cat_for_dnn}]
+    # Signal with the systematic layers (pkl from a --do-systs run), for the signal systematics in the datacards
+    histo_sig_syst = None
+    if "systematic" in histo.axes.name and len(histo.axes["systematic"]) > 1:
+        histo_sig_syst = plt_tools.group(histo, "process", "process_grp", grp_dict)[{"process_grp": "Signal"}]
+    # Histos with weight systematics have a systematic axis, the scan uses the nominal
+    if "systematic" in histo.axes.name: histo = histo[{"systematic": "nominal"}]
     histo = plt_tools.group(histo, "process", "process_grp", grp_dict)
 
     # Derive "other" backgrounds automatically as everything not in the fixed exclusion set or abcdbkg_names
@@ -1517,7 +1685,7 @@ def main():
 
     # Write datacards
     print("\nWriting datacards for top points...")
-    write_abcd_datacards(histo_sig, histo_abcdbkg, histo_otherbkg, histo_dat, results, constrain_var, abcd_label=abcd_label, other_label=" + ".join(sorted(other_bkg_names)), output_dir=out_dir_dc, n_top=200, guardrails=guardrails)
+    write_abcd_datacards(histo_sig, histo_abcdbkg, histo_otherbkg, histo_dat, results, constrain_var, abcd_label=abcd_label, other_label=" + ".join(sorted(other_bkg_names)), output_dir=out_dir_dc, n_top=200, guardrails=guardrails, histo_sig_syst=histo_sig_syst, run=run, card_tag=card_tag)
 
 
     ####################### Plot ABCD regions for a specific working point #######################
