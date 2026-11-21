@@ -167,6 +167,7 @@ class AnalysisProcessor(processor.ProcessorABC):
             "abcd2d_3lChsum1": hist.Hist(
                 hist.axis.StrCategory([], growth=True, name="process", label="process"),
                 hist.axis.StrCategory([], growth=True, name="category", label="category"),
+                hist.axis.StrCategory([], growth=True, name="systematic", label="systematic"),
                 axis.Regular(100, 0, 1, name="dnn_score",   label="DNN score from ABCDnet"),
                 axis.Regular(100, 0, 1, name="vbs_score",   label="VBS jets score from tagger"),
                 #axis.Regular(100, 0, self.mjj_cap, name="vbs_mjj", label="Mjj of vbs"),
@@ -551,7 +552,7 @@ class AnalysisProcessor(processor.ProcessorABC):
 
 
     # The analysis on a given chunk, for the nominal (kin_syst=None) or for one JES/JER/MET-unclustered variation
-    # For a variation only the abcd2d_2lH and abcd2d_3lChsum3 planes and the 1d histos of SYST_1D_VARS (in SYST_1D_CATS)
+    # For a variation only the abcd2d_2lH, abcd2d_3lChsum1 and abcd2d_3lChsum3 planes and the 1d histos of SYST_1D_VARS (in SYST_1D_CATS)
     # are filled, with systematic=<variation>
     def _process_events(self, events, kin_syst=None):
 
@@ -1450,20 +1451,22 @@ class AnalysisProcessor(processor.ProcessorABC):
                     category   = cat2lH,
                     systematic = syst_2lH,
                 )
-            if kin_syst is None:
-                #self.accumulator["abcd2d_2lV"].fill(
-                #    vbs_mjj   = vbs_mjj_flow[all_cuts_mask_V],
-                #    dnn_score = dnn_score_2lV[all_cuts_mask_V],
-                #    weight    = weights_obj_base.weight(None)[all_cuts_mask_V],
-                #    process   = histAxisName[all_cuts_mask_V],
-                #    category  = cat2lV,
-                #)
+            #if kin_syst is None:
+            #    self.accumulator["abcd2d_2lV"].fill(
+            #        vbs_mjj   = vbs_mjj_flow[all_cuts_mask_V],
+            #        dnn_score = dnn_score_2lV[all_cuts_mask_V],
+            #        weight    = weights_obj_base.weight(None)[all_cuts_mask_V],
+            #        process   = histAxisName[all_cuts_mask_V],
+            #        category  = cat2lV,
+            #    )
+            for syst_3lChsum1, wgt_fluct_3lChsum1 in fluct_lst_abcd:
                 self.accumulator["abcd2d_3lChsum1"].fill(
-                    vbs_score = vbsjets.score[all_cuts_mask_3lChsum1],
-                    dnn_score = dnn_score_3lChsum1[all_cuts_mask_3lChsum1],
-                    weight    = weights_obj_base.weight(None)[all_cuts_mask_3lChsum1],
-                    process   = histAxisName[all_cuts_mask_3lChsum1],
-                    category  = cat3lChsum1,
+                    vbs_score  = vbsjets.score[all_cuts_mask_3lChsum1],
+                    dnn_score  = dnn_score_3lChsum1[all_cuts_mask_3lChsum1],
+                    weight     = get_weight(wgt_fluct_3lChsum1)[all_cuts_mask_3lChsum1],
+                    process    = histAxisName[all_cuts_mask_3lChsum1],
+                    category   = cat3lChsum1,
+                    systematic = syst_3lChsum1,
                 )
             for syst_3lChsum3, wgt_fluct_3lChsum3 in fluct_lst_abcd:
                 weight_3lChsum3 = get_weight(wgt_fluct_3lChsum3)
