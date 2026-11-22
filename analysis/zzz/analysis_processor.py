@@ -241,7 +241,7 @@ class AnalysisProcessor(processor.ProcessorABC):
 
             "mjj_max_cent" : axis.Regular(180, 0, 250, name="mjj_max_cent", label="Leading mjj of pair of non-forward jets"),
             "mjj_max_fwd" : axis.Regular(180, 0, 2500, name="mjj_max_fwd", label="Leading mjj of pair of forward jets"),
-            "mjj_max_any" : axis.Regular(180, 0, 3000, name="mjj_max_any", label="Leading mjj of pair of any (central or fwd) jets"),
+            "mjj_max_any" : axis.Regular(180, 0, 750, name="mjj_max_any", label="Leading mjj of pair of any (central or fwd) jets"),
             "absdeta_max_fwd" : axis.Regular(180, 0, 10, name="absdeta_max_fwd", label="Largest abs(delta eta) of pair of forward jets"),
             "absdeta_max_any" : axis.Regular(180, 0, 10, name="absdeta_max_any", label="Largest abs(delta eta) of pair of any (central or fwd) jets"),
 
@@ -350,8 +350,7 @@ class AnalysisProcessor(processor.ProcessorABC):
         # Siphon the outputs (these outputs are the inputs for the ML training)
         self._siphon_output_path = f"histos/{siphon_out_name}.root"
         self._siphon_bdt_data = siphon_bdt_data
-        #self._siphon_selection = ["2lOSSF_nFJ1_massHi_Zp5Hp5VBSp5"] # NOTE this is hard coded
-        #self._siphon_selection = ["4l_minmll_2z_0b_4lx_0fj_met40"] # NOTE this is hard coded
+        #self._siphon_selection = ["4l_minmll_2z_4lx_0bm_met40"] # NOTE this is hard coded
         self._siphon_selection = ["4l_minmll_2z_4lx_2j_2blm"] # NOTE this is hard coded
         self._bdt_vars = []
         for varname in list(self._dense_axes_dict.keys()):
@@ -1157,111 +1156,100 @@ class AnalysisProcessor(processor.ProcessorABC):
         is_4l           = (nleps>=4)
         is_4l_minmll    = (nleps>=4) & (mll_min_sfos>12)
 
-        selections.add("6l",       (nleps==6))
-        selections.add("g6l",      (nleps>6))
+        # Preselections and inclusive regions
+        selections.add("6lx",            (nleps==6))
+        selections.add("g6l",            (nleps>6))
+        selections.add("4l",             is_4l)
+        selections.add("4lx",            (nleps==4))
+        selections.add("5lx",            (nleps==5))
+        selections.add("4l_minmll",      is_4l_minmll)
+        selections.add("4l_minmll_2z",   is_4l_minmll & (n_sfosz>=2))
+        selections.add("4l_minmll_2z_0bt",is_4l_minmll & (n_sfosz>=2) & (nbtagst==0))
 
-        selections.add("4l",                    is_4l)
-        selections.add("4l_minmll",             is_4l_minmll)
-        selections.add("4l_minmll_2z",          is_4l_minmll & (n_sfosz>=2))
-        selections.add("4l_minmll_2z_0b",       is_4l_minmll & (n_sfosz>=2) & (nbtagst==0))
+        # CRs
+        selections.add("4l_minmll_1z_2bt",            is_4l_minmll & (n_sfosz==1) & (nbtagst>=2))                            # ttX
+        selections.add("4l_minmll_2z_4lx_0bm_met40l", is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (nbtagsm==0) & (met.pt<40)) # ZZ low met
 
-        # ttX CR
-        selections.add("4l_minmll_1z_2b",      is_4l_minmll & (n_sfosz==1) & (nbtagst>=2))
-
-        selections.add("4l_minmll_2z_0b_4lx_0fj_met90l",          is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==4) & (nfatjets==0) & (met.pt<90))
-        selections.add("4l_minmll_2z_2b_4lx",                     is_4l_minmll & (n_sfosz>=2) & (nbtagst>=2) & (nleps==4))
-
-        # ZZbb
+        # ZZ+bb
         is_mbbZ = (mass_jjbscore>40) & (mass_jjbscore<120)
-        selections.add("4l_minmll_2z_4lx_2j_2blm",      is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets_central>=2) & (nbtagsl_cent>=2) & (nbtagsm_cent>=1))
-        selections.add("4l_minmll_2z_4lx_2j_2blm_onZ",  is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets_central>=2) & (nbtagsl_cent>=2) & (nbtagsm_cent>=1) & is_mbbZ)
-        selections.add("4l_minmll_2z_4lx_2j_2blm_offZ", is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets_central>=2) & (nbtagsl_cent>=2) & (nbtagsm_cent>=1) & ~is_mbbZ)
-        selections.add("4l_minmll_2z_4lx_2j_2blm_NNp7", is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (njets_central>=2) & (nbtagsl_cent>=2) & (nbtagsm_cent>=1) & (dnn_score_zzz_zzbb>0.7))
+        is_2j2blm = (njets_central>=2) & (nbtagsl_cent>=2) & (nbtagsm_cent>=1)
+        selections.add("4l_minmll_2z_4lx_2j_2blm",      is_4l_minmll & (n_sfosz>=2) & (nleps==4) & is_2j2blm)
+        selections.add("4l_minmll_2z_4lx_2j_2blm_onZ",  is_4l_minmll & (n_sfosz>=2) & (nleps==4) & is_2j2blm & is_mbbZ)
+        selections.add("4l_minmll_2z_4lx_2j_2blm_offZ", is_4l_minmll & (n_sfosz>=2) & (nleps==4) & is_2j2blm & ~is_mbbZ)
+        selections.add("4l_minmll_2z_4lx_2j_2blm_NNp7", is_4l_minmll & (n_sfosz>=2) & (nleps==4) & is_2j2blm & (dnn_score_zzz_zzbb>0.7))
 
-        selections.add("4l_minmll_2z_0b_4lx_0fj",                is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==4) & (nfatjets==0))
-        selections.add("4l_minmll_2z_0b_4lx_0fj_met40",          is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==4) & (nfatjets==0) & (met.pt>40))
-        selections.add("4l_minmll_2z_0b_4lx_0fj_met40_NNp7",     is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==4) & (nfatjets==0) & (met.pt>40) & (dnn_score_zzz>0.7))
-        selections.add("4l_minmll_2z_0b_4lx_0fj_met40_NNp8",     is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==4) & (nfatjets==0) & (met.pt>40) & (dnn_score_zzz>0.8))
-        selections.add("4l_minmll_2z_0b_4lx_0fj_met40_NNp9",     is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==4) & (nfatjets==0) & (met.pt>40) & (dnn_score_zzz>0.9))
-        selections.add("4l_minmll_2z_0b_4lx_0fj_met40_NNp95",    is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==4) & (nfatjets==0) & (met.pt>40) & (dnn_score_zzz>0.95))
-        selections.add("4l_minmll_2z_0b_4lx_0fj_met40_NNp98",    is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==4) & (nfatjets==0) & (met.pt>40) & (dnn_score_zzz>0.98))
-        selections.add("4l_minmll_2z_0b_4lx_0fj_met40_NNp99",    is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==4) & (nfatjets==0) & (met.pt>40) & (dnn_score_zzz>0.99))
+        # ZZ+met
+        selections.add("4l_minmll_2z_4lx",                 is_4l_minmll & (n_sfosz>=2) & (nleps==4))
+        selections.add("4l_minmll_2z_4lx_0bm",             is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (nbtagsm==0))
+        selections.add("4l_minmll_2z_4lx_0bm_met40",       is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (nbtagsm==0) & (met.pt>40))
+        selections.add("4l_minmll_2z_4lx_0bm_met40_NNp7",  is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (nbtagsm==0) & (met.pt>40) & (dnn_score_zzz>0.7))
+        selections.add("4l_minmll_2z_4lx_0bm_met40_NNp8",  is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (nbtagsm==0) & (met.pt>40) & (dnn_score_zzz>0.8))
+        selections.add("4l_minmll_2z_4lx_0bm_met40_NNp9",  is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (nbtagsm==0) & (met.pt>40) & (dnn_score_zzz>0.9))
+        selections.add("4l_minmll_2z_4lx_0bm_met40_NNp95", is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (nbtagsm==0) & (met.pt>40) & (dnn_score_zzz>0.95))
+        selections.add("4l_minmll_2z_4lx_0bm_met40_NNp98", is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (nbtagsm==0) & (met.pt>40) & (dnn_score_zzz>0.98))
+        selections.add("4l_minmll_2z_4lx_0bm_met40_NNp99", is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (nbtagsm==0) & (met.pt>40) & (dnn_score_zzz>0.99))
 
-        selections.add("4l_minmll_2z_0b_4lx_0fj_met90",          is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==4) & (nfatjets==0) & (met.pt>90))
-        selections.add("4l_minmll_2z_0b_4lx_0fj_met90_phimetzz", is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==4) & (nfatjets==0) & (met.pt>90) & (abs(met4.delta_phi(Z1+Z2))>2))
+        # 5l
+        selections.add("4l_minmll_2z_0bt_5lx", is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==5))
 
-        #selections.add("4l_minmll_2z_0b_4lx_1fj",                is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==4) & (nfatjets==1))
-        #selections.add("4l_minmll_2z_0b_4lx_1fj_gpt0p5",         is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==4) & (nfatjets==1) & (fj0.gptZvsQCD>0.5))
-        #selections.add("4l_minmll_2z_0b_4lx_1fj_pn0p5",          is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==4) & (nfatjets==1) & (fj0_pNetZvsQCD>0.5))
-
-        selections.add("4l_minmll_2z_0b_5lx",                    is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==5))
-
-        selections.add("4l_minmll_2z_0b_6l",           is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==6))
-        selections.add("4l_minmll_2z_0b_6l_2z",        is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==6) & (n_sfosz==2))
-        #selections.add("4l_minmll_2z_0b_6l_2z_mh150l", is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==6) & (n_sfosz==2) & (mass_h_cand<150))
-        #selections.add("4l_minmll_2z_0b_6l_3z",        is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==6) & (n_sfosz==3))
-
+        # 6l on-Z, off-Z, and other (not the best way to define other..)
         sr_6l_2z = is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==6) & (n_sfosz==2) & (mass_h_cand<150)
         sr_6l_3z = is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==6) & (n_sfosz==3)
-        selections.add("4l_minmll_2z_0b_6l_2z_mh150l", sr_6l_2z)
-        selections.add("4l_minmll_2z_0b_6l_3z",        sr_6l_3z)
-
-        # All 6l events that land in neither of the two 6l SRs
-        selections.add("6l_other",        (nleps==6) & ak.fill_none(~sr_6l_3z & ~sr_6l_2z, True))
-        selections.add("6l_other_mll",    (nleps==6) & ak.fill_none(~sr_6l_3z & ~sr_6l_2z, True) & (mll_min_afos>6))
-        selections.add("6l_other_mll_0b", (nleps==6) & ak.fill_none(~sr_6l_3z & ~sr_6l_2z, True) & (mll_min_afos>6) & (nbtagst==0))
-
+        selections.add("4l_minmll_2z_0bt_6l",           is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==6))
+        selections.add("4l_minmll_2z_0bt_6l_2z",        is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==6) & (n_sfosz==2))
+        selections.add("4l_minmll_2z_0bt_6l_2z_mh150l", sr_6l_2z)
+        selections.add("4l_minmll_2z_0bt_6l_3z",        sr_6l_3z)
+        selections.add("6l_other",                     (nleps==6) & ak.fill_none(~sr_6l_3z & ~sr_6l_2z, True))
+        selections.add("6l_other_mll",                 (nleps==6) & ak.fill_none(~sr_6l_3z & ~sr_6l_2z, True) & (mll_min_afos>6))
+        selections.add("6l_other_mll_0bt",              (nleps==6) & ak.fill_none(~sr_6l_3z & ~sr_6l_2z, True) & (mll_min_afos>6) & (nbtagst==0))
 
 
         # Keep track of the cats we want to actually fill
         cat_dict = {
             "lep_chan_lst" : [
-
                 "all_events",
-                "6l",
-                "g6l",
 
-                "4l",
+                # Preselections and inclusive regions
+                "6lx",
+                "g6l",
+                "4lx",
+                "5lx",
                 "4l_minmll",
                 "4l_minmll_2z",
-                "4l_minmll_2z_0b",
+                "4l_minmll_2z_0bt",
 
-                "4l_minmll_1z_2b", # ttZ CR
+                # CRs
+                "4l_minmll_1z_2bt",
+                "4l_minmll_2z_4lx_0bm_met40l",
 
-                "4l_minmll_2z_0b_4lx_0fj_met90l",
-                "4l_minmll_2z_2b_4lx",
-
-                # ZZbb study
+                # ZZ+bb
                 "4l_minmll_2z_4lx_2j_2blm",
                 "4l_minmll_2z_4lx_2j_2blm_onZ",
                 "4l_minmll_2z_4lx_2j_2blm_offZ",
                 "4l_minmll_2z_4lx_2j_2blm_NNp7",
 
-                "4l_minmll_2z_0b_4lx_0fj",
-                "4l_minmll_2z_0b_4lx_0fj_met40",
-                #"4l_minmll_2z_0b_4lx_0fj_met40_NNp7",
-                #"4l_minmll_2z_0b_4lx_0fj_met40_NNp8",
-                #"4l_minmll_2z_0b_4lx_0fj_met40_NNp9",
-                #"4l_minmll_2z_0b_4lx_0fj_met40_NNp95",
-                "4l_minmll_2z_0b_4lx_0fj_met40_NNp98",
-                "4l_minmll_2z_0b_4lx_0fj_met40_NNp99",
+                # ZZ+met
+                "4l_minmll_2z_4lx",
+                "4l_minmll_2z_4lx_0bm",
+                "4l_minmll_2z_4lx_0bm_met40",
+                "4l_minmll_2z_4lx_0bm_met40_NNp7",
+                "4l_minmll_2z_4lx_0bm_met40_NNp8",
+                "4l_minmll_2z_4lx_0bm_met40_NNp9",
+                "4l_minmll_2z_4lx_0bm_met40_NNp95",
+                "4l_minmll_2z_4lx_0bm_met40_NNp98",
+                "4l_minmll_2z_4lx_0bm_met40_NNp99",
 
-                "4l_minmll_2z_0b_4lx_0fj_met90",
-                "4l_minmll_2z_0b_4lx_0fj_met90_phimetzz",
-                "4l_minmll_2z_0b_4lx_1fj",
-                "4l_minmll_2z_0b_4lx_1fj_gpt0p5",
-                "4l_minmll_2z_0b_4lx_1fj_pn0p5",
+                # 5l
+                "4l_minmll_2z_0bt_5lx",
 
-                "4l_minmll_2z_0b_5lx",
-
-                "4l_minmll_2z_0b_6l",
-                "4l_minmll_2z_0b_6l_2z",
-                "4l_minmll_2z_0b_6l_2z_mh150l",
-                "4l_minmll_2z_0b_6l_3z",
-
+                # 6l on-Z, off-Z, and other (not the best way to define other..)
+                "4l_minmll_2z_0bt_6l",
+                "4l_minmll_2z_0bt_6l_2z",
+                "4l_minmll_2z_0bt_6l_2z_mh150l",
+                "4l_minmll_2z_0bt_6l_3z",
                 "6l_other",
                 "6l_other_mll",
-                "6l_other_mll_0b",
+                "6l_other_mll_0bt",
 
             ]
         }
