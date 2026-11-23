@@ -95,8 +95,6 @@ class AnalysisProcessor(processor.ProcessorABC):
             "scalarptsum_jetCent" : axis.Regular(180, 0, 2000, name="scalarptsum_jetCent", label="H_T central"),
             "scalarptsum_lep" : axis.Regular(180, 0, 800, name="scalarptsum_lep", label="S_T"),
             "scalarptsum_lepmet" : axis.Regular(180, 0, 1500, name="scalarptsum_lepmet", label="S_T + metpt"),
-            "scalarptsum_lepmetFJ0" : axis.Regular(180, 0, 3500, name="scalarptsum_lepmetFJ0", label="S_T + metpt + FJ0 pt"),
-            "scalarptsum_lepmetFJ01" : axis.Regular(180, 0, 3500, name="scalarptsum_lepmetFJ01", label="S_T + metpt + FJ0 pt + FJ1 pt"),
             "scalarptsum_lepmetalljets" : axis.Regular(180, 0, 2500, name="scalarptsum_lepmetalljets", label="S_T + metpt + H_T all"),
             "scalarptsum_lepmetcentjets" : axis.Regular(180, 0, 2500, name="scalarptsum_lepmetcentjets", label="S_T + metpt + H_T cent"),
             "scalarptsum_lepmetfwdjets" : axis.Regular(180, 0, 1500, name="scalarptsum_lepmetfwdjets", label="S_T + metpt + H_T fwd"),
@@ -134,7 +132,6 @@ class AnalysisProcessor(processor.ProcessorABC):
             "absdphi_lepmet" : axis.Regular(180, 0, 3.1416, name="absdphi_lepmet", label="abs delta phi between met and pair of leading leptons"),
             "absdphi_l0met"  : axis.Regular(180, 0, 3.1416, name="absdphi_l0met", label="abs delta phi between met and leading lepton"),
             "dr_lepmet"      : axis.Regular(180, 0, 6, name="dr_lepmet", label="dr between met and pair of leading leptons"),
-            "absdphi_FJ0lepmet" : axis.Regular(180, 0, 3.1416, name="absdphi_FJ0lepmet", label="abs delta phi between FJ0 and (met + leptons)"),
 
             "mlb_min" : axis.Regular(180, 0, 300, name="mlb_min",  label="min mass(b+l)"),
             "mlb_max" : axis.Regular(180, 0, 1000, name="mlb_max",  label="max mass(b+l)"),
@@ -155,34 +152,6 @@ class AnalysisProcessor(processor.ProcessorABC):
             "n_ll_sfos"   : axis.Regular(5, 0, 5, name="n_ll_sfos",   label="Number of SF OS lepton pairs"),
             "abs_ch_sum_3l" : axis.Regular(4, 0, 4, name="abs_ch_sum_3l",   label="Abs sum of charges of the 3l"),
 
-            "fj0_pt"  : axis.Regular(180, 0, 2000, name="fj0_pt", label="fj0 pt"),
-            "fj0_mass"  : axis.Regular(180, 0, 250, name="fj0_mass", label="fj0 mass"),
-            "fj0_msoftdrop"  : axis.Regular(180, 0, 250, name="fj0_msoftdrop", label="fj0 softdrop mass"),
-            "fj0_mparticlenet"  : axis.Regular(180, 0, 250, name="fj0_mparticlenet", label="fj0 particleNet mass"),
-            "fj0_eta" : axis.Regular(180, -5, 5, name="fj0_eta", label="fj0 eta"),
-            "fj0_phi" : axis.Regular(180, -3.1416, 3.1416, name="fj0_phi", label="j0 phi"),
-
-            "fj0_gptHvsQCD": axis.Regular(180, 0, 1, name="fj0_gptHvsQCD", label="fj0 gloparT H"),
-            "fj0_gptWvsQCD": axis.Regular(180, 0, 1, name="fj0_gptWvsQCD", label="fj0 gloparT W"),
-            "fj0_gptZvsQCD": axis.Regular(180, 0, 1, name="fj0_gptZvsQCD", label="fj0 gloparT Z"),
-            "fj0_gptVvsQCD": axis.Regular(180, 0, 1, name="fj0_gptVvsQCD", label="fj0 gloparT Z"),
-
-            "fj0_pNetH4qvsQCD": axis.Regular(180, 0, 1, name="fj0_pNetH4qvsQCD", label="fj0 pNet H4qvsQCD"),
-            "fj0_pNetHbbvsQCD": axis.Regular(180, 0, 1, name="fj0_pNetHbbvsQCD", label="fj0 pNet HbbvsQCD"),
-            "fj0_pNetHccvsQCD": axis.Regular(180, 0, 1, name="fj0_pNetHccvsQCD", label="fj0 pNet HccvsQCD"),
-            "fj0_pNetQCD"     : axis.Regular(180, 0, 1, name="fj0_pNetQCD",    label="fj0 pNet QCD"),
-            "fj0_pNetTvsQCD"  : axis.Regular(180, 0, 1, name="fj0_pNetTvsQCD", label="fj0 pNet TvsQCD"),
-            "fj0_pNetWvsQCD"  : axis.Regular(180, 0, 1, name="fj0_pNetWvsQCD", label="fj0 pNet WvsQCD"),
-            "fj0_pNetZvsQCD"  : axis.Regular(180, 0, 1, name="fj0_pNetZvsQCD", label="fj0 pNet ZvsQCD"),
-            "fj0_gpt_Hfrac" : axis.Regular(180, 0, 1, name="fj0_gpt_Hfrac",   label="H score frac (gptH / (gptH + gptW + gptZ))"),
-            "fj0_gpt_Wfrac" : axis.Regular(180, 0, 1, name="fj0_gpt_Wfrac",   label="W score frac (gptW / (gptH + gptW + gptZ))"),
-            "fj0_gpt_Zfrac" : axis.Regular(180, 0, 1, name="fj0_gpt_Zfrac",   label="Z score frac (gptZ / (gptH + gptW + gptZ))"),
-            "fj0_gpt_Hsf" : axis.Regular(180, 0, 1, name="fj0_gpt_Hsf",   label="H softmax score (exp(gptH) / (exp(gptH) + exp(gptW) + exp(gptZ)))"),
-            "fj0_gpt_Wsf" : axis.Regular(180, 0, 1, name="fj0_gpt_Wsf",   label="W softmax score (exp(gptW) / (exp(gptH) + exp(gptW) + exp(gptZ)))"),
-            "fj0_gpt_Zsf" : axis.Regular(180, 0, 1, name="fj0_gpt_Zsf",   label="Z softmax score (exp(gptZ) / (exp(gptH) + exp(gptW) + exp(gptZ)))"),
-            "fj0_gpt_mass2p" : axis.Regular(180, 0, 250, name="fj0_gpt_mass2p", label="gloParT massCorrX2p"),
-            "fj0_gpt_mass"   : axis.Regular(180, 0, 250, name="fj0_gpt_mass",   label="gloParT massCorrGeneric"),
-
             "j0central_pt"  : axis.Regular(180, 0, 250, name="j0central_pt", label="j0 pt (central jets)"),
             "j0central_eta" : axis.Regular(180, 0, 5, name="j0central_eta", label="j0 abs eta (central jets)"),
             "j0central_phi" : axis.Regular(180, -3.1416, 3.1416, name="j0central_phi", label="j0 phi (central jets)"),
@@ -195,20 +164,17 @@ class AnalysisProcessor(processor.ProcessorABC):
             "j0_eta" : axis.Regular(180, 0, 5, name="j0_eta", label="j0 abs eta (all regular jets)"),
             "j0_phi" : axis.Regular(180, -3.1416, 3.1416, name="j0_phi", label="j0 phi (all regular jets)"),
 
-            "jup0_pt"  : axis.Regular(180, -5, 250, name="jup0_pt",  label="pt of highest UParTAK4 score jet"),
-            "jup0_eta" : axis.Regular(180, -5, 5, name="jup0_eta", label="eta of highest UParTAK4 score jet"),
-            "jup0_phi" : axis.Regular(180, -3.1416, 3.1416, name="jup0_phi", label="phi of highest UParTAK4 score jet"),
-            "jup1_pt"  : axis.Regular(180, -5, 250, name="jup1_pt",  label="pt of second highest UParTAK4 score jet"),
-            "jup1_eta" : axis.Regular(180, -5, 5, name="jup1_eta", label="eta of second highest UParTAK4 score jet"),
-            "jup1_phi" : axis.Regular(180, -3.1416, 3.1416, name="jup1_phi", label="phi of second highest UParTAK4 score jet"),
+            "jb0_pt"  : axis.Regular(180, -5, 250,         name="jb0_pt",  label="pt of leading b jet (by tier, then pt)"),
+            "jb0_eta" : axis.Regular(180, -5, 5,           name="jb0_eta", label="eta of leading b jet (by tier, then pt)"),
+            "jb0_phi" : axis.Regular(180, -3.1416, 3.1416, name="jb0_phi", label="phi of leading b jet (by yier, then pt)"),
+            "jb1_pt"  : axis.Regular(180, -5, 250,         name="jb1_pt",  label="pt of second b jet (by yier, then pt)"),
+            "jb1_eta" : axis.Regular(180, -5, 5,           name="jb1_eta", label="eta of second b jet (by yier, then pt)"),
+            "jb1_phi" : axis.Regular(180, -3.1416, 3.1416, name="jb1_phi", label="phi of second b jet (by yier, then pt)"),
 
-            "dr_fj0l0" : axis.Regular(180, 0, 6, name="dr_fj0l0", label="dr between FJ and lepton"),
             "dr_j0fwdj1fwd" : axis.Regular(180, 0, 6, name="dr_j0fwdj1fwd", label="dr between leading two forward jets"),
             "dr_j0centj1cent" : axis.Regular(180, 0, 6, name="dr_j0centj1cent", label="dr between leading two central jets"),
             "dr_j0j1" : axis.Regular(180, 0, 6, name="dr_j0j1", label="dr between leading two jets"),
 
-            "mass_jFJ_min" : axis.Regular(180, 0, 1500, name="mass_jFJ_min", label="Min mass of jet and FJ pair"),
-            "mass_jFJ_max" : axis.Regular(180, 0, 4000, name="mass_jFJ_max", label="Max mass of jet and FJ pair"),
             "mass_lj_min" : axis.Regular(180, 0, 1000, name="mass_lj_min", label="Min mass of jet and lepton pair"),
             "mass_lj_max" : axis.Regular(180, 0, 4000, name="mass_lj_max", label="Max mass of jet and lepton pair"),
 
@@ -225,19 +191,10 @@ class AnalysisProcessor(processor.ProcessorABC):
 
             "mass_b0b1" : axis.Regular(180, 0, 250, name="mass_b0b1", label="mjj of two leading (pt) b jets"),
 
-            "mass_bbscore0bbscore1" : axis.Regular(180, 0, 250, name="mass_bbscore0bbscore1", label="mjj of two leading (in score) loose b jets"),
-            "mass_bmbscore0bmbscore1" : axis.Regular(180, 0, 250, name="mass_bmbscore0bmbscore1", label="mjj of two leading (in score) med b jets"),
-            "bbscore0_bscore"  : axis.Regular(180, 0, 1, name="bbscore0_bscore", label="Btag score of b jet with highest btag score"),
-            "bbscore1_bscore"  : axis.Regular(180, 0, 1, name="bbscore1_bscore", label="Btag score of b jet with second highest btag score"),
-
-            "mass_jbscore0jbscore1" : axis.Regular(180, 0, 250, name="mass_jbscore0jbscore1", label="mjj of two leading (in score) jets"),
-
-            "mass_jjbscore" : axis.Regular(180, -5, 250, name="mass_jjbscore", label="mjj of the two highest UParTAK4 score jets"),
-            "dr_jjbscore"     : axis.Regular(180, -2, 6, name="dr_jjbscore", label="dR of the two highest UParTAK4 score jets"),
-            "pt_jjbscore"     : axis.Regular(180, -5, 400, name="pt_jjbscore", label="pt of the two highest UParTAK4 score jets"),
-            "mass_4ljjbscore" : axis.Regular(180, -5, 1000, name="mass_4ljjbscore", label="mass of (Z1 + Z2 + jj) system"),
-            "jbscore0_bscore"  : axis.Regular(180, 0, 1, name="jbscore0_bscore", label="Btag score of jet with highest btag score"),
-            "jbscore1_bscore"  : axis.Regular(180, 0, 1, name="jbscore1_bscore", label="Btag score of jet with second highest btag score"),
+            "mass_bb" : axis.Regular(180, -5, 250, name="mass_bb", label="mjj of leading b jets (by tier then pt)"),
+            "dr_bb"   : axis.Regular(180, -2, 6, name="dr_bb", label="dR of the leading b jets (by tier then pt)"),
+            "pt_bb"   : axis.Regular(180, -5, 400, name="pt_bb", label="pt of the two highest UParTAK4 score jets"),
+            "mass_4lbb" : axis.Regular(180, -5, 1000, name="mass_4lbb", label="mass of (Z1 + Z2 + jj) system"),
 
             "mjj_max_cent" : axis.Regular(180, 0, 250, name="mjj_max_cent", label="Leading mjj of pair of non-forward jets"),
             "mjj_max_fwd" : axis.Regular(180, 0, 2500, name="mjj_max_fwd", label="Leading mjj of pair of forward jets"),
@@ -263,10 +220,6 @@ class AnalysisProcessor(processor.ProcessorABC):
 
             "mll_min_afos" : axis.Regular(180, -2, 48, name="mll_min_afos",  label="min mll of all OS pairs"),
             "mll_min_sfos" : axis.Regular(180, -2, 48, name="mll_min_sfos",  label="min mll of SF OS pairs"),
-            "mll_z" : axis.Regular(180, 0, 150, name="mll_z",  label="mll of the pair of leptons closest to z"),
-            "pt_z"  : axis.Regular(180, 0, 150, name="pt_z",   label="pt of the pair of leptons closest to z"),
-            #"mt_wlep" : axis.Regular(180,-2,298, name="mt_wlep", label="MT of MET and W lep (ie, lep that is not the SFOS Z pair)"),
-            "dr_wlepmet" : axis.Regular(180,0,6, name="dr_wlepmet", label="dr between MET and W lep (ie, lep that is not the SFOS Z pair)"),
 
             "pt_z1"  : axis.Regular(180, 0, 1000, name="pt_z1",   label="pt of Z1"),
             "pt_z2"  : axis.Regular(180, 0, 1000, name="pt_z2",   label="pt of Z2"),
@@ -449,22 +402,6 @@ class AnalysisProcessor(processor.ProcessorABC):
         isSig  = events.kind[0]=="sig"
         isData = events.kind[0]=="data"
 
-        # Put the relevant tagging scores in fatjets object (this should be in RDF in the future)
-        fatjets["gptHvsQCD"] = fatjets.globalParT3_Xbb / (fatjets.globalParT3_Xbb + fatjets.globalParT3_QCD)
-        fatjets["gptWvsQCD"] = (fatjets.globalParT3_Xqq/3 + fatjets.globalParT3_Xcs) / (fatjets.globalParT3_Xqq/3 + fatjets.globalParT3_Xcs + fatjets.globalParT3_QCD)
-        fatjets["gptZvsQCD"] = (fatjets.globalParT3_Xbb + fatjets.globalParT3_Xcc + fatjets.globalParT3_Xqq) / (fatjets.globalParT3_Xbb + fatjets.globalParT3_Xcc + fatjets.globalParT3_Xqq + fatjets.globalParT3_QCD)
-        fatjets["gptVvsQCD"] = ak.where(fatjets.gptZvsQCD>fatjets.gptWvsQCD,fatjets.gptZvsQCD,fatjets.gptWvsQCD) # Max of the W and Z score
-        gpt_denom_sf  = np.exp(fatjets.gptHvsQCD) + np.exp(fatjets.gptWvsQCD) + np.exp(fatjets.gptZvsQCD)
-        gpt_denom_tot = fatjets.gptHvsQCD + fatjets.gptWvsQCD + fatjets.gptZvsQCD
-        fatjets["gpt_Hsf"] = np.exp(fatjets.gptHvsQCD) / gpt_denom_sf
-        fatjets["gpt_Wsf"] = np.exp(fatjets.gptWvsQCD) / gpt_denom_sf
-        fatjets["gpt_Zsf"] = np.exp(fatjets.gptZvsQCD) / gpt_denom_sf
-        fatjets["gpt_Hfrac"] = fatjets.gptHvsQCD / gpt_denom_tot
-        fatjets["gpt_Wfrac"] = fatjets.gptWvsQCD / gpt_denom_tot
-        fatjets["gpt_Zfrac"] = fatjets.gptZvsQCD / gpt_denom_tot
-        fatjets["gpt_mass2p"] = fatjets.globalParT3_massCorrX2p     * fatjets.mass * (1 - fatjets.rawFactor)
-        fatjets["gpt_mass"]   = fatjets.globalParT3_massCorrGeneric * fatjets.mass * (1 - fatjets.rawFactor)
-
         # "4-vector" for met
         met4 = ak.zip(
             {
@@ -513,8 +450,6 @@ class AnalysisProcessor(processor.ProcessorABC):
         # Get leptons into other types, why do we need to do this :/
         l_vvh_t_vecsLZ = to_vec(l_vvh_t,"PtEtaPhiMLorentzVector")  # convert the whole collection first
         l_vvh_t_vecsLZ_padded = ak.pad_none(l_vvh_t_vecsLZ, 4)
-        l0vLZ = l_vvh_t_vecsLZ_padded[:, 0]
-        l1vLZ = l_vvh_t_vecsLZ_padded[:, 1]
         l_vvh_t_vecs = to_vec(l_vvh_t)  # convert the whole collection first
         l_vvh_t_vecs_padded = ak.pad_none(l_vvh_t_vecs, 4)
         l0v = l_vvh_t_vecs_padded[:, 0]
@@ -535,14 +470,10 @@ class AnalysisProcessor(processor.ProcessorABC):
 
         #################### Jets ####################
 
-        # Jet selection
-        #cleanedJets = os_ec.get_cleaned_collection(l_vvh_t,jets) # Clean against leps
-        #cleanedJets = os_ec.get_cleaned_collection(fatjets,cleanedJets,drcut=0.8) # Clean against fat jets
-        cleanedJets = jets
-        goodJets = cleanedJets
-        #goodJets = cleanedJets[(abs(cleanedJets.eta) <= 2.4)] # TEST
-        goodJets_central = cleanedJets[(abs(cleanedJets.eta) <= 2.4)]
-        goodJets_forward = cleanedJets[(abs(cleanedJets.eta) > 2.4)]
+        # Jet selection, take the outputs from RDF, already cleaned, just pt order here
+        goodJets = jets[ak.argsort(jets.pt, axis=-1, ascending=False)]
+        goodJets_central = goodJets[(abs(goodJets.eta) <= 2.4)]
+        goodJets_forward = goodJets[(abs(goodJets.eta) > 2.4)]
 
         # Count jets
         njets = ak.num(goodJets)
@@ -570,47 +501,42 @@ class AnalysisProcessor(processor.ProcessorABC):
         j2cent = goodJets_central_ptordered_padded[:,2]
         j3cent = goodJets_central_ptordered_padded[:,3]
 
-        goodfatjets_ptordered = fatjets[ak.argsort(fatjets.pt,axis=-1,ascending=False)]
-        goodfatjets_ptordered_padded = ak.pad_none(goodfatjets_ptordered, 2)
-        fj0 = goodfatjets_ptordered_padded[:,0]
-        fj1 = goodfatjets_ptordered_padded[:,1]
-
         scalarptsum_jet = ak.sum(goodJets.pt,axis=-1)
         scalarptsum_jetCent = ak.sum(goodJets_central.pt,axis=-1)
         scalarptsum_jetFwd = ak.sum(goodJets_forward.pt,axis=-1)
 
         mjjjany  = ak.where(njets>=3, (j0+j1+j2).mass, -1)
-        mjjjcnt  = ak.where(njets>=3, (j0cent+j1cent+j2cent).mass, -1)
+        mjjjcnt  = ak.where(njets_central>=3, (j0cent+j1cent+j2cent).mass, -1)
         #mljjjany  = ak.where(njets>=3, (l0+j0+j1+j2).mass, -1)
         mljjjany  = ak.where(njets>=3, (l0v + j0+j1+j2).mass, -1)
 
 
         ### Bjets ###
 
-        isBtagJetsLoose  = goodJets.isLooseBTag
-        isBtagJetsMedium = goodJets.isMediumBTag
-        isBtagJetsTight  = goodJets.isTightBTag
-        isNotBtagJetsLoose = np.invert(isBtagJetsLoose)
+        # Order by btag tier (and by pt if more than one within tier)
+        btag_tier = ak.where(goodJets.isTightBTag,  3,
+                    ak.where(goodJets.isMediumBTag, 2,
+                    ak.where(goodJets.isLooseBTag,  1, 0)))
+        goodJets_btagordered = goodJets[ ak.argsort(btag_tier, axis=-1, ascending=False, stable=True)]
 
-        bjetsl = goodJets[isBtagJetsLoose]
-        bjetsm = goodJets[isBtagJetsMedium]
-        bjetst = goodJets[isBtagJetsTight]
+        goodJets_btagordered_padded = ak.pad_none(goodJets_btagordered, 2)
+        jb0 = goodJets_btagordered_padded[:,0]
+        jb1 = goodJets_btagordered_padded[:,1]
 
-        nbtagsl = ak.num(goodJets[isBtagJetsLoose])
-        nbtagsm = ak.num(goodJets[isBtagJetsMedium])
-        nbtagst = ak.num(goodJets[isBtagJetsTight])
-
-        # Central only (b tagging is not meaningful in the forward region)
-        nbtagsl_cent = ak.num(goodJets_central[goodJets_central.isLooseBTag])
-        nbtagsm_cent = ak.num(goodJets_central[goodJets_central.isMediumBTag])
-        nbtagst_cent = ak.num(goodJets_central[goodJets_central.isTightBTag])
+        # Count at each tier
+        bjetsl = goodJets[goodJets.isLooseBTag]
+        bjetsm = goodJets[goodJets.isMediumBTag]
+        bjetst = goodJets[goodJets.isTightBTag]
+        nbtagsl = ak.num(bjetsl)
+        nbtagsm = ak.num(bjetsm)
+        nbtagst = ak.num(bjetst)
 
 
         ######### Get variables we haven't already calculated #########
 
         # Replace with -1 when there are not a pair of jets
-        mjj_tmp = (j0+j1).mass
-        mass_j0centj1cent = ak.where(njets>1,mjj_tmp,-1)
+        mjj_tmp = (j0cent+j1cent).mass
+        mass_j0centj1cent = ak.where(njets_central>1,mjj_tmp,-1)
 
         j0forward_eta = ak.where(njets_forward>0,j0forward.eta,-1)
 
@@ -643,8 +569,6 @@ class AnalysisProcessor(processor.ProcessorABC):
         dr_l0l1 = l0.delta_r(l1)
         scalarptsum_lep = ak.sum(l_vvh_t.pt,axis=-1)
         scalarptsum_lepmet = scalarptsum_lep + met.pt
-        scalarptsum_lepmetFJ0 = scalarptsum_lep + met.pt + fj0.pt
-        scalarptsum_lepmetFJ01 = scalarptsum_lep + met.pt + fj0.pt + fj1.pt
         scalarptsum_lepmetalljets = scalarptsum_lep + met.pt + scalarptsum_jet
         scalarptsum_lepmetcentjets = scalarptsum_lep + met.pt + scalarptsum_jetCent
         scalarptsum_lepmetfwdjets = scalarptsum_lep + met.pt + scalarptsum_jetFwd
@@ -661,11 +585,6 @@ class AnalysisProcessor(processor.ProcessorABC):
         mass_lj_min   = ak.min((lj_pairs["l"]+lj_pairs["j"]).mass,axis=-1)
         mass_lj_max   = ak.max((lj_pairs["l"]+lj_pairs["j"]).mass,axis=-1)
 
-        # FJj pairs (i.e. always one FJ, one jet)
-        FJj_pairs     = ak.cartesian({"fj":fatjets,"j": jets})
-        mass_jFJ_min   = ak.min((FJj_pairs["fj"]+FJj_pairs["j"]).mass,axis=-1)
-        mass_jFJ_max   = ak.max((FJj_pairs["fj"]+FJj_pairs["j"]).mass,axis=-1)
-
         bjets_ptordered = bjetsl[ak.argsort( bjetsl.pt,axis=-1,ascending=False)]
         bjets_ptordered_padded = ak.pad_none(bjets_ptordered, 2)
         b0 = bjets_ptordered_padded[:,0]
@@ -673,44 +592,16 @@ class AnalysisProcessor(processor.ProcessorABC):
         mass_b0b1_tmp = (b0+b1).mass
         mass_b0b1 = ak.where(nbtagsl>1,mass_b0b1_tmp,-1)
 
-        # Variables related to leading b jet score of b jets
-        bjets_bscoreordered = bjetsl[ak.argsort(bjetsl.btagDeepFlavB,axis=-1,ascending=False)]
-        bjets_bscoreordered_padded = ak.pad_none(bjets_bscoreordered, 2)
-        bbscore0 = bjets_bscoreordered_padded[:,0]
-        bbscore1 = bjets_bscoreordered_padded[:,1]
-        mass_bbscore0bbscore1 = ak.fill_none((bbscore0+bbscore1).mass,0)
-        bbscore0_bscore = ak.fill_none(bbscore0.btagDeepFlavB,0)
-        bbscore1_bscore = ak.fill_none(bbscore1.btagDeepFlavB,0)
-
-        # Variables related to leading b jet score of med b jets
-        bjetsm_bscoreordered = bjetsm[ak.argsort(bjetsm.btagDeepFlavB,axis=-1,ascending=False)]
-        bjetsm_bscoreordered_padded = ak.pad_none(bjetsm_bscoreordered, 2)
-        bmbscore0 = bjetsm_bscoreordered_padded[:,0]
-        bmbscore1 = bjetsm_bscoreordered_padded[:,1]
-        mass_bmbscore0bmbscore1 = ak.fill_none((bmbscore0+bmbscore1).mass,0)
-
-        # Variables related to leading b jet score of jets
-        jets_bscoreordered = goodJets_ptordered_padded[ak.argsort(goodJets_ptordered_padded.btagDeepFlavB,axis=-1,ascending=False)]
-        jbscore0 = jets_bscoreordered[:,0]
-        jbscore1 = jets_bscoreordered[:,1]
-        mass_jbscore0jbscore1 = ak.fill_none((jbscore0+jbscore1).mass,0)
-        jbscore0_bscore = ak.fill_none(jbscore0.btagDeepFlavB,0)
-        jbscore1_bscore = ak.fill_none(jbscore1.btagDeepFlavB,0)
-
         # mbb for jets with highest b tag score
-        goodJets_bscoreordered_upart = goodJets_central[ak.argsort(goodJets_central.btagUParTAK4B,axis=-1,ascending=False)]
-        goodJets_bscoreordered_upart_padded = ak.pad_none(goodJets_bscoreordered_upart, 2)
-        jup0 = goodJets_bscoreordered_upart_padded[:,0]
-        jup1 = goodJets_bscoreordered_upart_padded[:,1]
-        mass_jjbscore = ak.where(njets_central>1, (jup0+jup1).mass, -1)
-        dr_jjbscore = ak.fill_none(jup0.delta_r(jup1), -1)
-        pt_jjbscore = ak.fill_none((jup0+jup1).pt, -1)
-        jup0_pt  = ak.fill_none(jup0.pt, -1)
-        jup0_eta = ak.fill_none(jup0.eta, -99)
-        jup0_phi = ak.fill_none(jup0.phi, -99)
-        jup1_pt  = ak.fill_none(jup1.pt, -1)
-        jup1_eta = ak.fill_none(jup1.eta, -99)
-        jup1_phi = ak.fill_none(jup1.phi, -99)
+        mass_bb = ak.where(nbtagsl>1, (jb0+jb1).mass, -1)
+        dr_bb = ak.fill_none(jb0.delta_r(jb1), -1)
+        pt_bb = ak.fill_none((jb0+jb1).pt, -1)
+        jb0_pt  = ak.fill_none(jb0.pt, -1)
+        jb0_eta = ak.fill_none(jb0.eta, -99)
+        jb0_phi = ak.fill_none(jb0.phi, -99)
+        jb1_pt  = ak.fill_none(jb1.pt, -1)
+        jb1_eta = ak.fill_none(jb1.eta, -99)
+        jb1_phi = ak.fill_none(jb1.phi, -99)
 
         # Mjj max from any jets
         jjCentFwd_pairs = ak.combinations( goodJets_ptordered_padded, 2, fields=["j0", "j1"] )
@@ -718,22 +609,13 @@ class AnalysisProcessor(processor.ProcessorABC):
         absdeta_max_any = ak.fill_none(ak.max(abs(jjCentFwd_pairs.j0.eta - jjCentFwd_pairs.j1.eta),axis=-1),0)
 
         # Mjj max from cent jets
-        jjCent_pairs = ak.combinations(goodJets_ptordered_padded, 2, fields=["j0", "j1"] )
+        jjCent_pairs = ak.combinations(goodJets_central_ptordered_padded, 2, fields=["j0", "j1"] )
         mjj_max_cent = ak.fill_none(ak.max((jjCent_pairs.j0 + jjCent_pairs.j1).mass,axis=-1),0)
 
         # Mjj max from forward jets
         jjFwd_pairs = ak.combinations(goodJets_forward_ptordered_padded, 2, fields=["j0", "j1"] )
         mjj_max_fwd = ak.fill_none(ak.max((jjFwd_pairs.j0 + jjFwd_pairs.j1).mass,axis=-1),0)
         absdeta_max_fwd = ak.fill_none(ak.max(abs(jjFwd_pairs.j0.eta - jjFwd_pairs.j1.eta),axis=-1),0)
-
-        fj0_pNetH4qvsQCD = fj0.particleNetWithMass_H4qvsQCD
-        fj0_pNetHbbvsQCD = fj0.particleNetWithMass_HbbvsQCD
-        fj0_pNetHccvsQCD = fj0.particleNetWithMass_HccvsQCD
-        fj0_pNetQCD      = fj0.particleNetWithMass_QCD
-        fj0_pNetTvsQCD   = fj0.particleNetWithMass_TvsQCD
-        fj0_pNetWvsQCD   = fj0.particleNetWithMass_WvsQCD
-        fj0_pNetZvsQCD   = fj0.particleNetWithMass_ZvsQCD
-        fj0_mparticlenet = fj0.particleNetLegacy_mass
 
         # Compute pair invariant masses for low mass cuts
         ll_pairs_tmp = ak.combinations(l_vvh_t, 2, fields=["i0","i1"])
@@ -749,26 +631,6 @@ class AnalysisProcessor(processor.ProcessorABC):
         mll_min_afos = ak.min(ll_mass_pairs[os_pairs_mask],axis=-1)
         mll_min_sfos = ak.min(ll_mass_pairs[sfos_pairs_mask],axis=-1)
 
-        # Get Z peak pairs
-        ll_pairs_sfos = ll_pairs_tmp[sfos_pairs_mask]
-        ll_idx_sfos   = ll_idx_pairs[sfos_pairs_mask]
-        ll_pairs_4vec = ll_pairs_sfos.i0 + ll_pairs_sfos.i1
-        zpeak_idx     = ak.argmin(abs(ll_pairs_4vec.mass - 91.1876), keepdims=True, axis=1)
-        mll_z         = ak.fill_none(ak.flatten(ll_pairs_4vec[zpeak_idx].mass), 0)
-        pt_z          = ak.fill_none(ak.flatten(ll_pairs_4vec[zpeak_idx].pt), 0)
-
-        # For 3l, find the lepton that's not part of the Z pair
-        sfos_mask = ak.any(sfos_pairs_mask, axis=1)
-        z_idx0 = ak.flatten(ll_idx_sfos[zpeak_idx].i0, axis=1)
-        z_idx1 = ak.flatten(ll_idx_sfos[zpeak_idx].i1, axis=1)
-        all_idx = ak.local_index(l_vvh_t, axis=1)
-        w_lep_mask = (all_idx != z_idx0) & (all_idx != z_idx1)
-        l_w = ak.firsts(l_vvh_t[w_lep_mask])
-        #mt_wlep = ak.where(sfos_mask,es_ec.get_mt(l_w, met4),-1)
-        dr_wlepmet = ak.where(sfos_mask,l_w.delta_r(met4),-1)
-
-        # NOTE Only defind for exactly 2 and 3 lep
-        #abs_pdgid_sum = ak.fill_none(ak.where(nleps==3,abs(l0.pdgId) + abs(l1.pdgId) + abs(l2.pdgId),abs(l0.pdgId) + abs(l1.pdgId)),0)
         abs_pdgid_sum = ak.fill_none(ak.sum(abs(l_vvh_t.pdgId), axis=1), 0)
         n_mu_sel = ak.fill_none(ak.sum(abs(l_vvh_t.pdgId)==13, axis=1), 0)
 
@@ -819,7 +681,7 @@ class AnalysisProcessor(processor.ProcessorABC):
         mass_z3cand = ak.fill_none(ak.mask(leps_minus_z1z2.sum(axis=1).mass, has_pair3), -1)
 
         # Full ZZZ -> 4l + bb system: the two leptonic Z candidates plus the bb pair
-        mass_4ljjbscore = ak.fill_none((Z1+Z2+jup0+jup1).mass, -1)
+        mass_4lbb = ak.fill_none((Z1+Z2+jb0+jb1).mass, -1)
 
         # The single lepton left unpaired once Z1 and Z2 have claimed theirs (5l channel).
         # Prompt and hard when signal has lost a 6th lepton to acceptance; soft when it is
@@ -887,8 +749,6 @@ class AnalysisProcessor(processor.ProcessorABC):
             "scalarptsum_jetCent" : scalarptsum_jetCent,
             "scalarptsum_jetFwd" : scalarptsum_jetFwd,
             "scalarptsum_lepmet" : scalarptsum_lepmet,
-            "scalarptsum_lepmetFJ0" : scalarptsum_lepmetFJ0,
-            "scalarptsum_lepmetFJ01" : scalarptsum_lepmetFJ01,
             "scalarptsum_lepmetalljets" : scalarptsum_lepmetalljets,
             "scalarptsum_lepmetcentjets" : scalarptsum_lepmetcentjets,
             "scalarptsum_lepmetfwdjets" : scalarptsum_lepmetfwdjets,
@@ -916,7 +776,6 @@ class AnalysisProcessor(processor.ProcessorABC):
             "absdphi_l0l1" : abs(l0.delta_phi(l1)),
             "absdphi_lepmet" : abs(met4.delta_phi(l0+l1)),
             "absdphi_l0met" : abs(met4.delta_phi(l0)),
-            "absdphi_FJ0lepmet" : abs(fj0.delta_phi(met4+l0vLZ+l1vLZ)),
             "dr_lepmet" : met4.delta_r(l0+l1),
             "l0_iso"     : l0.pfRelIso03_all,
             "l0_miniiso" : l0.miniPFRelIso_all,
@@ -936,12 +795,12 @@ class AnalysisProcessor(processor.ProcessorABC):
             "j0_pt"  : j0.pt,
             "j0_eta" : j0.eta,
             "j0_phi" : j0.phi,
-            "jup0_pt" : jup0_pt,
-            "jup0_eta" : jup0_eta,
-            "jup0_phi" : jup0_phi,
-            "jup1_pt" : jup1_pt,
-            "jup1_eta" : jup1_eta,
-            "jup1_phi" : jup1_phi,
+            "jb0_pt"  : jb0_pt,
+            "jb0_eta" : jb0_eta,
+            "jb0_phi" : jb0_phi,
+            "jb1_pt"  : jb1_pt,
+            "jb1_eta" : jb1_eta,
+            "jb1_phi" : jb1_phi,
 
             "nleps" : nleps,
             "njets" : njets,
@@ -956,13 +815,7 @@ class AnalysisProcessor(processor.ProcessorABC):
             "nfatjets" : nfatjets,
             "njets_forward" : njets_forward,
             "njets_central" : njets_central,
-            "fj0_pt" : fj0.pt,
-            "fj0_mass" : fj0.mass,
-            "fj0_msoftdrop" : fj0.msoftdrop,
-            "fj0_eta" : fj0.eta,
-            "fj0_phi" : fj0.phi,
 
-            "dr_fj0l0" : fj0.delta_r(l0),
             "dr_j0fwdj1fwd" : j0forward.delta_r(j1forward),
             "dr_j0centj1cent" : j0cent.delta_r(j1cent),
             "dr_j0j1" : j0.delta_r(j1),
@@ -976,41 +829,12 @@ class AnalysisProcessor(processor.ProcessorABC):
 
             "mass_b0b1" : mass_b0b1,
 
-            "fj0_pNetH4qvsQCD" : fj0_pNetH4qvsQCD,
-            "fj0_pNetHbbvsQCD" : fj0_pNetHbbvsQCD,
-            "fj0_pNetHccvsQCD" : fj0_pNetHccvsQCD,
-            "fj0_pNetQCD"      : fj0_pNetQCD,
-            "fj0_pNetTvsQCD"   : fj0_pNetTvsQCD,
-            "fj0_pNetWvsQCD"   : fj0_pNetWvsQCD,
-            "fj0_pNetZvsQCD"   : fj0_pNetZvsQCD,
-            "fj0_mparticlenet" : fj0_mparticlenet,
-            "fj0_gptHvsQCD"    : fj0.gptHvsQCD,
-            "fj0_gptWvsQCD"    : fj0.gptWvsQCD,
-            "fj0_gptZvsQCD"    : fj0.gptZvsQCD,
-            "fj0_gptVvsQCD"    : fj0.gptVvsQCD,
-            "fj0_gpt_Hsf"      : fj0.gpt_Hsf,
-            "fj0_gpt_Wsf"      : fj0.gpt_Wsf,
-            "fj0_gpt_Zsf"      : fj0.gpt_Zsf,
-            "fj0_gpt_mass2p"   : fj0.gpt_mass2p,
-            "fj0_gpt_mass"     : fj0.gpt_mass,
-            "fj0_gpt_Hfrac"    : fj0.gpt_Hfrac,
-            "fj0_gpt_Wfrac"    : fj0.gpt_Wfrac,
-            "fj0_gpt_Zfrac"    : fj0.gpt_Zfrac,
-
             "jj_pairs_atmindr_mjj" : jj_pairs_atmindr_mjj,
 
-            "bbscore0_bscore" : bbscore0_bscore,
-            "bbscore1_bscore" : bbscore1_bscore,
-            "mass_bbscore0bbscore1" : mass_bbscore0bbscore1,
-            "mass_bmbscore0bmbscore1" : mass_bmbscore0bmbscore1,
-
-            "jbscore0_bscore" : jbscore0_bscore,
-            "jbscore1_bscore" : jbscore1_bscore,
-            "mass_jbscore0jbscore1" : mass_jbscore0jbscore1,
-            "mass_jjbscore" : mass_jjbscore,
-            "dr_jjbscore" : dr_jjbscore,
-            "pt_jjbscore" : pt_jjbscore,
-            "mass_4ljjbscore" : mass_4ljjbscore,
+            "mass_bb" : mass_bb,
+            "dr_bb" : dr_bb,
+            "pt_bb" : pt_bb,
+            "mass_4lbb" : mass_4lbb,
 
             "mjj_max_any" : mjj_max_any,
             "mjj_max_cent" : mjj_max_cent,
@@ -1030,14 +854,6 @@ class AnalysisProcessor(processor.ProcessorABC):
             "mlb_min" : mlb_min,
             "mlb_max" : mlb_max,
 
-            "mass_jFJ_min" :  mass_jFJ_min,
-            "mass_jFJ_max" :  mass_jFJ_max,
-            "mass_lj_min" :  mass_lj_min,
-            "mass_lj_max" :  mass_lj_max,
-
-            "mass_jFJ_min" :  mass_jFJ_min,
-            "mass_jFJ_max" :  mass_jFJ_max,
-
             "dr_lj_min" : dr_lj_min,
             "dr_lj_max" : dr_lj_max,
 
@@ -1051,10 +867,6 @@ class AnalysisProcessor(processor.ProcessorABC):
 
             "mll_min_afos" : mll_min_afos,
             "mll_min_sfos" : mll_min_sfos,
-            "mll_z" : mll_z,
-            "pt_z"  : pt_z,
-            #"mt_wlep":mt_wlep,
-            "dr_wlepmet":dr_wlepmet,
 
             # We want to include this in the siponed output, but probably not make hists for it
             "isRun3" : events.isRun3,
@@ -1079,14 +891,19 @@ class AnalysisProcessor(processor.ProcessorABC):
             "mass_h_cand" : mass_h_cand,
             "pt_lep_unpaired" : pt_lep_unpaired,
 
+            "mass_lj_min" :  mass_lj_min,
+            "mass_lj_max" :  mass_lj_max,
+
         }
 
         # For ABCDnet evaluations
         # This must come after dense_variables_dict since pass all vars from dense_variables_dict to evaluation since any/all might be needed (depending on which model we're using)
         # Once we finish evaluating, add the score to the dense_variables_dict too
-        dnn_score_zzz = self._run_abcd_inference(events, dense_variables_dict,"zzz")
+        #dnn_score_zzz = self._run_abcd_inference(events, dense_variables_dict,"zzz")
+        dnn_score_zzz =ak.zeros_like(met.pt)
         dense_variables_dict["dnn_score_zzz"] = dnn_score_zzz
-        dnn_score_zzz_zzbb = self._run_abcd_inference(events, dense_variables_dict,"zzz_zzbb")
+        #dnn_score_zzz_zzbb = self._run_abcd_inference(events, dense_variables_dict,"zzz_zzbb")
+        dnn_score_zzz_zzbb =ak.zeros_like(met.pt)
         dense_variables_dict["dnn_score_zzz_zzbb"] = dnn_score_zzz_zzbb
 
 
@@ -1146,7 +963,7 @@ class AnalysisProcessor(processor.ProcessorABC):
         is_sf = abs(l0.pdgId) == abs(l1.pdgId)
 
         low_mll_cut_3l = ak.where(abs_ch_sum_3l==1,mll_min_afos>12,pass_through)
-        is_onZ = abs(mll_z-91.1876) < 10
+        is_onZ = abs(mass_z1-91.1876) < 10
 
         selections.add("all_events", pass_through)
 
@@ -1171,8 +988,8 @@ class AnalysisProcessor(processor.ProcessorABC):
         selections.add("4l_minmll_2z_4lx_0bm_met40l", is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (nbtagsm==0) & (met.pt<40)) # ZZ low met
 
         # ZZ+bb
-        is_mbbZ = (mass_jjbscore>40) & (mass_jjbscore<120)
-        is_2j2blm = (njets_central>=2) & (nbtagsl_cent>=2) & (nbtagsm_cent>=1)
+        is_mbbZ = (mass_bb>40) & (mass_bb<120)
+        is_2j2blm = (nbtagsl>=2) & (nbtagsm>=1)
         selections.add("4l_minmll_2z_4lx_2j_2blm",      is_4l_minmll & (n_sfosz>=2) & (nleps==4) & is_2j2blm)
         selections.add("4l_minmll_2z_4lx_2j_2blm_onZ",  is_4l_minmll & (n_sfosz>=2) & (nleps==4) & is_2j2blm & is_mbbZ)
         selections.add("4l_minmll_2z_4lx_2j_2blm_offZ", is_4l_minmll & (n_sfosz>=2) & (nleps==4) & is_2j2blm & ~is_mbbZ)
@@ -1253,39 +1070,6 @@ class AnalysisProcessor(processor.ProcessorABC):
 
             ]
         }
-
-
-        ### Gen truth matched categories for signal ###
-        if isSig:
-            gen_h  = ak.zip({"pt": ak.ones_like(events.gen.h_eta), "eta": events.gen.h_eta,  "phi": events.gen.h_phi,  "mass": ak.ones_like(events.gen.h_eta)}, with_name="PtEtaPhiMCollection")
-            gen_v1 = ak.zip({"pt": ak.ones_like(events.gen.v1_eta), "eta": events.gen.v1_eta, "phi": events.gen.v1_phi, "mass": ak.ones_like(events.gen.v1_eta)}, with_name="PtEtaPhiMCollection")
-            gen_v2 = ak.zip({"pt": ak.ones_like(events.gen.v2_eta), "eta": events.gen.v2_eta, "phi": events.gen.v2_phi, "mass": ak.ones_like(events.gen.v2_eta)}, with_name="PtEtaPhiMCollection")
-            dR_fj0_h  = fj0.delta_r(gen_h)
-            dR_fj0_v1 = fj0.delta_r(gen_v1)
-            dR_fj0_v2 = fj0.delta_r(gen_v2)
-            dR_threshold = 0.8
-            fj0_matchedH  = (dR_fj0_h < dR_threshold)  & (dR_fj0_h  < dR_fj0_v1) & (dR_fj0_h  < dR_fj0_v2)
-            fj0_matchedV1 = (dR_fj0_v1 < dR_threshold) & (dR_fj0_v1 < dR_fj0_h)  & (dR_fj0_v1 < dR_fj0_v2)
-            fj0_matchedV2 = (dR_fj0_v2 < dR_threshold) & (dR_fj0_v2 < dR_fj0_h)  & (dR_fj0_v2 < dR_fj0_v1)
-            fj0_matchedV  = fj0_matchedV1 | fj0_matchedV2
-            fj0_noMatch   = ~(dR_fj0_h < dR_threshold) & ~(dR_fj0_v1 < dR_threshold) & ~(dR_fj0_v2 < dR_threshold)
-            #selections.add("2lOSSF_1fjx_fj0matchH",  is_2l & is_os & is_sf & (nfatjets==1) & ak.fill_none(fj0_matchedH,  False))
-            #selections.add("2lOSSF_1fjx_fj0matchV1", is_2l & is_os & is_sf & (nfatjets==1) & ak.fill_none(fj0_matchedV1, False))
-            #selections.add("2lOSSF_1fjx_fj0matchV2", is_2l & is_os & is_sf & (nfatjets==1) & ak.fill_none(fj0_matchedV2, False))
-            #selections.add("2lOSSF_1fjx_fj0matchV",  is_2l & is_os & is_sf & (nfatjets==1) & ak.fill_none(fj0_matchedV, False))
-            #selections.add("2lOSSF_1fjx_fj0noMatch", is_2l & is_os & is_sf & (nfatjets==1) & ak.fill_none(fj0_noMatch, False))
-
-            #cat_dict["lep_chan_lst"].append("2lOSSF_1fjx_fj0matchH")
-            #cat_dict["lep_chan_lst"].append("2lOSSF_1fjx_fj0matchV1")
-            #cat_dict["lep_chan_lst"].append("2lOSSF_1fjx_fj0matchV2")
-            #cat_dict["lep_chan_lst"].append("2lOSSF_1fjx_fj0matchV")
-            #cat_dict["lep_chan_lst"].append("2lOSSF_1fjx_fj0noMatch")
-            #cat_dict["lep_chan_lst"].append("2lOSSF_1fjx_ejj3_fj0matchH")
-            #cat_dict["lep_chan_lst"].append("2lOSSF_1fjx_ejj3_fj0matchV1")
-            #cat_dict["lep_chan_lst"].append("2lOSSF_1fjx_ejj3_fj0matchV2")
-            #cat_dict["lep_chan_lst"].append("2lOSSF_1fjx_ejj3_fj0matchV")
-            #cat_dict["lep_chan_lst"].append("2lOSSF_1fjx_ejj3_fj0noMatch")
-
 
 
 
