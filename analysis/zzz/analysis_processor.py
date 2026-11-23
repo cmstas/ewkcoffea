@@ -965,6 +965,9 @@ class AnalysisProcessor(processor.ProcessorABC):
         low_mll_cut_3l = ak.where(abs_ch_sum_3l==1,mll_min_afos>12,pass_through)
         is_onZ = abs(mass_z1-91.1876) < 10
 
+        is_mbbZ = (mass_bb>40) & (mass_bb<120)
+        is_2j2blm = (nbtagsl>=2) & (nbtagsm>=1)
+
         selections.add("all_events", pass_through)
 
 
@@ -984,12 +987,11 @@ class AnalysisProcessor(processor.ProcessorABC):
         selections.add("4l_minmll_2z_0bt",is_4l_minmll & (n_sfosz>=2) & (nbtagst==0))
 
         # CRs
-        selections.add("4l_minmll_1z_2bt",            is_4l_minmll & (n_sfosz==1) & (nbtagst>=2))                            # ttX
+        selections.add("4l_minmll_1z_1bm",            is_4l_minmll & (n_sfosz==1) & (nbtagsm>=1))                            # ttX
+        selections.add("4l_minmll_1z_2blm",           is_4l_minmll & (n_sfosz==1) & is_2j2blm)                               # ttX
         selections.add("4l_minmll_2z_4lx_0bm_met40l", is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (nbtagsm==0) & (met.pt<40)) # ZZ low met
 
         # ZZ+bb
-        is_mbbZ = (mass_bb>40) & (mass_bb<120)
-        is_2j2blm = (nbtagsl>=2) & (nbtagsm>=1)
         selections.add("4l_minmll_2z_4lx_2j_2blm",      is_4l_minmll & (n_sfosz>=2) & (nleps==4) & is_2j2blm)
         selections.add("4l_minmll_2z_4lx_2j_2blm_onZ",  is_4l_minmll & (n_sfosz>=2) & (nleps==4) & is_2j2blm & is_mbbZ)
         selections.add("4l_minmll_2z_4lx_2j_2blm_offZ", is_4l_minmll & (n_sfosz>=2) & (nleps==4) & is_2j2blm & ~is_mbbZ)
@@ -1016,9 +1018,9 @@ class AnalysisProcessor(processor.ProcessorABC):
         selections.add("4l_minmll_2z_0bt_6l_2z",        is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==6) & (n_sfosz==2))
         selections.add("4l_minmll_2z_0bt_6l_2z_mh150l", sr_6l_2z)
         selections.add("4l_minmll_2z_0bt_6l_3z",        sr_6l_3z)
-        selections.add("6l_other",                     (nleps==6) & ak.fill_none(~sr_6l_3z & ~sr_6l_2z, True))
-        selections.add("6l_other_mll",                 (nleps==6) & ak.fill_none(~sr_6l_3z & ~sr_6l_2z, True) & (mll_min_afos>6))
-        selections.add("6l_other_mll_0bt",              (nleps==6) & ak.fill_none(~sr_6l_3z & ~sr_6l_2z, True) & (mll_min_afos>6) & (nbtagst==0))
+        selections.add("6l_other",                      (nleps>=6) & ak.fill_none(~sr_6l_3z & ~sr_6l_2z, True))
+        selections.add("6l_other_mll",                  (nleps>=6) & ak.fill_none(~sr_6l_3z & ~sr_6l_2z, True) & (mll_min_afos>6))
+        selections.add("6l_other_mll_0bt",              (nleps>=6) & ak.fill_none(~sr_6l_3z & ~sr_6l_2z, True) & (mll_min_afos>6) & (nbtagst==0))
 
 
         # Keep track of the cats we want to actually fill
@@ -1036,7 +1038,8 @@ class AnalysisProcessor(processor.ProcessorABC):
                 "4l_minmll_2z_0bt",
 
                 # CRs
-                "4l_minmll_1z_2bt",
+                "4l_minmll_1z_1bm",
+                "4l_minmll_1z_2blm",
                 "4l_minmll_2z_4lx_0bm_met40l",
 
                 # ZZ+bb
