@@ -237,6 +237,8 @@ class AnalysisProcessor(processor.ProcessorABC):
             "mt2_zsub"  : axis.Regular(180, 0, 200, name="mt2_zsub",  label="MT2 of subleading-pt Z leptons and met"),
             "dnn_score_zzz_zzmet": axis.Regular(180, 0, 1, name="dnn_score_zzz_zzmet", label="DNN ABCDnet score for zzz 4l+met region"),
             "dnn_score_zzz_zzbb" : axis.Regular(180, 0, 1, name="dnn_score_zzz_zzbb",  label="DNN ABCDnet score for zzz zz+bb region"),
+            "nnbin_zzmet" : axis.Regular(5, 0, 5, name="nnbin_zzmet", label="ZZ+met SR bin"),
+            "nnbin_zzbb"  : axis.Regular(4, 0, 4, name="nnbin_zzbb",  label="ZZ+bb SR bin"),
 
 
             "l0_truth"          : axis.Regular(36, -1, 34, name="l0_truth", label="l0 truth flag"),
@@ -904,9 +906,25 @@ class AnalysisProcessor(processor.ProcessorABC):
         # This must come after dense_variables_dict since pass all vars from dense_variables_dict to evaluation since any/all might be needed (depending on which model we're using)
         # Once we finish evaluating, add the score to the dense_variables_dict too
         dnn_score_zzz_zzmet = self._run_abcd_inference(events, dense_variables_dict,"zzz_zzmet") # ak.zeros_like(met.pt)
+        dnn_score_zzz_zzbb  = self._run_abcd_inference(events, dense_variables_dict,"zzz_zzbb") # ak.zeros_like(met.pt)
         dense_variables_dict["dnn_score_zzz_zzmet"] = dnn_score_zzz_zzmet
-        dnn_score_zzz_zzbb = self._run_abcd_inference(events, dense_variables_dict,"zzz_zzbb") # ak.zeros_like(met.pt)
-        dense_variables_dict["dnn_score_zzz_zzbb"] = dnn_score_zzz_zzbb
+        dense_variables_dict["dnn_score_zzz_zzbb"]  = dnn_score_zzz_zzbb
+
+        # Masks for the 4l DNN SRs, and which bin they fall into
+        nn_met_b1 = (dnn_score_zzz_zzmet > 0.5)   & (dnn_score_zzz_zzmet <= 0.95)
+        nn_met_b2 = (dnn_score_zzz_zzmet > 0.95)  & (dnn_score_zzz_zzmet <= 0.99)
+        nn_met_b3 = (dnn_score_zzz_zzmet > 0.99)  & (dnn_score_zzz_zzmet <= 0.996)
+        nn_met_b4 = (dnn_score_zzz_zzmet > 0.996)
+        nn_bb_b1  = (dnn_score_zzz_zzbb > 0.5)   & (dnn_score_zzz_zzbb <= 0.82)
+        nn_bb_b2  = (dnn_score_zzz_zzbb > 0.82)  & (dnn_score_zzz_zzbb <= 0.94)
+        nn_bb_b3  = (dnn_score_zzz_zzbb > 0.94)
+
+        nnbin_zzmet = ak.where(nn_met_b4, 4, ak.where(nn_met_b3, 3, ak.where(nn_met_b2, 2, ak.where(nn_met_b1, 1, 0))))
+        nnbin_zzbb  = ak.where(nn_bb_b3, 3, ak.where(nn_bb_b2, 2, ak.where(nn_bb_b1, 1, 0)))
+
+        dense_variables_dict["nnbin_zzmet"] = nnbin_zzmet
+        dense_variables_dict["nnbin_zzbb"]  = nnbin_zzbb
+
 
 
         ### Lepton truth variables ###
@@ -994,27 +1012,27 @@ class AnalysisProcessor(processor.ProcessorABC):
         selections.add("4l_minmll_2z_4lx_0bm_met40l", is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (nbtagsm==0) & (met.pt<40)) # ZZ low met
 
         # ZZ+bb
-        selections.add("4l_minmll_2z_4lx_2j_2blm",      is_4l_minmll & (n_sfosz>=2) & (nleps==4) & is_2j2blm)
-        selections.add("4l_minmll_2z_4lx_2j_2blm_onZ",  is_4l_minmll & (n_sfosz>=2) & (nleps==4) & is_2j2blm & is_mbbZ)
-        selections.add("4l_minmll_2z_4lx_2j_2blm_offZ", is_4l_minmll & (n_sfosz>=2) & (nleps==4) & is_2j2blm & ~is_mbbZ)
-        selections.add("4l_minmll_2z_4lx_2j_2blm_NNp5l", is_4l_minmll & (n_sfosz>=2) & (nleps==4) & is_2j2blm & (dnn_score_zzz_zzbb<=0.5))
-        selections.add("4l_minmll_2z_4lx_2j_2blm_NNp5", is_4l_minmll & (n_sfosz>=2) & (nleps==4) & is_2j2blm & (dnn_score_zzz_zzbb>0.5))
-        selections.add("4l_minmll_2z_4lx_2j_2blm_NNp7", is_4l_minmll & (n_sfosz>=2) & (nleps==4) & is_2j2blm & (dnn_score_zzz_zzbb>0.7))
+        selections.add("4l_minmll_2z_4lx_2j_2blm",        is_4l_minmll & (n_sfosz>=2) & (nleps==4) & is_2j2blm)
+        selections.add("4l_minmll_2z_4lx_2j_2blm_onZ",    is_4l_minmll & (n_sfosz>=2) & (nleps==4) & is_2j2blm & is_mbbZ)
+        selections.add("4l_minmll_2z_4lx_2j_2blm_offZ",   is_4l_minmll & (n_sfosz>=2) & (nleps==4) & is_2j2blm & ~is_mbbZ)
+        selections.add("4l_minmll_2z_4lx_2j_2blm_NNp5l",  is_4l_minmll & (n_sfosz>=2) & (nleps==4) & is_2j2blm & (dnn_score_zzz_zzbb<=0.5))
+        selections.add("4l_minmll_2z_4lx_2j_2blm_NNp5",   is_4l_minmll & (n_sfosz>=2) & (nleps==4) & is_2j2blm & (dnn_score_zzz_zzbb>0.5))
+        selections.add("4l_minmll_2z_4lx_2j_2blm_NNbin1", is_4l_minmll & (n_sfosz>=2) & (nleps==4) & is_2j2blm & nn_bb_b1)
+        selections.add("4l_minmll_2z_4lx_2j_2blm_NNbin2", is_4l_minmll & (n_sfosz>=2) & (nleps==4) & is_2j2blm & nn_bb_b2)
+        selections.add("4l_minmll_2z_4lx_2j_2blm_NNbin3", is_4l_minmll & (n_sfosz>=2) & (nleps==4) & is_2j2blm & nn_bb_b3)
+
 
         # ZZ+met
-        selections.add("4l_minmll_2z_4lx",                 is_4l_minmll & (n_sfosz>=2) & (nleps==4))
-        selections.add("4l_minmll_2z_4lx_0bm",             is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (nbtagsm==0))
-        selections.add("4l_minmll_2z_4lx_0bm_met40",       is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (nbtagsm==0) & (met.pt>40))
-        selections.add("4l_minmll_2z_4lx_0bm_met40_NNp5l",  is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (nbtagsm==0) & (met.pt>40) & (dnn_score_zzz_zzmet<=0.5))
-        selections.add("4l_minmll_2z_4lx_0bm_met40_NNp99l",  is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (nbtagsm==0) & (met.pt>40) & (dnn_score_zzz_zzmet<=0.99))
-        selections.add("4l_minmll_2z_4lx_0bm_met40_NNp5to95",  is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (nbtagsm==0) & (met.pt>40) & (dnn_score_zzz_zzmet>0.5) & (dnn_score_zzz_zzmet<=0.95))
-        selections.add("4l_minmll_2z_4lx_0bm_met40_NNp5",  is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (nbtagsm==0) & (met.pt>40) & (dnn_score_zzz_zzmet>0.5))
-        selections.add("4l_minmll_2z_4lx_0bm_met40_NNp7",  is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (nbtagsm==0) & (met.pt>40) & (dnn_score_zzz_zzmet>0.7))
-        selections.add("4l_minmll_2z_4lx_0bm_met40_NNp8",  is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (nbtagsm==0) & (met.pt>40) & (dnn_score_zzz_zzmet>0.8))
-        selections.add("4l_minmll_2z_4lx_0bm_met40_NNp9",  is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (nbtagsm==0) & (met.pt>40) & (dnn_score_zzz_zzmet>0.9))
-        selections.add("4l_minmll_2z_4lx_0bm_met40_NNp95", is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (nbtagsm==0) & (met.pt>40) & (dnn_score_zzz_zzmet>0.95))
-        selections.add("4l_minmll_2z_4lx_0bm_met40_NNp98", is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (nbtagsm==0) & (met.pt>40) & (dnn_score_zzz_zzmet>0.98))
-        selections.add("4l_minmll_2z_4lx_0bm_met40_NNp99", is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (nbtagsm==0) & (met.pt>40) & (dnn_score_zzz_zzmet>0.99))
+        selections.add("4l_minmll_2z_4lx",                     is_4l_minmll & (n_sfosz>=2) & (nleps==4))
+        selections.add("4l_minmll_2z_4lx_0bm",                 is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (nbtagsm==0))
+        selections.add("4l_minmll_2z_4lx_0bm_met40",           is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (nbtagsm==0) & (met.pt>40))
+        selections.add("4l_minmll_2z_4lx_0bm_met40_NNp5l",     is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (nbtagsm==0) & (met.pt>40) & (dnn_score_zzz_zzmet<=0.5))
+        selections.add("4l_minmll_2z_4lx_0bm_met40_NNp5",      is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (nbtagsm==0) & (met.pt>40) & (dnn_score_zzz_zzmet>0.5))
+        selections.add("4l_minmll_2z_4lx_0bm_met40_NNbin1",    is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (nbtagsm==0) & (met.pt>40) & nn_met_b1)
+        selections.add("4l_minmll_2z_4lx_0bm_met40_NNbin2",    is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (nbtagsm==0) & (met.pt>40) & nn_met_b2)
+        selections.add("4l_minmll_2z_4lx_0bm_met40_NNbin3",    is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (nbtagsm==0) & (met.pt>40) & nn_met_b3)
+        selections.add("4l_minmll_2z_4lx_0bm_met40_NNbin4",    is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (nbtagsm==0) & (met.pt>40) & nn_met_b4)
+
 
         # 5l
         selections.add("4l_minmll_2z_0bt_5lx", is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==5))
@@ -1056,22 +1074,20 @@ class AnalysisProcessor(processor.ProcessorABC):
                 "4l_minmll_2z_4lx_2j_2blm_offZ",
                 "4l_minmll_2z_4lx_2j_2blm_NNp5l",
                 "4l_minmll_2z_4lx_2j_2blm_NNp5",
-                "4l_minmll_2z_4lx_2j_2blm_NNp7",
+                "4l_minmll_2z_4lx_2j_2blm_NNbin1",
+                "4l_minmll_2z_4lx_2j_2blm_NNbin2",
+                "4l_minmll_2z_4lx_2j_2blm_NNbin3",
 
                 # ZZ+met
                 "4l_minmll_2z_4lx",
                 "4l_minmll_2z_4lx_0bm",
                 "4l_minmll_2z_4lx_0bm_met40",
                 "4l_minmll_2z_4lx_0bm_met40_NNp5l",
-                "4l_minmll_2z_4lx_0bm_met40_NNp99l",
-                "4l_minmll_2z_4lx_0bm_met40_NNp5to95",
                 "4l_minmll_2z_4lx_0bm_met40_NNp5",
-                "4l_minmll_2z_4lx_0bm_met40_NNp7",
-                "4l_minmll_2z_4lx_0bm_met40_NNp8",
-                "4l_minmll_2z_4lx_0bm_met40_NNp9",
-                "4l_minmll_2z_4lx_0bm_met40_NNp95",
-                "4l_minmll_2z_4lx_0bm_met40_NNp98",
-                "4l_minmll_2z_4lx_0bm_met40_NNp99",
+                "4l_minmll_2z_4lx_0bm_met40_NNbin1",
+                "4l_minmll_2z_4lx_0bm_met40_NNbin2",
+                "4l_minmll_2z_4lx_0bm_met40_NNbin3",
+                "4l_minmll_2z_4lx_0bm_met40_NNbin4",
 
                 # 5l
                 "4l_minmll_2z_0bt_5lx",
