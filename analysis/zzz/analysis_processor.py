@@ -88,11 +88,11 @@ class AnalysisProcessor(processor.ProcessorABC):
 
         # Create the dense axes for the histograms
         self._dense_axes_dict = {
-            "met"   : axis.Regular(180, 0, 750, name="met",  label="met"),
+            "met"   : axis.Regular(180, 0, 400, name="met",  label="met"),
             "metphi": axis.Regular(180, -3.1416, 3.1416, name="metphi", label="met phi"),
-            "scalarptsum_jet" : axis.Regular(180, 0, 2000, name="scalarptsum_jet", label="H_T small radius"),
-            "scalarptsum_jetFwd" : axis.Regular(180, 0, 1000, name="scalarptsum_jetFwd", label="H_T forward"),
-            "scalarptsum_jetCent" : axis.Regular(180, 0, 2000, name="scalarptsum_jetCent", label="H_T central"),
+            "scalarptsum_jet" : axis.Regular(180, 0, 1000, name="scalarptsum_jet", label="H_T small radius"),
+            "scalarptsum_jetFwd" : axis.Regular(180, 0, 500, name="scalarptsum_jetFwd", label="H_T forward"),
+            "scalarptsum_jetCent" : axis.Regular(180, 0, 1000, name="scalarptsum_jetCent", label="H_T central"),
             "scalarptsum_lep" : axis.Regular(180, 0, 800, name="scalarptsum_lep", label="S_T"),
             "scalarptsum_lepmet" : axis.Regular(180, 0, 1500, name="scalarptsum_lepmet", label="S_T + metpt"),
             "scalarptsum_lepmetalljets" : axis.Regular(180, 0, 2500, name="scalarptsum_lepmetalljets", label="S_T + metpt + H_T all"),
@@ -108,13 +108,13 @@ class AnalysisProcessor(processor.ProcessorABC):
             "l2_pt"  : axis.Regular(180, 0, 300, name="l2_pt", label="l2 pt"),
             "l2_eta"  : axis.Regular(180, -3,3, name="l2_eta", label="l2 eta"),
             "l2_phi"  : axis.Regular(180, -3.1416, 3.1416, name="l2_phi", label="l2 phi"),
-            "l3_pt"  : axis.Regular(180, 0, 300, name="l3_pt", label="l3 pt"),
+            "l3_pt"  : axis.Regular(180, 0, 200, name="l3_pt", label="l3 pt"),
             "l3_eta"  : axis.Regular(180, -3,3, name="l3_eta", label="l3 eta"),
             "l3_phi"  : axis.Regular(180, -3.1416, 3.1416, name="l3_phi", label="l3 phi"),
-            "l4_pt"  : axis.Regular(180, 0, 300, name="l4_pt", label="l4 pt"),
+            "l4_pt"  : axis.Regular(180, 0, 200, name="l4_pt", label="l4 pt"),
             "l4_eta"  : axis.Regular(180, -3,3, name="l4_eta", label="l4 eta"),
             "l4_phi"  : axis.Regular(180, -3.1416, 3.1416, name="l4_phi", label="l4 phi"),
-            "l5_pt"  : axis.Regular(180, 0, 300, name="l5_pt", label="l5 pt"),
+            "l5_pt"  : axis.Regular(180, 0, 200, name="l5_pt", label="l5 pt"),
             "l5_eta"  : axis.Regular(180, -3,3, name="l5_eta", label="l5 eta"),
             "l5_phi"  : axis.Regular(180, -3.1416, 3.1416, name="l5_phi", label="l5 phi"),
 
@@ -226,15 +226,17 @@ class AnalysisProcessor(processor.ProcessorABC):
             "absdphi_z1_met"   : axis.Regular(180, 0, 3.1416, name="absdphi_z1_met", label="abs delta phi between Z1 and met"),
             "absdphi_z2_met"   : axis.Regular(180, 0, 3.1416, name="absdphi_z2_met", label="abs delta phi between Z2 and met"),
             "absdphi_z1z2_met" : axis.Regular(180, 0, 3.1416, name="absdphi_z1z2_met", label="abs delta phi between (Z1+Z2) and met"),
+            "absdphi_zlead_met" : axis.Regular(180, 0, 3.1416, name="absdphi_zlead_met", label="abs delta phi between leading-pt Z and met"),
+            "absdphi_zsub_met"  : axis.Regular(180, 0, 3.1416, name="absdphi_zsub_met", label="abs delta phi between subleading-pt Z and met"),
             "absdphi_min_jmet" : axis.Regular(180, -2, 4, name="absdphi_min_jmet", label="min abs delta phi between met and any good jet"),
-            "met_sig_proxy"    : axis.Regular(180, 0, 30, name="met_sig_proxy", label="met / sqrt(S_T + H_T)"),
-            "mt2_z1"   : axis.Regular(180, 0, 360, name="mt2_z1",   label="MT2 of Z1 leptons and met"),
-            "mt2_z2"   : axis.Regular(180, 0, 360, name="mt2_z2",   label="MT2 of Z2 leptons and met"),
-            "mt2_zmin" : axis.Regular(180, 0, 360, name="mt2_zmin", label="min MT2 over Z1,Z2 leptons and met"),
-            "mt2_zlead" : axis.Regular(180, 0, 360, name="mt2_zlead", label="MT2 of leading-pt Z leptons and met"),
-            "mt2_zsub"  : axis.Regular(180, 0, 360, name="mt2_zsub",  label="MT2 of subleading-pt Z leptons and met"),
-            "dnn_score_zzz" : axis.Regular(180, 0, 1, name="dnn_score_zzz",      label="DNN ABCDnet score for zzz 4l+met region"),
-            "dnn_score_zzz_zzbb" : axis.Regular(180, 0, 1, name="dnn_score_zzz_zzbb",      label="DNN ABCDnet score for zzz zz+bb region"),
+            "met_sig_proxy"    : axis.Regular(180, 0, 20, name="met_sig_proxy", label="met / sqrt(S_T + H_T)"),
+            "mt2_z1"   : axis.Regular(180, 0, 200, name="mt2_z1",   label="MT2 of Z1 leptons and met"),
+            "mt2_z2"   : axis.Regular(180, 0, 200, name="mt2_z2",   label="MT2 of Z2 leptons and met"),
+            "mt2_zmin" : axis.Regular(180, 0, 200, name="mt2_zmin", label="min MT2 over Z1,Z2 leptons and met"),
+            "mt2_zlead" : axis.Regular(180, 0, 200, name="mt2_zlead", label="MT2 of leading-pt Z leptons and met"),
+            "mt2_zsub"  : axis.Regular(180, 0, 200, name="mt2_zsub",  label="MT2 of subleading-pt Z leptons and met"),
+            "dnn_score_zzz_zzmet": axis.Regular(180, 0, 1, name="dnn_score_zzz_zzmet", label="DNN ABCDnet score for zzz 4l+met region"),
+            "dnn_score_zzz_zzbb" : axis.Regular(180, 0, 1, name="dnn_score_zzz_zzbb",  label="DNN ABCDnet score for zzz zz+bb region"),
 
 
             "l0_truth"          : axis.Regular(36, -1, 34, name="l0_truth", label="l0 truth flag"),
@@ -335,7 +337,7 @@ class AnalysisProcessor(processor.ProcessorABC):
         self._models[model_key].eval()
 
     def _run_abcd_inference(self, events, dense_variables_dict, model):
-        if model == "zzz":
+        if model == "zzz_zzmet":
             scaler_path = ewkcoffea_path("data/zzz_nn_models/single_abcdisco_zzz_scaler_params.json")
             checkpoint_path = ewkcoffea_path("data/zzz_nn_models/single_abcdisco_zzz.ckpt")
         elif model == "zzz_zzbb":
@@ -876,6 +878,8 @@ class AnalysisProcessor(processor.ProcessorABC):
             "absdphi_z1_met" : abs(met4.delta_phi(Z1)),
             "absdphi_z2_met" : abs(met4.delta_phi(Z2)),
             "absdphi_z1z2_met" : abs(met4.delta_phi(Z1+Z2)),
+            "absdphi_zlead_met" : ak.where(z2_is_lead, abs(met4.delta_phi(Z2)), abs(met4.delta_phi(Z1))),
+            "absdphi_zsub_met"  : ak.where(z2_is_lead, abs(met4.delta_phi(Z1)), abs(met4.delta_phi(Z2))),
             "absdphi_min_jmet" : absdphi_min_jmet,
             "met_sig_proxy" : met_sig_proxy,
             "mt2_z1"   : mt2_z1,
@@ -899,11 +903,9 @@ class AnalysisProcessor(processor.ProcessorABC):
         # For ABCDnet evaluations
         # This must come after dense_variables_dict since pass all vars from dense_variables_dict to evaluation since any/all might be needed (depending on which model we're using)
         # Once we finish evaluating, add the score to the dense_variables_dict too
-        #dnn_score_zzz = self._run_abcd_inference(events, dense_variables_dict,"zzz")
-        dnn_score_zzz =ak.zeros_like(met.pt)
-        dense_variables_dict["dnn_score_zzz"] = dnn_score_zzz
-        #dnn_score_zzz_zzbb = self._run_abcd_inference(events, dense_variables_dict,"zzz_zzbb")
-        dnn_score_zzz_zzbb =ak.zeros_like(met.pt)
+        dnn_score_zzz_zzmet = self._run_abcd_inference(events, dense_variables_dict,"zzz_zzmet") # ak.zeros_like(met.pt)
+        dense_variables_dict["dnn_score_zzz_zzmet"] = dnn_score_zzz_zzmet
+        dnn_score_zzz_zzbb = self._run_abcd_inference(events, dense_variables_dict,"zzz_zzbb") # ak.zeros_like(met.pt)
         dense_variables_dict["dnn_score_zzz_zzbb"] = dnn_score_zzz_zzbb
 
 
@@ -995,18 +997,24 @@ class AnalysisProcessor(processor.ProcessorABC):
         selections.add("4l_minmll_2z_4lx_2j_2blm",      is_4l_minmll & (n_sfosz>=2) & (nleps==4) & is_2j2blm)
         selections.add("4l_minmll_2z_4lx_2j_2blm_onZ",  is_4l_minmll & (n_sfosz>=2) & (nleps==4) & is_2j2blm & is_mbbZ)
         selections.add("4l_minmll_2z_4lx_2j_2blm_offZ", is_4l_minmll & (n_sfosz>=2) & (nleps==4) & is_2j2blm & ~is_mbbZ)
+        selections.add("4l_minmll_2z_4lx_2j_2blm_NNp5l", is_4l_minmll & (n_sfosz>=2) & (nleps==4) & is_2j2blm & (dnn_score_zzz_zzbb<=0.5))
+        selections.add("4l_minmll_2z_4lx_2j_2blm_NNp5", is_4l_minmll & (n_sfosz>=2) & (nleps==4) & is_2j2blm & (dnn_score_zzz_zzbb>0.5))
         selections.add("4l_minmll_2z_4lx_2j_2blm_NNp7", is_4l_minmll & (n_sfosz>=2) & (nleps==4) & is_2j2blm & (dnn_score_zzz_zzbb>0.7))
 
         # ZZ+met
         selections.add("4l_minmll_2z_4lx",                 is_4l_minmll & (n_sfosz>=2) & (nleps==4))
         selections.add("4l_minmll_2z_4lx_0bm",             is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (nbtagsm==0))
         selections.add("4l_minmll_2z_4lx_0bm_met40",       is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (nbtagsm==0) & (met.pt>40))
-        selections.add("4l_minmll_2z_4lx_0bm_met40_NNp7",  is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (nbtagsm==0) & (met.pt>40) & (dnn_score_zzz>0.7))
-        selections.add("4l_minmll_2z_4lx_0bm_met40_NNp8",  is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (nbtagsm==0) & (met.pt>40) & (dnn_score_zzz>0.8))
-        selections.add("4l_minmll_2z_4lx_0bm_met40_NNp9",  is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (nbtagsm==0) & (met.pt>40) & (dnn_score_zzz>0.9))
-        selections.add("4l_minmll_2z_4lx_0bm_met40_NNp95", is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (nbtagsm==0) & (met.pt>40) & (dnn_score_zzz>0.95))
-        selections.add("4l_minmll_2z_4lx_0bm_met40_NNp98", is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (nbtagsm==0) & (met.pt>40) & (dnn_score_zzz>0.98))
-        selections.add("4l_minmll_2z_4lx_0bm_met40_NNp99", is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (nbtagsm==0) & (met.pt>40) & (dnn_score_zzz>0.99))
+        selections.add("4l_minmll_2z_4lx_0bm_met40_NNp5l",  is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (nbtagsm==0) & (met.pt>40) & (dnn_score_zzz_zzmet<=0.5))
+        selections.add("4l_minmll_2z_4lx_0bm_met40_NNp99l",  is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (nbtagsm==0) & (met.pt>40) & (dnn_score_zzz_zzmet<=0.99))
+        selections.add("4l_minmll_2z_4lx_0bm_met40_NNp5to95",  is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (nbtagsm==0) & (met.pt>40) & (dnn_score_zzz_zzmet>0.5) & (dnn_score_zzz_zzmet<=0.95))
+        selections.add("4l_minmll_2z_4lx_0bm_met40_NNp5",  is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (nbtagsm==0) & (met.pt>40) & (dnn_score_zzz_zzmet>0.5))
+        selections.add("4l_minmll_2z_4lx_0bm_met40_NNp7",  is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (nbtagsm==0) & (met.pt>40) & (dnn_score_zzz_zzmet>0.7))
+        selections.add("4l_minmll_2z_4lx_0bm_met40_NNp8",  is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (nbtagsm==0) & (met.pt>40) & (dnn_score_zzz_zzmet>0.8))
+        selections.add("4l_minmll_2z_4lx_0bm_met40_NNp9",  is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (nbtagsm==0) & (met.pt>40) & (dnn_score_zzz_zzmet>0.9))
+        selections.add("4l_minmll_2z_4lx_0bm_met40_NNp95", is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (nbtagsm==0) & (met.pt>40) & (dnn_score_zzz_zzmet>0.95))
+        selections.add("4l_minmll_2z_4lx_0bm_met40_NNp98", is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (nbtagsm==0) & (met.pt>40) & (dnn_score_zzz_zzmet>0.98))
+        selections.add("4l_minmll_2z_4lx_0bm_met40_NNp99", is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (nbtagsm==0) & (met.pt>40) & (dnn_score_zzz_zzmet>0.99))
 
         # 5l
         selections.add("4l_minmll_2z_0bt_5lx", is_4l_minmll & (n_sfosz>=2) & (nbtagst==0) & (nleps==5))
@@ -1046,12 +1054,18 @@ class AnalysisProcessor(processor.ProcessorABC):
                 "4l_minmll_2z_4lx_2j_2blm",
                 "4l_minmll_2z_4lx_2j_2blm_onZ",
                 "4l_minmll_2z_4lx_2j_2blm_offZ",
+                "4l_minmll_2z_4lx_2j_2blm_NNp5l",
+                "4l_minmll_2z_4lx_2j_2blm_NNp5",
                 "4l_minmll_2z_4lx_2j_2blm_NNp7",
 
                 # ZZ+met
                 "4l_minmll_2z_4lx",
                 "4l_minmll_2z_4lx_0bm",
                 "4l_minmll_2z_4lx_0bm_met40",
+                "4l_minmll_2z_4lx_0bm_met40_NNp5l",
+                "4l_minmll_2z_4lx_0bm_met40_NNp99l",
+                "4l_minmll_2z_4lx_0bm_met40_NNp5to95",
+                "4l_minmll_2z_4lx_0bm_met40_NNp5",
                 "4l_minmll_2z_4lx_0bm_met40_NNp7",
                 "4l_minmll_2z_4lx_0bm_met40_NNp8",
                 "4l_minmll_2z_4lx_0bm_met40_NNp9",
