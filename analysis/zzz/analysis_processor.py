@@ -240,24 +240,6 @@ class AnalysisProcessor(processor.ProcessorABC):
             "nnbin_zzmet" : axis.Regular(5, 0, 5, name="nnbin_zzmet", label="ZZ+met SR bin"),
             "nnbin_zzbb"  : axis.Regular(4, 0, 4, name="nnbin_zzbb",  label="ZZ+bb SR bin"),
 
-
-            "l0_truth"          : axis.Regular(36, -1, 34, name="l0_truth", label="l0 truth flag"),
-            "l1_truth"          : axis.Regular(36, -1, 34, name="l1_truth", label="l1 truth flag"),
-            "l2_truth"          : axis.Regular(36, -1, 34, name="l2_truth", label="l2 truth flag"),
-            "l0_truth_real_pt"  : axis.Regular(180, 0, 500, name="l0_truth_real_pt", label="l0 truth real pt"),
-            "l1_truth_real_pt"  : axis.Regular(180, 0, 500, name="l1_truth_real_pt", label="l1 truth real pt"),
-            "l2_truth_real_pt"  : axis.Regular(180, 0, 500, name="l2_truth_real_pt", label="l2 truth real pt"),
-            "l0_truth_fake_pt"  : axis.Regular(180, 0, 500, name="l0_truth_fake_pt", label="l0 truth fake pt"),
-            "l1_truth_fake_pt"  : axis.Regular(180, 0, 500, name="l1_truth_fake_pt", label="l1 truth fake pt"),
-            "l2_truth_fake_pt"  : axis.Regular(180, 0, 500, name="l2_truth_fake_pt", label="l2 truth fake pt"),
-            "l0_truth_real_iso" : axis.Regular(180, 0, 0.4, name="l0_truth_real_iso", label="l0 truth real pfRelIso03_all"),
-            "l1_truth_real_iso" : axis.Regular(180, 0, 0.4, name="l1_truth_real_iso", label="l1 truth real pfRelIso03_all"),
-            "l2_truth_real_iso" : axis.Regular(180, 0, 0.4, name="l2_truth_real_iso", label="l2 truth real pfRelIso03_all"),
-            "l0_truth_fake_iso" : axis.Regular(180, 0, 0.4, name="l0_truth_fake_iso", label="l0 truth fake pfRelIso03_all"),
-            "l1_truth_fake_iso" : axis.Regular(180, 0, 0.4, name="l1_truth_fake_iso", label="l1 truth fake pfRelIso03_all"),
-            "l2_truth_fake_iso" : axis.Regular(180, 0, 0.4, name="l2_truth_fake_iso", label="l2 truth fake pfRelIso03_all"),
-            "nlep_truth_real"   : axis.Regular(5, 0, 5, name="nlep_truth_real",   label="Lep (truth, real) multiplicity"),
-            "nlep_truth_fake"   : axis.Regular(5, 0, 5, name="nlep_truth_fake",   label="Lep (truth, fake) multiplicity"),
             "pt_z1z2met"        : axis.Regular(180, 0, 360, name="pt_z1z2met", label="pt of (Z1 + Z2 + met) system"),
             "mass_z1z2z3"       : axis.Regular(180, 0, 1000, name="mass_z1z2z3", label="mass of (Z1 + Z2 + Z3) system"),
             "mass_z1"           : axis.Regular(180, -4, 200, name="mass_z1", label="m(Z1) [GeV]"),
@@ -926,53 +908,6 @@ class AnalysisProcessor(processor.ProcessorABC):
         dense_variables_dict["nnbin_zzbb"]  = nnbin_zzbb
 
 
-
-        ### Lepton truth variables ###
-        if not isData:
-
-            lep_truth_real_mask = ((l_vvh_t.provenance == 23) | (l_vvh_t.provenance == 24) | (l_vvh_t.provenance == 33) | (l_vvh_t.provenance == 34))
-            lep_truth_real = l_vvh_t_padded[lep_truth_real_mask]
-            lep_truth_fake = l_vvh_t_padded[~lep_truth_real_mask]
-
-            lep_truth_real = lep_truth_real[ak.argsort(lep_truth_real.pt,axis=-1,ascending=False)]
-            lep_truth_fake = lep_truth_fake[ak.argsort(lep_truth_fake.pt,axis=-1,ascending=False)]
-
-            lep_truth_real_padded = ak.pad_none(lep_truth_real, 3)
-            lep_truth_fake_padded = ak.pad_none(lep_truth_fake, 3)
-
-            l0_truth_real = lep_truth_real_padded[:,0]
-            l1_truth_real = lep_truth_real_padded[:,1]
-            l2_truth_real = lep_truth_real_padded[:,2]
-            l0_truth_fake = lep_truth_fake_padded[:,0]
-            l1_truth_fake = lep_truth_fake_padded[:,1]
-            l2_truth_fake = lep_truth_fake_padded[:,2]
-
-            nlep_truth_real = ak.num(lep_truth_real)
-            nlep_truth_fake = ak.num(lep_truth_fake)
-
-            dense_variables_dict["l0_truth"] = l0.provenance
-            dense_variables_dict["l1_truth"] = l1.provenance
-            dense_variables_dict["l2_truth"] = l2.provenance
-
-            dense_variables_dict["l0_truth_real_pt"] = l0_truth_real.pt
-            dense_variables_dict["l1_truth_real_pt"] = l1_truth_real.pt
-            dense_variables_dict["l2_truth_real_pt"] = l2_truth_real.pt
-            dense_variables_dict["l0_truth_fake_pt"] = l0_truth_fake.pt
-            dense_variables_dict["l1_truth_fake_pt"] = l1_truth_fake.pt
-            dense_variables_dict["l2_truth_fake_pt"] = l2_truth_fake.pt
-
-            dense_variables_dict["l0_truth_real_iso"] = l0_truth_real.pfRelIso03_all
-            dense_variables_dict["l1_truth_real_iso"] = l1_truth_real.pfRelIso03_all
-            dense_variables_dict["l2_truth_real_iso"] = l2_truth_real.pfRelIso03_all
-            dense_variables_dict["l0_truth_fake_iso"] = l0_truth_fake.pfRelIso03_all
-            dense_variables_dict["l1_truth_fake_iso"] = l1_truth_fake.pfRelIso03_all
-            dense_variables_dict["l2_truth_fake_iso"] = l2_truth_fake.pfRelIso03_all
-
-            dense_variables_dict["nlep_truth_real"] = nlep_truth_real
-            dense_variables_dict["nlep_truth_fake"] = nlep_truth_fake
-
-
-
         ######### Store boolean masks with PackedSelection ##########
 
         selections = PackedSelection(dtype='uint64')
@@ -1028,6 +963,7 @@ class AnalysisProcessor(processor.ProcessorABC):
         selections.add("4l_minmll_2z_4lx_0bm_met40",           is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (nbtagsm==0) & (met.pt>40))
         selections.add("4l_minmll_2z_4lx_0bm_met40_NNp5l",     is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (nbtagsm==0) & (met.pt>40) & (dnn_score_zzz_zzmet<=0.5))
         selections.add("4l_minmll_2z_4lx_0bm_met40_NNp5",      is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (nbtagsm==0) & (met.pt>40) & (dnn_score_zzz_zzmet>0.5))
+        selections.add("4l_minmll_2z_4lx_0bm_met40_NNp95",     is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (nbtagsm==0) & (met.pt>40) & (dnn_score_zzz_zzmet>0.95))
         selections.add("4l_minmll_2z_4lx_0bm_met40_NNbin1",    is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (nbtagsm==0) & (met.pt>40) & nn_met_b1)
         selections.add("4l_minmll_2z_4lx_0bm_met40_NNbin2",    is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (nbtagsm==0) & (met.pt>40) & nn_met_b2)
         selections.add("4l_minmll_2z_4lx_0bm_met40_NNbin3",    is_4l_minmll & (n_sfosz>=2) & (nleps==4) & (nbtagsm==0) & (met.pt>40) & nn_met_b3)
@@ -1084,6 +1020,7 @@ class AnalysisProcessor(processor.ProcessorABC):
                 "4l_minmll_2z_4lx_0bm_met40",
                 "4l_minmll_2z_4lx_0bm_met40_NNp5l",
                 "4l_minmll_2z_4lx_0bm_met40_NNp5",
+                "4l_minmll_2z_4lx_0bm_met40_NNp95",
                 "4l_minmll_2z_4lx_0bm_met40_NNbin1",
                 "4l_minmll_2z_4lx_0bm_met40_NNbin2",
                 "4l_minmll_2z_4lx_0bm_met40_NNbin3",
