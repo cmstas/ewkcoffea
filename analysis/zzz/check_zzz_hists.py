@@ -3,19 +3,19 @@ import pickle
 import gzip
 import json
 import os
-import shutil
 import numpy as np
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import copy
+import subprocess
+import sys
 
 import ewkcoffea.modules.plotting_tools as plt_tools
 #import topcoffea.modules.MakeLatexTable as mlt
 
-
-#HTML_PC = "/home/users/kmohrman/ref_scripts/html_stuff/index.php"
-HTML_PC = "/home/k.mohrman/ref_scirpts/html_stuff/index.php"
+#GALLERY_PY = "/home/users/kmohrman/ref_scripts/html_stuff/make_gallery.py" # UAF
+GALLERY_PY = "/home/k.mohrman/ref_scirpts/html_stuff/make_gallery.py"  # HPG
 
 CLR_LST = {
     "ZZZ"   : "red",
@@ -32,58 +32,61 @@ CLR_LST = {
 }
 
 
+# Cats and if they are blind
+CAT_DICT = {
+    "all_events"       : False,
+    "6lx"              : True,
+    "g6l"              : True,
+    "5lx"              : True,
+    "4lx"              : False,
+    "4l_minmll"        : False,
+    "4l_minmll_2z"     : False,
+    "4l_minmll_2z_0bt" : False, # What 5l & 6l build from
+    "4l_minmll_2z_4lx" : False, # What the 4l builds from
 
-CAT_LST = [
-    #"all_events",
-    #"6l",
-    #"g6l",
+    # CRs
+    "4l_minmll_1z_1bm"  : False,
+    "4l_minmll_1z_2blm" : False,
+    "4l_minmll_2z_4lx_0bm_met40l": False,
 
-    #"4l",
-    #"4l_minmll",
-    "4l_minmll_2z",
-    "4l_minmll_2z_0b",
+    # ZZ+met
+    "4l_minmll_2z_4lx_0bm"              : False,
+    "4l_minmll_2z_4lx_0bm_met40"        : True,
+    "4l_minmll_2z_4lx_0bm_met40_NNp5l"  : False,
+    "4l_minmll_2z_4lx_0bm_met40_NNp5"   : True,
+    "4l_minmll_2z_4lx_0bm_met40_NNp95"  : True,
+    "4l_minmll_2z_4lx_0bm_met40_NNbin1" : False,
+    "4l_minmll_2z_4lx_0bm_met40_NNbin2" : True,
+    "4l_minmll_2z_4lx_0bm_met40_NNbin3" : True,
+    "4l_minmll_2z_4lx_0bm_met40_NNbin4" : True,
 
-    #"4l_minmll_1z_2b", # ttZ CR
+    # ZZ+bb
+    "4l_minmll_2z_4lx_2j_2blm"        : True,
+    "4l_minmll_2z_4lx_2j_2blm_onZ"    : True,
+    "4l_minmll_2z_4lx_2j_2blm_offZ"   : True,
+    "4l_minmll_2z_4lx_2j_2blm_NNp5l"  : False,
+    "4l_minmll_2z_4lx_2j_2blm_NNp5"   : True,
+    "4l_minmll_2z_4lx_2j_2blm_NNp95"  : True,
+    "4l_minmll_2z_4lx_2j_2blm_NNbin1" : True,
+    "4l_minmll_2z_4lx_2j_2blm_NNbin2" : True,
+    "4l_minmll_2z_4lx_2j_2blm_NNbin3" : True,
 
-    #"4l_minmll_2z_0b_4lx_0fj_met90l",
-    #"4l_minmll_2z_2b_4lx",
+    # 5l
+    "4l_minmll_2z_0bt_5lx": True,
 
-    #"4l_minmll_2z_0b_4lx_0fj",
-    #"4l_minmll_2z_0b_4lx_0fj_met40",
-    ##"4l_minmll_2z_0b_4lx_0fj_met40_NNp7",
-    ##"4l_minmll_2z_0b_4lx_0fj_met40_NNp8",
-    ##"4l_minmll_2z_0b_4lx_0fj_met40_NNp9",
-    ##"4l_minmll_2z_0b_4lx_0fj_met40_NNp95",
-    #"4l_minmll_2z_0b_4lx_0fj_met40_NNp98",
-    #"4l_minmll_2z_0b_4lx_0fj_met40_NNp99",
+    # 6l on-Z, off-Z, and other
+    "4l_minmll_2z_0bt_6l"           : True,
+    "4l_minmll_2z_0bt_6l_2z"        : True,
+    "4l_minmll_2z_0bt_6l_2z_mh150l" : True,
+    "4l_minmll_2z_0bt_6l_3z"        : True,
+    "6l_other"                      : True,
+    "6l_other_mll"                  : True,
+    "6l_other_mll_0bt"              : True,
+}
 
-    #"4l_minmll_2z_0b_4lx_0fj_met90",
-    #"4l_minmll_2z_0b_4lx_0fj_met90_phimetzz",
-    #"4l_minmll_2z_0b_4lx_1fj",
-    #"4l_minmll_2z_0b_4lx_1fj_gpt0p5",
-    #"4l_minmll_2z_0b_4lx_1fj_pn0p5",
+CAT_LST = list(CAT_DICT.keys())
+UNBLIND_CATS = [k for k, v in CAT_DICT.items() if not v]
 
-    #"4l_minmll_2z_0b_5lx",
-
-    #"4l_minmll_2z_0b_6l",
-    #"4l_minmll_2z_0b_6l_2z",
-    #"4l_minmll_2z_0b_6l_2z_mh150l",
-    #"4l_minmll_2z_0b_6l_3z",
-
-    #"6l_other",
-    #"6l_other_mll",
-    #"6l_other_mll_0b",
-]
-
-UNBLIND_CATS = [
-    "all_events",
-    "4l",
-    "4l_minmll",
-    "4l_minmll_2z",
-    "4l_minmll_2z_0b",
-    "4l_minmll_2z_0b_4lx_0fj_met90l", # ZZ CR
-    "4l_minmll_1z_2b", # ttX CR
-]
 
 
 GRP_DICT_FULL_R2 = {
@@ -116,8 +119,8 @@ GRP_DICT_FULL_R2 = {
         "ttHTobb_M125_TuneCP5_13TeV",
     ],
     "ttZ": [
-        "ttZJets_TuneCP5_13TeV",
-        #"TTZToLLNuNu_M-10_TuneCP5_13TeV",
+        ##"ttZJets_TuneCP5_13TeV",
+        "TTZToLLNuNu_M-10_TuneCP5_13TeV",
     ],
     "other" : [
         "TTWW_TuneCP5_13TeV",
@@ -168,14 +171,15 @@ GRP_DICT_FULL_R2 = {
     "WWZ": ["WWZ_4F_TuneCP5_13TeV"],
     "WZZ": ["WZZ_TuneCP5_13TeV"],
 
-    "VH" : [
-        #"HZJ_HToWWTo2L2Nu_ZTo2L_M-125_TuneCP5_13TeV",
-        "VHToNonbb_M125_TuneCP5_13TeV",
-        #"ZH_HToBB_ZToLL_M-125_TuneCP5_13TeV",
-        #"ggZH_HToBB_ZToLL_M-125_TuneCP5_13TeV",
-    ],
+    #"VH" : [
+    #    #"HZJ_HToWWTo2L2Nu_ZTo2L_M-125_TuneCP5_13TeV",
+    #    "VHToNonbb_M125_TuneCP5_13TeV",
+    #    #"ZH_HToBB_ZToLL_M-125_TuneCP5_13TeV",
+    #    #"ggZH_HToBB_ZToLL_M-125_TuneCP5_13TeV",
+    #],
+    "ZH": ["ZH_HToZZ_4LFilter_M125_TuneCP5_13TeV"],
     "ZZZ": ["ZZZ_TuneCP5_13TeV"],
-    "Signal": ["ZZZ_TuneCP5_13TeV"],
+    "Signal": ["ZZZ_TuneCP5_13TeV", "ZH_HToZZ_4LFilter_M125_TuneCP5_13TeV"],
 }
 
 
@@ -811,7 +815,7 @@ def print_yields(histo_dict,grp_dict,cat_lst,years_to_prepend,roundat=None,print
 
     # Get ahold of the yields
     yld_dict = get_yields_per_cat(histo_dict,"njets",grp_dict,years_to_prepend, cat_lst, lepflavbin)
-    #counts_dict = get_yields_per_cat(histo_dict,"njets_counts",grp_dict,years_to_prepend)
+    counts_dict = get_yields_per_cat(histo_dict,"njets_counts",grp_dict,years_to_prepend, cat_lst, lepflavbin)
     #yld_dict = counts_dict
 
     #group_lst_order = ['Signal', 'VBSWWH_SS', 'VBSWWH_OS', 'VBSWZH', 'VBSZZH', 'Background', 'QCD', 'DY', 'ttbar', 'single-t', 'rare-top', 'ttX', 'Vjets', 'VV', 'ewkV', 'ewkVV', 'VH', 'VVV', 'Data', 'Data/MC', 'metricX100'] # R2
@@ -950,10 +954,10 @@ def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend,cat_lst,lepflav_bin=
                 raise Exception(f"Unknown lep flav handling: {lepflav_bin}")
 
             # Clean up a bit (rebin, regroup, and handle overflow)
-            if var not in ["njets","nleps","nbtagsl","nbtagsm","nbtagst","njets_counts","nleps_counts","nfatjets","njets_forward","njets_tot","n_ll_sfos","abs_ch_sum_3l","l0_truth","l1_truth","l2_truth", "nlep_truth_real", "nlep_truth_fake", "abs_pdgid_sum"]:
-                #histo = plt_tools.rebin(histo,2)
-                histo = plt_tools.rebin(histo,6)
-                #histo = plt_tools.rebin(histo,12)
+            if var in ["mass_z1","mass_z2"]:
+                histo = plt_tools.rebin(histo,5)
+            elif (var not in ["njets","nleps","nbtagsl","nbtagsm","nbtagst","njets_counts","nleps_counts","nfatjets","njets_forward","njets_central", "njets_tot","n_ll_sfos","abs_ch_sum_3l","l0_truth","l1_truth","l2_truth", "nlep_truth_real", "nlep_truth_fake", "abs_pdgid_sum", "n_mu_sel", "mu_isomaxwp", "nnbin_zzmet", "nnbin_zzbb"]) and ("isowp" not in var):
+                histo = plt_tools.rebin(histo,10)
             #histo = plt_tools.group(histo,"process","process_grp",grouping_dict_mc)
             histo = plt_tools.group(histo,"process","process_grp",grouping_dict)
             histo = plt_tools.merge_overflow(histo)
@@ -967,7 +971,9 @@ def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend,cat_lst,lepflav_bin=
             histo_mc  = histo[{"process_grp":sample_group_names_lst_mc}]
             histo_sig = histo[{"process_grp":["Signal"]}]
             histo_bkg = plt_tools.group(histo,"process_grp","process_grp",{"Background": sample_group_names_lst_bkg})
-            if do_data and (cat in UNBLIND_CATS): histo_dat = histo[{"process_grp":["Data"]}]
+            #if do_data and (cat in UNBLIND_CATS): histo_dat = histo[{"process_grp":["Data"]}]
+            blind_this = (var.startswith("dnn_score") and (cat in ["4l_minmll_2z_4lx_0bm_met40_NNbin1"])) or (var=="met" and (cat in ["4l_minmll_2z_4lx_0bm"])) # NOTE: Exceptions
+            if do_data and (cat in UNBLIND_CATS) and not blind_this: histo_dat = histo[{"process_grp":["Data"]}]
             else: histo_dat = None
 
             # Make the figure
@@ -1000,8 +1006,9 @@ def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend,cat_lst,lepflav_bin=
             fig.savefig(os.path.join(save_dir_path_cat,title+".png"),bbox_extra_artists=ext_tup,bbox_inches='tight')
             plt.close(fig)
             if histo_dat is not None: fig_datamc.savefig(os.path.join(save_dir_path_cat,title+"_dataMC.png"),bbox_inches='tight')
-            shutil.copyfile(HTML_PC, os.path.join(save_dir_path_cat,"index.php"))
 
+    # Static gallery index (no PHP). After the loop, so the baked list is complete.
+    subprocess.run([sys.executable, GALLERY_PY, "-r", save_dir_path], check=False)
 
 
 ##################################### Main #####################################
@@ -1068,7 +1075,6 @@ def main():
         #make_plots(histo_dict,grp_dict,years_to_prepend,cat_lst,lepflav_bin="all",do_data=True) # mc_scale=110.84/109.95 for 2024 to 2025 scaling
         #make_plots(histo_dict,grp_dict,years_to_prepend,cat_lst,lepflav_bin="all",do_data=True, mc_scale=110.84/109.95) #, mc_scale=450/138)
         make_plots(histo_dict,grp_dict,years_to_prepend,cat_lst,lepflav_bin="all",do_data=True) #, mc_scale=450/138)
-        #make_plots(histo_dict,grp_dict,years_to_prepend,cat_lst,lepflav_bin="all",do_data=True, mc_scale=110.84/109.95)
 
 
 
