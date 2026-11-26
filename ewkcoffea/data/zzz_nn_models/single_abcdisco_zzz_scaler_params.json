@@ -1,0 +1,197 @@
+{
+  "_training_features": [
+    "met",
+    "met_sig_proxy",
+    "pt_z1z2met",
+    "absdphi_z1_met",
+    "absdphi_z2_met",
+    "absdphi_z1z2_met",
+    "absdphi_min_jmet",
+    "mt2_zmin",
+    "mt2_zlead",
+    "mass_z1",
+    "mass_z2",
+    "mass_z1z2z3",
+    "pt_z1",
+    "pt_z2",
+    "n_mu_sel",
+    "l1_pt",
+    "mass_lj_max",
+    "absdphi_l0l1",
+    "absdphi_l0met",
+    "absdphi_lepmet",
+    "dr_lj_min",
+    "njets",
+    "njets_central",
+    "nbtagsl",
+    "scalarptsum_jet",
+    "j0central_pt",
+    "j0central_eta",
+    "dr_j0centj1cent",
+    "absdphi_j0centj1cent",
+    "absdeta_max_any",
+    "mjj_max_any",
+    "isRun3"
+  ],
+  "_constraint_var": "met",
+  "met": {
+    "transform": "log",
+    "min": 3.6888795494813635,
+    "max": 7.509237738786651
+  },
+  "met_sig_proxy": {
+    "transform": "log",
+    "min": -0.4117089542533304,
+    "max": 4.553652803223645
+  },
+  "pt_z1z2met": {
+    "transform": "log",
+    "min": -3.3056066645386832,
+    "max": 7.678985804506533
+  },
+  "absdphi_z1_met": {
+    "transform": "minmax",
+    "min": 1.1920928955078125e-06,
+    "max": 3.141589879989624
+  },
+  "absdphi_z2_met": {
+    "transform": "minmax",
+    "min": 4.76837158203125e-07,
+    "max": 3.1415913105010986
+  },
+  "absdphi_z1z2_met": {
+    "transform": "minmax",
+    "min": 9.5367431640625e-07,
+    "max": 3.141592264175415
+  },
+  "absdphi_min_jmet": {
+    "transform": "minmax",
+    "min": -1.0,
+    "max": 3.141592264175415
+  },
+  "mt2_zmin": {
+    "transform": "log",
+    "min": -7.260284003202224,
+    "max": 6.535850108420059
+  },
+  "mt2_zlead": {
+    "transform": "log",
+    "min": -7.260284003202224,
+    "max": 7.109684271146473
+  },
+  "mass_z1": {
+    "transform": "minmax",
+    "min": 71.31147003173828,
+    "max": 111.04197692871094
+  },
+  "mass_z2": {
+    "transform": "minmax",
+    "min": 71.187744140625,
+    "max": 111.18743133544922
+  },
+  "mass_z1z2z3": {
+    "transform": "log",
+    "min": 4.984913320413557,
+    "max": 8.44512556422696
+  },
+  "pt_z1": {
+    "transform": "log",
+    "min": -3.123693165139853,
+    "max": 7.691157938042913
+  },
+  "pt_z2": {
+    "transform": "log",
+    "min": -4.272856393201515,
+    "max": 7.746311956178417
+  },
+  "n_mu_sel": {
+    "transform": "minmax",
+    "min": 0.0,
+    "max": 4.0
+  },
+  "l1_pt": {
+    "transform": "log",
+    "min": 2.5062752830989767,
+    "max": 7.256640734963418
+  },
+  "mass_lj_max": {
+    "transform": "minmax",
+    "min": 43.92036056518555,
+    "max": 4764.2119140625
+  },
+  "absdphi_l0l1": {
+    "transform": "minmax",
+    "min": 0.0,
+    "max": 3.1415913105010986
+  },
+  "absdphi_l0met": {
+    "transform": "minmax",
+    "min": 7.152557373046875e-07,
+    "max": 3.1415927410125732
+  },
+  "absdphi_lepmet": {
+    "transform": "minmax",
+    "min": 1.430511474609375e-06,
+    "max": 3.1415913105010986
+  },
+  "dr_lj_min": {
+    "transform": "minmax",
+    "min": 0.4000137448310852,
+    "max": 7.144308567047119
+  },
+  "njets": {
+    "transform": "minmax",
+    "min": 0.0,
+    "max": 11.0
+  },
+  "njets_central": {
+    "transform": "minmax",
+    "min": 0.0,
+    "max": 11.0
+  },
+  "nbtagsl": {
+    "transform": "minmax",
+    "min": 0.0,
+    "max": 5.0
+  },
+  "scalarptsum_jet": {
+    "transform": "minmax",
+    "min": 0.0,
+    "max": 3001.916748046875
+  },
+  "j0central_pt": {
+    "transform": "minmax",
+    "min": 20.000032424926758,
+    "max": 2096.484375
+  },
+  "j0central_eta": {
+    "transform": "minmax",
+    "min": -2.39990234375,
+    "max": 2.39990234375
+  },
+  "dr_j0centj1cent": {
+    "transform": "minmax",
+    "min": 0.3642280399799347,
+    "max": 5.667733192443848
+  },
+  "absdphi_j0centj1cent": {
+    "transform": "minmax",
+    "min": 0.0,
+    "max": 3.1415836811065674
+  },
+  "absdeta_max_any": {
+    "transform": "minmax",
+    "min": 0.0,
+    "max": 9.982421875
+  },
+  "mjj_max_any": {
+    "transform": "minmax",
+    "min": 0.0,
+    "max": 7853.962890625
+  },
+  "isRun3": {
+    "transform": "minmax",
+    "min": 0.0,
+    "max": 1.0
+  }
+}

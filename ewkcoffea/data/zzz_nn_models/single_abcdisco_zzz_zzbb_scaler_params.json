@@ -1,0 +1,202 @@
+{
+  "_training_features": [
+    "mass_z2",
+    "mll_min_sfos",
+    "absdphi_z1_met",
+    "absdphi_z2_met",
+    "absdphi_z1z2_met",
+    "mass_bb",
+    "dr_bb",
+    "pt_bb",
+    "mass_4lbb",
+    "jb0_pt",
+    "jb0_eta",
+    "jb1_pt",
+    "jb1_eta",
+    "nbtagsm",
+    "absdphi_j0centj1cent",
+    "dr_j0centj1cent",
+    "absdphi_j0j1",
+    "absdeta_max_any",
+    "absdphi_min_jmet",
+    "j0central_pt",
+    "j0central_eta",
+    "njets_central",
+    "scalarptsum_jet",
+    "mlb_min",
+    "mlb_max",
+    "met_sig_proxy",
+    "absdphi_lepmet",
+    "dr_lepmet",
+    "mass_lj_max",
+    "n_mu_sel",
+    "scalarptsum_lepmetalljets",
+    "isRun3"
+  ],
+  "_constraint_var": "met",
+  "mass_z2": {
+    "transform": "minmax",
+    "min": 71.18881225585938,
+    "max": 111.18744659423828
+  },
+  "mll_min_sfos": {
+    "transform": "log",
+    "min": 2.4856114845448762,
+    "max": 4.6981186396805965
+  },
+  "absdphi_z1_met": {
+    "transform": "minmax",
+    "min": 5.3882598876953125e-05,
+    "max": 3.1415600776672363
+  },
+  "absdphi_z2_met": {
+    "transform": "minmax",
+    "min": 0.00010800361633300781,
+    "max": 3.1415722370147705
+  },
+  "absdphi_z1z2_met": {
+    "transform": "minmax",
+    "min": 1.6689300537109375e-06,
+    "max": 3.1415836811065674
+  },
+  "mass_bb": {
+    "transform": "minmax",
+    "min": 10.470195770263672,
+    "max": 1833.8057861328125
+  },
+  "dr_bb": {
+    "transform": "minmax",
+    "min": 0.3950422406196594,
+    "max": 5.8140339851379395
+  },
+  "pt_bb": {
+    "transform": "log",
+    "min": -1.0967895718588356,
+    "max": 7.047935145224189
+  },
+  "mass_4lbb": {
+    "transform": "log",
+    "min": 5.369328676910918,
+    "max": 8.310921100627375
+  },
+  "jb0_pt": {
+    "transform": "log",
+    "min": 2.9957760462470757,
+    "max": 7.011017378684091
+  },
+  "jb0_eta": {
+    "transform": "minmax",
+    "min": -2.49951171875,
+    "max": 2.49951171875
+  },
+  "jb1_pt": {
+    "transform": "log",
+    "min": 2.995736183611044,
+    "max": 6.988830994085595
+  },
+  "jb1_eta": {
+    "transform": "minmax",
+    "min": -2.49951171875,
+    "max": 2.49951171875
+  },
+  "nbtagsm": {
+    "transform": "minmax",
+    "min": 1.0,
+    "max": 4.0
+  },
+  "absdphi_j0centj1cent": {
+    "transform": "minmax",
+    "min": 0.0,
+    "max": 3.1415836811065674
+  },
+  "dr_j0centj1cent": {
+    "transform": "minmax",
+    "min": 0.39250826835632324,
+    "max": 5.635360240936279
+  },
+  "absdphi_j0j1": {
+    "transform": "minmax",
+    "min": 0.0,
+    "max": 3.1415836811065674
+  },
+  "absdeta_max_any": {
+    "transform": "minmax",
+    "min": 0.0,
+    "max": 9.96484375
+  },
+  "absdphi_min_jmet": {
+    "transform": "minmax",
+    "min": 4.0531158447265625e-06,
+    "max": 3.1288485527038574
+  },
+  "j0central_pt": {
+    "transform": "log",
+    "min": 2.9957760462470757,
+    "max": 7.157703254886358
+  },
+  "j0central_eta": {
+    "transform": "minmax",
+    "min": -2.39990234375,
+    "max": 2.39990234375
+  },
+  "njets_central": {
+    "transform": "minmax",
+    "min": 0.0,
+    "max": 12.0
+  },
+  "scalarptsum_jet": {
+    "transform": "log",
+    "min": 3.6901279877258606,
+    "max": 7.550135856198187
+  },
+  "mlb_min": {
+    "transform": "log",
+    "min": 2.0221035334375363,
+    "max": 6.689629254906901
+  },
+  "mlb_max": {
+    "transform": "log",
+    "min": 3.7386580444822575,
+    "max": 7.746047834424988
+  },
+  "met_sig_proxy": {
+    "transform": "minmax",
+    "min": 0.014118019491434097,
+    "max": 20.181123733520508
+  },
+  "absdphi_lepmet": {
+    "transform": "minmax",
+    "min": 2.4557113647460938e-05,
+    "max": 3.141528367996216
+  },
+  "dr_lepmet": {
+    "transform": "minmax",
+    "min": 0.003235355718061328,
+    "max": 7.743999481201172
+  },
+  "mass_lj_max": {
+    "transform": "log",
+    "min": 4.075432167366106,
+    "max": 8.52727800812058
+  },
+  "n_mu_sel": {
+    "transform": "minmax",
+    "min": 0.0,
+    "max": 4.0
+  },
+  "scalarptsum_lepmetalljets": {
+    "transform": "minmax",
+    "min": 157.58358764648438,
+    "max": 3935.86328125
+  },
+  "isRun3": {
+    "transform": "minmax",
+    "min": 0.0,
+    "max": 1.0
+  },
+  "met": {
+    "transform": "none",
+    "min": 0.2753632664680481,
+    "max": 727.6159057617188
+  }
+}
