@@ -939,7 +939,7 @@ class AnalysisProcessor(processor.ProcessorABC):
         selections.add("5lx",            (nleps==5))
         selections.add("4l_minmll",      is_4l_minmll)
         selections.add("4l_minmll_2z",   is_4l_minmll & (n_sfosz>=2))
-        selections.add("4l_minmll_2z_0bt",is_4l_minmll & (n_sfosz>=2) & (nbtagst==0))
+        selections.add("4l_minmll_2z_0bt",is_4l_minmll & (n_sfosz>=2) & (nbtagst==0)) # What the 5l and 6l build from
 
         # CRs
         selections.add("4l_minmll_1z_1bm",            is_4l_minmll & (n_sfosz==1) & (nbtagsm>=1))                            # ttX

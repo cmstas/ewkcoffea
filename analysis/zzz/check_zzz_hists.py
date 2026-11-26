@@ -34,54 +34,53 @@ CLR_LST = {
 
 # Cats and if they are blind
 CAT_DICT = {
-    "all_events"       : False,
-    "6lx"              : True,
-    "g6l"              : True,
-    "5lx"              : True,
-    "4lx"              : False,
-    "4l_minmll"        : False,
+    #"all_events"       : False,
+    #"6lx"              : True,
+    #"g6l"              : True,
+    #"5lx"              : True,
+    #"4lx"              : False,
+    #"4l_minmll"        : False,
     "4l_minmll_2z"     : False,
-    "4l_minmll_2z_0bt" : False, # What 5l & 6l build from
-    "4l_minmll_2z_4lx" : False, # What the 4l builds from
+    #"4l_minmll_2z_0bt" : False, # What 5l & 6l build from
+    #"4l_minmll_2z_4lx" : False, # What the 4l builds from
 
     # CRs
-    "4l_minmll_1z_1bm"  : False,
-    "4l_minmll_1z_2blm" : False,
-    "4l_minmll_2z_4lx_0bm_met40l": False,
+    #"4l_minmll_1z_1bm"  : False,
+    #"4l_minmll_1z_2blm" : False,
+    #"4l_minmll_2z_4lx_0bm_met40l": False,
 
     # ZZ+met
-    "4l_minmll_2z_4lx_0bm"              : False,
-    "4l_minmll_2z_4lx_0bm_met40"        : True,
-    "4l_minmll_2z_4lx_0bm_met40_NNp5l"  : False,
-    "4l_minmll_2z_4lx_0bm_met40_NNp5"   : True,
-    "4l_minmll_2z_4lx_0bm_met40_NNp95"  : True,
-    "4l_minmll_2z_4lx_0bm_met40_NNbin1" : False,
-    "4l_minmll_2z_4lx_0bm_met40_NNbin2" : True,
-    "4l_minmll_2z_4lx_0bm_met40_NNbin3" : True,
-    "4l_minmll_2z_4lx_0bm_met40_NNbin4" : True,
+    #"4l_minmll_2z_4lx_0bm"              : False,
+    #"4l_minmll_2z_4lx_0bm_met40"        : True,
+    ##"4l_minmll_2z_4lx_0bm_met40_NNp5l"  : False,
+    #"4l_minmll_2z_4lx_0bm_met40_NNp5"   : True,
+    ##"4l_minmll_2z_4lx_0bm_met40_NNp95"  : True,
+    #"4l_minmll_2z_4lx_0bm_met40_NNbin1" : False,
+    #"4l_minmll_2z_4lx_0bm_met40_NNbin2" : True,
+    #"4l_minmll_2z_4lx_0bm_met40_NNbin3" : True,
+    #"4l_minmll_2z_4lx_0bm_met40_NNbin4" : True,
 
     # ZZ+bb
-    "4l_minmll_2z_4lx_2j_2blm"        : True,
-    "4l_minmll_2z_4lx_2j_2blm_onZ"    : True,
-    "4l_minmll_2z_4lx_2j_2blm_offZ"   : True,
-    "4l_minmll_2z_4lx_2j_2blm_NNp5l"  : False,
-    "4l_minmll_2z_4lx_2j_2blm_NNp5"   : True,
-    "4l_minmll_2z_4lx_2j_2blm_NNp95"  : True,
-    "4l_minmll_2z_4lx_2j_2blm_NNbin1" : True,
-    "4l_minmll_2z_4lx_2j_2blm_NNbin2" : True,
-    "4l_minmll_2z_4lx_2j_2blm_NNbin3" : True,
+    #"4l_minmll_2z_4lx_2j_2blm"        : True,
+    ##"4l_minmll_2z_4lx_2j_2blm_onZ"    : True,
+    ##"4l_minmll_2z_4lx_2j_2blm_offZ"   : True,
+    #"4l_minmll_2z_4lx_2j_2blm_NNp5l"  : False,
+    #"4l_minmll_2z_4lx_2j_2blm_NNp5"   : True,
+    #"4l_minmll_2z_4lx_2j_2blm_NNbin1" : True,
+    #"4l_minmll_2z_4lx_2j_2blm_NNbin2" : True,
+    #"4l_minmll_2z_4lx_2j_2blm_NNbin3" : True,
 
     # 5l
-    "4l_minmll_2z_0bt_5lx": True,
+    #"4l_minmll_2z_0bt_5lx": True,
 
     # 6l on-Z, off-Z, and other
-    "4l_minmll_2z_0bt_6l"           : True,
-    "4l_minmll_2z_0bt_6l_2z"        : True,
-    "4l_minmll_2z_0bt_6l_2z_mh150l" : True,
-    "4l_minmll_2z_0bt_6l_3z"        : True,
-    "6l_other"                      : True,
-    "6l_other_mll"                  : True,
-    "6l_other_mll_0bt"              : True,
+    #"4l_minmll_2z_0bt_6l"           : True,
+    #"4l_minmll_2z_0bt_6l_2z"        : True,
+    #"4l_minmll_2z_0bt_6l_2z_mh150l" : True,
+    #"4l_minmll_2z_0bt_6l_3z"        : True,
+    #"6l_other"                      : True,
+    #"6l_other_mll"                  : True,
+    #"6l_other_mll_0bt"              : True,
 }
 
 CAT_LST = list(CAT_DICT.keys())
@@ -265,10 +264,10 @@ GRP_DICT_FULL_R3 = {
         #"WtoLNu-2Jets_Bin-2J-PTLNu-400to600_TuneCP5_13p6TeV",
         #"WtoLNu-2Jets_Bin-2J-PTLNu-40to100_TuneCP5_13p6TeV",
         #"WtoLNu-2Jets_Bin-2J-PTLNu-600_TuneCP5_13p6TeV",
-        "WtoLNu-4Jets_Bin-1J_TuneCP5_13p6TeV",
-        "WtoLNu-4Jets_Bin-2J_TuneCP5_13p6TeV",
-        "WtoLNu-4Jets_Bin-3J_TuneCP5_13p6TeV",
-        "WtoLNu-4Jets_Bin-4J_TuneCP5_13p6TeV",
+        #"WtoLNu-4Jets_Bin-1J_TuneCP5_13p6TeV",
+        #"WtoLNu-4Jets_Bin-2J_TuneCP5_13p6TeV",
+        #"WtoLNu-4Jets_Bin-3J_TuneCP5_13p6TeV",
+        #"WtoLNu-4Jets_Bin-4J_TuneCP5_13p6TeV",
         "Zto2Q-4Jets_Bin-HT-100to400_TuneCP5_13p6TeV",
         "Zto2Q-4Jets_Bin-HT-400to800_TuneCP5_13p6TeV",
 
@@ -957,7 +956,8 @@ def make_plots(histo_dict,grp_dict,year_name_lst_to_prepend,cat_lst,lepflav_bin=
             if var in ["mass_z1","mass_z2"]:
                 histo = plt_tools.rebin(histo,5)
             elif (var not in ["njets","nleps","nbtagsl","nbtagsm","nbtagst","njets_counts","nleps_counts","nfatjets","njets_forward","njets_central", "njets_tot","n_ll_sfos","abs_ch_sum_3l","l0_truth","l1_truth","l2_truth", "nlep_truth_real", "nlep_truth_fake", "abs_pdgid_sum", "n_mu_sel", "mu_isomaxwp", "nnbin_zzmet", "nnbin_zzbb"]) and ("isowp" not in var):
-                histo = plt_tools.rebin(histo,10)
+                #histo = plt_tools.rebin(histo,10)
+                histo = plt_tools.rebin(histo,6)
             #histo = plt_tools.group(histo,"process","process_grp",grouping_dict_mc)
             histo = plt_tools.group(histo,"process","process_grp",grouping_dict)
             histo = plt_tools.merge_overflow(histo)
