@@ -117,14 +117,15 @@ GRP_DICT_FULL_R2 = {
         "ttHToNonbb_M125_TuneCP5_13TeV",
         "ttHTobb_M125_TuneCP5_13TeV",
     ],
-    "ttZ": [
+    "tXZ": [
         ##"ttZJets_TuneCP5_13TeV",
+        "TWZToLL_tlept_Wlept_5f_DR_TuneCP5_13TeV",
+        "TTZToLL_M-1to10_TuneCP5_13TeV",
         "TTZToLLNuNu_M-10_TuneCP5_13TeV",
     ],
     "other" : [
         "TTWW_TuneCP5_13TeV",
         "TTWZ_TuneCP5_13TeV",
-        "TWZToLL_tlept_Wlept_5f_DR_TuneCP5_13TeV",
         "tZq_ll_4f_ckm_NLO_TuneCP5_13TeV",
 
         "ST_s-channel_4f_leptonDecays_TuneCP5_13TeV",
@@ -154,10 +155,9 @@ GRP_DICT_FULL_R2 = {
         #"WZ_TuneCP5_13TeV",
     ],
     "ZZ" : [
-        #"ZZJJTo4L_EWKnotop_TuneCP5_13TeV",
-        #"ZZTo2L2Nu_TuneCP5_13TeV",
-        #"ZZTo4L_M-1toInf_TuneCP5_13TeV",
-        #"ZZ_TuneCP5_13TeV",
+        #"ZZTo2L2Nu_TuneCP5_13TeV", # Valid, but 0 in 4l region
+        #"ZZTo2Q2L_mllmin4p0_TuneCP5_13TeV", # Valid, but 0 in 4l region (actualy slightly negative, but consistent with 0)
+        "ZZJJTo4L_EWKnotop_TuneCP5_13TeV",
         "ZZTo4L_TuneCP5_13TeV",
 
         "GluGluToContinToZZTo2e2mu_TuneCP5_13TeV",
@@ -218,11 +218,13 @@ GRP_DICT_FULL_R3 = {
         "TTH-Hto2B_Par-M-125_TuneCP5_13p6TeV",
         "TTH-HtoNon2B_Par-M-125_TuneCP5_13p6TeV",
     ],
-    "ttZ" : [
+    "tXZ" : [
         "TTLL_Bin-MLL-4to50_TuneCP5_13p6TeV",
         "TTLL_Bin-MLL-50_TuneCP5_13p6TeV",
+        "TWZ-TtoLNu-WtoLNu-Zto2L-DR1_TuneCP5_13p6TeV",
     ],
     "other" : [
+
         "GluGluH-Hto2Zto4L_Par-M-125_TuneCP5_13p6TeV",
 
         "TTWW_TuneCP5_13p6TeV",
@@ -234,11 +236,11 @@ GRP_DICT_FULL_R3 = {
         "TTLNu-1Jets_TuneCP5_13p6TeV",
         "TTW-WtoQQ-1Jets_TuneCP5_13p6TeV",
 
-        "TBbarQtoLNu-t-channel-4FS_TuneCP5_13p6TeV",
+        #"TBbarQtoLNu-t-channel-4FS_TuneCP5_13p6TeV", # No skim
         "TBbartoLNu-s-channel_TuneCP5_13p6TeV",
         "TWminusto2L2Nu_TuneCP5_13p6TeV",
         "TWminustoLNu2Q_TuneCP5_13p6TeV",
-        "TbarBQtoLNu-t-channel-4FS_TuneCP5_13p6TeV",
+        #"TbarBQtoLNu-t-channel-4FS_TuneCP5_13p6TeV", # No skim
         "TbarBtoLNu-s-channel_TuneCP5_13p6TeV",
         "TbarWplusto2L2Nu_TuneCP5_13p6TeV",
         "TbarWplustoLNu2Q_TuneCP5_13p6TeV",
@@ -283,11 +285,9 @@ GRP_DICT_FULL_R3 = {
         "WZtoLNu2Q_TuneCP5_13p6TeV",
     ],
     "ZZ" : [
-        #"ZZJJto4L-EWK_TuneCP5_13p6TeV",
-        #"ZZJJto4L-QCD_TuneCP5_13p6TeV",
-        #"ZZ_TuneCP5_13p6TeV",
-        "ZZto2L2Nu_TuneCP5_13p6TeV",
-        "ZZto2L2Q_TuneCP5_13p6TeV",
+        #"ZZto2L2Nu_TuneCP5_13p6TeV", # Valid, but 0 at 4l level
+        #"ZZto2L2Q_TuneCP5_13p6TeV", # Valid, but ver small at 4l level, about 0.002% of ZZ (with 30% error already)
+        "ZZJJto4L-EWK_TuneCP5_13p6TeV",
         "ZZto4L_TuneCP5_13p6TeV",
 
         "GluGluToContinto2Zto2E2Mu_TuneCP5_13p6TeV",
